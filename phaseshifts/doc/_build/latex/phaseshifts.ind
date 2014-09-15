@@ -1,0 +1,149 @@
+\begin{theindex}
+
+  \item \_Conphas\_\_fix\_path() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{17}
+  \item \_Conphas\_\_set\_data() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{17}
+  \item \_getResults() (phaseshifts.leed.CSearch method), 
+		\hyperpage{20}
+  \item \_nineq\_atoms() (phaseshifts.model.Model method), 
+		\hyperpage{23}
+
+  \indexspace
+
+  \item add\_atom() (phaseshifts.model.Model method), \hyperpage{23}
+  \item Atom (class in phaseshifts.model), \hyperpage{21}
+  \item Atorb (class in phaseshifts.atorb), \hyperpage{13}
+
+  \indexspace
+
+  \item calculate() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{17}
+  \item calculate\_MTZ() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{21}
+  \item calculate\_Q\_density() (phaseshifts.atorb.Atorb static method), 
+		\hyperpage{14}
+  \item check\_coordinates() (phaseshifts.model.Model method), 
+		\hyperpage{23}
+  \item CLEED\_PHASE, \hyperpage{12}
+  \item CLEED\_validator (class in phaseshifts.leed), \hyperpage{19}
+  \item Conphas (class in phaseshifts.conphas), \hyperpage{17}
+  \item Converter (class in phaseshifts.leed), \hyperpage{20}
+  \item CoordinatesError, \hyperpage{21}
+  \item create\_atorbs() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{21}
+  \item CSearch (class in phaseshifts.leed), \hyperpage{19}
+  \item CSEARCH\_LEED, \hyperpage{12}
+
+  \indexspace
+
+  \item environment variable
+    \subitem CLEED\_PHASE, \hyperpage{12}
+    \subitem CSEARCH\_LEED, \hyperpage{12}
+    \subitem PHASESHIFT\_LEED, \hyperpage{12}
+
+  \indexspace
+
+  \item gen\_atomic() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{21}
+  \item gen\_input() (phaseshifts.atorb.Atorb static method), 
+		\hyperpage{15}
+  \item gen\_input() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item get\_elements() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item get\_MTZ() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item get\_quantum\_info() (phaseshifts.atorb.Atorb static method), 
+		\hyperpage{16}
+  \item getIteration() (phaseshifts.leed.CSearch method), 
+		\hyperpage{20}
+  \item getRFactor() (phaseshifts.leed.CSearch method), \hyperpage{20}
+  \item getTimeStamp() (phaseshifts.leed.CSearch method), 
+		\hyperpage{20}
+
+  \indexspace
+
+  \item import\_CLEED() (phaseshifts.leed.Converter static method), 
+		\hyperpage{20}
+  \item is\_CLEED\_file() (phaseshifts.leed.CLEED\_validator static method), 
+		\hyperpage{19}
+
+  \indexspace
+
+  \item load\_data() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{17}
+  \item load\_from\_file() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+
+  \indexspace
+
+  \item Model (class in phaseshifts.model), \hyperpage{23}
+  \item MTZ\_model (class in phaseshifts.model), \hyperpage{21}
+
+  \indexspace
+
+  \item PHASESHIFT\_LEED, \hyperpage{12}
+  \item phaseshifts (module), \hyperpage{13}
+  \item phaseshifts.atorb (module), \hyperpage{13}
+  \item phaseshifts.conphas (module), \hyperpage{16}
+  \item phaseshifts.elements (module), \hyperpage{18}
+  \item phaseshifts.leed (module), \hyperpage{19}
+  \item phaseshifts.model (module), \hyperpage{20}
+  \item phaseshifts.phsh (module), \hyperpage{24}
+
+  \indexspace
+
+  \item read\_datafile() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{18}
+  \item replace\_core\_config() (phaseshifts.atorb.Atorb static method), 
+		\hyperpage{16}
+
+  \indexspace
+
+  \item set\_a() (phaseshifts.model.Unitcell method), \hyperpage{23}
+  \item set\_alpha() (phaseshifts.model.Unitcell method), 
+		\hyperpage{24}
+  \item set\_atoms() (phaseshifts.model.Model method), \hyperpage{23}
+  \item set\_beta() (phaseshifts.model.Unitcell method), \hyperpage{24}
+  \item set\_c() (phaseshifts.model.Unitcell method), \hyperpage{24}
+  \item set\_coordinates() (phaseshifts.model.Atom method), 
+		\hyperpage{21}
+  \item set\_exchange() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item set\_format() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{18}
+  \item set\_gamma() (phaseshifts.model.Unitcell method), 
+		\hyperpage{24}
+  \item set\_input\_files() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{18}
+  \item set\_lmax() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{18}
+  \item set\_mufftin\_radius() (phaseshifts.model.Atom method), 
+		\hyperpage{21}
+  \item set\_nform() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item set\_nh() (phaseshifts.model.MTZ\_model method), \hyperpage{22}
+  \item set\_output\_file() (phaseshifts.conphas.Conphas method), 
+		\hyperpage{18}
+  \item set\_slab\_c() (phaseshifts.model.MTZ\_model method), 
+		\hyperpage{22}
+  \item set\_unitcell() (phaseshifts.model.Model method), 
+		\hyperpage{23}
+  \item set\_valence() (phaseshifts.model.Atom method), \hyperpage{21}
+  \item set\_vectors() (phaseshifts.model.Unitcell method), 
+		\hyperpage{24}
+  \item setModel() (phaseshifts.leed.CSearch method), \hyperpage{20}
+  \item split\_phasout() (phaseshifts.conphas.Conphas static method), 
+		\hyperpage{18}
+
+  \indexspace
+
+  \item Unitcell (class in phaseshifts.model), \hyperpage{23}
+
+  \indexspace
+
+  \item validate() (phaseshifts.leed.CLEED\_validator method), 
+		\hyperpage{19}
+
+\end{theindex}

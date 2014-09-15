@@ -1,0 +1,21 @@
+CHANGES IN VERSION 0.1.5
+========================
+
+LD/2014-09-04:
+  - Fixed bug when generating phase shifts with multiple atoms of one element with different tags and coordinates.
+  - Updated setup.py dependencies to accept wide range of numpy and scipy versions (avoiding compiling from source when using pip).
+  - Added more printing when generating phase shifts in verbose mode.
+  
+CHANGES IN VERSION 0.1.4
+========================
+
+LD/2014-07-04:
+  - Attempted fix for copying files using '/cygdrive' style paths when executing script from native Windows Python.
+  - Fixed '-g' command line option so that it no longer requires a surplus argument.
+  - Phase shift specific lmax values can be specified using '<name>_<oxidation>_lmax<int>' 
+    in phase shift <tag> or else add lines with 'lmax: <tag> <int>' in *.bul or *.inp files.
+  - Added 'curve' format e.g. (X Y ...) for easy plotting of phase shifts.
+LD/2014-07-07:
+  - Added custom energy range with '--range <initial_energy>,<energy_step>,<final_energy>' 
+  	or have an input line 'erg: <initial_energy> <energy_step> <final_energy>' in *.bul or
+  	*.inp files.

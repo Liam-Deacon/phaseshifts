@@ -1,0 +1,748 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>533</width>
+    <height>554</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Phase Shifts</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res/res.qrc">
+    <normaloff>:/target_32x32.png</normaloff>:/target_32x32.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Bulk</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_12">
+        <item>
+         <widget class="QStackedWidget" name="stackedWidgetBulk">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="page_3">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <widget class="QTreeWidget" name="treeWidgetBulk">
+                <column>
+                 <property name="text">
+                  <string>Model</string>
+                 </property>
+                </column>
+                <item>
+                 <property name="text">
+                  <string>Name</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Change the name of this model</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/font_32x32.png</normaloff>:/font_32x32.png</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Unitcell</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit the basis vectors of the unit cell&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/unitcell.svg</normaloff>:/unitcell.svg</iconset>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>a1</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a1.svg</normaloff>:/a1.svg</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>a2</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a2.svg</normaloff>:/a2.svg</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>a3</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a3.svg</normaloff>:/a3.svg</iconset>
+                  </property>
+                 </item>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Atoms</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Edit atoms in model</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/atoms.svg</normaloff>:/atoms.svg</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Parameters</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Edit muffin-tin potential calculation parameters</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/cog_32x32.png</normaloff>:/cog_32x32.png</iconset>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Output</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/question_32x32.png</normaloff>:/question_32x32.png</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Exchange</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/convert_32x24.png</normaloff>:/convert_32x24.png</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>nh</string>
+                  </property>
+                 </item>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_3">
+                <item>
+                 <spacer name="horizontalSpacer_3">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushBulkToText">
+                  <property name="text">
+                   <string>View As Text</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_4">
+           <layout class="QVBoxLayout" name="verticalLayout_10">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_11">
+              <item>
+               <widget class="QPlainTextEdit" name="plainTextBulk"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_4">
+              <item>
+               <spacer name="horizontalSpacer_4">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushBulkToTree">
+                <property name="text">
+                 <string>Tree View</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Slab</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_8">
+        <item>
+         <widget class="QStackedWidget" name="stackedWidgetSlab">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="page">
+           <layout class="QVBoxLayout" name="verticalLayout_5">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_3">
+              <item>
+               <widget class="QTreeWidget" name="treeWidgetSlab">
+                <column>
+                 <property name="text">
+                  <string>Model</string>
+                 </property>
+                </column>
+                <item>
+                 <property name="text">
+                  <string>Name</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Change the name of this model</string>
+                 </property>
+                 <property name="statusTip">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/font_32x32.png</normaloff>:/font_32x32.png</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Unitcell</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit the basis vectors of the unit cell&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/unitcell.svg</normaloff>:/unitcell.svg</iconset>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>a1</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a1.svg</normaloff>:/a1.svg</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>a2</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a2.svg</normaloff>:/a2.svg</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>a3</string>
+                  </property>
+                  <property name="toolTip">
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Edit basis vector a&lt;span style=&quot; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/a3.svg</normaloff>:/a3.svg</iconset>
+                  </property>
+                 </item>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Atoms</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Edit atoms in model</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/atoms.svg</normaloff>:/atoms.svg</iconset>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
+                  <string>Parameters</string>
+                 </property>
+                 <property name="toolTip">
+                  <string>Edit muffin-tin potential calculation parameters</string>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="res/res.qrc">
+                   <normaloff>:/cog_32x32.png</normaloff>:/cog_32x32.png</iconset>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>Output</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/question_32x32.png</normaloff>:/question_32x32.png</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Exchange</string>
+                  </property>
+                  <property name="icon">
+                   <iconset resource="res/res.qrc">
+                    <normaloff>:/convert_32x24.png</normaloff>:/convert_32x24.png</iconset>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>nh</string>
+                  </property>
+                 </item>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <item>
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushSlabToText">
+                  <property name="text">
+                   <string>View As Text</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="page_2">
+           <layout class="QVBoxLayout" name="verticalLayout_7">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_6">
+              <item>
+               <widget class="QPlainTextEdit" name="plainTextSlab"/>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushSlabToTree">
+                <property name="text">
+                 <string>Tree View</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Summary</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2"/>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>533</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
+    <addaction name="actionRecent"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="actionHelp"/>
+    <addaction name="separator"/>
+    <addaction name="actionAbout"/>
+    <addaction name="actionAboutQt"/>
+    <addaction name="actionContact"/>
+    <addaction name="actionUpdate"/>
+   </widget>
+   <widget class="QMenu" name="menu_Models">
+    <property name="title">
+     <string>&amp;Models</string>
+    </property>
+    <addaction name="actionModelBuilder"/>
+    <addaction name="separator"/>
+    <addaction name="actionBulk"/>
+    <addaction name="actionSlab"/>
+   </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>&amp;View</string>
+    </property>
+    <widget class="QMenu" name="menuToolbars">
+     <property name="title">
+      <string>Toolbars</string>
+     </property>
+     <addaction name="actionModel_Editor"/>
+     <addaction name="actionView"/>
+    </widget>
+    <addaction name="menuToolbars"/>
+    <addaction name="separator"/>
+    <addaction name="actionTreeView"/>
+    <addaction name="actionTextView"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuView"/>
+   <addaction name="menu_Models"/>
+   <addaction name="menu_Help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionNew"/>
+   <addaction name="actionOpen"/>
+   <addaction name="actionImport"/>
+   <addaction name="actionExport"/>
+   <addaction name="separator"/>
+   <addaction name="actionSettings"/>
+   <addaction name="separator"/>
+   <addaction name="actionModelBuilder"/>
+  </widget>
+  <action name="actionAbout">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/question_32x32.png</normaloff>:/question_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About...</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/Qt_32x32.png</normaloff>:/Qt_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;Qt</string>
+   </property>
+  </action>
+  <action name="actionAbout_Python">
+   <property name="text">
+    <string>About Python</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/document_alt_stroke_24x32.png</normaloff>:/document_alt_stroke_24x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/folder_fill_32x32.png</normaloff>:/folder_fill_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/exit_32x32.png</normaloff>:/exit_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionHelp">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/book_32x32.png</normaloff>:/book_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Help...</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/wrench_32x32.png</normaloff>:/wrench_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Settings</string>
+   </property>
+  </action>
+  <action name="actionContact">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/mail_32x32.png</normaloff>:/mail_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Contact us</string>
+   </property>
+  </action>
+  <action name="actionBulk">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/square_32x32.png</normaloff>:/square_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Bulk</string>
+   </property>
+  </action>
+  <action name="actionSlab">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/layers_32x28.png</normaloff>:/layers_32x28.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Slab</string>
+   </property>
+  </action>
+  <action name="actionUpdate">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/rss_alt_32x32.png</normaloff>:/rss_alt_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Update</string>
+   </property>
+  </action>
+  <action name="actionModelBuilder">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/blocks.png</normaloff>:/blocks.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Model Builder</string>
+   </property>
+  </action>
+  <action name="actionModel_Editor">
+   <property name="text">
+    <string>Modeling</string>
+   </property>
+  </action>
+  <action name="actionView">
+   <property name="text">
+    <string>View</string>
+   </property>
+  </action>
+  <action name="actionImport">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/import.svg</normaloff>:/import.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Import...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/export.svg</normaloff>:/export.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Export...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionRecent">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/clock.svg</normaloff>:/clock.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Recent</string>
+   </property>
+  </action>
+  <action name="actionTreeView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/list_nested_32x28.png</normaloff>:/list_nested_32x28.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Tree View</string>
+   </property>
+   <property name="toolTip">
+    <string>View models as tree layouts</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+T</string>
+   </property>
+  </action>
+  <action name="actionTextView">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/article_32x32.png</normaloff>:/article_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>Te&amp;xt View</string>
+   </property>
+   <property name="toolTip">
+    <string>View models as simple text</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="res/res.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>actionQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>399</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

@@ -1,0 +1,543 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>phaseshifts.conphas &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for phaseshifts.conphas</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="c"># encoding: utf-8</span>
+
+<span class="c">##############################################################################</span>
+<span class="c"># Author: Liam Deacon                                                        #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Contact: liam.deacon@diamond.ac.uk                                         #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Copyright: Copyright (C) 2013-2014 Liam Deacon                             #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># License: MIT License                                                       #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a    #</span>
+<span class="c"># copy of this software and associated documentation files (the &quot;Software&quot;), #</span>
+<span class="c"># to deal in the Software without restriction, including without limitation  #</span>
+<span class="c"># the rights to use, copy, modify, merge, publish, distribute, sublicense,   #</span>
+<span class="c"># and/or sell copies of the Software, and to permit persons to whom the      #</span>
+<span class="c"># Software is furnished to do so, subject to the following conditions:       #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># The above copyright notice and this permission notice shall be included in #</span>
+<span class="c"># all copies or substantial portions of the Software.                        #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR #</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   #</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    #</span>
+<span class="c"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER #</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING    #</span>
+<span class="c"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER        #</span>
+<span class="c"># DEALINGS IN THE SOFTWARE.                                                  #</span>
+<span class="c">#                                                                            #</span>
+<span class="c">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">**conphas.py**</span>
+
+<span class="sd">Provides a native python version of the conphas (phsh3) FORTRAN program </span>
+<span class="sd">by W. Moritz, which is distributed as part of the SATLEED code </span>
+<span class="sd">(see &quot;Barbieri/Van Hove phase shift calculation package&quot; section) and can</span>
+<span class="sd">be found at: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/</span>
+<span class="sd">leed/leedpack.html</span>
+
+<span class="sd">The Conphas() class also provides a number of convenience functions (see </span>
+<span class="sd">docstrings below). </span>
+
+<span class="sd">Examples</span>
+<span class="sd">--------</span>
+<span class="sd">&gt;&gt;&gt; from os.path import join</span>
+<span class="sd">&gt;&gt;&gt; from phaseshifts.conphas import Conphas</span>
+<span class="sd">&gt;&gt;&gt; con = Conphas(output_file=join(&#39;testing&#39;, &#39;leedph_py.d&#39;),</span>
+<span class="sd">                 lmax=10)</span>
+<span class="sd">&gt;&gt;&gt; con.set_input_files([join(&#39;testing&#39;, &#39;ph1&#39;)])</span>
+<span class="sd">&gt;&gt;&gt; con.set_format(&#39;cleed&#39;)</span>
+<span class="sd">&gt;&gt;&gt; con.calculate()</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">ntpath</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">platform</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">loadtxt</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">getpass</span> <span class="kn">import</span> <span class="n">getuser</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">gmtime</span><span class="p">,</span> <span class="n">strftime</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span><span class="p">,</span> <span class="n">deepcopy</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">StringIO</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">io.StringIO</span> <span class="kn">as</span> <span class="nn">StringIO</span>
+
+
+<span class="c"># Constants</span>
+<span class="n">HARTREE</span> <span class="o">=</span> <span class="mf">27.21</span>  <span class="c"># 139 eV in Van Hove LEED program</span>
+<span class="n">VERBOSE</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<div class="viewcode-block" id="Conphas"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas">[docs]</a><span class="k">class</span> <span class="nc">Conphas</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Class Conphas</span>
+<span class="sd">    </span>
+<span class="sd">    Description</span>
+<span class="sd">    -----------</span>
+<span class="sd">    Generates continuous phase shifts (as a function of energy) </span>
+<span class="sd">    from phases with discontinuities (jumps UM +/- PI). It reformats </span>
+<span class="sd">    scattered phases and energies to use as input datasets for LEED programs. </span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This work is based on the original conphas (phsh3) FORTRAN program by </span>
+<span class="sd">    W. Moritz, which is distributed as part of the SATLEED code (see </span>
+<span class="sd">    &quot;Barbieri/Van Hove phase shift calculation package&quot; section) and can be </span>
+<span class="sd">    found at: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/</span>
+<span class="sd">    leed/leedpack.html</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_files</span><span class="o">=</span><span class="p">[],</span> <span class="n">output_file</span><span class="o">=</span><span class="p">[],</span> <span class="n">formatting</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+                 <span class="n">lmax</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        input_files : list(str)</span>
+<span class="sd">            a list of the input files (default None)</span>
+<span class="sd">        output_file : str</span>
+<span class="sd">            output filepath - this file will have all pi/2 jumps </span>
+<span class="sd">            removed to form continuous phase shifts</span>
+<span class="sd">        lmax (optional) : int</span>
+<span class="sd">            Maximum angular momentum quantum number to calculate and </span>
+<span class="sd">            must be in the range 0 &lt;= lmax &lt;= 18 .</span>
+<span class="sd">        formatting (optional) : str </span>
+<span class="sd">            output style - use either &#39;CLEED&#39; or None (default None)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">input_files</span> 
+                            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">output_file</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">18</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_format</span><span class="p">(</span><span class="n">formatting</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># Fix for escape characters in Windows-based paths</span>
+    <span class="c"># also removes invalid characters</span>
+    <span class="k">def</span> <span class="nf">__fix_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Fix escaped characters in filepath&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span> <span class="ow">is</span> <span class="s">&#39;Windows&#39;</span><span class="p">:</span>
+      
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+            <span class="n">fix_list</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;</span><span class="se">\a</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">a&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\b</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">b&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;</span><span class="se">\f</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">f&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">n&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;</span><span class="se">\r</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">r&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">t&#39;</span><span class="p">,</span>
+                        <span class="s">&#39;</span><span class="se">\v</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">v&#39;</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\\\\</span><span class="s">&#39;</span><span class="p">:</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="n">fix_list</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">fix</span><span class="p">,</span> <span class="n">fix_list</span><span class="p">[</span><span class="n">fix</span><span class="p">])</span>
+        
+            <span class="k">for</span> <span class="n">fix</span> <span class="ow">in</span> <span class="n">fix_list</span><span class="p">:</span>
+                <span class="n">file_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">fix</span><span class="p">,</span> <span class="n">fix_list</span><span class="p">[</span><span class="n">fix</span><span class="p">])</span>
+        
+        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">file_path</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">isalnum</span><span class="p">()</span> <span class="ow">or</span> <span class="n">x</span> <span class="ow">in</span> <span class="s">&#39;:</span><span class="se">\\</span><span class="s">/-_.&#39;</span><span class="p">)</span>
+    
+<div class="viewcode-block" id="Conphas.read_datafile"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.read_datafile">[docs]</a>    <span class="k">def</span> <span class="nf">read_datafile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Read in discontinuous phase shift file</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            The path to the discontinuous phase shift file</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39; -&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> 
+                                                    <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39; -&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">)</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;C:</span><span class="se">\\</span><span class="s">Users</span><span class="se">\\</span><span class="s">Liam</span><span class="se">\\</span><span class="s">Desktop</span><span class="se">\\</span><span class="s">leedph.d&quot;</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">loadtxt</span><span class="p">(</span><span class="s">&quot;C:</span><span class="se">\\</span><span class="s">Users</span><span class="se">\\</span><span class="s">Liam</span><span class="se">\\</span><span class="s">Desktop</span><span class="se">\\</span><span class="s">leedph.d&quot;</span><span class="p">,</span> 
+                                <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s">&quot;#&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ne">IOError</span>
+            
+    <span class="c"># Set internal data for conphas</span></div>
+    <span class="k">def</span> <span class="nf">__set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="o">!=</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+    
+    <span class="c"># Load phase shift data from file</span>
+<div class="viewcode-block" id="Conphas.load_data"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.load_data">[docs]</a>    <span class="k">def</span> <span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load (discontinuous) phase shift data from file</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file : str</span>
+<span class="sd">           Path to phase shift file.</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple: (double, double, int, int, ndarray)</span>
+<span class="sd">           (initial_energy, energy_step, n_phases, lmf, data)</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        + `initial_energy` is the starting energy of the phase shifts.</span>
+<span class="sd">        + `energy_step` is the change in energy between consecutive values.</span>
+<span class="sd">        + `n_phases` is the number of phase shifts contained in the file.</span>
+<span class="sd">        + `lmf` is the maximum azimuthal quantum number considered.</span>
+<span class="sd">        + `data` is a (2 x n_phases) array containing the phase shift data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c"># skip first line</span>
+            <span class="p">(</span><span class="n">initial_energy</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">lmf</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> 
+                <span class="k">for</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">((</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39; -&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())]</span>
+            <span class="c"># get parameters</span>
+            <span class="n">data_lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;-&#39;</span><span class="p">,</span> <span class="s">&#39; -&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_lines</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">initial_energy</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">lmf</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    </div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Conphas.split_phasout"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.split_phasout">[docs]</a>    <span class="k">def</span> <span class="nf">split_phasout</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">output_filenames</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;split phasout input file into separate files&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">phasout</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="n">phasout</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+        
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ne">IOError</span><span class="p">(</span><span class="s">&quot;Cannot open file &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        
+        <span class="c"># get list of phase shifts in phasout</span>
+        <span class="n">phsh_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="p">[</span><span class="n">phsh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">&quot;^[A-Za-z]&quot;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">))]</span>
+        
+        <span class="c"># try to guess filenames from header lines in file</span>
+        <span class="n">guessed_filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                                <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;.ph&#39;</span> 
+                             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">phsh_list</span><span class="p">]</span>
+        
+        <span class="c"># determine list of output filenames</span>
+        <span class="n">phsh_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_filenames</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c"># generate list of filenames from list</span>
+            <span class="n">phsh_filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">output_filenames</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">phsh_filenames</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">phsh_list</span><span class="p">):</span>  <span class="c"># not enough names</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">phsh_filenames</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">phsh_list</span><span class="p">)):</span>
+                    <span class="n">phsh_filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">guessed_filenames</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output_filenames</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c"># generate list of filenames from trunk filename</span>
+            <span class="n">output_filenames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">output_filenames</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">phsh_filenames</span> <span class="o">=</span> <span class="p">[</span><span class="n">output_filenames</span> <span class="o">+</span> <span class="s">&#39;_</span><span class="si">%i</span><span class="s">.ph&#39;</span> <span class="o">%</span> <span class="n">i</span> 
+                              <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phsh_filenames</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># try to guess from header lines in file</span>
+            <span class="n">phsh_filenames</span> <span class="o">=</span> <span class="n">guessed_filenames</span>
+            
+        <span class="c"># write separate files for each phase shift</span>
+        <span class="n">phsh_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i_phsh</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">phsh_list</span><span class="p">)):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">phsh_filenames</span><span class="p">[</span><span class="n">i_phsh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">phsh_file</span><span class="p">:</span>
+                    <span class="p">[</span><span class="n">phsh_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
+                        <span class="n">phsh_list</span><span class="p">[</span><span class="n">i_phsh</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">phsh_list</span><span class="p">[</span><span class="n">i_phsh</span><span class="p">])]</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IOError</span>
+        
+        <span class="k">return</span> <span class="n">phsh_filenames</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">phsh_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>  <span class="c"># return written files</span>
+         </div>
+<div class="viewcode-block" id="Conphas.set_input_files"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.set_input_files">[docs]</a>    <span class="k">def</span> <span class="nf">set_input_files</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_files</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="sd">&quot;&quot;&quot;set list of input filenames&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">input_files</span><span class="p">:</span>
+            <span class="n">input_files</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fix_path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> 
+                           <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">input_files</span><span class="p">]</span>
+            <span class="n">temp_input_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">filename</span> <span class="k">for</span> <span class="n">filename</span> 
+                                <span class="ow">in</span> <span class="n">input_files</span> <span class="k">if</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="nb">file</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">temp_input_files</span> <span class="o">!=</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">temp_input_files</span> <span class="o">!=</span> <span class="p">[]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_files</span> <span class="o">=</span> <span class="n">temp_input_files</span>
+        </div>
+<div class="viewcode-block" id="Conphas.set_output_file"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.set_output_file">[docs]</a>    <span class="k">def</span> <span class="nf">set_output_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set output filename&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_file</span> <span class="o">=</span> <span class="n">output_file</span>
+                    
+    <span class="c"># Set max orbital angular momentum</span></div>
+<div class="viewcode-block" id="Conphas.set_lmax"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.set_lmax">[docs]</a>    <span class="k">def</span> <span class="nf">set_lmax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lmax</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set max orbital angular momentum (azimuthal quantum number)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        lmax : int</span>
+<span class="sd">            Maximum azimuthal quantum number to be considered in calculations.</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">lmax</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+    
+    <span class="c"># set appropriate format from available options </span></div>
+<div class="viewcode-block" id="Conphas.set_format"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.set_format">[docs]</a>    <span class="k">def</span> <span class="nf">set_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatting</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set appropriate format from available options</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        format : str, optional</span>
+<span class="sd">            The format identifier for different packages; can be &#39;cleed&#39;</span>
+<span class="sd">            or None. </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">formatting</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;cleed&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">formatting</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format</span> <span class="o">=</span> <span class="bp">None</span>
+    
+    <span class="c"># process to create continuous phase shifts</span></div>
+<div class="viewcode-block" id="Conphas.calculate"><a class="viewcode-back" href="../../modules.html#phaseshifts.conphas.Conphas.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculates continuous phase shifts from input file(s).</span>
+<span class="sd">            </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; con = Conphas(output_file=r&#39;testing\leedph_py.d&#39;, lmax=10)</span>
+<span class="sd">        &gt;&gt;&gt; con.set_input_files([r&#39;testing\\ph1&#39;])</span>
+<span class="sd">        &gt;&gt;&gt; con.set_format(&#39;cleed&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; con.calculate()</span>
+<span class="sd">         L = 0</span>
+<span class="sd">         jump between 25.0 eV and 30.0 eV; IFAK = -1</span>
+<span class="sd">         L = 1</span>
+<span class="sd">         jump between 65.0 eV and 70.0 eV; IFAK = -1</span>
+<span class="sd">         L = 2</span>
+<span class="sd">         jump between 20.0 eV and 25.0 eV; IFAK = 1</span>
+<span class="sd">         jump between 80.0 eV and 85.0 eV; IFAK = 0</span>
+<span class="sd">         L = 3</span>
+<span class="sd">         L = 4</span>
+<span class="sd">         jump between 275.0 eV and 280.0 eV; IFAK = 1</span>
+<span class="sd">         L = 5</span>
+<span class="sd">         L = 6</span>
+<span class="sd">         L = 7</span>
+<span class="sd">         L = 8</span>
+<span class="sd">         L = 9</span>
+<span class="sd">         L = 10</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">neng</span> <span class="o">=</span> <span class="n">n_phases</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="n">energy</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">phas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">conpha</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="c"># read phase scattering</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">input_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_files</span><span class="p">):</span>
+            
+            <span class="p">(</span><span class="n">initial_energy</span><span class="p">,</span> <span class="n">energy_step</span><span class="p">,</span> 
+                <span class="n">n_phases</span><span class="p">,</span> <span class="n">lmf</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">input_file</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="n">n_phases</span> <span class="o">&gt;</span> <span class="mi">250</span><span class="p">:</span>
+                <span class="n">n_phases</span> <span class="o">=</span> <span class="mi">250</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">initial_energy0</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">initial_energy</span><span class="p">)</span>
+                <span class="n">energy_step0</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">energy_step</span><span class="p">)</span>
+                <span class="n">n_phases0</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">n_phases</span><span class="p">)</span>
+                <span class="n">lmf0</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">lmf</span><span class="p">)</span>
+            
+            <span class="c"># increase dimensions of array for input</span>
+            <span class="n">phas</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+    
+            <span class="c"># populate data arrays</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">ie</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_phases</span><span class="p">):</span>
+                        <span class="n">energy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+                        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>  <span class="c"># now 3-dimensional</span>
+                        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lmf</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                            <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ie</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+                            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+                            
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s">&quot;Malformatted or incomplete input&quot;</span><span class="p">)</span>
+            
+            <span class="n">neng</span> <span class="o">+=</span> <span class="n">n_phases</span>
+            <span class="n">conpha</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">phas</span><span class="p">)</span>
+            
+            <span class="c"># produce continuous scattering phases</span>
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">l</span> <span class="o">&gt;</span> <span class="mi">18</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">ifak</span> <span class="o">=</span> <span class="mi">0</span>
+    
+                <span class="n">conpha</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">l</span><span class="p">]</span>
+                
+                <span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span> 
+                    <span class="k">print</span><span class="p">(</span><span class="s">&quot;L = {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">l</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">ie</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">):</span>
+                    <span class="n">dif</span> <span class="o">=</span> <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ie</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">-</span> <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ie</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="n">l</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">dif</span> <span class="o">&gt;=</span> <span class="n">pi</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">:</span>
+                        <span class="n">ifak</span> <span class="o">-=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span> 
+                            <span class="k">print</span><span class="p">(</span><span class="s">&quot;jump between {} eV and {} eV; IFAK = {}&quot;</span>
+                                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="n">ie</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">energy</span><span class="p">[</span><span class="n">ie</span><span class="p">],</span> <span class="n">ifak</span><span class="p">))</span>
+                    <span class="k">elif</span> <span class="n">dif</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">:</span>
+                        <span class="n">ifak</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="n">VERBOSE</span><span class="p">:</span> 
+                            <span class="k">print</span><span class="p">(</span><span class="s">&quot;jump between {} eV and {} eV; IFAK = {}&quot;</span>
+                                  <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="n">ie</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],</span> <span class="n">energy</span><span class="p">[</span><span class="n">ie</span><span class="p">],</span> <span class="n">ifak</span><span class="p">))</span>
+                    <span class="n">conpha</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ie</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="n">phas</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ie</span><span class="p">][</span><span class="n">l</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">pi</span> <span class="o">*</span> <span class="n">ifak</span><span class="p">)</span>
+            
+            <span class="c"># get root name of output</span>
+            <span class="k">if</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_files</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_files</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">ntpath</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_files</span><span class="p">[</span><span class="n">i</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dataph</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="s">&#39;dataph_&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.d&#39;</span><span class="p">))</span>
+                <span class="n">leedph</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="s">&#39;leedph_&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s">&#39;.d&#39;</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">root</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="p">)</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">ntpath</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">dataph</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s">&#39;dataph_{0}_{1}.d&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                <span class="n">leedph</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s">&#39;leedph_{0}_{1}.d&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+                
+            <span class="c"># write datafile &#39;dataph.d&#39;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">dataph</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">L = {0}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kk</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">):</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%9.7f</span><span class="se">\t</span><span class="si">%9.7f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                                    <span class="n">energy</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">/</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">conpha</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ii</span><span class="p">][</span><span class="n">kk</span><span class="p">]))</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">gettempdir</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="n">ntpath</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dataph</span><span class="p">)</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gettempdir</span><span class="p">(),</span> <span class="s">&#39;phsh&#39;</span><span class="p">,</span> <span class="n">base</span><span class="p">),</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">L = {0}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kk</span><span class="p">))</span>
+                        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">):</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%9.7f</span><span class="se">\t</span><span class="si">%9.7f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                                    <span class="n">energy</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span> <span class="o">/</span> <span class="n">HARTREE</span><span class="p">,</span> <span class="n">conpha</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">ii</span><span class="p">][</span><span class="n">kk</span><span class="p">]))</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    
+        <span class="c"># write final output</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_file</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">format</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;cleed&#39;</span><span class="p">:</span> 
+                <span class="c"># add formatted header for Held CLEED package</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;{0} {1} neng lmax (calculated by {2} on {3})</span><span class="se">\n</span><span class="s">&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                    <span class="n">neng</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span><span class="p">,</span> <span class="n">getuser</span><span class="p">(),</span> 
+                                    <span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s"> at %H:%M:%S&quot;</span><span class="p">,</span> <span class="n">gmtime</span><span class="p">())</span>
+                                    <span class="p">)</span>
+                        <span class="p">)</span>
+            <span class="c"># data format is kept the same for compatibility reasons</span>
+            <span class="k">for</span> <span class="n">ie</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_phases</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%7.4f</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">energy</span><span class="p">[</span><span class="n">ie</span><span class="p">]</span> <span class="o">/</span> <span class="n">HARTREE</span><span class="p">))</span>
+                <span class="c"># append phase shifts from all files</span>
+                <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">input_files</span><span class="p">)):</span>
+                    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lmax</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%7.4f</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">conpha</span><span class="p">[</span><span class="n">ii</span><span class="p">][</span><span class="n">ie</span><span class="p">][</span><span class="n">l</span><span class="p">]))</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

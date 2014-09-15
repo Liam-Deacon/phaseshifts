@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>5. Scripts &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="index.html" />
+    <link rel="next" title="6. phaseshifts API" href="modules.html" />
+    <link rel="prev" title="4. Acknowledgements" href="acknowledgements.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="6. phaseshifts API"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="acknowledgements.html" title="4. Acknowledgements"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Scripts</a><ul>
+<li><a class="reference internal" href="#phsh-py">5.1. phsh.py</a><ul>
+<li><a class="reference internal" href="#command-line-usage">5.1.1. Command line usage</a></li>
+<li><a class="reference internal" href="#cleed-compatibility">5.1.2. CLEED compatibility</a><ul>
+<li><a class="reference internal" href="#iterative-usage">5.1.2.1. Iterative Usage</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="acknowledgements.html"
+                        title="previous chapter">4. Acknowledgements</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="next chapter">6. phaseshifts API</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="scripts">
+<span id="id1"></span><h1>5. Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="phsh-py">
+<h2>5.1. phsh.py<a class="headerlink" href="#phsh-py" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="command-line-usage">
+<h3>5.1.1. Command line usage<a class="headerlink" href="#command-line-usage" title="Permalink to this headline">¶</a></h3>
+<p>The <em>phsh.py</em> script is placed into the system <tt class="docutils literal"><span class="pre">PATH</span></tt> during installation of the
+phaseshifts package. It can then be used from the command line, e.g. <tt class="docutils literal"><span class="pre">phsh.py</span> <span class="pre">--help</span></tt>
+will produce a list of command line options:</p>
+<div class="highlight-python"><pre>usage: phsh.py [-h] -b &lt;bulk_file&gt; -i &lt;slab_file&gt; [-t &lt;temp_dir&gt;] [-l &lt;lmax&gt;]
+             [-r &lt;start_energy&gt; &lt;final_energy&gt; &lt;step&gt;] [-f &lt;format&gt;]
+             [-S &lt;subdir&gt;] [-v] [-V]
+
+
+phsh - quickly generate phase shifts
+
+      Created by Liam Deacon on 2013-11-15.
+      Copyright 2013-2014 Liam Deacon. All rights reserved.
+
+      Licensed under the MIT license (see LICENSE file for details)
+
+      Please send your feedback, including bugs notifications
+      and fixes, to: liam.deacon@diamond.ac.uk
+
+    usage:-
+
+  optional arguments:
+  -h, --help            show this help message and exit
+  -b &lt;bulk_file&gt;, --bulk &lt;bulk_file&gt;
+                        path to MTZ bulk or CLEED *.bul input file
+  -i &lt;slab_file&gt;, --slab &lt;slab_file&gt;
+                        path to MTZ slab or CLEED *.inp input file
+  -t &lt;temp_dir&gt;, --tmpdir &lt;temp_dir&gt;
+                        temporary directory for intermediate file generation
+  -l &lt;lmax&gt;, --lmax &lt;lmax&gt;
+                        Maximum angular momentum quantum number. [default: 10]
+  -f &lt;format&gt;, --format &lt;format&gt;
+                        Use specific phase shift format i.e. 'cleed', 'curve'
+                        or 'none'. Choose 'curve' if you wish to produce
+                        XYY... data for easy plotting. [default: 'cleed']
+  -r &lt;energy&gt; [&lt;energy&gt; ...], --range &lt;energy&gt; [&lt;energy&gt; ...]
+                        Energy range in eV with the format:
+                        '&lt;start&gt; &lt;stop&gt; [&lt;step&gt;]', where the &lt;step&gt; value is
+                        optional.  Valid for relativistic calculations
+                        only. [default: (20, 600, 5)]
+  -S &lt;subdir&gt;, --store &lt;subdir&gt;
+                        Keep intermediate files in subdir when done
+  -v, --verbose         set verbosity level [default: None].
+  -V, --version         show program's version number and exit</pre>
+</div>
+</div>
+<div class="section" id="cleed-compatibility">
+<h3>5.1.2. CLEED compatibility<a class="headerlink" href="#cleed-compatibility" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="iterative-usage">
+<h4>5.1.2.1. Iterative Usage<a class="headerlink" href="#iterative-usage" title="Permalink to this headline">¶</a></h4>
+<p>It is possible to use this script to generate phase shift files iteratively
+during a geometry search for the CLEED package. In this manner phase shifts
+will be generated at the beginning of each cycle of the search.</p>
+<p>For this to work, the environment variable <tt class="docutils literal"><span class="pre">CSEARCH_LEED</span></tt> must point to the
+<cite>phsh.py</cite> script, which will invoke the LEED program in <tt class="docutils literal"><span class="pre">PHASESHIFT_LEED</span></tt>
+after execution. When operating in this mode, the following assumptions are made:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first"><cite>-b &lt;bulk_file&gt;</cite> option is not needed and the filename is assumed by
+changing the file extension of <cite>&lt;slab_file&gt;</cite> to &#8216;.bul&#8217;</p>
+</li>
+<li><p class="first"><cite>-f CLEED</cite> format is implied.</p>
+</li>
+<li><p class="first">The generated phase shifts are stored in the directory set by the <cite>CLEED_PHASE</cite>
+environment variable, however a named copy with the iteration number
+(read from the matching &#8216;.log&#8217; file) will be placed in the same directory as
+the &lt;slab_file&gt;.</p>
+</li>
+<li><p class="first"><cite>&lt;lmax&gt;</cite> is equal to 10, unless additional parameter syntax is given in the CLEED
+<cite>*.inp</cite> file. To use phase shift specific lmax values, then add a new line with:</p>
+<div class="highlight-python"><pre>lmax:  &lt;phase_shift&gt; &lt;lmax&gt;</pre>
+</div>
+<p>for each phase shift you wish to have a different lmax to that of the default.</p>
+</li>
+<li><p class="first">The element and oxidation of each atom in a model is guessed by reading the phase
+shift tag from the CLEED input file. For example:</p>
+<div class="highlight-python"><pre>po:  O_2-_COOH ...</pre>
+</div>
+<p>will be interpreted as a Oxygen with a 2- oxidation state and with a unique name
+tag of &#8220;O_2-_COOH&#8221; to show it is in a carboxylic group. Note the &#8216;-&#8216; may be at
+the beginning or the end of the oxidation sub-string. If no oxidation state is
+given then the atom is assumed to have zero charge.</p>
+</li>
+</ol>
+</div></blockquote>
+<p>A full list of additional syntax to customise the generation of the phase shifts
+when using CLEED input files can be found in the phaseshifts.leed documentation.
+<a class="reference internal" href="modules.html#phaseshifts.leed.Converter.import_CLEED" title="phaseshifts.leed.Converter.import_CLEED"><tt class="xref py py-meth docutils literal"><span class="pre">phaseshifts.leed.Converter.import_CLEED()</span></tt></a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If the <tt class="docutils literal"><span class="pre">PHASESHIFT_LEED</span></tt> environment variable is not found, but <tt class="docutils literal"><span class="pre">CLEED_PHASE</span></tt>
+is, however, found then the program will place the generated files in this
+directory unless a specific <cite>-S &lt;subdir&gt;</cite> is provided.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="6. phaseshifts API"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="acknowledgements.html" title="4. Acknowledgements"
+             >previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

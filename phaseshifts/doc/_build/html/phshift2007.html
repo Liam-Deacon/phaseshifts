@@ -1,0 +1,510 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>9. APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="index.html" />
+    <link rel="prev" title="8. License" href="LICENSE.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="LICENSE.html" title="8. License"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9. APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide</a><ul>
+<li><a class="reference internal" href="#acknowledgement-notice">9.1. Acknowledgement notice</a></li>
+<li><a class="reference internal" href="#contact">9.2. Contact</a></li>
+<li><a class="reference internal" href="#contents">9.3. Contents</a></li>
+<li><a class="reference internal" href="#overview-of-the-programs">9.4. Overview of the Programs</a><ul>
+<li><a class="reference internal" href="#step-0-phsh0-for">9.4.1. Step 0: <tt class="docutils literal"><span class="pre">PhSh0.for</span></tt></a><ul>
+<li><a class="reference internal" href="#description">9.4.1.1. Description</a></li>
+<li><a class="reference internal" href="#files">9.4.1.2. Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#step-1-phsh1-for">9.4.2. Step 1: <tt class="docutils literal"><span class="pre">PhSh1.for</span></tt></a><ul>
+<li><a class="reference internal" href="#id1">9.4.2.1. Description</a></li>
+<li><a class="reference internal" href="#id2">9.4.2.2. Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#step-2-phsh2cav-for-phsh2wil-for-phsh2rel-for">9.4.3. Step 2: <tt class="docutils literal"><span class="pre">PhSh2cav.for</span></tt>, <tt class="docutils literal"><span class="pre">PhSh2wil.for</span></tt> &amp; <tt class="docutils literal"><span class="pre">PhSh2rel.for</span></tt></a><ul>
+<li><a class="reference internal" href="#id3">9.4.3.1. Description</a></li>
+<li><a class="reference internal" href="#different-packages">9.4.3.2. Different packages</a></li>
+<li><a class="reference internal" href="#id4">9.4.3.3. Files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#step-3-phsh3-for">9.4.4. Step 3: <tt class="docutils literal"><span class="pre">PhSh3.for</span></tt></a><ul>
+<li><a class="reference internal" href="#id5">9.4.4.1. Description</a></li>
+<li><a class="reference internal" href="#id6">9.4.4.2. Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="LICENSE.html"
+                        title="previous chapter">8. License</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="appendix-i-barbieri-van-hove-phase-shift-package-a-brief-user-guide">
+<h1>9. APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide<a class="headerlink" href="#appendix-i-barbieri-van-hove-phase-shift-package-a-brief-user-guide" title="Permalink to this headline">¶</a></h1>
+<p>A. Barbieri, M.A. Van Hove</p>
+<p>Lawrence Berkeley Laboratory,
+University of California,
+Berkeley,
+California 94720, USA</p>
+<div class="section" id="acknowledgement-notice">
+<h2>9.1. Acknowledgement notice<a class="headerlink" href="#acknowledgement-notice" title="Permalink to this headline">¶</a></h2>
+<p>Please acknowledge use of the Barbieri/Van Hove
+phase shift package, as:</p>
+<p><em>A. Barbieri and M.A. Van Hove, private communication.</em></p>
+</div>
+<div class="section" id="contact">
+<h2>9.2. Contact<a class="headerlink" href="#contact" title="Permalink to this headline">¶</a></h2>
+<p>M.A. Van Hove:  <a class="reference external" href="mailto:vanhove&#37;&#52;&#48;cityu&#46;edu&#46;hk">vanhove<span>&#64;</span>cityu<span>&#46;</span>edu<span>&#46;</span>hk</a></p>
+</div>
+<div class="section" id="contents">
+<h2>9.3. Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
+<p>The following files should be included with the Barbieri/Van Hove
+distribution. If any are missing please contact Michel Van Hove
+(<a class="reference external" href="mailto:vanhove&#37;&#52;&#48;cityu&#46;edu&#46;hk">vanhove<span>&#64;</span>cityu<span>&#46;</span>edu<span>&#46;</span>hk</a>) for replacements.</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">phshift2007.rst</span></tt> - This file contains this user guide
+to use the phase-shifts programs. It should be
+supplemented with the information contained in
+the input files provided. Includes definitions of I/O files,
+contents and basic hints on running the programs.</li>
+</ul>
+<p>The files listed below contain FORTRAN programs that correspond to the basic
+steps necessary to obtain the phase shifts needed in a LEED structural
+determination.</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">PhSh0.for</span></tt>    - calculation of the atomic orbital charge densities.</li>
+<li><tt class="docutils literal"><span class="pre">PhSh1.for</span></tt>    - calculation of the muffin tin potential (bulk &amp; slab).</li>
+<li><tt class="docutils literal"><span class="pre">PhSh2*.for</span></tt>   - calculation of phase shifts.</li>
+<li><tt class="docutils literal"><span class="pre">PhSh3.for</span></tt>    - removal of pi jumps from phase shifts.</li>
+</ul>
+</div></blockquote>
+<p><strong>INPUT-OUTPUT</strong></p>
+<p>Contains samples of the input and output files for the case of bulk
+Rh and a <img class="math" src="_images/math/b59ef4497ab92e9929dca3b1baf50282c00064c7.png" alt="\text{Rh} (111)-(2 \times 2)- \text{C} _2 \text{H} _3"/> (H neglected) structure.</p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>atorbC</cite>     : input of PhSh0 for C</li>
+<li><cite>atorbRh</cite>    : input of PhSh0 for Rh</li>
+<li><cite>atC.i</cite>      : output of PhSh0 for C</li>
+<li><cite>atomic.i</cite>   : input of PhSh1 for <img class="math" src="_images/math/cf5ba1f7c354ec2509d67e874e313a8bfae0abc1.png" alt="\text{C} _2 \text{H} _3"/> on Rh(111)</li>
+<li><cite>clusRh</cite>     : input of PhSh1 for bulk Rh</li>
+<li><cite>clusC2Rh</cite>   : input of PhSh1 for <img class="math" src="_images/math/cf5ba1f7c354ec2509d67e874e313a8bfae0abc1.png" alt="\text{C} _2 \text{H} _3"/> on Rh(111) (slab)</li>
+<li><cite>ph1</cite>        : input of PhSh3 (Rh)</li>
+<li><cite>ph2</cite>        : input of PhSh3 (C)</li>
+<li><cite>leedph.d</cite>   : output of PhSh3 (for <img class="math" src="_images/math/cf5ba1f7c354ec2509d67e874e313a8bfae0abc1.png" alt="\text{C} _2 \text{H} _3"/> on Rh(111))</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>Not included are two output files:</dt>
+<dd><ul class="first last simple">
+<li><cite>mufftin.d</cite>  : output of PhSh1 for <img class="math" src="_images/math/cf5ba1f7c354ec2509d67e874e313a8bfae0abc1.png" alt="\text{C} _2 \text{H} _3"/> (MTZ=-1.74)</li>
+<li><cite>phasout</cite>    : output of PhSh2rel for <img class="math" src="_images/math/cf5ba1f7c354ec2509d67e874e313a8bfae0abc1.png" alt="\text{C} _2 \text{H} _3"/> on Rh(111)</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="overview-of-the-programs">
+<h2>9.4. Overview of the Programs<a class="headerlink" href="#overview-of-the-programs" title="Permalink to this headline">¶</a></h2>
+<p>We explain here how to use the PHASE SHIFTS codes to obtain the
+phase shifts which are needed in a LEED calculation.</p>
+<p>This documentation does not try to explain any of the details and
+subtleties of the calculation, but rather it simply tries to put
+anybody with a minimum knowledge of basic quantum mechanics in the
+position of obtaining good phase shifts. Additional documentation
+is contained as comments within some of the codes (but not all!).</p>
+<p>The various codes have been obtained from different authors, whose
+names can be found in the source codes. The original codes were
+modified to make them more general and, at input-output level,
+so as to make their use more straightforward.</p>
+<p>The codes have been tested on an IBM RISC 6000 workstation. There
+is no guarantee that the programs will work correctly when
+transported to different computers with different FORTRAN compilers.</p>
+<p>Basically, the computation of phase-shifts appropriate for a LEED
+calculation can be divided into several distinct steps:</p>
+<div class="section" id="step-0-phsh0-for">
+<h3>9.4.1. Step 0: <tt class="docutils literal"><span class="pre">PhSh0.for</span></tt><a class="headerlink" href="#step-0-phsh0-for" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="description">
+<h4>9.4.1.1. Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h4>
+<p>First we need to perform a free atom self-consistent calculation
+for each of the N elements for which phase shifts are required.
+This is accomplished by using a self-consistent Dirac-Fock (<em>i.e.</em>
+relativistic approach which computes, separately for each element,
+the self-consistent atomic orbitals.
+Notice that no local exchange approximation is made in these codes
+but some other minor approximations are used; see program for
+details.</p>
+<p>The input needed at this stage is some basic information about
+the shell structure of the atom under consideration, an example
+of which is provided in the file ATORB for the case of Rhodium.
+The information required is usually contained in any advanced
+Chemistry or Solid State book (<em>e.g.</em> Ashcroft and Mermin, Solid
+State Physics, Saunders College, 1976).</p>
+<p>The orbitals can then be used to compute the total radial charge
+densities associated to each element, which are collected in the
+file <cite>atomic.i</cite>.</p>
+</div>
+<div class="section" id="files">
+<h4>9.4.1.2. Files<a class="headerlink" href="#files" title="Permalink to this headline">¶</a></h4>
+<p><strong>INPUT:</strong> <cite>atorb</cite></p>
+<p><strong>OUTPUT:</strong> <cite>atelem.i</cite></p>
+<p>To summarize, the user will run <tt class="docutils literal"><span class="pre">PhSh0.for</span></tt> for the different inputs
+<cite>atorb1</cite>, <cite>atorb2</cite>, ..... <cite>atorbN</cite>, corresponding to the <img class="math" src="_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> elements of
+interest and produce the corresponding output <cite>atelem1.i</cite>,
+<cite>atelem2.i</cite>, .... <cite>atelemN.i</cite> for the charge density of each of the
+<img class="math" src="_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> elements.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The occupation number for each level corresponds to the
+total number of electrons filling that level. For
+instance, in the case of Rh, the orbital 3,2,2,-2.5
+has <img class="math" src="_images/math/6870ed50ce0241b91f794d90c4412c9422a55062.png" alt="l = 2"/> and <img class="math" src="_images/math/93c2a6eedd4cc124e0081b54025281702c6993a3.png" alt="j = 2 + 1/2"/>. The occupancy of the filled level
+is then <img class="math" src="_images/math/a98580b750f7fecdce785177d82207145e20ad52.png" alt="N^+_{occ} = 2j + 1 = 6"/>.
+In the case of partially filled orbitals when the atomic
+configuration available does not distinguish between
+<img class="math" src="_images/math/923653422ecfd7150b85c38c716a268196597b27.png" alt="l + 1/2"/> and <img class="math" src="_images/math/397fa715a450a39336bf1a4ef36fb77edeef7ccb.png" alt="l - 1/2"/> levels, it is customary to assign the
+occupancy so that the ratio for the partially filled
+orbitals equals the ratio of the occupancies if those
+orbitals were completely filled. Consider for instance
+the case of Rh where the atomic configuaration (Ashcroft
+and Mermin) is [Kr]4 <em>d</em> 8 5 <em>s</em> 1. There is no ambiguity
+associated to the 5,0,0,1/2 level and <img class="math" src="_images/math/3ecdec76a05c53bc36608d9e5c90249ef842f28d.png" alt="N_{occ} = 1"/> in that case.
+As for the 4,2,2,3/2 and 4,2,2,5/2 levels the ratio of
+full occupancies is 4/6 ; the eight 4 <em>d</em> electrons will then be
+split among the two levels so as to preserve the 4/6
+ratio: hence 3.2/4.8. The sum of all occupancies for a
+neutral atom should of course equal <img class="math" src="_images/math/3ead47fb9fb4a4c273feee398f72ff2a09702b84.png" alt="Z"/>.</p>
+</div>
+</div>
+</div>
+<div class="section" id="step-1-phsh1-for">
+<h3>9.4.2. Step 1: <tt class="docutils literal"><span class="pre">PhSh1.for</span></tt><a class="headerlink" href="#step-1-phsh1-for" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id1">
+<h4>9.4.2.1. Description<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<p><strong>Run interactively</strong></p>
+<p>Now one computes the muffin tin potential by following Mattheiss&#8217;
+prescription (Ref. T. L. Loucks, Augmented Plane Waves Method,
+Benjamin, 1967). In essence, the atomic charge densities of the
+different elements making up the structure that we are
+interested in are superimposed to reflect the actual position of
+these elements in the structure. Note that for the purpose of
+obtaining the phase shifts needed in a LEED calculation it is not
+necessary to know the exact position of the atoms in the structure
+we are interested in, because the phase shifts and hence the
+calculated intensities are not strongly dependent on the manner in
+which the phase shifts are produced. (In principle, one could
+iterate the phase shift calculation after the LEED structure
+analysis to further refine the structure.) For the substrate atoms,
+a bulk terminated structure will be sufficient in almost all cases.
+In general, we prefer using a slab-supercell approach in defining
+the surface structure rather than embedding the adatoms in a
+sometimes artificial bulk structure. The slab is a free-standing
+film with a thickness of a few atomic layers, repeated periodically
+as a stack of identical slabs separated by slices of vacuum. The
+main subtlety about the slab approach is related to the definition
+of the muffin tin zero (see comment 3).</p>
+<p>The total potential energy in each muffin-tin sphere is obtained
+by adding the electrostatic component computed by using the charge
+density distribution, and a local Slater-like exchange term.
+The final potential is then shifted to set its zero at the level
+of the average energy in the interstitial region (Muffin Tin Zero).
+This part of the program is relatively well documented.</p>
+</div>
+<div class="section" id="id2">
+<h4>9.4.2.2. Files<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<p><strong>INPUT:</strong></p>
+<blockquote>
+<div><ul class="simple">
+<li><cite>cluster.i</cite> - Mainly contains the structural information
+about the slab which will be used to produce
+the muffin-tin potential. See example
+provided for a Rh crystal in <cite>clusterRh.i</cite>
+and for a <img class="math" src="_images/math/b59ef4497ab92e9929dca3b1baf50282c00064c7.png" alt="\text{Rh} (111)-(2 \times 2)- \text{C} _2 \text{H} _3"/>
+surface with H neglected in <cite>clusterC2Rh.i</cite>.</li>
+<li><cite>atomic.i</cite>  - It contains the atomic charge densities for
+the NINEQ inequivalent atoms specified in
+<cite>cluster.i</cite>. Furthermore,
+<cite>atomic.i</cite> has to be generated from the output
+<cite>atelemJ.i</cite>  <img class="math" src="_images/math/f221bcb748dc80b9432938fd65d58edcf5164260.png" alt="J = 1, N"/> by appending the <cite>atelem*</cite>
+files corresponding to the different elements
+in the order in which they appear as
+inequivalent atoms in the file <cite>cluster.i</cite></li>
+<li>interactively:  question: slab or bulk calculation?
+answer: 1 (slab) or 0 (bulk)
+enter value for bmtz (bulk muffin tin
+zero; see comment 3)</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt><strong>OUTPUT:</strong></dt>
+<dd><ul class="first last simple">
+<li><cite>mufftin.d</cite></li>
+<li><cite>check.o</cite></li>
+<li><cite>bmtz</cite> (if bulk calculation)</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ol class="arabic">
+<li><p class="first">Cluster.i contains an option for producing output suitable
+for the three versions of the next step. The value
+of the alpha constant can be obtained from
+K. Schwarz, Phys. Rev. B 5, 2466 (1972)</p>
+</li>
+<li><p class="first">Notice that an <cite>atelem.i</cite> corresponding to one element
+might need to be appended more than once to generate
+<cite>atomic.i</cite>. For instance in the case of <cite>clusterRh.i</cite> :
+<cite>atomic.i</cite> = <cite>atelemRh.i</cite> + <cite>atelemRh.i</cite> + <cite>atelemRh.i</cite></p>
+<p>In the case of clusterC2Rh.i:</p>
+<p><cite>atomic.i</cite> = <cite>atelemRh.i</cite> + <cite>atelemRh.i</cite> + <cite>atelemRh.i</cite> +
+<cite>atelemRh.i</cite> + <cite>atelemC.i</cite> + <cite>atelemC.i</cite></p>
+<p>Where &#8216;+&#8217; indicates the appending of one file after the other</p>
+</li>
+<li><p class="first">The specification of the Muffin tin zero requires some
+care when doing a calculation for a slab. Here by slab
+we mean a specified geometry in <cite>cluster.i</cite> with a large
+vacuum gap between slabs. The computed muffin tin zero
+(mtz) is the average of the energy in the interstitial
+region, including the vacuum: the average is highly distorted
+by the presence of the vacuum. A reasonable value for
+mtz is the bulk value even in the case of a slab
+calculation (small errors are anyway adjusted by the
+fitting of the inner potential in the LEED calculation).
+Therefore the suggested procedure is the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Perform first a bulk calculation for the substrate
+with the appropriate input files.  When asked whether
+a bulk or slab calculation input  0 (bulk)
+and record the output value of bulk mtz</li>
+<li>Perform a second slab calculation
+(of course now with different input files); input 1 for
+slab calculation and, when asked, use the
+previously recorded value as input for <cite>bmtz</cite>.
+The output of this second calculation will be used in
+STEP 2.</li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<blockquote class="last">
+<div>Running this step interactively will clarify our points.</div></blockquote>
+</div>
+</div>
+</div>
+<div class="section" id="step-2-phsh2cav-for-phsh2wil-for-phsh2rel-for">
+<h3>9.4.3. Step 2: <tt class="docutils literal"><span class="pre">PhSh2cav.for</span></tt>, <tt class="docutils literal"><span class="pre">PhSh2wil.for</span></tt> &amp; <tt class="docutils literal"><span class="pre">PhSh2rel.for</span></tt><a class="headerlink" href="#step-2-phsh2cav-for-phsh2wil-for-phsh2rel-for" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id3">
+<h4>9.4.3.1. Description<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h4>
+<p>Here one computes the phase shifts from the muffin-tin
+potential(s).</p>
+<p>An important detail is that, as a function of energy, the
+calculated phase shifts may, and often do, show discontinuities
+by ::math::<cite>pi</cite>, i.e. jumps by ::math::<cite>pi</cite> at some energies.
+Since the LEED programs interpolate phase shifts between energies at which
+they are provided, such discontinuities would give totally
+erroneous results at such discontinuities. Therefore these
+discontinuities must be removed: this is done internally
+in <cite>PhSh2wil.for</cite>, but separately in <tt class="docutils literal"><span class="pre">PhSh3.for</span></tt> after
+<tt class="docutils literal"><span class="pre">PhSh2cav.for</span></tt> or <tt class="docutils literal"><span class="pre">PhSh2rel.for</span></tt> is run.</p>
+</div>
+<div class="section" id="different-packages">
+<h4>9.4.3.2. Different packages<a class="headerlink" href="#different-packages" title="Permalink to this headline">¶</a></h4>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">PhSh2cav.for</span></tt> is a Cavendish program which produces non-
+relativistic phase shifts (Schroedinger equation), with
+possible discontinuities in energy.</li>
+<li><tt class="docutils literal"><span class="pre">PhSh2wil.for</span></tt> is a program, written originally by Williams,
+which again produces non-relativistic phase shifts
+(Schroedinger equation), but without continuities in energy.
+This is the preferred program for non-relativistic
+phase-shifts calculations.</li>
+<li><tt class="docutils literal"><span class="pre">PhSh2rel.for</span></tt> computes relativistic phase shifts (Dirac
+equation), but is possibly discontinuous in energy.</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id4">
+<h4>9.4.3.3. Files<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><strong>INPUT:</strong></dt>
+<dd><ul class="first last simple">
+<li><cite>mufftin.d</cite> - (as output from STEP 1)</li>
+</ul>
+</dd>
+<dt><strong>OUTPUT:</strong></dt>
+<dd><ul class="first last simple">
+<li><cite>phasout</cite></li>
+<li><cite>dataph.d</cite></li>
+<li><cite>inpdat</cite></li>
+<li><cite>leedph.d</cite> (in wil only)</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<ol class="last arabic simple">
+<li>Whether one can run the cav, wil or rel version
+depends on the input NFORM specified in STEP 1 in
+the input <cite>cluster.i</cite>.</li>
+<li>The energy range (20-300 eV) for which phase shifts are
+computed, the energy spacing (5eV) and the number of
+phase-shifts (13) are set. An easy way to modify these is
+to use NFORM=2, because the values will appear in an
+obvious way in the input <cite>mufftin.d</cite>. Such input (the
+output of STEP 1) can be edited and the parameters can
+be modified for each of the inequivalent atoms in the
+calculation.</li>
+<li>The output <cite>phasout</cite> contains the phase shifts of all the
+inequivalent atoms NIEQ (the number of such atoms was
+specified in <cite>cluster.i</cite> of STEP 1) in the calculation.
+<cite>phasout</cite> will be  used to create the input files needed in
+STEP 3.</li>
+<li><cite>dataph.d</cite> is an output of the phase shifts in a form
+suited to plotting such data.</li>
+</ol>
+</div>
+</div>
+</div>
+<div class="section" id="step-3-phsh3-for">
+<h3>9.4.4. Step 3: <tt class="docutils literal"><span class="pre">PhSh3.for</span></tt><a class="headerlink" href="#step-3-phsh3-for" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="id5">
+<h4>9.4.4.1. Description<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h4>
+<p><strong>Run interactively</strong></p>
+<p>The phase shifts produced from <cite>phsh2cav.for</cite> and <cite>phsh2rel.for</cite>
+are not necessarily continuous in energy (since phase
+shifts are defined modulo pi). <cite>phsh3.for</cite> makes them continuous
+and produces output suitable as input for LEED programs.
+For the output of <tt class="docutils literal"><span class="pre">phsh2wil.for</span></tt>, <tt class="docutils literal"><span class="pre">phsh3.for</span></tt> is used to reformat
+the phase shifts.</p>
+</div>
+<div class="section" id="id6">
+<h4>9.4.4.2. Files<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h4>
+<dl class="docutils">
+<dt><strong>INPUT:</strong></dt>
+<dd><ul class="first last simple">
+<li><cite>phJ</cite> <img class="math" src="_images/math/f221bcb748dc80b9432938fd65d58edcf5164260.png" alt="J = 1, N"/>  generated from phasout. For this purpose
+<cite>phasout</cite> must be split into files each containing
+phase shifts of a single element. <cite>phJ</cite> will contain
+the phase shifts of the <em>J</em> &#8216;th element in the
+input file for the LEED programs (<em>i.e.</em> <cite>tleed5.i</cite>)</li>
+</ul>
+</dd>
+<dt><strong>OUTPUT:</strong></dt>
+<dd><ul class="first last simple">
+<li><cite>leedph.d</cite></li>
+<li><cite>dataph.d</cite></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The actual number of sets of phase-shifts that one might
+want to use in a LEED calculation might be different
+from NINEQ. It is quite typical for instance to use a
+single set of phase shifts to describe substrate atoms
+in different layers.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="LICENSE.html" title="8. License"
+             >previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

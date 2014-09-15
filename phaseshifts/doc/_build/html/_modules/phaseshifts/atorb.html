@@ -1,0 +1,712 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>phaseshifts.atorb &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for phaseshifts.atorb</h1><div class="highlight"><pre>
+<span class="c">#!/usr/bin/env python</span>
+<span class="c">#encoding: utf-8</span>
+
+<span class="c">##############################################################################</span>
+<span class="c"># Author: Liam Deacon                                                        #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Contact: liam.deacon@diamond.ac.uk                                       #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Copyright: Copyright (C) 2013-2014 Liam Deacon                             #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># License: MIT License                                                       #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># Permission is hereby granted, free of charge, to any person obtaining a    #</span>
+<span class="c"># copy of this software and associated documentation files (the &quot;Software&quot;), #</span>
+<span class="c"># to deal in the Software without restriction, including without limitation  #</span>
+<span class="c"># the rights to use, copy, modify, merge, publish, distribute, sublicense,   #</span>
+<span class="c"># and/or sell copies of the Software, and to permit persons to whom the      #</span>
+<span class="c"># Software is furnished to do so, subject to the following conditions:       #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># The above copyright notice and this permission notice shall be included in #</span>
+<span class="c"># all copies or substantial portions of the Software.                        #</span>
+<span class="c">#                                                                            #</span>
+<span class="c"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR #</span>
+<span class="c"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   #</span>
+<span class="c"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    #</span>
+<span class="c"># THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER #</span>
+<span class="c"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING    #</span>
+<span class="c"># FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER        #</span>
+<span class="c"># DEALINGS IN THE SOFTWARE.                                                  #</span>
+<span class="c">#                                                                            #</span>
+<span class="c">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">**atorb.py**</span>
+
+<span class="sd">Provides convenience functions for generating input and calculating </span>
+<span class="sd">atomic charge densities for use with the Barbieri/Van Hove phase </span>
+<span class="sd">shift calculation package.</span>
+
+<span class="sd">:See: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/</span>
+
+<span class="sd">:Requires: f2py (for libphsh fortran wrapper generation) </span>
+
+<span class="sd">.. note::</span>
+<span class="sd">   To generate libphsh fortran wrappers (libphsh.pyd) for your platform</span>
+<span class="sd">   then use &#39;python setup.py&#39; in the lib directory of this package to </span>
+<span class="sd">   install into your python distribution. Alternatively, use::</span>
+<span class="sd">           </span>
+<span class="sd">     f2py -c -m libphsh libphsh.f</span>
+<span class="sd">             </span>
+<span class="sd">   Windows users may have to add appropriate compiler switches, e.g. ::</span>
+<span class="sd">           </span>
+<span class="sd">    f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">elements</span>
+<span class="kn">from</span> <span class="nn">lib.libphsh</span> <span class="kn">import</span> <span class="n">hartfock</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+
+<span class="n">elements_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">([</span>
+<span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;Hydrogen&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;He&#39;</span><span class="p">,</span> <span class="s">&#39;Helium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Li&#39;</span><span class="p">,</span> <span class="s">&#39;Lithium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Be&#39;</span><span class="p">,</span> <span class="s">&#39;Beryllium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;Boron&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;Carbon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Nitrogen&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;O&#39;</span><span class="p">,</span> <span class="s">&#39;Oxygen&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;F&#39;</span><span class="p">,</span> <span class="s">&#39;Fluorine&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ne&#39;</span><span class="p">,</span> <span class="s">&#39;Neon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Na&#39;</span><span class="p">,</span> <span class="s">&#39;Sodium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Mg&#39;</span><span class="p">,</span> <span class="s">&#39;Magnesium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Al&#39;</span><span class="p">,</span> <span class="s">&#39;Aluminium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;Silicon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;P&#39;</span><span class="p">,</span> <span class="s">&#39;Phosphorus&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;S&#39;</span><span class="p">,</span> <span class="s">&#39;Sulfur&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cl&#39;</span><span class="p">,</span> <span class="s">&#39;Chlorine&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ar&#39;</span><span class="p">,</span> <span class="s">&#39;Argon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;K&#39;</span><span class="p">,</span> <span class="s">&#39;Potassium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ca&#39;</span><span class="p">,</span> <span class="s">&#39;Calcium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sc&#39;</span><span class="p">,</span> <span class="s">&#39;Scandium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ti&#39;</span><span class="p">,</span> <span class="s">&#39;Titanium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;V&#39;</span><span class="p">,</span> <span class="s">&#39;Vanadium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cr&#39;</span><span class="p">,</span> <span class="s">&#39;Chromium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Mn&#39;</span><span class="p">,</span> <span class="s">&#39;Manganese&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Fe&#39;</span><span class="p">,</span> <span class="s">&#39;Iron&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Co&#39;</span><span class="p">,</span> <span class="s">&#39;Cobalt&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ni&#39;</span><span class="p">,</span> <span class="s">&#39;Nickel&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cu&#39;</span><span class="p">,</span> <span class="s">&#39;Copper&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Zn&#39;</span><span class="p">,</span> <span class="s">&#39;Zinc&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ga&#39;</span><span class="p">,</span> <span class="s">&#39;Gallium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ge&#39;</span><span class="p">,</span> <span class="s">&#39;Germanium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;As&#39;</span><span class="p">,</span> <span class="s">&#39;Arsenic&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Se&#39;</span><span class="p">,</span> <span class="s">&#39;Selenium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Br&#39;</span><span class="p">,</span> <span class="s">&#39;Bromine&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Kr&#39;</span><span class="p">,</span> <span class="s">&#39;Krypton&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Rb&#39;</span><span class="p">,</span> <span class="s">&#39;Rubidium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sr&#39;</span><span class="p">,</span> <span class="s">&#39;Strontium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Y&#39;</span><span class="p">,</span> <span class="s">&#39;Yttrium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Zr&#39;</span><span class="p">,</span> <span class="s">&#39;Zirconium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Nb&#39;</span><span class="p">,</span> <span class="s">&#39;Niobium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Mo&#39;</span><span class="p">,</span> <span class="s">&#39;Molybdenum&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Tc&#39;</span><span class="p">,</span> <span class="s">&#39;Technetium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ru&#39;</span><span class="p">,</span> <span class="s">&#39;Ruthenium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Rh&#39;</span><span class="p">,</span> <span class="s">&#39;Rhodium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pd&#39;</span><span class="p">,</span> <span class="s">&#39;Palladium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ag&#39;</span><span class="p">,</span> <span class="s">&#39;Silver&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cd&#39;</span><span class="p">,</span> <span class="s">&#39;Cadmium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;In&#39;</span><span class="p">,</span> <span class="s">&#39;Indium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sn&#39;</span><span class="p">,</span> <span class="s">&#39;Tin&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sb&#39;</span><span class="p">,</span> <span class="s">&#39;Antimony&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Te&#39;</span><span class="p">,</span> <span class="s">&#39;Tellurium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;I&#39;</span><span class="p">,</span> <span class="s">&#39;Iodine&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Xe&#39;</span><span class="p">,</span> <span class="s">&#39;Xenon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cs&#39;</span><span class="p">,</span> <span class="s">&#39;Cesium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ba&#39;</span><span class="p">,</span> <span class="s">&#39;Barium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;La&#39;</span><span class="p">,</span> <span class="s">&#39;Lanthanum&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ce&#39;</span><span class="p">,</span> <span class="s">&#39;Cerium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pr&#39;</span><span class="p">,</span> <span class="s">&#39;Praseodymium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Nd&#39;</span><span class="p">,</span> <span class="s">&#39;Neodymium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pm&#39;</span><span class="p">,</span> <span class="s">&#39;Promethium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sm&#39;</span><span class="p">,</span> <span class="s">&#39;Samarium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Eu&#39;</span><span class="p">,</span> <span class="s">&#39;Europium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Gd&#39;</span><span class="p">,</span> <span class="s">&#39;Gadolinium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Tb&#39;</span><span class="p">,</span> <span class="s">&#39;Terbium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Dy&#39;</span><span class="p">,</span> <span class="s">&#39;Dysprosium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ho&#39;</span><span class="p">,</span> <span class="s">&#39;Holmium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Er&#39;</span><span class="p">,</span> <span class="s">&#39;Erbium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Tm&#39;</span><span class="p">,</span> <span class="s">&#39;Thulium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Yb&#39;</span><span class="p">,</span> <span class="s">&#39;Ytterbium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Lu&#39;</span><span class="p">,</span> <span class="s">&#39;Lutetium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Hf&#39;</span><span class="p">,</span> <span class="s">&#39;Hafnium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ta&#39;</span><span class="p">,</span> <span class="s">&#39;Tantalum&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;W&#39;</span><span class="p">,</span> <span class="s">&#39;Tungsten&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Re&#39;</span><span class="p">,</span> <span class="s">&#39;Rhenium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Os&#39;</span><span class="p">,</span> <span class="s">&#39;Osmium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ir&#39;</span><span class="p">,</span> <span class="s">&#39;Iridium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pt&#39;</span><span class="p">,</span> <span class="s">&#39;Platinum&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Au&#39;</span><span class="p">,</span> <span class="s">&#39;Gold&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Hg&#39;</span><span class="p">,</span> <span class="s">&#39;Mercury&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Tl&#39;</span><span class="p">,</span> <span class="s">&#39;Thallium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pb&#39;</span><span class="p">,</span> <span class="s">&#39;Lead&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Bi&#39;</span><span class="p">,</span> <span class="s">&#39;Bismuth&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Po&#39;</span><span class="p">,</span> <span class="s">&#39;Polonium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;At&#39;</span><span class="p">,</span> <span class="s">&#39;Astatine&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Rn&#39;</span><span class="p">,</span> <span class="s">&#39;Radon&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Fr&#39;</span><span class="p">,</span> <span class="s">&#39;Francium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ra&#39;</span><span class="p">,</span> <span class="s">&#39;Radium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ac&#39;</span><span class="p">,</span> <span class="s">&#39;Actinium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Th&#39;</span><span class="p">,</span> <span class="s">&#39;Thorium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pa&#39;</span><span class="p">,</span> <span class="s">&#39;Protactinium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;U&#39;</span><span class="p">,</span> <span class="s">&#39;Uranium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Np&#39;</span><span class="p">,</span> <span class="s">&#39;Neptunium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Pu&#39;</span><span class="p">,</span> <span class="s">&#39;Plutonium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Am&#39;</span><span class="p">,</span> <span class="s">&#39;Americium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cm&#39;</span><span class="p">,</span> <span class="s">&#39;Curium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Bk&#39;</span><span class="p">,</span> <span class="s">&#39;Berkelium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cf&#39;</span><span class="p">,</span> <span class="s">&#39;Californium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Es&#39;</span><span class="p">,</span> <span class="s">&#39;Einsteinium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Fm&#39;</span><span class="p">,</span> <span class="s">&#39;Fermium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Md&#39;</span><span class="p">,</span> <span class="s">&#39;Mendelevium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;No&#39;</span><span class="p">,</span> <span class="s">&#39;Nobelium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Lr&#39;</span><span class="p">,</span> <span class="s">&#39;Lawrencium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Rf&#39;</span><span class="p">,</span> <span class="s">&#39;Rutherfordium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Db&#39;</span><span class="p">,</span> <span class="s">&#39;Dubnium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Sg&#39;</span><span class="p">,</span> <span class="s">&#39;Seaborgium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Bh&#39;</span><span class="p">,</span> <span class="s">&#39;Bohrium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Hs&#39;</span><span class="p">,</span> <span class="s">&#39;Hassium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Mt&#39;</span><span class="p">,</span> <span class="s">&#39;Meitnerium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Ds&#39;</span><span class="p">,</span> <span class="s">&#39;Darmstadtium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Rg&#39;</span><span class="p">,</span> <span class="s">&#39;Roentgenium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Cn&#39;</span><span class="p">,</span> <span class="s">&#39;Copernicium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Uut&#39;</span><span class="p">,</span> <span class="s">&#39;Ununtrium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Fl&#39;</span><span class="p">,</span> <span class="s">&#39;Flerovium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Uup&#39;</span><span class="p">,</span> <span class="s">&#39;Ununpentium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Lv&#39;</span><span class="p">,</span> <span class="s">&#39;Livermorium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Uus&#39;</span><span class="p">,</span> <span class="s">&#39;Ununseptium&#39;</span><span class="p">),</span> 
+<span class="p">(</span><span class="s">&#39;Uuo&#39;</span><span class="p">,</span> <span class="s">&#39;Ununoctium&#39;</span><span class="p">),</span> 
+<span class="p">])</span>
+
+
+<div class="viewcode-block" id="Atorb"><a class="viewcode-back" href="../../modules.html#phaseshifts.atorb.Atorb">[docs]</a><span class="k">class</span> <span class="nc">Atorb</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Description</span>
+<span class="sd">    -----------</span>
+<span class="sd">     A python wrapper for the atorb program by Eric Shirley for use in</span>
+<span class="sd">     calculating atomic scattering for different elements</span>
+<span class="sd">    </span>
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Original author: Eric Shirley  </span>
+
+<span class="sd">    There are nr grid points, and distances are in Bohr radii</span>
+<span class="sd">    :math:`a_0 \simeq 0.539 \mathrm{\AA}`</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`r(i) = r_{min} \cdot (r_{max} / r_{min})^{(i/n_r)}`, </span>
+<span class="sd">    :math:`i=1,2,3,...n_r-1,n_r`</span>
+<span class="sd">    </span>
+<span class="sd">    The orbitals are stored in phe(), first index goes :math:`1...n_r`, the</span>
+<span class="sd">    second index is the orbital index (:math:`i...n_{el}`)</span>
+<span class="sd">    </span>
+<span class="sd">    Look at the atomic files after printing this out to see everything...</span>
+<span class="sd">    Suffice it to say, that the charge density at radius :math:`r(i)`</span>
+<span class="sd">    in units of electrons per cubic Bohr radius is given by:</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`\sum_{j-1}^{n_el}{occ(j) \cdot phe(i,j)^2 / (4.0\,\pi\,{r(i)^2)}}` </span>
+<span class="sd">    </span>
+<span class="sd">    Think of the phe functions as plotting the radial wave-functions</span>
+<span class="sd">    as a function of radius on a logarithmic mesh...  </span>
+<span class="sd">    </span>
+<span class="sd">    The Dirac equation is solved for the orbitals, whereas their density</span>
+<span class="sd">    is treated by setting :math:`phe(i,j)` to Dirac&#39;s </span>
+<span class="sd">    :math:`\sqrt{F(i,j)^2 + G(i,j)^2}` times the sign of :math:`G(i,j)`...</span>
+<span class="sd">    </span>
+<span class="sd">    So we are doing Dirac-Fock, except that we are not treating exchange </span>
+<span class="sd">    exactly, in terms of working with major and minor components of the </span>
+<span class="sd">    orbitals, and the phe&#39;s give the CORRECT CHARGE DENSITY...</span>
+<span class="sd">    </span>
+<span class="sd">    The above approximation ought to be very small for valence states,</span>
+<span class="sd">    so you need not worry about it...</span>
+<span class="sd">    </span>
+<span class="sd">    The Breit interaction has been neglected altogether...it should not </span>
+<span class="sd">    have a huge effect on the charge density you are concerned with...</span>
+<span class="sd">    </span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Constructor</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Atorb.get_quantum_info"><a class="viewcode-back" href="../../modules.html#phaseshifts.atorb.Atorb.get_quantum_info">[docs]</a>    <span class="k">def</span> <span class="nf">get_quantum_info</span><span class="p">(</span><span class="n">shell</span><span class="p">):</span>
+        <span class="sd">r&quot;&quot;&quot;</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Get a tuple of quantum information for a given orbital &#39;s&#39;, &#39;p&#39;, &#39;d&#39; </span>
+<span class="sd">        or &#39;f&#39; from a given subshell string.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        =======</span>
+<span class="sd">        tuple : (int, int, list[float, float], list[float, float])</span>
+<span class="sd">            (n, l, j=[l-s, l+s], occ=[:math:`n^-_r`, :math:`n^+_r`])</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        - *n* is the principle quantum number (:math:`n &gt; 0`).</span>
+<span class="sd">        - *l* is the azimuthal quantum number (:math:`0 \leq l \leq n-1`).</span>
+<span class="sd">        - *s* is the spin quantum number (:math:`s \pm \frac{1}{2}`).</span>
+<span class="sd">        - *j* is the total angular momentum quantum numbers for both </span>
+<span class="sd">          :math:`l-s` or :math:`l+s`, respectively.</span>
+<span class="sd">        - :math:`n_r` is the occupancy of the spin-split :math:`l-s` </span>
+<span class="sd">          and :math:`l+s` levels, respectively. </span>
+<span class="sd">        </span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; Atorb.get_quantum_info(&#39;3d6&#39;)</span>
+<span class="sd">         (3, 2, [1.5, 2.5], [2.4, 3.6])</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">subshell</span> <span class="o">=</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">shell</span> <span class="k">if</span> <span class="n">s</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">nelectrons</span><span class="p">)</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">((</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span>
+                                <span class="n">shell</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">subshell</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">())]</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c"># assume 1 electron in shell</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">shell</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">subshell</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">nelectrons</span> <span class="o">=</span> <span class="mi">1</span>
+            
+        <span class="n">s</span> <span class="o">=</span> <span class="mf">0.5</span>
+        <span class="k">if</span> <span class="n">subshell</span> <span class="o">==</span> <span class="s">&#39;s&#39;</span><span class="p">:</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">occ</span> <span class="o">=</span> <span class="p">[</span><span class="n">nelectrons</span> <span class="o">/</span> <span class="mf">1.0</span><span class="p">]</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="p">[</span><span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">]</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">occ</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">subshell</span> <span class="o">==</span> <span class="s">&#39;p&#39;</span><span class="p">:</span>
+            <span class="c"># 3 subshells</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">max_occ</span> <span class="o">=</span> <span class="mi">6</span> 
+            <span class="n">occ</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">]:</span>
+                <span class="n">occ</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nelectrons</span> <span class="o">/</span> <span class="n">max_occ</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">],</span> <span class="n">occ</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">subshell</span> <span class="o">==</span> <span class="s">&#39;d&#39;</span><span class="p">:</span>
+            <span class="c"># 5 subshells</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="n">max_occ</span> <span class="o">=</span> <span class="mi">10</span> 
+            <span class="n">occ</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">]:</span>
+                <span class="n">occ</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nelectrons</span> <span class="o">/</span> <span class="n">max_occ</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">],</span> <span class="n">occ</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">subshell</span> <span class="o">==</span> <span class="s">&#39;f&#39;</span><span class="p">:</span>
+            <span class="c"># 7 subshells!</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="n">max_occ</span> <span class="o">=</span> <span class="mi">14</span>
+            <span class="n">occ</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">]:</span>
+                <span class="n">occ</span><span class="o">.</span><span class="n">append</span><span class="p">(((</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">nelectrons</span> <span class="o">/</span> <span class="n">max_occ</span><span class="p">)</span>
+            <span class="k">return</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="p">[</span><span class="n">l</span> <span class="o">-</span> <span class="n">s</span><span class="p">,</span> <span class="n">l</span> <span class="o">+</span> <span class="n">s</span><span class="p">],</span> <span class="n">occ</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Atorb.replace_core_config"><a class="viewcode-back" href="../../modules.html#phaseshifts.atorb.Atorb.replace_core_config">[docs]</a>    <span class="k">def</span> <span class="nf">replace_core_config</span><span class="p">(</span><span class="n">electron_config</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Replace nobel gas core with equivalent electronic shell configuration</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        electron_config : str</span>
+<span class="sd">            String containing the electronic configuration of the given </span>
+<span class="sd">            element.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str :</span>
+<span class="sd">            A substituted string where the nobel gas core has been replaced.</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; Atorb.replace_core_config(&#39;[Ar] 4s2&#39;)</span>
+<span class="sd">         &#39;1s2 2s2 2p6 3s2 3p6 4s2&#39;</span>
+
+<span class="sd">        &gt;&gt;&gt; Atorb.replace_core_config(&#39;[Xe] 6s2 5d1&#39;)</span>
+<span class="sd">         &#39;1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6 6s2 5d1&#39;</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cores</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;[He]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2&#39;</span><span class="p">,</span> <span class="s">&#39;[Ne]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2 2s2 2p6&#39;</span><span class="p">,</span> 
+                 <span class="s">&#39;[Ar]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2 2s2 2p6 3s2 3p6&#39;</span><span class="p">,</span> 
+                 <span class="s">&#39;[Kr]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6&#39;</span><span class="p">,</span>
+                 <span class="s">&#39;[Xe]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6&#39;</span><span class="p">,</span> 
+                 <span class="s">&#39;[Rn]&#39;</span><span class="p">:</span> <span class="s">&#39;1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6&#39;</span>
+                          <span class="s">&#39;4f14 5d10 6s2 6p6&#39;</span><span class="p">}</span>
+        <span class="n">core</span> <span class="o">=</span> <span class="n">electron_config</span><span class="o">.</span><span class="n">split</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">core</span> <span class="ow">in</span> <span class="n">cores</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">electron_config</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">core</span><span class="p">,</span> <span class="n">cores</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">core</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">electron_config</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Atorb.gen_input"><a class="viewcode-back" href="../../modules.html#phaseshifts.atorb.Atorb.gen_input">[docs]</a>    <span class="k">def</span> <span class="nf">gen_input</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Generate atorb input file from &lt;element&gt; and optional **kwargs </span>
+<span class="sd">        arguments. Returns filename of input file once generated.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        element : int or str</span>
+<span class="sd">            Either the atomic number, symbol or name for a given element</span>
+<span class="sd">        output : str, optional</span>
+<span class="sd">            File string for atomic orbital output (default: &#39;at_&lt;symbol&gt;.i&#39;)</span>
+<span class="sd">        ngrid : int, optional </span>
+<span class="sd">            Number of points in radial grid (default: 1000)</span>
+<span class="sd">        rel : bool, optional</span>
+<span class="sd">            Specify whether to consider relativistic effects</span>
+<span class="sd">        filename : str, optional</span>
+<span class="sd">            Name for generated input file (default: &#39;atorb&#39;)</span>
+<span class="sd">        header : str, optional</span>
+<span class="sd">            Comment at beginning of input file</span>
+<span class="sd">        method : str, optional</span>
+<span class="sd">            Exchange correlation method using either 0.0=Hartree-Fock,</span>
+<span class="sd">            1.0=LDA, -alpha = xalpha (default: 0.0)</span>
+<span class="sd">        relic : float, optional</span>
+<span class="sd">            Relic value for calculation (default: 0)</span>
+<span class="sd">        mixing_SCF : float, optional</span>
+<span class="sd">            Self consisting field value (default: 0.5)</span>
+<span class="sd">        tolerance : float, optional</span>
+<span class="sd">            Eigenvalue tolerance (default: 0.0005)</span>
+<span class="sd">        ech : float, optional </span>
+<span class="sd">            (default: 100)</span>
+<span class="sd">        </span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        &gt;&gt;&gt; Atorb.gen_input(&#39;H&#39;,rel=False,filename=&quot;atorb.txt&quot;,output=&#39;at_H.i&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; with open(&#39;atorb_H.txt&#39;, &#39;r&#39;) as f: print(&quot;&quot;.join(f.readlines())</span>
+<span class="sd">         C*********************************************************************</span>
+<span class="sd">         C  atorb input file: atorb_H.txt.</span>
+<span class="sd">         C*********************************************************************</span>
+<span class="sd">         i</span>
+<span class="sd">         1 1000                   ! Z NR (number of points in radial grid)</span>
+<span class="sd">         d</span>
+<span class="sd">         0                        ! 1=rel, 0=n.r.</span>
+<span class="sd">         x</span>
+<span class="sd">         0.d0                     ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...</span>
+<span class="sd">         a</span>
+<span class="sd">         0 1 0.5 0.0005 100       ! relic,levels,mixing SCF, eigen. tol,for ech</span>
+<span class="sd">         1 0 0 -0.5 1 1.0         ! n, l, l, -j, &lt;1&gt;, occupation</span>
+<span class="sd">         w</span>
+<span class="sd">         at_H.i                   ! name of output file </span>
+<span class="sd">         q</span>
+<span class="sd">         </span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">ele</span> <span class="o">=</span> <span class="n">elements</span><span class="o">.</span><span class="n">ELEMENTS</span><span class="p">[</span><span class="n">element</span><span class="p">]</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">ele</span><span class="o">.</span><span class="n">protons</span>
+        
+        <span class="c"># get full electronic configuration</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">Atorb</span><span class="o">.</span><span class="n">replace_core_config</span><span class="p">(</span><span class="n">ele</span><span class="o">.</span><span class="n">eleconfig</span><span class="p">)</span>
+
+        <span class="c"># get quantum numbers &amp; occupancy for each electronic obrital in atom</span>
+        <span class="n">electrons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">nlevels</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">shell</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">occ</span><span class="p">)</span> <span class="o">=</span> <span class="n">Atorb</span><span class="o">.</span><span class="n">get_quantum_info</span><span class="p">(</span><span class="n">shell</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">J</span><span class="p">):</span>
+                <span class="n">electrons</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">n</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="o">-</span><span class="n">j</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">occ</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+                <span class="n">nlevels</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c"># test kwargs and generate output arguments</span>
+        <span class="k">if</span> <span class="s">&#39;output&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;output&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="s">&quot;at_{0}.i&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+        
+        <span class="k">if</span> <span class="s">&#39;ngrid&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">NR</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ngrid&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">NR</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c"># default grid resolution</span>
+            
+        <span class="k">if</span> <span class="s">&#39;rel&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">rel</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;rel&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rel</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c"># default is relativistic </span>
+        
+        <span class="k">if</span> <span class="s">&#39;filename&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s">&quot;atorb_{0}.txt&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ele</span><span class="o">.</span><span class="n">symbol</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="s">&#39;header&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s">&#39;header&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="s">&quot;  atorb input file: {0}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+            
+        <span class="k">if</span> <span class="s">&#39;method&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="s">&#39;method&#39;</span><span class="p">))</span>
+            <span class="n">methods_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;HF&#39;</span><span class="p">:</span> <span class="s">&#39;0.d0&#39;</span><span class="p">,</span> <span class="s">&#39;LDA&#39;</span><span class="p">:</span> <span class="s">&#39;1.d0&#39;</span><span class="p">,</span> <span class="s">&#39;xalpha&#39;</span><span class="p">:</span> <span class="s">&#39;-alpha&#39;</span><span class="p">}</span>
+            <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">methods_dict</span><span class="p">:</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="n">methods_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;method&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;0.d0&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">method</span> <span class="o">=</span> <span class="s">&#39;0.d0&#39;</span>
+            
+        <span class="k">if</span> <span class="s">&#39;relic&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">relic</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;relic&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relic</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="k">if</span> <span class="s">&#39;mixing_SCF&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">mixing_SCF</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;mixing_SCF&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mixing_SCF</span> <span class="o">=</span> <span class="mf">0.5</span>
+            
+        <span class="k">if</span> <span class="s">&#39;tolerance&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">eigen_tol</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;tolerance&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">eigen_tol</span> <span class="o">=</span> <span class="mf">0.0005</span>
+            
+        <span class="k">if</span> <span class="s">&#39;ech&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">ech</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;ech&#39;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ech</span> <span class="o">=</span> <span class="mi">100</span>
+            
+        <span class="c"># produce output file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;C&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">header</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;C&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="s">&#39;*&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;i</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0} {1}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">NR</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">,</span> <span class="s">&#39; &#39;</span><span class="p">)</span>
+                    <span class="o">+</span> <span class="s">&#39;! Z NR (number of points in radial grid)</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;d</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rel</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;! 1=rel, 0=n.r.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;x</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">method</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span>
+                        <span class="s">&#39;! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;a</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0} {1} {2} {3} {4}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">relic</span><span class="p">,</span> <span class="n">nlevels</span><span class="p">,</span> <span class="n">mixing_SCF</span><span class="p">,</span> <span class="n">eigen_tol</span><span class="p">,</span> <span class="n">ech</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+                        <span class="o">+</span> <span class="s">&#39;! relic,levels,mixing SCF, eigen. tol,for ech.</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">nlevels</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0} {1} {2} {3} {4} {5}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="n">electrons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;! n, l, l, -j, &lt;1&gt;, occupation</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;w</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span> <span class="o">+</span> 
+                    <span class="s">&#39;! name of output file </span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;q</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">filename</span>  <span class="c"># return output filename for further use</span>
+        </div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Atorb.calculate_Q_density"><a class="viewcode-back" href="../../modules.html#phaseshifts.atorb.Atorb.calculate_Q_density">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_Q_density</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Calculate the radial charge density of a given element or atorb input </span>
+<span class="sd">        file.</span>
+<span class="sd">        </span>
+<span class="sd">        Usage</span>
+<span class="sd">        -----</span>
+<span class="sd">        Atorb.calculate_Q_density(**kwargs)</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        kwargs may be any of the following.</span>
+<span class="sd">        </span>
+<span class="sd">        element : int or str, optional</span>
+<span class="sd">            Generate element atorb input file on the fly. Additional</span>
+<span class="sd">            kwargs may be used to govern the structure of the input</span>
+<span class="sd">            file - please use ``help(phaseshifts.Atorb.gen_input)`` </span>
+<span class="sd">            for more information. </span>
+<span class="sd">        input : str, optional</span>
+<span class="sd">            Specify atorb input file otherwise will use the class</span>
+<span class="sd">            instance value.</span>
+<span class="sd">        output_dir : str, optional</span>
+<span class="sd">            Specify the output directory for the `at_*.i` file</span>
+<span class="sd">            generated, otherwise the default current working directory </span>
+<span class="sd">            is used.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str : filename</span>
+<span class="sd">        </span>
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        &gt;&gt;&gt; Atorb.calculate_Q_density(input=&#39;atorb_C.txt&#39;)</span>
+<span class="sd">              18.008635    -33.678535</span>
+<span class="sd">               4.451786    -36.654271</span>
+<span class="sd">               1.569616    -37.283660</span>
+<span class="sd">               0.424129    -37.355634</span>
+<span class="sd">               0.116221    -37.359816</span>
+<span class="sd">               0.047172    -37.360317</span>
+<span class="sd">               0.021939    -37.360435</span>
+<span class="sd">               0.010555    -37.360464</span>
+<span class="sd">               0.005112    -37.360471</span>
+<span class="sd">               0.002486    -37.360473</span>
+<span class="sd">               0.001213    -37.360473</span>
+<span class="sd">               0.000593    -37.360473</span>
+<span class="sd">               0.000290    -37.360474</span>
+<span class="sd">            N L M J S OCC.</span>
+<span class="sd">            1   0 0  -1/2   1    2.0000        -11.493862</span>
+<span class="sd">            2   0 0  -1/2   1    2.0000         -0.788618</span>
+<span class="sd">            2   1 1  -1/2   1    0.6667         -0.133536</span>
+<span class="sd">            2   1 1  -3/2   1    1.3333         -0.133311</span>
+<span class="sd">         TOTAL ENERGY =      -37.360474  -1016.638262</span>
+
+<span class="sd">        &gt;&gt;&gt; Atorb.calculate_Q_density(element=&#39;H&#39;)</span>
+<span class="sd">               0.500007     -0.343752</span>
+<span class="sd">               0.152392     -0.354939</span>
+<span class="sd">               0.065889     -0.357254</span>
+<span class="sd">               0.028751     -0.357644</span>
+<span class="sd">               0.012732     -0.357703</span>
+<span class="sd">               0.005743     -0.357711</span>
+<span class="sd">               0.002641     -0.357712</span>
+<span class="sd">               0.001236     -0.357713</span>
+<span class="sd">               0.000587     -0.357713</span>
+<span class="sd">               0.000282     -0.357713</span>
+<span class="sd">         N L M J S OCC.</span>
+<span class="sd">            1   0 0  -1/2   1    1.0000         -0.229756</span>
+<span class="sd">         TOTAL ENERGY =       -0.357713     -9.733932</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s">&#39;input&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">inp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;input&#39;</span><span class="p">))</span>
+            
+        <span class="k">if</span> <span class="s">&#39;element&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">inp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span>
+                    <span class="n">Atorb</span><span class="o">.</span><span class="n">gen_input</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;element&#39;</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+        
+        <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">curdir</span>
+        <span class="k">if</span> <span class="s">&#39;output_dir&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="n">output_dir</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;output_dir&#39;</span><span class="p">)</span>    
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">IOError</span>
+                
+        <span class="n">hartfock</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>  <span class="c"># calculates atomic orbital charge densities for atom</span>
+        
+        <span class="c"># get output filename</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">output_filename</span> <span class="o">=</span> <span class="s">&#39;atorb&#39;</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">inp</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">IOError</span>
+        
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\r</span><span class="s">&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lstrip</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span>
+                          <span class="s">&#39;!&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;#&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">]</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;w&#39;</span><span class="p">):</span>
+                <span class="n">output_filename</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">break</span>
+                     
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>  <span class="c"># return to original directory</span>
+        
+        <span class="k">return</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">output_filename</span><span class="p">)</span> 
+                    <span class="k">if</span> <span class="n">output_dir</span> <span class="o">!=</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">output_filename</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

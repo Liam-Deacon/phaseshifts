@@ -1,0 +1,1262 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>6. phaseshifts API &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="index.html" />
+    <link rel="next" title="7. Author list" href="authors.html" />
+    <link rel="prev" title="5. Scripts" href="scripts.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="authors.html" title="7. Author list"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="5. Scripts"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">6. phaseshifts API</a><ul>
+<li><a class="reference internal" href="#package-contents">6.1. Package Contents</a></li>
+<li><a class="reference internal" href="#subpackages">6.2. Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">6.3. Submodules</a><ul>
+<li><a class="reference internal" href="#module-phaseshifts.atorb">6.3.1. phaseshifts.atorb</a></li>
+<li><a class="reference internal" href="#module-phaseshifts.conphas">6.3.2. phaseshifts.conphas</a><ul>
+<li><a class="reference internal" href="#examples">6.3.2.1. Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-phaseshifts.elements">6.3.3. phaseshifts.elements</a><ul>
+<li><a class="reference internal" href="#requirements">6.3.3.1. Requirements</a></li>
+<li><a class="reference internal" href="#references">6.3.3.2. References</a></li>
+<li><a class="reference internal" href="#id1">6.3.3.3. Examples</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-phaseshifts.leed">6.3.4. phaseshifts.leed</a></li>
+<li><a class="reference internal" href="#module-phaseshifts.model">6.3.5. phaseshifts.model</a></li>
+<li><a class="reference internal" href="#module-phaseshifts.phsh">6.3.6. phaseshifts.phsh</a><ul>
+<li><a class="reference internal" href="#id2">6.3.6.1. Examples</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="scripts.html"
+                        title="previous chapter">5. Scripts</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="authors.html"
+                        title="next chapter">7. Author list</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="phaseshifts-api">
+<span id="api"></span><h1>6. phaseshifts API<a class="headerlink" href="#phaseshifts-api" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="package-contents">
+<h2>6.1. Package Contents<a class="headerlink" href="#package-contents" title="Permalink to this headline">¶</a></h2>
+<p>This chapter covers the main modules of the phaseshifts and provides some API documentation
+for those wishing to incorporate this package into their own projects.</p>
+<span class="target" id="module-phaseshifts"></span></div>
+<div class="section" id="subpackages">
+<h2>6.2. Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>The main sub packages are listed below:</dt>
+<dd><ul class="first last simple">
+<li><tt class="xref py py-mod docutils literal"><span class="pre">phaseshifts.gui</span></tt> - includes all the necessary files for the graphical user interface.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">phaseshifts.lib</span></tt> - contains the Fortran libphsh library and the python wrappings.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">phaseshifts.doc</span></tt> - source documentation for the phaseshifts package.</li>
+<li><tt class="xref py py-mod docutils literal"><span class="pre">phaseshifts.test</span></tt> - modules for testing the phaseshift package.</li>
+</ul>
+</dd>
+</dl>
+</div>
+<div class="section" id="submodules">
+<h2>6.3. Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-phaseshifts.atorb">
+<span id="phaseshifts-atorb"></span><h3>6.3.1. phaseshifts.atorb<a class="headerlink" href="#module-phaseshifts.atorb" title="Permalink to this headline">¶</a></h3>
+<p><strong>atorb.py</strong></p>
+<p>Provides convenience functions for generating input and calculating 
+atomic charge densities for use with the Barbieri/Van Hove phase 
+shift calculation package.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">See:</th><td class="field-body"><a class="reference external" href="http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/">http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Requires:</th><td class="field-body">f2py (for libphsh fortran wrapper generation)</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>To generate libphsh fortran wrappers (libphsh.pyd) for your platform
+then use &#8216;python setup.py&#8217; in the lib directory of this package to 
+install into your python distribution. Alternatively, use:</p>
+<div class="highlight-python"><pre>f2py -c -m libphsh libphsh.f</pre>
+</div>
+<p>Windows users may have to add appropriate compiler switches, e.g.</p>
+<div class="last highlight-python"><pre>f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f</pre>
+</div>
+</div>
+<dl class="class">
+<dt id="phaseshifts.atorb.Atorb">
+<em class="property">class </em><tt class="descclassname">phaseshifts.atorb.</tt><tt class="descname">Atorb</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/atorb.html#Atorb"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.atorb.Atorb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p class="rubric">Notes</p>
+<p>Original author: Eric Shirley</p>
+<p>There are nr grid points, and distances are in Bohr radii
+<img class="math" src="_images/math/e1f9f76614f0d59ed80a3029d23108df15e2d772.png" alt="a_0 \simeq 0.539 \mathrm{\AA}"/></p>
+<p><img class="math" src="_images/math/d91786e2aca474e37ca3b7a5d3110882f50409e5.png" alt="r(i) = r_{min} \cdot (r_{max} / r_{min})^{(i/n_r)}"/>, 
+<img class="math" src="_images/math/a1e8fc27e62475d72c3c1657e1154951d76e8c89.png" alt="i=1,2,3,...n_r-1,n_r"/></p>
+<p>The orbitals are stored in phe(), first index goes <img class="math" src="_images/math/71863f7f96e75cf4162f74fb7c7e1868f9a56279.png" alt="1...n_r"/>, the
+second index is the orbital index (<img class="math" src="_images/math/75c941f1a5765ca9c02a21aa7ba59d4af6263a90.png" alt="i...n_{el}"/>)</p>
+<p>Look at the atomic files after printing this out to see everything...
+Suffice it to say, that the charge density at radius <img class="math" src="_images/math/55aca4c049f38048b0c057b23f7b6d2a0e7c06b8.png" alt="r(i)"/>
+in units of electrons per cubic Bohr radius is given by:</p>
+<p><img class="math" src="_images/math/e616f04bfcd2030c0281e94578bea0683743e165.png" alt="\sum_{j-1}^{n_el}{occ(j) \cdot phe(i,j)^2 / (4.0\,\pi\,{r(i)^2)}}"/></p>
+<p>Think of the phe functions as plotting the radial wave-functions
+as a function of radius on a logarithmic mesh...</p>
+<p>The Dirac equation is solved for the orbitals, whereas their density
+is treated by setting <img class="math" src="_images/math/24ee404cc46ed3219fa4bf402b8580ef245f86df.png" alt="phe(i,j)"/> to Dirac&#8217;s 
+<img class="math" src="_images/math/49f8f1227fea201261b302b58f9714b42a632a42.png" alt="\sqrt{F(i,j)^2 + G(i,j)^2}"/> times the sign of <img class="math" src="_images/math/6b1991b04c8e37a25bf9e8fc056dd48eef3473f7.png" alt="G(i,j)"/>...</p>
+<p>So we are doing Dirac-Fock, except that we are not treating exchange 
+exactly, in terms of working with major and minor components of the 
+orbitals, and the phe&#8217;s give the CORRECT CHARGE DENSITY...</p>
+<p>The above approximation ought to be very small for valence states,
+so you need not worry about it...</p>
+<p>The Breit interaction has been neglected altogether...it should not 
+have a huge effect on the charge density you are concerned with...</p>
+<dl class="staticmethod">
+<dt id="phaseshifts.atorb.Atorb.calculate_Q_density">
+<em class="property">static </em><tt class="descname">calculate_Q_density</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/atorb.html#Atorb.calculate_Q_density"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.atorb.Atorb.calculate_Q_density" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>kwargs may be any of the following.</strong> :</p>
+<p><strong>element</strong> : int or str, optional</p>
+<blockquote>
+<div><p>Generate element atorb input file on the fly. Additional
+kwargs may be used to govern the structure of the input
+file - please use <tt class="docutils literal"><span class="pre">help(phaseshifts.Atorb.gen_input)</span></tt> 
+for more information.</p>
+</div></blockquote>
+<p><strong>input</strong> : str, optional</p>
+<blockquote>
+<div><p>Specify atorb input file otherwise will use the class
+instance value.</p>
+</div></blockquote>
+<p><strong>output_dir</strong> : str, optional</p>
+<blockquote>
+<div><p>Specify the output directory for the <cite>at_*.i</cite> file
+generated, otherwise the default current working directory 
+is used.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><strong>str</strong> : filename</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Atorb</span><span class="o">.</span><span class="n">calculate_Q_density</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="s">&#39;atorb_C.txt&#39;</span><span class="p">)</span>
+<span class="go">      18.008635    -33.678535</span>
+<span class="go">       4.451786    -36.654271</span>
+<span class="go">       1.569616    -37.283660</span>
+<span class="go">       0.424129    -37.355634</span>
+<span class="go">       0.116221    -37.359816</span>
+<span class="go">       0.047172    -37.360317</span>
+<span class="go">       0.021939    -37.360435</span>
+<span class="go">       0.010555    -37.360464</span>
+<span class="go">       0.005112    -37.360471</span>
+<span class="go">       0.002486    -37.360473</span>
+<span class="go">       0.001213    -37.360473</span>
+<span class="go">       0.000593    -37.360473</span>
+<span class="go">       0.000290    -37.360474</span>
+<span class="go">    N L M J S OCC.</span>
+<span class="go">    1   0 0  -1/2   1    2.0000        -11.493862</span>
+<span class="go">    2   0 0  -1/2   1    2.0000         -0.788618</span>
+<span class="go">    2   1 1  -1/2   1    0.6667         -0.133536</span>
+<span class="go">    2   1 1  -3/2   1    1.3333         -0.133311</span>
+<span class="go"> TOTAL ENERGY =      -37.360474  -1016.638262</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Atorb</span><span class="o">.</span><span class="n">calculate_Q_density</span><span class="p">(</span><span class="n">element</span><span class="o">=</span><span class="s">&#39;H&#39;</span><span class="p">)</span>
+<span class="go">       0.500007     -0.343752</span>
+<span class="go">       0.152392     -0.354939</span>
+<span class="go">       0.065889     -0.357254</span>
+<span class="go">       0.028751     -0.357644</span>
+<span class="go">       0.012732     -0.357703</span>
+<span class="go">       0.005743     -0.357711</span>
+<span class="go">       0.002641     -0.357712</span>
+<span class="go">       0.001236     -0.357713</span>
+<span class="go">       0.000587     -0.357713</span>
+<span class="go">       0.000282     -0.357713</span>
+<span class="go"> N L M J S OCC.</span>
+<span class="go">    1   0 0  -1/2   1    1.0000         -0.229756</span>
+<span class="go"> TOTAL ENERGY =       -0.357713     -9.733932</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="phaseshifts.atorb.Atorb.gen_input">
+<em class="property">static </em><tt class="descname">gen_input</tt><big>(</big><em>element</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/atorb.html#Atorb.gen_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.atorb.Atorb.gen_input" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>element</strong> : int or str</p>
+<blockquote>
+<div><p>Either the atomic number, symbol or name for a given element</p>
+</div></blockquote>
+<p><strong>output</strong> : str, optional</p>
+<blockquote>
+<div><p>File string for atomic orbital output (default: &#8216;at_&lt;symbol&gt;.i&#8217;)</p>
+</div></blockquote>
+<p><strong>ngrid</strong> : int, optional</p>
+<blockquote>
+<div><p>Number of points in radial grid (default: 1000)</p>
+</div></blockquote>
+<p><strong>rel</strong> : bool, optional</p>
+<blockquote>
+<div><p>Specify whether to consider relativistic effects</p>
+</div></blockquote>
+<p><strong>filename</strong> : str, optional</p>
+<blockquote>
+<div><p>Name for generated input file (default: &#8216;atorb&#8217;)</p>
+</div></blockquote>
+<p><strong>header</strong> : str, optional</p>
+<blockquote>
+<div><p>Comment at beginning of input file</p>
+</div></blockquote>
+<p><strong>method</strong> : str, optional</p>
+<blockquote>
+<div><p>Exchange correlation method using either 0.0=Hartree-Fock,
+1.0=LDA, -alpha = xalpha (default: 0.0)</p>
+</div></blockquote>
+<p><strong>relic</strong> : float, optional</p>
+<blockquote>
+<div><p>Relic value for calculation (default: 0)</p>
+</div></blockquote>
+<p><strong>mixing_SCF</strong> : float, optional</p>
+<blockquote>
+<div><p>Self consisting field value (default: 0.5)</p>
+</div></blockquote>
+<p><strong>tolerance</strong> : float, optional</p>
+<blockquote>
+<div><p>Eigenvalue tolerance (default: 0.0005)</p>
+</div></blockquote>
+<p><strong>ech</strong> : float, optional</p>
+<blockquote class="last">
+<div><p>(default: 100)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="phaseshifts.atorb.Atorb.get_quantum_info">
+<em class="property">static </em><tt class="descname">get_quantum_info</tt><big>(</big><em>shell</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/atorb.html#Atorb.get_quantum_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.atorb.Atorb.get_quantum_info" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tuple</strong> : (int, int, list[float, float], list[float, float])</p>
+<blockquote class="last">
+<div><p>(n, l, j=[l-s, l+s], occ=[<img class="math" src="_images/math/4bd707bab53bdf75321b4a5e45c579e63d8ab119.png" alt="n^-_r"/>, <img class="math" src="_images/math/261188de3c68478fc25fb52ef4067b2a1c8ae931.png" alt="n^+_r"/>])</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><em>n</em> is the principle quantum number (<img class="math" src="_images/math/f3d1431ad346632b25a0e7b3f12ebe19723b3960.png" alt="n &gt; 0"/>).</li>
+<li><em>l</em> is the azimuthal quantum number (<img class="math" src="_images/math/368c4205b47678fbe30db2bfe6cfb6b5ee57ded9.png" alt="0 \leq l \leq n-1"/>).</li>
+<li><em>s</em> is the spin quantum number (<img class="math" src="_images/math/ffe9961299dea47ab7833c9886e55753b3d6480b.png" alt="s \pm \frac{1}{2}"/>).</li>
+<li><em>j</em> is the total angular momentum quantum numbers for both 
+<img class="math" src="_images/math/38f8d909301838c9544278b4508a029daf2af2ef.png" alt="l-s"/> or <img class="math" src="_images/math/123671da64545ff8a70c16ce1525e5999117b810.png" alt="l+s"/>, respectively.</li>
+<li><img class="math" src="_images/math/2611b9515ac58ccc6ffb6710fa9162266f243703.png" alt="n_r"/> is the occupancy of the spin-split <img class="math" src="_images/math/38f8d909301838c9544278b4508a029daf2af2ef.png" alt="l-s"/> 
+and <img class="math" src="_images/math/123671da64545ff8a70c16ce1525e5999117b810.png" alt="l+s"/> levels, respectively.</li>
+</ul>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="phaseshifts.atorb.Atorb.replace_core_config">
+<em class="property">static </em><tt class="descname">replace_core_config</tt><big>(</big><em>electron_config</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/atorb.html#Atorb.replace_core_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.atorb.Atorb.replace_core_config" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>electron_config</strong> : str</p>
+<blockquote>
+<div><p>String containing the electronic configuration of the given 
+element.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>str :</strong> :</p>
+<blockquote class="last">
+<div><p>A substituted string where the nobel gas core has been replaced.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Atorb</span><span class="o">.</span><span class="n">replace_core_config</span><span class="p">(</span><span class="s">&#39;[Ar] 4s2&#39;</span><span class="p">)</span>
+<span class="go"> &#39;1s2 2s2 2p6 3s2 3p6 4s2&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">Atorb</span><span class="o">.</span><span class="n">replace_core_config</span><span class="p">(</span><span class="s">&#39;[Xe] 6s2 5d1&#39;</span><span class="p">)</span>
+<span class="go"> &#39;1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6 6s2 5d1&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-phaseshifts.conphas">
+<span id="phaseshifts-conphas"></span><h3>6.3.2. phaseshifts.conphas<a class="headerlink" href="#module-phaseshifts.conphas" title="Permalink to this headline">¶</a></h3>
+<p><strong>conphas.py</strong></p>
+<p>Provides a native python version of the conphas (phsh3) FORTRAN program 
+by W. Moritz, which is distributed as part of the SATLEED code 
+(see &#8220;Barbieri/Van Hove phase shift calculation package&#8221; section) and can
+be found at: <a class="reference external" href="http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/">http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/</a>
+leed/leedpack.html</p>
+<p>The Conphas() class also provides a number of convenience functions (see 
+docstrings below).</p>
+<div class="section" id="examples">
+<h4>6.3.2.1. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">phaseshifts.conphas</span> <span class="kn">import</span> <span class="n">Conphas</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">Conphas</span><span class="p">(</span><span class="n">output_file</span><span class="o">=</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;testing&#39;</span><span class="p">,</span> <span class="s">&#39;leedph_py.d&#39;</span><span class="p">),</span>
+<span class="go">                 lmax=10)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">set_input_files</span><span class="p">([</span><span class="n">join</span><span class="p">(</span><span class="s">&#39;testing&#39;</span><span class="p">,</span> <span class="s">&#39;ph1&#39;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">set_format</span><span class="p">(</span><span class="s">&#39;cleed&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="class">
+<dt id="phaseshifts.conphas.Conphas">
+<em class="property">class </em><tt class="descclassname">phaseshifts.conphas.</tt><tt class="descname">Conphas</tt><big>(</big><em>input_files=</em><span class="optional">[</span><span class="optional">]</span>, <em>output_file=</em><span class="optional">[</span><span class="optional">]</span>, <em>formatting=None</em>, <em>lmax=10</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class Conphas</p>
+<p class="rubric">Notes</p>
+<p>This work is based on the original conphas (phsh3) FORTRAN program by 
+W. Moritz, which is distributed as part of the SATLEED code (see 
+&#8220;Barbieri/Van Hove phase shift calculation package&#8221; section) and can be 
+found at: <a class="reference external" href="http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/">http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/</a>
+leed/leedpack.html</p>
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas._Conphas__fix_path">
+<tt class="descname">_Conphas__fix_path</tt><big>(</big><em>file_path</em><big>)</big><a class="headerlink" href="#phaseshifts.conphas.Conphas._Conphas__fix_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fix escaped characters in filepath</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas._Conphas__set_data">
+<tt class="descname">_Conphas__set_data</tt><big>(</big><em>data=None</em><big>)</big><a class="headerlink" href="#phaseshifts.conphas.Conphas._Conphas__set_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.calculate">
+<tt class="descname">calculate</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.calculate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates continuous phase shifts from input file(s).</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">con</span> <span class="o">=</span> <span class="n">Conphas</span><span class="p">(</span><span class="n">output_file</span><span class="o">=</span><span class="s">r&#39;testing\leedph_py.d&#39;</span><span class="p">,</span> <span class="n">lmax</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">set_input_files</span><span class="p">([</span><span class="s">r&#39;testing\ph1&#39;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">set_format</span><span class="p">(</span><span class="s">&#39;cleed&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">con</span><span class="o">.</span><span class="n">calculate</span><span class="p">()</span>
+<span class="go"> L = 0</span>
+<span class="go"> jump between 25.0 eV and 30.0 eV; IFAK = -1</span>
+<span class="go"> L = 1</span>
+<span class="go"> jump between 65.0 eV and 70.0 eV; IFAK = -1</span>
+<span class="go"> L = 2</span>
+<span class="go"> jump between 20.0 eV and 25.0 eV; IFAK = 1</span>
+<span class="go"> jump between 80.0 eV and 85.0 eV; IFAK = 0</span>
+<span class="go"> L = 3</span>
+<span class="go"> L = 4</span>
+<span class="go"> jump between 275.0 eV and 280.0 eV; IFAK = 1</span>
+<span class="go"> L = 5</span>
+<span class="go"> L = 6</span>
+<span class="go"> L = 7</span>
+<span class="go"> L = 8</span>
+<span class="go"> L = 9</span>
+<span class="go"> L = 10</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.load_data">
+<tt class="descname">load_data</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.load_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load (discontinuous) phase shift data from file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>file</strong> : str</p>
+<blockquote>
+<div><p>Path to phase shift file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>tuple: (double, double, int, int, ndarray)</strong> :</p>
+<blockquote class="last">
+<div><p>(initial_energy, energy_step, n_phases, lmf, data)</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><cite>initial_energy</cite> is the starting energy of the phase shifts.</li>
+<li><cite>energy_step</cite> is the change in energy between consecutive values.</li>
+<li><cite>n_phases</cite> is the number of phase shifts contained in the file.</li>
+<li><cite>lmf</cite> is the maximum azimuthal quantum number considered.</li>
+<li><cite>data</cite> is a (2 x n_phases) array containing the phase shift data.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.read_datafile">
+<tt class="descname">read_datafile</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.read_datafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.read_datafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read in discontinuous phase shift file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote class="last">
+<div><p>The path to the discontinuous phase shift file</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.set_format">
+<tt class="descname">set_format</tt><big>(</big><em>formatting=None</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.set_format"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.set_format" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set appropriate format from available options</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>format</strong> : str, optional</p>
+<blockquote class="last">
+<div><p>The format identifier for different packages; can be &#8216;cleed&#8217;
+or None.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.set_input_files">
+<tt class="descname">set_input_files</tt><big>(</big><em>input_files=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.set_input_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.set_input_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>set list of input filenames</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.set_lmax">
+<tt class="descname">set_lmax</tt><big>(</big><em>lmax</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.set_lmax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.set_lmax" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set max orbital angular momentum (azimuthal quantum number)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>lmax</strong> : int</p>
+<blockquote class="last">
+<div><p>Maximum azimuthal quantum number to be considered in calculations.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.conphas.Conphas.set_output_file">
+<tt class="descname">set_output_file</tt><big>(</big><em>output_file</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.set_output_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.set_output_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>set output filename</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="phaseshifts.conphas.Conphas.split_phasout">
+<em class="property">static </em><tt class="descname">split_phasout</tt><big>(</big><em>filename</em>, <em>output_filenames=</em><span class="optional">[</span><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/phaseshifts/conphas.html#Conphas.split_phasout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.conphas.Conphas.split_phasout" title="Permalink to this definition">¶</a></dt>
+<dd><p>split phasout input file into separate files</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-phaseshifts.elements">
+<span id="phaseshifts-elements"></span><h3>6.3.3. phaseshifts.elements<a class="headerlink" href="#module-phaseshifts.elements" title="Permalink to this headline">¶</a></h3>
+<p>Properties of the chemical elements.</p>
+<p>Each chemical element is represented as an object instance. Physicochemical
+and descriptive properties of the elements are stored as instance attributes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body"><a class="reference external" href="http://www.lfd.uci.edu/~gohlke/">Christoph Gohlke</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Version:</th><td class="field-body">2013.03.18</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="requirements">
+<h4>6.3.3.1. Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><a class="reference external" href="http://www.python.org">CPython 2.7, 3.2 or 3.3</a></li>
+</ul>
+</div>
+<div class="section" id="references">
+<h4>6.3.3.2. References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h4>
+<ol class="arabic simple">
+<li><a class="reference external" href="http://physics.nist.gov/PhysRefData/Compositions/">http://physics.nist.gov/PhysRefData/Compositions/</a></li>
+<li><a class="reference external" href="http://physics.nist.gov/PhysRefData/IonEnergy/tblNew.html">http://physics.nist.gov/PhysRefData/IonEnergy/tblNew.html</a></li>
+<li><a class="reference external" href="http://en.wikipedia.org/wiki/%(element.name)s">http://en.wikipedia.org/wiki/%(element.name)s</a></li>
+<li><a class="reference external" href="http://www.miranda.org/~jkominek/elements/elements.db">http://www.miranda.org/~jkominek/elements/elements.db</a></li>
+</ol>
+</div>
+<div class="section" id="id1">
+<h4>6.3.3.3. Examples<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">elements</span> <span class="kn">import</span> <span class="n">ELEMENTS</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">ELEMENTS</span><span class="p">)</span>
+<span class="go">109</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">str</span><span class="p">(</span><span class="n">ELEMENTS</span><span class="p">[</span><span class="mi">109</span><span class="p">])</span>
+<span class="go">&#39;Meitnerium&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ele</span> <span class="o">=</span> <span class="n">ELEMENTS</span><span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ele</span><span class="o">.</span><span class="n">number</span><span class="p">,</span> <span class="n">ele</span><span class="o">.</span><span class="n">symbol</span><span class="p">,</span> <span class="n">ele</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">ele</span><span class="o">.</span><span class="n">eleconfig</span>
+<span class="go">(6, &#39;C&#39;, &#39;Carbon&#39;, &#39;[He] 2s2 2p2&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ele</span><span class="o">.</span><span class="n">eleconfig_dict</span>
+<span class="go">{(1, &#39;s&#39;): 2, (2, &#39;p&#39;): 2, (2, &#39;s&#39;): 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">sum</span><span class="p">(</span><span class="n">ele</span><span class="o">.</span><span class="n">mass</span> <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">ELEMENTS</span><span class="p">)</span>
+<span class="go">14659.1115599</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">ELEMENTS</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">ele</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+<span class="gp">... </span>    <span class="n">ele</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">repr</span><span class="p">(</span><span class="n">ele</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="module-phaseshifts.leed">
+<span id="phaseshifts-leed"></span><h3>6.3.4. phaseshifts.leed<a class="headerlink" href="#module-phaseshifts.leed" title="Permalink to this headline">¶</a></h3>
+<p>Provides CLEED validator and Converter classes.</p>
+<p>The CLEED_validator() class provides a method for checking 
+the input files for errors, whereas the Converter.import_CLEED()
+method allows importing CLEED input files as a MTZ_model class</p>
+<dl class="class">
+<dt id="phaseshifts.leed.CLEED_validator">
+<em class="property">class </em><tt class="descclassname">phaseshifts.leed.</tt><tt class="descname">CLEED_validator</tt><a class="reference internal" href="_modules/phaseshifts/leed.html#CLEED_validator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.leed.CLEED_validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Class for validation of CLEED input files</p>
+<dl class="staticmethod">
+<dt id="phaseshifts.leed.CLEED_validator.is_CLEED_file">
+<em class="property">static </em><tt class="descname">is_CLEED_file</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/leed.html#CLEED_validator.is_CLEED_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.leed.CLEED_validator.is_CLEED_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine if file is a CLEED input file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>True</strong> :</p>
+<blockquote>
+<div><p>if a valid filename ending in any of .bul, .inp, .bsr, .bmin</p>
+</div></blockquote>
+<p><strong>False</strong> :</p>
+<blockquote class="last">
+<div><p>otherwise</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.leed.CLEED_validator.validate">
+<tt class="descname">validate</tt><big>(</big><em>filename</em>, <em>aoi=False</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/leed.html#CLEED_validator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.leed.CLEED_validator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks CLEED input file for errors</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote>
+<div><p>Path to input file. Should be *.bul , *.ctr, *.inp or *.bmin</p>
+</div></blockquote>
+<p><strong>aoi</strong> : bool</p>
+<blockquote class="last">
+<div><p>Check for angle of incidence parameters</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phaseshifts.leed.CSearch">
+<em class="property">class </em><tt class="descclassname">phaseshifts.leed.</tt><tt class="descname">CSearch</tt><big>(</big><em>model_name</em>, <em>leed_command=None</em><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<dl class="method">
+<dt id="phaseshifts.leed.CSearch._getResults">
+<tt class="descname">_getResults</tt><big>(</big><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch._getResults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.leed.CSearch.getIteration">
+<tt class="descname">getIteration</tt><big>(</big><em>iteration</em><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch.getIteration" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.leed.CSearch.getRFactor">
+<tt class="descname">getRFactor</tt><big>(</big><em>iteration</em><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch.getRFactor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.leed.CSearch.getTimeStamp">
+<tt class="descname">getTimeStamp</tt><big>(</big><em>iteration</em><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch.getTimeStamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.leed.CSearch.setModel">
+<tt class="descname">setModel</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#phaseshifts.leed.CSearch.setModel" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phaseshifts.leed.Converter">
+<em class="property">class </em><tt class="descclassname">phaseshifts.leed.</tt><tt class="descname">Converter</tt><a class="reference internal" href="_modules/phaseshifts/leed.html#Converter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.leed.Converter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Convert different input into phaseshift compatible input</p>
+<dl class="staticmethod">
+<dt id="phaseshifts.leed.Converter.import_CLEED">
+<em class="property">static </em><tt class="descname">import_CLEED</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/leed.html#Converter.import_CLEED"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.leed.Converter.import_CLEED" title="Permalink to this definition">¶</a></dt>
+<dd><p>Imports CLEED input file and converts model to muffin-tin input.</p>
+<dl class="docutils">
+<dt>It assumes the following:</dt>
+<dd><ul class="first last">
+<li><p class="first">the basis vectors a1, a2, &amp; a3 are x,y,z cartezian coordinates</p>
+</li>
+<li><p class="first">if no a3 is found, the maximum z distance between atoms multiplied
+by four is given</p>
+</li>
+<li><p class="first">the unitcell is converted from cartezian to fractional coordinates</p>
+</li>
+<li><p class="first">atom sites are converted from Angstrom to Bohr units</p>
+</li>
+<li><p class="first">additional info from the phase shift filename is provided by 
+splitting the &#8216;_&#8217; chars:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>First string segment is element or symbol, e.g. Ni</li>
+<li>Second string segment is the oxidation, e.g. +2</li>
+</ol>
+</div></blockquote>
+</li>
+<li><p class="first">lines with &#8216;<strong>rm:</strong>&#8216; provide the radii dictionary of the atomic 
+species</p>
+</li>
+<li><p class="first">if no &#8216;<strong>rm:</strong>&#8216; found for that species, the atomic radius is used 
+for zero valence, otherwise the covalent radius is used.</p>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Additional information can, however, be provided using &#8216;phs:&#8217; at the 
+start of a line within the input file and may have the following 
+formats:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>&#8220;<strong>phs:</strong> c <em>&lt;float&gt;</em> nh <em>&lt;int&gt;</em> nform <em>&lt;int&gt;</em> exchange <em>&lt;float&gt;</em>&#8220;</li>
+<li>&#8220;<strong>phs:</strong> <em>&lt;phase_shift&gt;</em> valence <em>&lt;float&gt;</em> radius <em>&lt;float&gt;</em>&#8220;</li>
+</ol>
+</div></blockquote>
+<p>The identifiers <tt class="docutils literal"><span class="pre">exchange</span></tt>, <tt class="docutils literal"><span class="pre">nform</span></tt>, <tt class="docutils literal"><span class="pre">valence</span></tt> and <tt class="docutils literal"><span class="pre">radius</span></tt> may 
+be abbreviated to <tt class="docutils literal"><span class="pre">exc</span></tt>, <tt class="docutils literal"><span class="pre">nf</span></tt>, <tt class="docutils literal"><span class="pre">val</span></tt> and <tt class="docutils literal"><span class="pre">rad</span></tt>, respectively.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote>
+<div><p>Path to input file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>phaseshifts.model.MTZ_model</strong> :</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>IOError</strong> : filename invalid</p>
+<p class="last"><strong>ValueError</strong> : bad formatting of input</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-phaseshifts.model">
+<span id="phaseshifts-model"></span><h3>6.3.5. phaseshifts.model<a class="headerlink" href="#module-phaseshifts.model" title="Permalink to this headline">¶</a></h3>
+<p><strong>model.py</strong></p>
+<p>Provides convenience functions for generating input and calculating 
+atomic charge densities for use with the Barbieri/Van Hove phase 
+shift calculation package.</p>
+<dl class="class">
+<dt id="phaseshifts.model.Atom">
+<em class="property">class </em><tt class="descclassname">phaseshifts.model.</tt><tt class="descname">Atom</tt><big>(</big><em>element, coordinates=[0.0, 0.0, 0.0], **kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Atom class for input into cluster model for muffin-tin potential
+calculations.</p>
+<dl class="method">
+<dt id="phaseshifts.model.Atom.set_coordinates">
+<tt class="descname">set_coordinates</tt><big>(</big><em>coordinates</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Atom.set_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Atom.set_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Atom.set_mufftin_radius">
+<tt class="descname">set_mufftin_radius</tt><big>(</big><em>radius</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Atom.set_mufftin_radius"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Atom.set_mufftin_radius" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the muffin-tin radius of the atom in Angstroms.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Atom.set_valence">
+<tt class="descname">set_valence</tt><big>(</big><em>valency</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Atom.set_valence"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Atom.set_valence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the valency of the atom</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="phaseshifts.model.CoordinatesError">
+<em class="property">exception </em><tt class="descclassname">phaseshifts.model.</tt><tt class="descname">CoordinatesError</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#CoordinatesError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.CoordinatesError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></tt></p>
+<p>Coordinate exception to raise and log duplicate coordinates.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="phaseshifts.model.MTZ_model">
+<em class="property">class </em><tt class="descclassname">phaseshifts.model.</tt><tt class="descname">MTZ_model</tt><big>(</big><em>unitcell</em>, <em>atoms</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#phaseshifts.model.Model" title="phaseshifts.model.Model"><tt class="xref py py-class docutils literal"><span class="pre">phaseshifts.model.Model</span></tt></a></p>
+<p>Muffin-tin potential Model subclass for producing input file 
+for muffin-tin calculations in the Barbieri/Van Hove phase 
+shift calculation package.</p>
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.calculate_MTZ">
+<tt class="descname">calculate_MTZ</tt><big>(</big><em>mtz_string=''</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.calculate_MTZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.calculate_MTZ" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atomic_file</strong> : str</p>
+<blockquote>
+<div><p>The path to the atomic input file. If this is omitted the default
+is generate one using the MTZ_model.gen_atomic() method.</p>
+</div></blockquote>
+<p><strong>cluster_file</strong> : str</p>
+<blockquote>
+<div><p>The path to the cluster input file which may be a bulk or slab 
+model.</p>
+</div></blockquote>
+<p><strong>slab</strong> : int or bool</p>
+<blockquote>
+<div><p>Determines whether the MTZ calculation is for a slab model (True).
+The default is a bulk calculation.</p>
+</div></blockquote>
+<p><strong>output</strong> : dict</p>
+<blockquote>
+<div><p>Dictionary output of &#8216;mtz&#8217; - muffin-tin potential &amp; &#8216;output_file&#8217;
+- the path to the MTZ output file.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>output_files</strong> : list(str)</p>
+<blockquote class="last">
+<div><p>Paths to the MTZ output file.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.create_atorbs">
+<tt class="descname">create_atorbs</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.create_atorbs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.create_atorbs" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>output_files</strong> : dict</p>
+<blockquote class="last">
+<div><p>Dictionary list of atorb*.i input files for the Atorb class to
+calculate the charge density from.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.gen_atomic">
+<tt class="descname">gen_atomic</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.gen_atomic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.gen_atomic" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>input_dir</strong> : str</p>
+<blockquote>
+<div><p>Input directory where at*.i files are kept.</p>
+</div></blockquote>
+<p><strong>input_files</strong> : tuple</p>
+<blockquote>
+<div><p>List of input files to generate atomic input file from.</p>
+</div></blockquote>
+<p><strong>output_file</strong> : str</p>
+<blockquote>
+<div><p>The filename of the resulting atomic*.i output file, which is
+simply a superimposed set of the radial charge densities from
+the individual input files.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>output_file</strong> : str</p>
+<blockquote>
+<div><p>Returns the output file path string.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>IOError</strong> : exception</p>
+<blockquote class="last">
+<div><p>If either input directory or files do not exist.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>If &#8216;input_files&#8217; is not given then the default list of input files are 
+inferred from the list of atoms in the model.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.gen_input">
+<tt class="descname">gen_input</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.gen_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.gen_input" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>filename on success</strong> :</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CoordinatesError</strong> : exception</p>
+<blockquote class="last">
+<div><p>if the model atoms have duplicate coordinates and the &#8216;pos_check&#8217; 
+kwarg is set to True.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.get_MTZ">
+<tt class="descname">get_MTZ</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.get_MTZ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.get_MTZ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves muffin-tin potential from file</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.get_elements">
+<tt class="descname">get_elements</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.get_elements"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.get_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the unique elements in model</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.load_from_file">
+<tt class="descname">load_from_file</tt><big>(</big><em>filename</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.load_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.load_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>filename</strong> : str</p>
+<blockquote>
+<div><p>The path of the input file (e.g. cluster*.i or <em>slab</em>.i)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>IOError</strong> : exception</p>
+<blockquote>
+<div><p>If the file cannot be read.</p>
+</div></blockquote>
+<p><strong>TypeError</strong> : exception</p>
+<blockquote class="last">
+<div><p>If a input line cannot be parsed correctly.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.set_exchange">
+<tt class="descname">set_exchange</tt><big>(</big><em>alpha</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.set_exchange"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.set_exchange" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the alpha exchange term for muffin-tin calculation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.set_nform">
+<tt class="descname">set_nform</tt><big>(</big><em>nform</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.set_nform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.set_nform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets form of muffin-tin calculation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>nform</strong> : int or str</p>
+<blockquote class="last">
+<div><p>This governs the type of calculation, where nform can be:</p>
+<p><strong>1.</strong> &#8220;cav&#8221; or 0 - use Cavendish method</p>
+<p><strong>2.</strong> &#8220;wil&#8221; or 1 - use William&#8217;s method</p>
+<p><strong>3.</strong> &#8220;rel&#8221; or 2 - Relativistic calculations</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.set_nh">
+<tt class="descname">set_nh</tt><big>(</big><em>nh</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.set_nh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.set_nh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the nh muffin-tin zero estimation parameter</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.MTZ_model.set_slab_c">
+<tt class="descname">set_slab_c</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#MTZ_model.set_slab_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.MTZ_model.set_slab_c" title="Permalink to this definition">¶</a></dt>
+<dd><p class="rubric">Examples</p>
+<p>For Re the bulk c distance is 2.76Å, whereas a possible slab c distance
+could be ~10Å.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phaseshifts.model.Model">
+<em class="property">class </em><tt class="descclassname">phaseshifts.model.</tt><tt class="descname">Model</tt><big>(</big><em>unitcell</em>, <em>atoms</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Generic model class.</p>
+<dl class="method">
+<dt id="phaseshifts.model.Model._nineq_atoms">
+<tt class="descname">_nineq_atoms</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model._nineq_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model._nineq_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>nineq_atoms, element_dict</strong> : tuple</p>
+<blockquote class="last">
+<div><dl class="docutils">
+<dt>nineq_atoms <span class="classifier-delimiter">:</span> <span class="classifier">The estimated number of inequivalent atoms based on </span></dt>
+<dd><p class="first last">the valence and radius of each atom.</p>
+</dd>
+<dt>element_dict <span class="classifier-delimiter">:</span> <span class="classifier">a dictionary of each element in the atom list where </span></dt>
+<dd><p class="first last">each element contains an atom dictionary of &#8216;nineq_atoms&#8217;, 
+&#8216;n_atoms&#8217; and a complete &#8216;atom_list&#8217;</p>
+</dd>
+</dl>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Model.add_atom">
+<tt class="descname">add_atom</tt><big>(</big><em>element</em>, <em>position</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model.add_atom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model.add_atom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append an Atom instance to the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>element</strong> : str or int</p>
+<blockquote>
+<div><p>Either an element name, symbol or atomic number.</p>
+</div></blockquote>
+<p><strong>position</strong> : list(float) or ndarray</p>
+<blockquote class="last">
+<div><p>(1x3) array of the fractional coordinates of the atom
+within the unit cell in terms of the lattice vector a.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Model.check_coordinates">
+<tt class="descname">check_coordinates</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model.check_coordinates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model.check_coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check for duplicate coordinates of different atoms in model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>CoordinateError</strong> : exception</p>
+<blockquote class="last">
+<div><p>If duplicate positions found.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Model.set_atoms">
+<tt class="descname">set_atoms</tt><big>(</big><em>atoms</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model.set_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model.set_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the atoms for the model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>atoms</strong> : list(Atoms)</p>
+<blockquote>
+<div><p>Array of Atom instances. Entries in the list which are
+not of type Atom will be ignored.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong> : exception</p>
+<blockquote class="last">
+<div><p>If atoms parameter is not a list.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Model.set_unitcell">
+<tt class="descname">set_unitcell</tt><big>(</big><em>unitcell</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Model.set_unitcell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Model.set_unitcell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the unitcell for the model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>unitcell</strong> : Unitcell</p>
+<blockquote>
+<div><p>Instance of Unitcell class to set to model.</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first"><strong>TypeError</strong> : exception</p>
+<blockquote class="last">
+<div><p>If unitcell parameter is not a Unitcell.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="phaseshifts.model.Unitcell">
+<em class="property">class </em><tt class="descclassname">phaseshifts.model.</tt><tt class="descname">Unitcell</tt><big>(</big><em>a</em>, <em>c</em>, <em>matrix_3x3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">object</span></tt></p>
+<p>Unitcell class</p>
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_a">
+<tt class="descname">set_a</tt><big>(</big><em>a</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_a"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_a" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>a: float</strong> :</p>
+<blockquote class="last">
+<div><p>The magnitude of the in-plane lattice vector in Angstroms</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>To retrieve a in terms of Angstroms use &#8216;unitcell.a&#8217;, whereas the
+internal parameter &#8216;unitcell._a&#8217; converts a into Bohr radii 
+(1 Bohr = 0.529Å), which is used for the muffin-tin potential
+calculations in libphsh (CAVPOT subroutine).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_alpha">
+<tt class="descname">set_alpha</tt><big>(</big><em>alpha</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_alpha" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_beta">
+<tt class="descname">set_beta</tt><big>(</big><em>beta</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_beta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_beta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_c">
+<tt class="descname">set_c</tt><big>(</big><em>c</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_c" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>c</strong> : float</p>
+<blockquote class="last">
+<div><p>The magnitude of the in-plane lattice vector in Angstroms</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Notes</p>
+<p>To retrieve c in terms of Angstroms use &#8216;unitcell.c&#8217;, whereas the
+internal parameter &#8216;unitcell._c&#8217; converts c into Bohr radii 
+(1 Bohr = 0.529Å), which is used for the muffin-tin potential
+calculations in libphsh (CAVPOT subroutine).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_gamma">
+<tt class="descname">set_gamma</tt><big>(</big><em>gamma</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_gamma" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="phaseshifts.model.Unitcell.set_vectors">
+<tt class="descname">set_vectors</tt><big>(</big><em>m3x3</em><big>)</big><a class="reference internal" href="_modules/phaseshifts/model.html#Unitcell.set_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#phaseshifts.model.Unitcell.set_vectors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-phaseshifts.phsh">
+<span id="phaseshifts-phsh"></span><h3>6.3.6. phaseshifts.phsh<a class="headerlink" href="#module-phaseshifts.phsh" title="Permalink to this headline">¶</a></h3>
+<p>phsh.py - quickly generate phase shifts</p>
+<p>phsh provides convenience functions to create phase shifts files
+suitable for input into LEED-IV programs such as SATLEED and CLEED.</p>
+<div class="section" id="id2">
+<h4>6.3.6.1. Examples<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h4>
+<div class="code bash highlight-python"><pre>phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="authors.html" title="7. Author list"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="scripts.html" title="5. Scripts"
+             >previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

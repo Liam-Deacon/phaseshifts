@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>2. Installing the phaseshifts package &mdash; phaseshifts 0.1.4-dev documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.4-dev',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="phaseshifts 0.1.4-dev documentation" href="index.html" />
+    <link rel="next" title="3. Contact" href="contact.html" />
+    <link rel="prev" title="1. Introduction" href="introduction.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contact.html" title="3. Contact"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="1. Introduction"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="introduction.html"
+                        title="previous chapter">1. Introduction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="contact.html"
+                        title="next chapter">3. Contact</a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installing-the-phaseshifts-package">
+<span id="installing-phaseshifts"></span><h1>2. Installing the phaseshifts package<a class="headerlink" href="#installing-the-phaseshifts-package" title="Permalink to this headline">¶</a></h1>
+<p>The <a class="reference external" href="http://https://pypi.python.org/pypi/phaseshifts/">phaseshifts</a> package
+requires CPython 2.6 or later and also uses the <a class="reference external" href="http://www.scipy.org/scipylib/download.html">numpy</a>, <a class="reference external" href="http://www.scipy.org/scipylib/download.html">scipy</a> and <a class="reference external" href="http://https://pypi.python.org/pypi/periodictable">periodictable</a> packages.
+Currently, it has only been tested extensively with Python 2.7 on Windows, so
+there are no guarantees with other platforms. To perform a setup follow the
+steps below.</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">Install the numpy, scipy and periodictable packages.</p>
+<p>On systems compatible with PyPI this can be done using the command:</p>
+<div class="highlight-python"><pre>pip install numpy scipy periodictable</pre>
+</div>
+<p>Or if you have the easy_install package:</p>
+<div class="highlight-python"><pre>easy_install install numpy scipy periodictable</pre>
+</div>
+<p>Older versions of numpy &amp; scipy did not allow simultaneous installation -
+if you experience problems then try first installing numpy before
+attempting to install scipy.</p>
+<p>The periodictable package allows lookup of the most common crystal
+structure for a given element and is instrumental in many of the
+convenience functions contained in the model module.</p>
+<p>Alternatively download and install these packages manually following the
+instructions provided for the respective packages.</p>
+</li>
+<li><p class="first">To install the phaseshifts package:</p>
+<div class="highlight-python"><pre>python setup.py install</pre>
+</div>
+<p>With any luck the package has been installed successfully. A set of test scripts
+are provided, however a simple check may suffice using an interactive session of
+the python interpreter:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">phaseshifts</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">phaseshifts.lib</span> <span class="kn">import</span> <span class="n">libphsh</span>  <span class="c"># compiled FORTRAN .pyd or .so using f2py</span>
+</pre></div>
+</div>
+<p>If these execute without errors then it is likely that all is well, but in case of
+problems or bugs please use the contact provided below and I will do my best to
+address the problem quickly.</p>
+</li>
+</ol>
+</div></blockquote>
+<div class="admonition tip">
+<p class="first admonition-title">Tip</p>
+<p class="last">On Windows systems it may be easier to install a scientific python distibution
+rather than install the dependencies from source - <a class="reference external" href="http://code.google.com/p/pythonxy">Python(x,y)</a> with mingw (gcc &amp; gfortran)
+installed is highly recommended.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="contact.html" title="3. Contact"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="introduction.html" title="1. Introduction"
+             >previous</a> |</li>
+        <li><a href="index.html">phaseshifts 0.1.4-dev documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013-2014, Liam Deacon.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.
+    </div>
+  </body>
+</html>

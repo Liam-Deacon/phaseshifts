@@ -1,0 +1,2624 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PeriodicTable</class>
+ <widget class="QFrame" name="PeriodicTable">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>658</width>
+    <height>378</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>550</width>
+    <height>275</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Periodic Table</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res/res.qrc">
+    <normaloff>:/periodictable_32x32.png</normaloff>:/periodictable_32x32.png</iconset>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QPushButton {
+   border-width: 2px;
+   border-color: #777;
+   border-style: solid;
+   border-radius: 5px;
+   padding: 2px;
+   background-color: QLinearGradient( x1:0, y1:0, x2:0, y2:1,
+      stop: 0 #fff,
+      stop: 0.5 #eee,
+      stop: 1 #999);
+   }
+ 
+
+QPushButton:pressed {
+   border-color: black;
+}
+
+QToolButton {
+   color: black;
+   font-size: 12px;
+   border-width: 2px;
+   border-color: #777;
+   border-style: solid;
+   border-radius: 5px;
+   padding: 2px;
+  background-color: QLinearGradient( x1:0, y1:0, x2:0, y2:1,
+      stop: 0 #fff,
+      stop: 0.5 #eee,
+     stop: 1 #999);
+
+  min-width: 1.5em;
+  max-width: 1.5em;
+  max-height: 1.5em;
+  min-height: 1.5em;
+}
+
+QToolTip {
+   border: 2px solid darkkhaki;
+   padding: 2px;
+   border-radius: 3px;
+   opacity: 200;
+   font-size: 11px;
+   white-space: nowrap; 
+	min-width: 120px;
+}</string>
+  </property>
+  <property name="frameShape">
+   <enum>QFrame::StyledPanel</enum>
+  </property>
+  <property name="frameShadow">
+   <enum>QFrame::Raised</enum>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="6" column="0">
+    <widget class="QPushButton" name="element_87">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Fr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="5">
+    <widget class="QPushButton" name="element_24">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Cr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="16">
+    <widget class="QPushButton" name="element_16">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>S</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="7">
+    <widget class="QPushButton" name="element_44">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ru</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="16">
+    <widget class="QPushButton" name="element_84">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Po</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="18">
+    <widget class="QPushButton" name="element_86">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Rn</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QPushButton" name="element_21">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Sc</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="10">
+    <widget class="QPushButton" name="element_96">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Cm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="5">
+    <widget class="QPushButton" name="element_92">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>U</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QPushButton" name="element_88">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ra</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="14">
+    <widget class="QPushButton" name="element_82">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Pb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QPushButton" name="element_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Li</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="4">
+    <widget class="QPushButton" name="element_105">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Db</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="16">
+    <widget class="QPushButton" name="element_8">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>O</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="16">
+    <widget class="QPushButton" name="element_102">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>No</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="18">
+    <widget class="QPushButton" name="element_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="font">
+      <font>
+       <family>MS UI Gothic</family>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>He</string>
+     </property>
+     <property name="autoDefault">
+      <bool>false</bool>
+     </property>
+     <property name="default">
+      <bool>false</bool>
+     </property>
+     <property name="flat">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheetNobleGas" stdset="0">
+      <string notr="true"/>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="16">
+    <widget class="QPushButton" name="element_52">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>Te</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="4">
+    <widget class="QPushButton" name="element_73">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ta</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QPushButton" name="element_11">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Na</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="6">
+    <widget class="QPushButton" name="element_107">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Bh</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="15">
+    <widget class="QPushButton" name="element_15">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>P</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="16">
+    <widget class="QPushButton" name="element_34">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Se</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="17">
+    <widget class="QPushButton" name="element_53">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(10, 93, 214, 100);
+background-color: rgba(0, 179, 255, 100);
+background-color: rgba(0, 170, 220, 200);
+background-color: rgb(137, 188, 255);
+border-color: rgb(0, 0, 255);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>I</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QPushButton" name="element_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Be</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QLabel" name="label_3">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>*</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="2">
+    <widget class="QPushButton" name="element_39">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Y</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="9">
+    <widget class="QPushButton" name="element_77">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ir</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="9">
+    <widget class="QPushButton" name="element_95">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Am</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="10">
+    <widget class="QPushButton" name="element_28">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ni</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="2">
+    <widget class="QPushButton" name="element_57">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>La</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="16">
+    <widget class="QPushButton" name="element_70">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Yb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="12">
+    <widget class="QPushButton" name="element_30">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Zn</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="4">
+    <widget class="QPushButton" name="element_91">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Pa</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="3">
+    <widget class="QPushButton" name="element_40">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Zr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="15">
+    <widget class="QPushButton" name="element_101">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Md</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="17">
+    <widget class="QPushButton" name="element_35">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(10, 93, 214, 100);
+background-color: rgba(0, 179, 255, 100);
+background-color: rgba(0, 170, 220, 200);
+background-color: rgb(137, 188, 255);
+border-color: rgb(0, 0, 255);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Br</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="14">
+    <widget class="QPushButton" name="element_32">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>Ge</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="15">
+    <widget class="QPushButton" name="element_83">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Bi</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="element_20">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ca</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="12">
+    <widget class="QPushButton" name="element_98">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Cf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QPushButton" name="element_37">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Rb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="9">
+    <widget class="QPushButton" name="element_45">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Rh</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="18">
+    <widget class="QPushButton" name="element_18">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Ar</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="11">
+    <widget class="QPushButton" name="element_111">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Rg</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="12">
+    <widget class="QPushButton" name="element_80">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Hg</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="6">
+    <widget class="QPushButton" name="element_75">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Re</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="12">
+    <widget class="QPushButton" name="element_48">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Cd</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="13">
+    <widget class="QPushButton" name="element_49">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>In</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="18">
+    <widget class="QPushButton" name="element_10">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Ne</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="17">
+    <widget class="QPushButton" name="element_85">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(10, 93, 214, 100);
+background-color: rgba(0, 179, 255, 100);
+background-color: rgba(0, 170, 220, 200);
+background-color: rgb(137, 188, 255);
+border-color: rgb(0, 0, 255);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>At</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="6">
+    <widget class="QPushButton" name="element_43">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Tc</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="10">
+    <widget class="QPushButton" name="element_78">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Pt</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="14">
+    <widget class="QPushButton" name="element_14">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>Si</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QLabel" name="label_4">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>**</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="5">
+    <widget class="QPushButton" name="element_60">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Nd</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="17">
+    <widget class="QPushButton" name="element_9">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(10, 93, 214, 100);
+background-color: rgba(0, 179, 255, 100);
+background-color: rgba(0, 170, 220, 200);
+background-color: rgb(137, 188, 255);
+border-color: rgb(0, 0, 255);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>F</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="13">
+    <widget class="QPushButton" name="element_13">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Al</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="6">
+    <widget class="QPushButton" name="element_25">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Mn</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="13">
+    <widget class="QPushButton" name="element_81">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Tl</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="11">
+    <widget class="QPushButton" name="element_79">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Au</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="11">
+    <widget class="QPushButton" name="element_97">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Bk</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="15">
+    <widget class="QPushButton" name="element_33">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>As</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="7">
+    <widget class="QPushButton" name="element_76">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Os</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="0">
+    <widget class="QPushButton" name="element_19">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>K</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="3">
+    <widget class="QPushButton" name="element_58">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Ce</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="12">
+    <widget class="QPushButton" name="element_66">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Dy</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="14">
+    <widget class="QPushButton" name="element_68">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Er</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="18">
+    <widget class="QPushButton" name="element_36">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Kr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="7">
+    <widget class="QPushButton" name="element_62">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Sm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="7">
+    <widget class="QPushButton" name="element_94">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Pu</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="10">
+    <widget class="QPushButton" name="element_64">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Gd</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="4">
+    <widget class="QPushButton" name="element_59">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Pr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="6">
+    <widget class="QPushButton" name="element_61">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Pm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="9">
+    <widget class="QPushButton" name="element_63">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Eu</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2">
+    <widget class="QPushButton" name="element_89">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Ac</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="15">
+    <widget class="QPushButton" name="element_69">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Tm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="17">
+    <widget class="QPushButton" name="element_71">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Lu</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="14">
+    <widget class="QPushButton" name="element_50">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Sn</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="13">
+    <widget class="QPushButton" name="element_31">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(115, 173, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(187, 255, 0, 120);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Ga</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="15">
+    <widget class="QPushButton" name="element_51">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>Sb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="5">
+    <widget class="QPushButton" name="element_106">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Sg</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="10">
+    <widget class="QPushButton" name="element_46">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Pd</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="4">
+    <widget class="QPushButton" name="element_41">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Nb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="17">
+    <widget class="QPushButton" name="element_103">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Lr</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="element_12">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Mg</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="9">
+    <widget class="QPushButton" name="element_109">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Mt</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="5">
+    <widget class="QPushButton" name="element_42">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Mo</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="9">
+    <widget class="QPushButton" name="element_27">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Co</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="6">
+    <widget class="QPushButton" name="element_93">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Np</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QPushButton" name="element_1">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>8</pointsize>
+      </font>
+     </property>
+     <property name="toolTip">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Hydrogen&lt;br/&gt;&lt;/span&gt;Non-metal&lt;br/&gt;Z=1&lt;br/&gt;1s&lt;span style=&quot; vertical-align:super;&quot;&gt;1&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>H</string>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>24</width>
+       <height>24</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="10">
+    <widget class="QPushButton" name="element_110">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ds</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="13">
+    <widget class="QPushButton" name="element_67">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Ho</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <spacer name="verticalSpacer">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Expanding</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>5</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="5" column="5">
+    <widget class="QPushButton" name="element_74">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>W</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QLabel" name="label">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>*</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QPushButton" name="element_56">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ba</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="11">
+    <widget class="QPushButton" name="element_29">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Cu</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="3">
+    <widget class="QPushButton" name="element_72">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Hf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="13">
+    <widget class="QPushButton" name="element_99">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Es</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="5">
+    <widget class="QLabel" name="labelZ">
+     <property name="styleSheet">
+      <string notr="true">font: 75 12pt &quot;MS Shell Dlg 2&quot;;</string>
+     </property>
+     <property name="text">
+      <string>1</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignRight|Qt::AlignTrailing</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="18">
+    <widget class="QPushButton" name="element_54">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 127);
+color: rgb(0, 0, 0);
+background-color: rgba(160, 10, 214, 100);
+background-color: rgba(207, 152, 255, 180);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Xe</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="7">
+    <widget class="QLabel" name="labelMass">
+     <property name="styleSheet">
+      <string notr="true">font: 12pt &quot;MS Shell Dlg 2&quot;;</string>
+     </property>
+     <property name="text">
+      <string>1.0</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="13">
+    <widget class="QPushButton" name="element_5">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 136, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 170, 0, 100);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(161, 214, 138);</string>
+     </property>
+     <property name="text">
+      <string>B</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="11">
+    <widget class="QPushButton" name="element_65">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(170, 85, 0);
+color: rgb(0, 0, 0);
+selection-color: rgb(0, 0, 0);
+background-color: rgb(225, 214, 155);</string>
+     </property>
+     <property name="text">
+      <string>Tb</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QPushButton" name="element_55">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(255, 146, 146);
+color: rgb(0, 0, 0);
+border-color: rgb(170, 0, 0);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Cs</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="14">
+    <widget class="QPushButton" name="element_100">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Fm</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="14">
+    <widget class="QPushButton" name="element_6">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="toolTip">
+      <string>Carbon</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>C</string>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="3">
+    <widget class="QPushButton" name="element_90">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(85, 0, 0);
+color: rgb(0, 0, 0);
+background-color: rgba(214, 163, 10, 160);
+background-color: rgb(212, 175, 111);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Th</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="3">
+    <widget class="QPushButton" name="element_22">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ti</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="7">
+    <widget class="QPushButton" name="element_26">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Fe</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="11">
+    <widget class="QPushButton" name="element_47">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Ag</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="12">
+    <widget class="QPushButton" name="element_112">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Cn</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="2">
+    <widget class="QLabel" name="label_2">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>**</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="15">
+    <widget class="QPushButton" name="element_7">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(0, 132, 189);
+color: rgb(0, 0, 0);
+background-color: rgba(0, 153, 170, 100);
+background-color: rgb(120, 220, 230);
+background-color: rgb(161, 240, 255);
+background-color: rgb(151, 227, 227);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>N</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="4">
+    <widget class="QPushButton" name="element_23">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>V</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="3">
+    <widget class="QPushButton" name="element_104">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Rf</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="17">
+    <widget class="QPushButton" name="element_17">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color: rgba(10, 93, 214, 100);
+background-color: rgba(0, 179, 255, 100);
+background-color: rgba(0, 170, 220, 200);
+background-color: rgb(137, 188, 255);
+border-color: rgb(0, 0, 255);
+selection-color: rgb(0, 0, 0);</string>
+     </property>
+     <property name="text">
+      <string>Cl</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="7">
+    <widget class="QPushButton" name="element_108">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: rgb(0, 0, 0);
+background-color:  rgba(255, 255, 0, 160);
+border-color: rgb(197, 197, 0);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Hs</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="6">
+    <widget class="QLabel" name="labelElement">
+     <property name="styleSheet">
+      <string notr="true">font: 16pt &quot;MS Shell Dlg 2&quot;;</string>
+     </property>
+     <property name="text">
+      <string>H</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignHCenter|Qt::AlignTop</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QPushButton" name="element_38">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">border-color: rgb(255, 85, 0);
+color: rgb(0, 0, 0);
+background-color:  rgba(255, 85, 0, 120);
+background-color: rgba(255, 179, 0, 200);
+background-color: rgb(255, 209, 129);
+selection-color: rgb(0, 0, 0);
+</string>
+     </property>
+     <property name="text">
+      <string>Sr</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <zorder>element_69</zorder>
+  <zorder>element_29</zorder>
+  <zorder>element_26</zorder>
+  <zorder>element_106</zorder>
+  <zorder>element_90</zorder>
+  <zorder>element_17</zorder>
+  <zorder>element_70</zorder>
+  <zorder>element_68</zorder>
+  <zorder>element_3</zorder>
+  <zorder>element_10</zorder>
+  <zorder>element_44</zorder>
+  <zorder>element_11</zorder>
+  <zorder>element_104</zorder>
+  <zorder>element_67</zorder>
+  <zorder>element_108</zorder>
+  <zorder>element_71</zorder>
+  <zorder>label_4</zorder>
+  <zorder>element_89</zorder>
+  <zorder>element_91</zorder>
+  <zorder>element_92</zorder>
+  <zorder>element_93</zorder>
+  <zorder>element_94</zorder>
+  <zorder>element_95</zorder>
+  <zorder>element_96</zorder>
+  <zorder>element_97</zorder>
+  <zorder>element_98</zorder>
+  <zorder>element_99</zorder>
+  <zorder>element_100</zorder>
+  <zorder>element_101</zorder>
+  <zorder>element_102</zorder>
+  <zorder>element_103</zorder>
+  <zorder>label_3</zorder>
+  <zorder>element_28</zorder>
+  <zorder>element_34</zorder>
+  <zorder>element_80</zorder>
+  <zorder>element_8</zorder>
+  <zorder>element_42</zorder>
+  <zorder>element_45</zorder>
+  <zorder>element_12</zorder>
+  <zorder>element_46</zorder>
+  <zorder>element_64</zorder>
+  <zorder>element_47</zorder>
+  <zorder>element_48</zorder>
+  <zorder>element_49</zorder>
+  <zorder>element_50</zorder>
+  <zorder>element_53</zorder>
+  <zorder>element_110</zorder>
+  <zorder>label_2</zorder>
+  <zorder>element_62</zorder>
+  <zorder>element_77</zorder>
+  <zorder>element_25</zorder>
+  <zorder>element_85</zorder>
+  <zorder>element_60</zorder>
+  <zorder>element_56</zorder>
+  <zorder>label</zorder>
+  <zorder>element_74</zorder>
+  <zorder>element_54</zorder>
+  <zorder>element_15</zorder>
+  <zorder>element_21</zorder>
+  <zorder>element_61</zorder>
+  <zorder>element_83</zorder>
+  <zorder>element_37</zorder>
+  <zorder>element_51</zorder>
+  <zorder>element_33</zorder>
+  <zorder>element_58</zorder>
+  <zorder>element_73</zorder>
+  <zorder>element_6</zorder>
+  <zorder>element_27</zorder>
+  <zorder>element_81</zorder>
+  <zorder>element_86</zorder>
+  <zorder>element_109</zorder>
+  <zorder>element_7</zorder>
+  <zorder>element_38</zorder>
+  <zorder>element_52</zorder>
+  <zorder>element_32</zorder>
+  <zorder>element_82</zorder>
+  <zorder>element_66</zorder>
+  <zorder>element_13</zorder>
+  <zorder>element_39</zorder>
+  <zorder>element_41</zorder>
+  <zorder>element_2</zorder>
+  <zorder>element_30</zorder>
+  <zorder>element_4</zorder>
+  <zorder>element_78</zorder>
+  <zorder>element_14</zorder>
+  <zorder>element_63</zorder>
+  <zorder>element_87</zorder>
+  <zorder>element_112</zorder>
+  <zorder>element_84</zorder>
+  <zorder>element_18</zorder>
+  <zorder>element_5</zorder>
+  <zorder>element_35</zorder>
+  <zorder>element_72</zorder>
+  <zorder>element_76</zorder>
+  <zorder>element_55</zorder>
+  <zorder>element_23</zorder>
+  <zorder>element_40</zorder>
+  <zorder>element_24</zorder>
+  <zorder>element_43</zorder>
+  <zorder>element_111</zorder>
+  <zorder>element_9</zorder>
+  <zorder>element_59</zorder>
+  <zorder>element_107</zorder>
+  <zorder>element_75</zorder>
+  <zorder>element_22</zorder>
+  <zorder>element_31</zorder>
+  <zorder>element_88</zorder>
+  <zorder>element_20</zorder>
+  <zorder>element_36</zorder>
+  <zorder>element_57</zorder>
+  <zorder>element_105</zorder>
+  <zorder>element_16</zorder>
+  <zorder>element_19</zorder>
+  <zorder>element_79</zorder>
+  <zorder>element_65</zorder>
+  <zorder>element_1</zorder>
+  <zorder>labelElement</zorder>
+  <zorder>labelMass</zorder>
+  <zorder>labelZ</zorder>
+  <zorder>label_7</zorder>
+ </widget>
+ <resources>
+  <include location="res/res.qrc"/>
+ </resources>
+ <connections/>
+</ui>

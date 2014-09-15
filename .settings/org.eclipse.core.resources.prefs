@@ -1,0 +1,17 @@
+eclipse.preferences.version=1
+encoding//cython/atorb.pyx=utf-8
+encoding//cython/leed.pyx=utf-8
+encoding//cython/model.pyx=utf-8
+encoding//cython/phsh.pyx=utf-8
+encoding//gui/PeriodicTable.py=utf-8
+encoding//gui/elements_gui.py=utf-8
+encoding//gui/settings.py=utf-8
+encoding//lib/hartfock.py=utf-8
+encoding//tools/debye.py=utf-8
+encoding/atorb.py=utf-8
+encoding/conphas.py=utf-8
+encoding/elements.py=utf-8
+encoding/leed.py=utf-8
+encoding/main.pyw=utf-8
+encoding/model.py=utf-8
+encoding/phsh.py=utf-8

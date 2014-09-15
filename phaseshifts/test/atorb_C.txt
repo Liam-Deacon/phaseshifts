@@ -1,0 +1,18 @@
+C*********************************************************************
+C  atorb input file: atorb_C.txt.
+C*********************************************************************
+i
+6 1000                        ! Z NR (number of points in radial grid)
+d
+1                             ! 1=rel, 0=n.r.
+x
+0.d0                          ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...
+a
+0 4 0.5 0.0005 100            ! relic,levels,mixing SCF, eigen. tol,for ech.
+1 0 0 -0.5 1 2.0              ! n, l, l, -j, <1>, occupation
+2 0 0 -0.5 1 2.0              ! n, l, l, -j, <1>, occupation
+2 1 1 -0.5 1 0.666666666667   ! n, l, l, -j, <1>, occupation
+2 1 1 -1.5 1 1.33333333333    ! n, l, l, -j, <1>, occupation
+w
+<open file '<tmpfile>', mode 'w+b' at 0x027BB4F0>! name of output file 
+q

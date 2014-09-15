@@ -1,0 +1,11 @@
+include *.txt *.py *.rst
+recursive-include phaseshifts *.py *.txt *.rst *.pyw *.pyx
+recursive-include phaseshifts/gui *.ui *.py *.bat *.sh *.svg *.png *.qrc
+recursive-include phaseshifts/cython *
+recursive-include phaseshifts/doc *
+recursive-include phaseshifts/examples *.i *.txt *.inp *.sh *.py
+recursive-include phaseshifts/plugins *.py *.txt *.rst
+recursive-include phaseshifts/lib *.f *.c *.cpp *.h *.for *.py *.pyx
+recursive-exclude phaseshifts/build *
+recursive-exclude phaseshifts/dist *
+recursive-include phaseshifts/res *

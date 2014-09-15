@@ -1,0 +1,26 @@
+id ICON "phaseshifts.ico"
+
+1 VERSIONINFO
+FILEVERSION     0,1,3,0
+PRODUCTVERSION  0,1,3,0
+FILEFLAGS 0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "FileDescription", "Generate phase shifts"
+      VALUE "FileVersion", "0.1.3-dev"
+      VALUE "InternalName", "phaseshifts"
+      VALUE "LegalCopyright", "Liam Deacon"
+      VALUE "OriginalFilename", "phsh.exe"
+      VALUE "ProductName", "PHASESHIFTS"
+      VALUE "ProductVersion", "0.1.3-dev"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END

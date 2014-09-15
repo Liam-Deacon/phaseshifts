@@ -1,0 +1,15 @@
+C************************************************************************
+C  input file atorbC.
+C************************************************************************
+i
+1 1000                        ! Z NR (number of points in radial grid)
+d
+1                             ! 1=rel, 0=n.r.
+x
+0.0d0                         ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...
+a
+0 1 0.5 0.0005 100            ! relic,levels,mixing SCF, eigen. tol,for ech.
+1 0 0 -0.5 1 1.               !  N L M_L -J <1> OCC 
+w
+at_H.i
+q

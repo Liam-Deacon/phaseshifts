@@ -1,0 +1,60 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Introduction}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}Installing the phaseshifts package}{5}{chapter.2}
+\contentsline {chapter}{\numberline {3}Contact}{7}{chapter.3}
+\contentsline {chapter}{\numberline {4}Acknowledgements}{9}{chapter.4}
+\contentsline {section}{\numberline {4.1}Thanks}{9}{section.4.1}
+\contentsline {chapter}{\numberline {5}Scripts}{11}{chapter.5}
+\contentsline {section}{\numberline {5.1}phsh.py}{11}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Command line usage}{11}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}CLEED compatibility}{12}{subsection.5.1.2}
+\contentsline {chapter}{\numberline {6}phaseshifts API}{13}{chapter.6}
+\contentsline {section}{\numberline {6.1}Package Contents}{13}{section.6.1}
+\contentsline {section}{\numberline {6.2}Subpackages}{13}{section.6.2}
+\contentsline {section}{\numberline {6.3}Submodules}{13}{section.6.3}
+\contentsline {subsection}{\numberline {6.3.1}phaseshifts.atorb}{13}{subsection.6.3.1}
+\contentsline {paragraph}{Notes}{14}{paragraph*.5}
+\contentsline {paragraph}{Examples}{14}{paragraph*.7}
+\contentsline {paragraph}{Notes}{16}{paragraph*.10}
+\contentsline {paragraph}{Examples}{16}{paragraph*.12}
+\contentsline {subsection}{\numberline {6.3.2}phaseshifts.conphas}{16}{subsection.6.3.2}
+\contentsline {subsubsection}{Examples}{16}{subsubsection*.13}
+\contentsline {paragraph}{Notes}{17}{paragraph*.15}
+\contentsline {paragraph}{Examples}{17}{paragraph*.19}
+\contentsline {paragraph}{Notes}{18}{paragraph*.21}
+\contentsline {subsection}{\numberline {6.3.3}phaseshifts.elements}{18}{subsection.6.3.3}
+\contentsline {subsubsection}{Requirements}{18}{subsubsection*.28}
+\contentsline {subsubsection}{References}{19}{subsubsection*.29}
+\contentsline {subsubsection}{Examples}{19}{subsubsection*.30}
+\contentsline {subsection}{\numberline {6.3.4}phaseshifts.leed}{19}{subsection.6.3.4}
+\contentsline {subsection}{\numberline {6.3.5}phaseshifts.model}{20}{subsection.6.3.5}
+\contentsline {paragraph}{Notes}{22}{paragraph*.51}
+\contentsline {paragraph}{Examples}{23}{paragraph*.60}
+\contentsline {paragraph}{Notes}{24}{paragraph*.69}
+\contentsline {paragraph}{Notes}{24}{paragraph*.73}
+\contentsline {subsection}{\numberline {6.3.6}phaseshifts.phsh}{24}{subsection.6.3.6}
+\contentsline {subsubsection}{Examples}{24}{subsubsection*.76}
+\contentsline {chapter}{\numberline {7}Author list}{25}{chapter.7}
+\contentsline {section}{\numberline {7.1}Get Involved}{25}{section.7.1}
+\contentsline {chapter}{\numberline {8}License}{27}{chapter.8}
+\contentsline {chapter}{\numberline {9}APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide}{29}{chapter.9}
+\contentsline {section}{\numberline {9.1}Acknowledgement notice}{29}{section.9.1}
+\contentsline {section}{\numberline {9.2}Contact}{29}{section.9.2}
+\contentsline {section}{\numberline {9.3}Contents}{29}{section.9.3}
+\contentsline {section}{\numberline {9.4}Overview of the Programs}{30}{section.9.4}
+\contentsline {subsection}{\numberline {9.4.1}Step 0: \texttt {PhSh0.for}}{30}{subsection.9.4.1}
+\contentsline {subsubsection}{Description}{30}{subsubsection*.77}
+\contentsline {subsubsection}{Files}{31}{subsubsection*.78}
+\contentsline {subsection}{\numberline {9.4.2}Step 1: \texttt {PhSh1.for}}{31}{subsection.9.4.2}
+\contentsline {subsubsection}{Description}{31}{subsubsection*.79}
+\contentsline {subsubsection}{Files}{31}{subsubsection*.80}
+\contentsline {subsection}{\numberline {9.4.3}Step 2: \texttt {PhSh2cav.for}, \texttt {PhSh2wil.for} \& \texttt {PhSh2rel.for}}{32}{subsection.9.4.3}
+\contentsline {subsubsection}{Description}{32}{subsubsection*.81}
+\contentsline {subsubsection}{Different packages}{33}{subsubsection*.82}
+\contentsline {subsubsection}{Files}{33}{subsubsection*.83}
+\contentsline {subsection}{\numberline {9.4.4}Step 3: \texttt {PhSh3.for}}{33}{subsection.9.4.4}
+\contentsline {subsubsection}{Description}{33}{subsubsection*.84}
+\contentsline {subsubsection}{Files}{33}{subsubsection*.85}
+\contentsline {chapter}{\numberline {10}Indices and tables}{35}{chapter.10}
+\contentsline {chapter}{Python Module Index}{37}{section*.86}
+\contentsline {chapter}{Index}{39}{section*.87}
