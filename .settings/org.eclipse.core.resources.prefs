@@ -7,6 +7,7 @@ encoding//gui/PeriodicTable.py=utf-8
 encoding//gui/elements_gui.py=utf-8
 encoding//gui/settings.py=utf-8
 encoding//lib/hartfock.py=utf-8
+encoding//phaseshifts/lib/hartfock.py=utf-8
 encoding//tools/debye.py=utf-8
 encoding/atorb.py=utf-8
 encoding/conphas.py=utf-8
