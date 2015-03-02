@@ -32,14 +32,12 @@ class BaseReader(object):
     
     
 class FileReader(BaseReader):
-    self.f = file
-    
     def __init__(self, file_ptr):
         self.f = file_ptr
     
     @classmethod
     def read_line(self):
-        return self.f.next
+        return self.f.next()
         
         
 class TerminalReader(BaseReader):
@@ -103,39 +101,45 @@ class HartFockInputIO():
             # get exchange correlation (Alpha)
             elif ichar == 'x':
                 if os.path.isfile(input_stream):
-                    self.hf.alfa = float("".join([ch for ch in f.next().split('!')[0] 
+                    self.hf.alfa = float(
+                                "".join([ch for ch in f.next().split('!')[0] 
                                          if ch is not 'd' and ch is not 'D']))
                 else:
-                    self.alfa = float(get_input("Enter exchange correlation method"
+                    self.alfa = float(
+                                  get_input("Enter exchange correlation method"
                                     " (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): "))
             
             elif ichar == 'a':
+                self.hf.abinitio()
+                '''
                 (etot, nst, rel, alfa, nr, r, dr, r2, dl, e, njrc, vi, zorig,
                     xntot, nel, no, nl, xnj, ev, occ, iss, ek, orb, iuflag, 
                     rpower, nm, phe, etot2) = abinitio(etot, nst, rel, alfa, 
                         nr, r, dr, r2, dl, e, njrc, vi, zorig, xntot, nel, no,
                         nl, xnj, ev, occ, iss, ek, orb, iuflag, rpower, nm, 
                         phe, etot2, input_stream=f)
-            
+                '''
             elif ichar == 'i':
+                self.initiali()
+                '''
                 (zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel
                         ) = initiali(zorig, nr, rmin, rmax, r, dr, r2,
                                      dl, njrc, xntot, nel, input_stream=f)
-            
+                '''
             elif ichar == 'q':
                 return  # quit
             
             elif ichar == 'w':
-                self.ixflag = 1
-                self.iu = -1
-                self.ir = 0
+                ixflag = 1
+                iu = -1
+                ir = 0
                 self.hfdisk(iu, ir, etot, nst, rel, nr, rmin, rmax, r, rho,
                        zorig, xntot, ixflag, nel, no, nl, xnj, iss, ev,
                        ek, occ, njrc, vi, phe, orb, input_stream=f)
            
             elif ichar == 'r':
-                self.iu = -1
-                self.ir = 1
+                iu = -1
+                ir = 1
                 self.hfdisk(iu, ir, etot, nst, rel, nr, rmin, rmax, r, rho,
                        zorig, xntot, ixflag, nel, no, nl, xnj, iss, ev,
                        ek, occ, njrc, vi, phe, orb)
@@ -178,7 +182,7 @@ class HartFockInputIO():
                 else:
                     while True:
                         try:
-                            (iunit, corpol) = ([t(s) for t, s in zip(
+                            (iunit, corpol) = ([(s) for t, s in zip(
                                 (int, float), get_input(
                                 'Please enter IUNIT, CORPOL: ').split()[:2])])
                             break
@@ -219,7 +223,7 @@ class HartFockInputIO():
                 while abs(sc - sd) > 0.000001: 
                     if sl * sh <= 0.00000001:
                         rc = rl + (rh - rl) / 2.
-                    if sl * sh > 0.00000001:
+                    elif sl * sh > 0.00000001:
                         rc = rl + (rh - rl) * (sd - sl) / (sh - sl)
                     sc = 0.
                     for i in range(1, nr + 1):
@@ -292,6 +296,7 @@ class HartFockInputIO():
                       "x: set exchange correlation value\n"
                       "q: quit\n" % ichar)
 
+
 class HartFock(object):
     '''
     hartfock class
@@ -340,8 +345,40 @@ class HartFock(object):
     Liam Deacon - python translation
     
     '''
+    def __init__(self, iorbs=33, iside=600, lmax=4, ihmax=20, nrmax=4000, 
+                 ntmax=10, npmax=60, input_stream='stdin'):
+        '''
+        Description
+        -----------
+        Performs calculation of Hartfock subroutine
         
-    
+        Parameters
+        ----------
+        iorbs : int
+            number of orbitals
+        iside : int
+            number of sides
+        lmax : int
+            maximum angular quantum number
+        ihmax : int
+            height?
+        nrmax : int
+            number of radii in grid
+        ntmax : int
+            ?
+        npmax : int
+            ?
+        input_stream : str
+            may be either 'stdin' for user input or else a path to input file
+        '''
+        
+        # initialise class variables
+        self.init_variables()
+        self.init_arrays(iorbs, nrmax)
+        
+        # read input from stdin or file
+        self.read_input(input_stream)
+
     def read_input(self, input_stream):
         input_io = HartFockInputIO(self)
     
@@ -391,44 +428,9 @@ class HartFock(object):
         
         # initialize matrices
         self.vi = [[None] * 7] * nrmax
-        self.phe = self.orb = [[None] * iorbs] * nrmax
+        self.phe = [[None] * iorbs] * nrmax
+        self.orb = [[None] * iorbs] * nrmax
         self.rpower = [[None] * 16] * nrmax
-        
-        
-    def __init__(self, iorbs=33, iside=600, lmax=4, ihmax=20, nrmax=4000, 
-                 ntmax=10, npmax=60, input_stream='stdin'):
-        '''
-        Description
-        -----------
-        Performs calculation of Hartfock subroutine
-        
-        Parameters
-        ----------
-        iorbs : int
-            number of orbitals
-        iside : int
-            number of sides
-        lmax : int
-            maximum angular quantum number
-        ihmax : int
-            height?
-        nrmax : int
-            number of radii in grid
-        ntmax : int
-            ?
-        npmax : int
-            ?
-        input_stream : str
-            may be either 'stdin' for user input or else a path to input file
-        '''
-        
-        # initialise class variables
-        self.init_variables()
-        self.init_arrays(iorbs, nrmax)
-        
-        # read input from stdin or file
-        self.read_input()
-
 
     def abinitio(self):
         """, etot, nst, rel, alfa, nr, r, dr, r2, dl,
@@ -439,13 +441,13 @@ class HartFock(object):
     
         # initilize variables
         xntot = 0.
-        eerror = evi = float
+        eerror = float 
+        evi = float
             
         # this will be good for going up to and including l=3...
         for i in range(8):
-            xi = i
-            for k in range(len(r)):
-                self.rpower[k][i] = pow(self.r[k], xi)
+            for k in range(len(self.r)):
+                self.rpower[k][i] = pow(self.r[k], i)
     
         # read in nfc, nel.  - refer to the documentation for their meanings.
         if input == "stdin":
@@ -453,7 +455,7 @@ class HartFock(object):
                 (int, int, float, float, float), 
                 get_input("Please enter NFC NEL RATIO ETOL XNUM: "))]
         elif isinstance(self.input_stream, file):
-            f = (self.input_stream
+            f = self.input_stream
             (nfc, nel, ratio, etol, xnum) = [t(s) for t, s in zip(
                 (int, int, float, float, float),
                 f.next().split('!')[0].split()[:5])]
@@ -522,7 +524,10 @@ class HartFock(object):
                 ek, ratio, orb, rpower, xnum, etot2, iuflag, evi):
         '''atsolve subroutine'''
         # initialise arrays
-        q0 = xm1 = xm2 = v = [None] * len(r)
+        q0 = [None] * len(r)
+        xm1 = [None] * len(r)
+        xm2 = [None] * len(r)
+        v = [None] * len(r)
         
         # initialise eerror, the biggest change in an eigenvalue, and etot.
         eerror = etot = zeff = 0.
@@ -580,13 +585,22 @@ class HartFock(object):
                nel, nl, nm, no, xnj, rpower, xnum, etot2, iuflag):
         '''getpot subroutine'''
         
+        # initialize arrays
         cg = [ [ [ [ [None] * 13 ] * 13 ] * 13 ] * 6 ] * 6
         pin = [ [ [None] * 17 ] * 9 ] * 9
-        xq1 = xq2 = xq0 = xqi1 = xqi2 = xqi0 = xqj1 = xqj2 = xqj0 = [None] * nr
+        xq1 = [None] * nr
+        xq2 = [None] * nr
+        xq0 = [None] * nr
+        xqi1 = [None] * nr
+        xqi2 = [None] * nr
+        xqi0 = [None] * nr
+        xqj1 = [None] * nr
+        xqj2 = [None] * nr
+        xqj0 = [None] * nr
         
         # calculate Clebsch-Gordon coefficients
         clebschgordan(nel, nl, cg)  # update cg matrix only
-        getillls(pin)  # update pin matrix only
+        pin = getillls(pin)  # update pin matrix only
     
         ratio1 = 1. - ratio
         for i in range(1, nel + 1):
@@ -594,7 +608,6 @@ class HartFock(object):
                 orb[k][i] = ratio1 * orb[k][i]
     
         for i in range(1, nel + 1):
-    
             li = nl[i]
             mi = nm[i]
     
@@ -906,11 +919,6 @@ class HartFock(object):
             phi2[j] *= phi[4] / phi2[4]
     
         self.phi = phi2
-    
-    def calculate_augment(self, phi2, xkappa):
-    
-    def augment_normalize(self):
-       
        
     def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel,
                nr, r, r2, dl, q0, xm1, xm2, njrc, vi):
@@ -922,14 +930,20 @@ class HartFock(object):
         
         lp = l + 1
         lpx = lp
+        
         if lp > 4:
             lpx = 4
+        
         lp2 = l + l + 1
+        
         if lp2 > 7:
             lp2 = 7
+        
         zeff = zorig
+        
         if njrc[lpx] > 0:
             zeff = 0.
+        
         zaa = zeff * aa
         za2 = zeff * a2
         
@@ -968,14 +982,20 @@ class HartFock(object):
             xm2[1] = xm2[2]
     
         # figure out the (Desclaux-Numerov) effective potential.
-        xlb = l + pow(0.5, 2.) / 2.
-        for j in range(1, nr + 1):
-            vj = v[j]
-            q0[j] = vj * (1. - a2 * vj) + xlb / r2[j]
+        q0 = get_DesclauxNumerov_potential(v, r2, l, a2)
         
         return (i, orb, l, ns, idoflag, v, zeff, zorig, rel,
                nr, r, r2, dl, q0, xm1, xm2, njrc, vi)
 
+    def get_DesclauxNumerov_potential(self, v, r2, l, a2):
+        q0 = [None] * len(v)
+        xlb = l + 0.25 / 2.
+        
+        for j in range(len(v)):
+            vj = v[j]
+            q0[j] = vj * (1. - a2 * vj) + xlb / r2[j]
+            
+        return q0
        
     def initiali(zorig, nr, rmin, rmax, r, dr, r2, dl, njrc=[None] * 4,
                  xntot=0., nel=0, input_stream='stdin'):
@@ -1077,7 +1097,7 @@ class HartFock(object):
         else:
             rtest = 1. - za2
             if rtest < 0.:
-                print('Z>137 is too big.')
+                sys.stderr.write("Z>137 is too big.\n")
                 sys.exit(1)
       
             ss = sqrt(rtest)
@@ -1218,7 +1238,6 @@ class HartFock(object):
         
         for l1 in range(0, lmx + 1):
             for l2 in range(0, l1 + 1):
-                #52     format (1x,i3,a3,i3)
                 for m1 in range(-l1, l1 + 1):
                     for m2 in range(-l2, l2 + 1):
                         m3 = m1 + m2
@@ -1263,9 +1282,12 @@ class HartFock(object):
         # initialise
         nm = [0] * nel    
         njrcdummy = deepcopy(njrc)
-        q0 = xm1 = xm2 = [None] * len(r)
+        q0 = [None] * len(r)
+        xm1 = [None] * len(r)
+        xm2 = [None] * len(r)
         rpower = [[None] * 7] * len(r)
-        zeff = etot2 = float
+        zeff = float 
+        etot2 = float
         
         # read input
         if input_stream == 'stdin':
@@ -1409,7 +1431,11 @@ class HartFock(object):
         
         vl = -1000000.
         vh = 1000000.
-        dummy = nn = ief = xactual = None  # initialise
+        dummy = None
+        nn = None
+        ief = None
+        xactual = None  # initialise
+        
         while True:
             idoflag = 2  # label 115
             ns = 1
@@ -1569,7 +1595,7 @@ class HartFock(object):
                 yl[ii] = phi0[ii] * hb(r[ii] / rcut, factor)
                 phi[ii] = phi0[ii] + deltal * yl[ii]
                 if phi[ii] < 0.:
-                    print('Big trouble# # #  cross axis# # # ')
+                    sys.stderr.write("Big trouble - cross axis\n")
                     sys.exit(1)
                 
             for ii in range(1, jrt - 1 + 1):
@@ -1664,13 +1690,63 @@ class HartFock(object):
                 except IOError:
                     assert(IOError("Could not write file '%s'\n" % output))
 
-       
-    def hfdisk(self
-        """       , iu, ir, etot, nst, rel, nr, rmin, rmax, r, rho,
-               zorig, xntot, ixflag, nel, no, nl, xnj, iss, ev,
-               ek, occ, njrc, vi, phe, orb, input_stream='stdin'"""):
-        '''    '''
-        #rden = 3.0
+
+class HartFockOutput(object):
+    ''' Class for outputting atomic charge densities to file from HartFock() '''
+    def __init__(self, hf = HartFock()):
+        self.r = []
+        self.rho = []
+    
+    def _get_grid(self, nr, rmin, rmax): 
+        ''' Returns an array defining the logarithmic grid '''
+        return [pow(rmin * (rmax / rmin), i / float(nr)) for i in range(nr)]
+    
+    def _get_charge_density(self, nr, nel, occ, phe):
+        ''' Calculates the atomic charge density '''
+        rho = [0.] * nr
+        for i in range(0, nr):
+            for j in range(0, nel):
+                rho[i] += occ[j] * (phe[i][j] ** 2)
+        return rho
+    
+    def _write(self, filename, nr, rmin, rmax, zorig, rho):
+        ''' Writes the atomic charge densities to file '''
+        iprint = 0
+        with open(filename, 'rw') as f:
+            f.write('RELA\nRELAT. ATOMIC CHARGE DENSITY\n%i\n' % iprint)
+            f.write('%15.8d%15.8d%5i%5.2f\n' % (rmin, rmax, nr, zorig))
+            for j in range(0, nr + 1):
+                file.write('%15.11f\n' % rho[j])
+    
+    def _update_hf(self):
+        ''' 
+        Updates HartFock class instance with calculated values for r & rho 
+        '''
+        if self.r is not None: 
+            self.hf.r = self.r
+        if self.rho is not None:
+            self.hf.rho = self.rho
+    
+    def calculate(self):
+        ''' 
+        Calculates the atomic charge density on a logarithmic grid and writes 
+        the results to file. 
+        
+        Notes
+        -----
+        Calling this method will update the arrays in the HartFock class 
+        instance associated with this 
+        '''
+        nr = self.hf.nr
+        nel = self.hf.nel
+        rmax = self.hf.rmax
+        rmin = self.hf.rmin
+        zorig = self.hf.orig
+        occ = self.hf.occ
+        phe = self.hf.phe
+        
+        input_stream = self.hf.input_stream
+        
         if input_stream == 'stdin':
             while True:
                 filename = get_input('Please enter full filename: ')
@@ -1678,35 +1754,80 @@ class HartFock(object):
                     break
         else:
             filename = input_stream.next().strip().split('!')[0]
-        try:
-            with open(filename, 'rw') as f:
             
-                # define the logarithmic grid
-                for i in range(0, nr):
-                    r[i] = pow(rmin * (rmax / rmin), i / float(nr))
-                
-                # obtain the charge density on the logarithmic grid
-                for i in range(0, nr):
-                    rho[i] = .0
-                    for ii in range(0, nel):
-                        rho[i] = rho[i] + occ[ii] * pow(phe[i][ii], 2)
-                
-                # write output file
-                iprint = 0
-                f.write('RELA\nRELAT. ATOMIC CHARGE DENSITY\n%i\n' % iprint)
-                f.write('%15.8d%15.8d%5i%5.2f\n' % (rmin, rmax, nr, zorig))
-                #nden = nr * (log(rden / rmin) / log(rmax / rmin))
-                for j in range(0, nr + 1):
-                    file.write('%15.11f\n' % rho[j])
-                    
+        # define the logarithmic grid
+        self.hf.r = self._get_grid(nr, rmin, rmax)
+        
+        # obtain the charge density on the logarithmic grid
+        self.hf.rho = self._get_charge_density(nr, nel, occ, phe)
+        
+        # write output file
+        try:
+            self._write(filename, nr, rmin, rmax, zorig, self.hf.rho)
         except IOError:
             assert(IOError)
             
-        return (iu, ir, etot, nst, rel, nr, rmin, rmax, r, rho, zorig, )
+        # update r and rho arrays
+        self._update_hf()
+        
 
-
+class ExchangeCorrelation(object):
+    
+    def __init__(self):
+        pass
+    
+    def _calculate_CeperleyAlder_correlation(self, rs=0.):
+        ft = 4. / 3.
+        if rs > 1.:
+            rootr = sqrt(rs)
+            
+            # define temporary variables
+            gamma = -0.1423
+            beta1 = 1.0529
+            beta2 = 0.3334
+            denom = (1. + beta1 * rootr + beta2 * rs)
+            
+            ecu = gamma / denom
+            ucu = ecu * (1. + 7. / 6. * beta1 * rootr + ft * beta2 * rs) / denom
+            
+            # define temporary variables
+            gamma = -0.0843
+            beta1 = 1.3981
+            beta2 = 0.2611
+            denom = (1. + beta1 * rootr + beta2 * rs)
+            
+            ecp = gamma / denom
+            ucp = ecp * (1. + 7. / 6. * beta1 * rootr + ft * beta2 * rs) / denom
+        
+        else:
+            # define temporary variables
+            xlr = log(rs)
+            rlr = rs * xlr
+            
+            au = 0.0311
+            bu = -0.048
+            cu = 0.002
+            du = -0.0116
+            
+            ecu = au * xlr + bu + cu * rlr + du * rs
+            ucu = au * xlr + (bu - au / 3.) + 2. / 3. * cu * rlr + (
+                                        2. * du - cu) * rs / 3.
+            
+            # define temporary variables
+            ap = 0.01555
+            bp = -0.0269
+            cp = 0.0007
+            dp = -0.0048
+            
+            ecp = ap * xlr + bp + cp * rlr + dp * rs
+            ucp = (ap * xlr + (bp - ap / 3.) 
+                            + 2. / 3. * cp * rlr 
+                            + (2. * dp - cp) * rs / 3.)
+            
+        return (ecu, ucu, ecp, ucp)
+    
     def exchcorr(self, nst, rel, rr, rh1, rh2, ex=0., ec=0., ux1=0.,
-                 ux2=0., uc1=0., uc2=0.):
+                 ux2=0., uc1=0., uc2=0., rs=0., zeta=1.):
         '''
         Description
         -----------
@@ -1778,6 +1899,7 @@ class HartFock(object):
             b2 = beta * beta
             eta = sqrt(1. + b2)
             xl = log(beta + eta)
+            
             fe1 = 1. - 1.5 * (pow(beta * eta - xl) / b2, 2.)
             fu1 = -0.5 + 1.5 * xl / beta / eta
             ex1 = exchfactor * pow(xn1, trd)
@@ -1793,49 +1915,14 @@ class HartFock(object):
             b2 = beta * beta
             eta = sqrt(1. + b2)
             xl = log(beta + eta)
+            
             fe2 = 1. - 1.5 * pow((beta * eta - xl) / b2, 2.)
             fu2 = -0.5 + 1.5 * xl / beta / eta
             ex2 = exchfactor * pow(xn2, trd)
             ux2 = 4. * ex2 / 3.
         
         # these next lines do the Ceperley-Alder correlation
-        if rs > 1.:
-            rootr = sqrt(rs)
-            
-            gamma = -0.1423
-            beta1 = 1.0529
-            beta2 = 0.3334
-            denom = (1. + beta1 * rootr + beta2 * rs)
-            ecu = gamma / denom
-            ucu = ecu * (1. + 7. / 6. * beta1 * rootr + ft * beta2 * rs) / denom
-            
-            gamma = -0.0843
-            beta1 = 1.3981
-            beta2 = 0.2611
-            denom = (1. + beta1 * rootr + beta2 * rs)
-            ecp = gamma / denom
-            ucp = ecp * (1. + 7. / 6. * beta1 * rootr + ft * beta2 * rs) / denom
-        
-        else:
-        
-            xlr = log(rs)
-            rlr = rs * xlr
-            
-            au = 0.0311
-            bu = -0.048
-            cu = 0.002
-            du = -0.0116
-            ecu = au * xlr + bu + cu * rlr + du * rs
-            ucu = au * xlr + (bu - au / 3.) + 2. / 3. * cu * rlr + (
-                                        2. * du - cu) * rs / 3.
-            
-            ap = 0.01555
-            bp = -0.0269
-            cp = 0.0007
-            dp = -0.0048
-            ecp = ap * xlr + bp + cp * rlr + dp * rs
-            ucp = ap * xlr + (bp - ap / 3.) + 2. / 3. * cp * rlr + (
-                                        2. * dp - cp) * rs / 3.
+        ecu, ucu, ecp, ucp = self._calculate_CeperleyAlder_correlation(rs)
         
         # if we are non-relativistic, turn off the MacDonald-Vosko correction.
         if not rel:
@@ -1856,15 +1943,58 @@ class HartFock(object):
         uc1 = uc1
         uc2 = uc2
         
-        return (nst, rel, rr, rh1, rh2, ex, ec, ux1, ux2, uc1, uc2)
+        self.rh1 = rh1
+        self.rh2 = rh2
+        self.ex = ex
+        self.ec = ec
+        self.ux1 = ux1
+        self.ux2 = ux2 
+        self.uc1 = uc1
+        self.uc2 = uc2
+        
+        return (rh1, rh2, ex, ec, ux1, ux2, uc1, uc2)
 
+def getillls(pin):
+    fa = [0.] * 32
+    si = [0.] * 32
+
+    fa[0] = 1.
+    si[0] = 1.
+
+    for i in range(1,33):
+        fa[i] = float(i)*fa[i-1]
+        si[i] = -si[i-1]
+
+        for l in range(9):
+            
+            for m in range(9):
+            
+                for n in range(m+l,-1,-2):
+                    xi = 0.
+                    xf = 2. / 2.**float(n+l+m)
+                    nn = (n+1) / 2
+                    mm = (m+1) / 2
+                    ll = (l+1) / 2
+    
+                    for ia in range(nn,n+1):
+                        af = si[ia] * fa[ia+ia] / fa[ia] / fa[n-ia] / fa[ia+ia-n]
+    
+                    for ib in range(ll,l+1):
+                        bf = si[ib] * fa[ib+ib] / fa[ib] / fa[l-ib] / fa[ib+ib-l]
+    
+                    for ic in range(mm, m+1):
+                        xcf = si[ic] * fa[ic+ic] / fa[ic] / fa[m-ic] / fa[ic+ic-m]
+                        xi += xf * af * bf * xcf / float(
+                                                ia*2 + ib*2 + ic*2 - n - l - m + 1)
+    
+            pin[l][m][n] = xi
+    return pin
 
 def test():
     '''for testing'''
     filename = os.path.join(os.path.expanduser('~'), 'Desktop', 'atorb_Re') 
-    hartfock(input_stream=filename)
+    hartfock = HartFock(input_stream=filename)
     
     
 if __name__ == '__main__':
-    #pass
     test()
