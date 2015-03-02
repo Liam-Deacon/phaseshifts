@@ -10,7 +10,7 @@ import os
 from ctypes import ArgumentError
 from __builtin__ import file
 
-class NullHartFock(object):
+class NullHartFock(None):
     def __init__(self):
         pass
 
@@ -20,7 +20,6 @@ def get_input(prompt):
         return input(prompt)
     else:
         return raw_input(prompt)
-    
     
 class BaseReader(object):
     def __init__(self):
@@ -48,6 +47,7 @@ class TerminalReader(BaseReader):
     def read_line(self, prompt):
         get_input(prompt)
     
+    
 class AbstractReaderFactory(object):
     def __init__(self, stream):
         if os.path.isfile(stream):
@@ -55,16 +55,29 @@ class AbstractReaderFactory(object):
         
     
 class HartFockInputIO():
-    def __init__(self, hf = NullHartFock()):
-        pass
+    ''' Class for controlling HartFock input from either stdin or file '''
+     
+    def __init__(self, hf=None):
+        self.hf = HartFock()
+        if isinstance(hf, HartFock):
+            self.hf = hf 
     
-    def ignore_comments(self):
+    def _readline_with_prompt(self, prompt):
+        if self.hf.input_stream == sys.stdin:
+            print(prompt)
+        
+        self.hf.input_stream.readline()
+    
+    def _ignore_comments(self):
         pass
         
-    def strip_comments(self, line):
+    def _strip_comments(self, line):
         return line.split('!')[0]
     
     def read_input(self):
+        pass
+    
+    def parse_input(self):
         input_stream = self.hf.input_stream
         if not input_stream != 'stdin' and not os.path.isfile(input_stream):
             raise IOError("'%s' is not a valid input file" % input_stream)
@@ -346,7 +359,7 @@ class HartFock(object):
     
     '''
     def __init__(self, iorbs=33, iside=600, lmax=4, ihmax=20, nrmax=4000, 
-                 ntmax=10, npmax=60, input_stream='stdin'):
+                 ntmax=10, npmax=60, input_stream=sys.stdin):
         '''
         Description
         -----------
@@ -1962,7 +1975,7 @@ def getillls(pin):
     si[0] = 1.
 
     for i in range(1,33):
-        fa[i] = float(i)*fa[i-1]
+        fa[i] = i * fa[i-1]
         si[i] = -si[i-1]
 
         for l in range(9):
@@ -1997,4 +2010,6 @@ def test():
     
     
 if __name__ == '__main__':
+    print('excuting main...')
     test()
+    print('exiting...')
