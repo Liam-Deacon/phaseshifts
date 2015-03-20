@@ -43,12 +43,10 @@ docstrings below).
 
 Examples
 --------
->>> from os.path import join
 >>> from phaseshifts.conphas import Conphas
->>> con = Conphas(output_file=join('testing', 'leedph_py.d'),
-                 lmax=10)
->>> con.set_input_files([join('testing', 'ph1')])
->>> con.set_format('cleed')
+>>> con = Conphas(output_file=join('testing', 'leedph_py.d'), lmax=10)
+>>> con.input_files = [os.path.join('testing', 'ph1')]
+>>> con.format = 'cleed'
 >>> con.calculate()
 
 """
@@ -58,16 +56,24 @@ import os
 import sys
 import platform
 import re
-from numpy import loadtxt
 from math import pi
 from getpass import getuser
 from time import gmtime, strftime
 from copy import copy, deepcopy
 
 try:
-    import StringIO
+    from numpy import loadtxt
+    NUMPY_SUPPORT = True
 except ImportError:
-    import io.StringIO as StringIO
+    NUMPY_SUPPORT = False    
+
+if sys.version_info[0] < 3:
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
+else:
+    from io import StringIO
 
 
 # Constants
@@ -106,23 +112,22 @@ class Conphas():
             removed to form continuous phase shifts
         lmax (optional) : int
             Maximum angular momentum quantum number to calculate and 
-            must be in the range 0 <= lmax <= 18 .
+            must be in the range 0 <= lmax <= 18 . (default: 10)
         formatting (optional) : str 
-            output style - use either 'CLEED' or None (default None)
+            output style - use either 'CLEED' or None (default: None)
 
         """
         self.input_files = [filename for filename in input_files 
                             if os.path.isfile(filename)]
         self.output_file = ntpath.abspath(str(output_file))
-        if int(lmax) >= 0 and int(lmax) <= 18:
-            self.lmax = int(lmax)
-        self.set_format(formatting)
+        self.lmax = lmax
+        self.format = formatting
         self.__dict__.update(kwargs)
 
     # Fix for escape characters in Windows-based paths
     # also removes invalid characters
     def __fix_path(self, file_path):
-        """Fix escaped characters in filepath"""
+        """ Fixes escaped characters in filepath """
         if platform.system() is 'Windows':
       
             file_path = os.path.abspath(file_path)
@@ -148,18 +153,19 @@ class Conphas():
             The path to the discontinuous phase shift file
 
         """
-        if not ntpath.isfile(filename):
+        if NUMPY_SUPPORT:
+            self.data = loadtxt(filename, dtype=float, comments="#")
             return
+        elif not ntpath.isfile(filename):
+            return
+        
         try:
             with open(filename) as f:
                 data = []
                 data = [data.append(line.replace('-', ' -').replace('\n', 
                                                     '').split()) for line in f]
                 data = "".join(line.replace('-', ' -').rstrip() for line in f)
-                filename = "C:\\Users\\Liam\\Desktop\\leedph.d"
                 data = "".join(line.rstrip() for line in f)
-            self.data = loadtxt("C:\\Users\\Liam\\Desktop\\leedph.d", 
-                                dtype=float, comments="#")
         except IOError:
             assert IOError
             
@@ -252,7 +258,13 @@ class Conphas():
         
         return phsh_filenames[:len(phsh_list) - 1]  # return written files
          
-    def set_input_files(self, input_files=[]):
+    @property
+    def input_files(self):
+        ''' Returns a list of input files for Conphas.calculate() '''
+        return self.input_files or []
+       
+    @input_files.setter 
+    def input_files(self, input_files=[]):
         """set list of input filenames"""
         if input_files:
             input_files = [self.__fix_path(filename) 
@@ -262,12 +274,23 @@ class Conphas():
             if temp_input_files != None and temp_input_files != []:
                 self.input_files = temp_input_files
         
-    def set_output_file(self, output_file):
+    @property
+    def output_file(self):
+        ''' Returns the output file name '''
+        return self.output_file
+        
+    @output_file.setter
+    def output_file(self, output_file):
         """set output filename"""
         self.output_file = output_file
                     
     # Set max orbital angular momentum
-    def set_lmax(self, lmax):
+    @property
+    def lmax(self):
+        return self.lmax
+    
+    @lmax.setter
+    def lmax(self, lmax):
         """
         Set max orbital angular momentum (azimuthal quantum number)
         
@@ -277,23 +300,27 @@ class Conphas():
             Maximum azimuthal quantum number to be considered in calculations.
             
         """
-        try:
-            self.lmax = int(lmax)
-        except:
-            pass
+        self.lmax = lmax if lmax > 0 and lmax < 19 else 10
+            
     
     # set appropriate format from available options 
-    def set_format(self, formatting=None):
+    @property
+    def format(self):
+        return self.format
+    
+    @format.setter
+    def format(self, formatting):
         """
         Set appropriate format from available options
         
         Parameters
         ----------
-        format : str, optional
+        formatting : str, optional
             The format identifier for different packages; can be 'cleed'
             or None. 
 
         """
+        formatting = formatting or ''
         if str(formatting).lower() in ['cleed', 'curve']:
             self.format = str(formatting).lower()
         else:

@@ -32,18 +32,22 @@
 
 ''' Provides an abstract factory class for phase shift calculations '''
 
-from phaseshifts.wrappers import VHTWrapper
+from wrappers import VHTWrapper, EEASiSSSWrapper
+import sys
+
 
 class PhaseshiftFactory(object):
     '''Class for backend selection'''
     backend = object
     phsh_files = []
+    
     def __init__(self, backend, **kwargs):
         package = str(backend).lower()
         self.__dict__.update(kwargs)
         try:
             if package not in ["vht", "EEASiSSS"]:
-                sys.stderr.write("Invalid package selected - using default (VHT)\n")
+                sys.stderr.write("Invalid package selected - "
+                                 "using default (VHT)\n")
                 sys.stderr.flush()
                 self.backend = VHTWrapper
             else:
@@ -60,8 +64,11 @@ class PhaseshiftFactory(object):
             sys.exit(-2)
             
     def getPhaseShiftFiles(self):
-        return self.backend.autogen_from_input(self.bulk_file, self.slab_file, 
-                                tmp_dir=self.tmp_dir, lmax=int(self.lmax),
-                                format=self.format, store=self.store,
-                                range=self.range
-                                )     
+        return self.backend.autogen_from_input(self.bulk_file, 
+                                               self.slab_file, 
+                                               tmp_dir=self.tmp_dir, 
+                                               lmax=int(self.lmax),
+                                               format=self.format, 
+                                               store=self.store,
+                                               range=self.range
+                                               )     

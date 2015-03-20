@@ -54,9 +54,40 @@ shift calculation package.
 """
 
 import os
-import elements
-from lib.libphsh import hartfock
+from sys import platform, version_info, exit
 from collections import OrderedDict
+import re
+
+from elements import Element, ELEMENTS
+from lib.libphsh import hartfock as vht_hartfock 
+
+# get best StringIO available for this platform
+if version_info[0] < 3:
+    try:
+        from cStringIO import StringIO
+    except ImportError:
+        from StringIO import StringIO
+else:
+    from io import StringIO
+    
+try:
+    from lib.libhartfock import hartfock as eeasisss_hartfock
+except ImportError:
+    
+    def eeasisss_hartfock(input_file='inputA'):
+        from ctypes import cdll, create_string_buffer
+        from ctypes.util import find_library
+        
+        # load library
+        ext = '.dll' if str(platform).startswith('win') else '.so'
+        lib = os.path.join(os.path.dirname(__file__), 'lib')
+        
+        os.environ['PATH'] = lib + ';' + os.environ['PATH']
+        library = (find_library('hartfock') or 
+                   os.path.join(lib, 'libhartfock' + ext))
+        hf_lib = cdll.LoadLibrary(library)
+        hf_lib.hartfock_(create_string_buffer(str(input_file)), size=255) 
+        
 
 elements_dict = OrderedDict([
 ('H', 'Hydrogen'), 
@@ -224,7 +255,6 @@ class Atorb(object):
     have a huge effect on the charge density you are concerned with...
     
     '''
-
     def __init__(self, **kwargs):
         '''
         Constructor
@@ -233,7 +263,7 @@ class Atorb(object):
         
     @staticmethod
     def get_quantum_info(shell):
-        r"""
+        """
         Description
         -----------
         Get a tuple of quantum information for a given orbital 's', 'p', 'd' 
@@ -264,7 +294,7 @@ class Atorb(object):
         subshell = "".join([s for s in shell if s.isalpha()])
         try:
             (n, nelectrons) = [t(s) for t, s in zip((int, int),
-                                shell.replace(subshell, ' ').split())]
+                               shell.replace(subshell, ' ').split())]
         except ValueError:  # assume 1 electron in shell
             n = int(shell.replace(subshell, ' ').split()[0])
             nelectrons = 1
@@ -332,7 +362,7 @@ class Atorb(object):
                  '[Kr]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6',
                  '[Xe]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6', 
                  '[Rn]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6'
-                          '4f14 5d10 6s2 6p6'}
+                         '4f14 5d10 6s2 6p6'}
         core = electron_config.split()[0]
 
         if core in cores:
@@ -341,12 +371,16 @@ class Atorb(object):
             return electron_config
 
     @staticmethod
-    def gen_input(element, **kwargs):
+    def gen_input(element, ngrid=1000, rel=True, 
+                  atorb_file=None, output=None, header=None, 
+                  exchange_method=0.0, relic=0, mixing_SCF=0.05,
+                  tolerance=0.0005, xnum=100, ifil=0,
+                  fmt='vht', **kwargs):
         """
         Description
         -----------
         Generate atorb input file from <element> and optional **kwargs 
-        arguments. Returns filename of input file once generated.
+        arguments. 
         
         Parameters
         ----------
@@ -357,22 +391,37 @@ class Atorb(object):
         ngrid : int, optional 
             Number of points in radial grid (default: 1000)
         rel : bool, optional
-            Specify whether to consider relativistic effects
-        filename : str, optional
+            Specify whether to consider relativistic effects (default: True)
+        atorb_file : str, optional
             Name for generated input file (default: 'atorb')
         header : str, optional
-            Comment at beginning of input file
-        method : str, optional
+            Comment at beginning of input file (default: None)
+        method : str or float, optional
             Exchange correlation method using either 0.0=Hartree-Fock,
-            1.0=LDA, -alpha = xalpha (default: 0.0)
+            1.0=LDA, -alpha = float (default: 0.0)
         relic : float, optional
             Relic value for calculation (default: 0)
         mixing_SCF : float, optional
             Self consisting field value (default: 0.5)
         tolerance : float, optional
             Eigenvalue tolerance (default: 0.0005)
-        ech : float, optional 
-            (default: 100)
+        xnum : float, optional 
+            ??? (default: 100)
+        ifil : int, optional
+            ??? - Only used when fmt='rundgren' (default: 0)
+        fmt : str, optional
+            Format of generated atorb input file; can be either 'vht' for the 
+            van Hove-Tong package or 'rundgren' for the EEASiSSS package
+            (default: 'vht')
+        
+        Returns
+        -------
+        Filename of input file once generated or else instance of StringIO 
+        object containing written input text.
+        
+        Notes
+        -----
+        output can also be a StringIO() object to avoid saving to file.
         
         Example
         -------
@@ -396,8 +445,7 @@ class Atorb(object):
          
 
         """
-        
-        ele = elements.ELEMENTS[element]
+        ele = element if isinstance(element, Element) else ELEMENTS[element]
         Z = ele.protons
         
         # get full electronic configuration
@@ -413,90 +461,80 @@ class Atorb(object):
                 nlevels += 1
         
         # test kwargs and generate output arguments
-        if 'output' in kwargs:
-            output = kwargs.get('output')
-        else:
-            output = "at_{0}.i".format(ele.symbol)
+        output = output or "at_{0}.i".format(ele.symbol)
         
-        if 'ngrid' in kwargs:
-            NR = kwargs.get('ngrid')
-        else:
-            NR = 1000  # default grid resolution
+        atorb_file = atorb_file or "atorb_{0}.txt".format(ele.symbol)
             
-        if 'rel' in kwargs:
-            rel = int(kwargs.get('rel'))
-        else:
-            rel = 1  # default is relativistic 
-        
-        if 'filename' in kwargs:
-            filename = kwargs.get('filename')
-        else:
-            filename = "atorb_{0}.txt".format(ele.symbol)
+        if isinstance(header, str) and header == '':
+            header = "atorb input file"
+            if isinstance(atorb_file, str):
+                header += ": {0}.".format(os.path.basename(atorb_file))
             
-        if 'header' in kwargs:
-            header = kwargs.value('header')
-        else:
-            header = "  atorb input file: {0}.".format(
-                                            os.path.basename(filename))
-            
-        if 'method' in kwargs:
-            method = str(kwargs.value('method'))
-            methods_dict = {'HF': '0.d0', 'LDA': '1.d0', 'xalpha': '-alpha'}
-            if method in methods_dict:
-                method = methods_dict.get('method')
-            else:
-                method = '0.d0'
+        if exchange_method == 0. and exchange_method == 1.:
+            method = str(exchange_method).replace('.', '.d')
+        elif exchange_method < 0.:
+            method = str(exchange_method)
         else:
             method = '0.d0'
             
-        if 'relic' in kwargs:
-            relic = float(kwargs.get('relic'))
-        else:
-            relic = 0
-        
-        if 'mixing_SCF' in kwargs:
-            mixing_SCF = float(kwargs.get('mixing_SCF'))
-        else:
-            mixing_SCF = 0.5
-            
-        if 'tolerance' in kwargs:
-            eigen_tol = float(kwargs.get('tolerance'))
-        else:
-            eigen_tol = 0.0005
-            
-        if 'ech' in kwargs:
-            ech = int(kwargs.get('ech'))
-        else:
-            ech = 100
-            
         # produce output file
-        with open(filename, 'w') as f:
-            f.write("C".ljust(70, '*') + "\n")
-            f.write("C" + str(header) + "\n")
-            f.write("C".ljust(70, '*') + "\n")
+        if isinstance(atorb_file, str):
+            f = open(atorb_file, 'w')
+        else:
+            f = atorb_file
+
+        ifil_str = ', ifil'
+        if fmt.lower() != 'rundgren':
+            ifil = ''
+            ifil_str = ''
+
+        try: 
+            if header is not None:
+                f.write("!".ljust(70, '*') + "\n")
+                f.write("! " + str(header) + "\n")
+                f.write("!".ljust(70, '*') + "\n")
+            elif f.tell() == 0:
+                f.write("!".ljust(70, '*') + "\n")
+                f.write("! %s hartfock input autogenerated by phaseshifts\n"
+                        % (fmt.upper() if fmt in ['vht'] else fmt.title()))
+                f.write("!".ljust(70, '*') + "\n")
+            
             f.write('i\n')
-            f.write('{0} {1}'.format(Z, NR).ljust(30, ' ')
+            if fmt == 'rundgren':  
+                # add line for element symbol 
+                f.write('{}\n'.format(ele.symbol))
+            f.write('{0} {1}'.format(Z, int(ngrid)).ljust(30, ' ')
                     + '! Z NR (number of points in radial grid)\n')
             f.write('d\n')
-            f.write('{0}'.format(rel).ljust(30) + '! 1=rel, 0=n.r.\n')
+            f.write('{0}'.format(int(rel)).ljust(30) + '! 1=rel, 0=n.r.\n')
             f.write('x\n')
             f.write('{0}'.format(method).ljust(30) +
-                        '! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...\n')
+                    '! 0.d0=HF, 1.d0=LDA, -(float) = xalfa...\n')
             f.write('a\n')
-            f.write('{0} {1} {2} {3} {4}'.format(
-                        relic, nlevels, mixing_SCF, eigen_tol, ech).ljust(30)
-                        + '! relic,levels,mixing SCF, eigen. tol,for ech.\n')
+            f.write('{} {} {} {} {} {}'.format(relic, nlevels, mixing_SCF, 
+                                               tolerance, xnum, ifil).ljust(30)
+                    + '! relic, levels, mixing SCF, eigen. tolerance, xnum%s\n'
+                    % ifil_str)
             for i in range(0, nlevels):
-                f.write('{0} {1} {2} {3} {4} {5}'.format(*electrons[i]
-                            ).ljust(30) + '! n, l, l, -j, <1>, occupation\n')
+                f.write('{} {} {} {} {} {}'.format(*electrons[i]).ljust(30) + 
+                        '! n, l, l, -j, <1>, occupation\n')
             f.write('w\n')
-            f.write('{0}\n'.format(output))
-            f.write('q\n')
+            if fmt == 'vht' or fmt is None:
+                f.write('{0}\n'.format(output))
+                f.write('q\n')
+                
+        except AttributeError:
+            raise AttributeError("'%s' is not a filepath or "
+                                 "StringIO() instance" % atorb_file)          
         
-        return filename  # return output filename for further use
+        if isinstance(f, file):
+            f.close()
+        
+        return atorb_file  # return output filename for further use
         
     @staticmethod
-    def calculate_Q_density(**kwargs):
+    def calculate_Q_density(element=None, atorb_input=None, output_dir=None, 
+                            subroutine=vht_hartfock, **kwargs):
         """
         Description
         -----------
@@ -516,13 +554,15 @@ class Atorb(object):
             kwargs may be used to govern the structure of the input
             file - please use ``help(phaseshifts.Atorb.gen_input)`` 
             for more information. 
-        input : str, optional
+        atorb_input : str, optional
             Specify atorb input file otherwise will use the class
             instance value.
         output_dir : str, optional
             Specify the output directory for the `at_*.i` file
             generated, otherwise the default current working directory 
             is used.
+        subroutine : function, optional
+            Specifies the hartfock function to use (default: vht_hartfock)
         
         Returns
         -------
@@ -567,34 +607,36 @@ class Atorb(object):
          TOTAL ENERGY =       -0.357713     -9.733932
 
 
-        """
-        if 'input' in kwargs:
-            inp = os.path.abspath(kwargs.pop('input'))
-            
-        if 'element' in kwargs:
-            inp = os.path.abspath(
-                    Atorb.gen_input(element=kwargs.pop('element'), **kwargs))
+        """ 
+        atorb_input = (atorb_input if isinstance(atorb_input, str) and 
+                       os.path.isfile(atorb_input) else os.path.abspath(
+                       Atorb.gen_input(element, **kwargs)))
         
         current_dir = os.path.curdir
-        if 'output_dir' in kwargs:
-            output_dir = kwargs.pop('output_dir')    
+        output_dir = output_dir or current_dir   
+        try:
             if os.path.isdir(output_dir):
                 os.chdir(output_dir)
             else:
-                try:
-                    os.makedirs(output_dir)
-                    os.chdir(output_dir)
-                except:
-                    raise IOError
-                
-        hartfock(inp)  # calculates atomic orbital charge densities for atom
+                os.makedirs(output_dir)
+                os.chdir(output_dir)
+        except Exception as e:
+            raise e  
+        
+        # calculate atomic orbital charge densities for atom
+        if isinstance(subroutine, tuple):
+            args = subroutine[1:]
+            function = subroutine[0]
+            function(args)
+        else:
+            subroutine(atorb_input)
         
         # get output filename
         lines = []
         output_filename = 'atorb'
         
         try:
-            with open(inp, 'r') as f:
+            with open(atorb_input, 'r') as f:
                 lines = [line for line in f]
         except IOError:
             raise IOError
@@ -610,4 +652,61 @@ class Atorb(object):
         os.chdir(current_dir)  # return to original directory
         
         return (os.path.join(output_dir, output_filename) 
-                    if output_dir != None else output_filename)
+                if output_dir is not None else output_filename)
+
+
+class RundgrenAtorb(Atorb):
+    @staticmethod
+    def gen_input(elements=[], atorb_file='inputA', **kwargs):
+        io = StringIO()
+        successful = False
+        try:
+            # generate buffer string of input for each element
+            for element in set(elements):
+                Atorb.gen_input(element, atorb_file=io, 
+                                fmt='rundgren', **kwargs)
+            # write buffered string to disk
+            with open(atorb_file, 'w') as f:
+                f.write(io.getvalue())
+            successful = True
+        except Exception as e:
+            raise e
+        finally:
+            # clean up
+            io.close()
+        return atorb_file if successful else None
+    
+    @staticmethod
+    def calculate_Q_density(elements=[], 
+                            atorb_input='inputA', 
+                            output_dir=None, 
+                            **kwargs):
+        
+        output_dir = output_dir or os.curdir 
+        
+        RundgrenAtorb.gen_input(elements=elements, 
+                                atorb_file=atorb_input, **kwargs)
+            
+        Atorb.calculate_Q_density(atorb_input=atorb_input, 
+                                  output_dir=output_dir, 
+                                  subroutine=eeasisss_hartfock, 
+                                  **kwargs)
+        
+        elements = [ELEMENTS[element] if not isinstance(element, Element) 
+                    else element for element in set(elements)]
+        print(os.path.abspath(os.path.curdir))
+        return [os.path.join(output_dir, 'chgden' + element.symbol) 
+                if output_dir != os.path.curdir else 'chgden' + element.symbol
+                for element in set(elements)]
+        
+        
+    
+if __name__ == '__main__':
+    elements = [11, 33, ELEMENTS[79], 'C', 'Hydrogen']
+    print(RundgrenAtorb.calculate_Q_density(elements))
+    
+
+
+
+def get_substr_positions(string, substring='\n'): 
+    return [m.start() for m in re.finditer(substring, string)]

@@ -170,11 +170,11 @@ def main(argv=None):
                             "found in the input files using Eric Shirley's " 
                             "hartfock routine, then exit. " 
                             "[default: %(default)s]")
-        '''parser.add_argument('-p', '--package', dest='package', 
+        parser.add_argument('-p', '--package', dest='package', 
                             metavar='<package>', default='VHT', 
                             help="Selects package to use for phase shift "
                             "calculations. Choices are 'VHT' (van Hove-Tong) "
-                            "or 'Rundgren' (EEASiSSS). [default: %(default)s]")'''
+                            "or 'Rundgren' (EEASiSSS). [default: %(default)s]")
         parser.add_argument('-S', '--store', dest='store', metavar='<subdir>', 
                             default=False,
                             help="Keep intermediate files in subdir when done")

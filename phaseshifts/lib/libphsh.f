@@ -51,31 +51,33 @@
 !
 !-----------------------------------------------------------------------
       subroutine hartfock(input_file)
-       implicit double precision (a-h,o-z)
+       implicit none
        character(len=255), intent(in) :: input_file
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
-       dimension no(iorbs),nl(iorbs),xnj(iorbs)
-       dimension ev(iorbs),occ(iorbs),is(iorbs)
-       dimension ek(iorbs),phe(nrmax,iorbs),orb(nrmax,iorbs)
-       dimension njrc(4),vi(nrmax,7),rho(nrmax)
-       dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
-       dimension w(33,33),wi(33,33),rhs(33),co(33)
-       dimension xint(0:12),vav(11),rint(0:12)
-       dimension pin(0:11),sig(0:11),vctab(nrmax,0:3)
-       character ichar
-       character(len=11) jive
-       character(len=60) jive2
-       character(len=70) jive3
-    
+       integer, parameter :: iorbs=33, nrmax=4000
+       double precision, dimension(nrmax) :: r,dr,r2
+       integer, dimension(iorbs) :: no,nl,is
+       double precision, dimension(iorbs) :: ev,occ,xnj, ek
+       double precision, dimension(nrmax,iorbs) :: phe,orb
+       integer :: njrc(4)
+       double precision :: vi(nrmax,7),rho(nrmax)
+       double precision :: vctab(nrmax,0:3)
+       character :: ichar
+       character(len=11) :: jive
+       character(len=60) :: jive2
+       character(len=70) :: jive3
+       integer :: i, ilev, inum, ir, iu, nst
+       integer :: j, k, ixflag, iuflag, iunit, nr, nel
+       double precision :: f, fd, fs, fp, etot, rc, rd, rs, rel
+       double precision :: e1, e2, eav, eold, rold, rmin, rmax, rl, rh
+       double precision :: sc, sh, sd, sl, alfa, corpol, dl
+       double precision :: rp, cvpp, xl, xntot
+       double precision :: zizv, vcpp, zorig
+
        open(unit=5, file=trim(input_file), status='old')
        rel=0.d0
 
        do while(.true.)
-       read (5,"(1a1)") ichar
+       read (5,"(1a1)",end=300) ichar
 
        if (ichar .eq. 'd') then
          ! RELATIVITY FACTOR.  (0=NR, 1=REL.)
@@ -267,7 +269,7 @@
 
        end do
 
-       return ! end
+ 300   return ! end
 
       end subroutine
 
@@ -275,21 +277,23 @@
       subroutine abinitio(etot,nst,rel,alfa,nr,r,dr,r2,dl,
      +    phe,njrc,vi,zorig,xntot,nel,no,nl,xnj,
      +    ev,occ,is,ek,orb,iuflag)
-       implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
-       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
-       dimension ev(iorbs),occ(iorbs),is(iorbs),ek(iorbs)
-       dimension phe(nrmax,iorbs),njrc(4),vi(nrmax,7)
-       dimension orb(nrmax,iorbs),rpower(nrmax,0:15)
-
+       implicit none
+       integer, parameter :: iorbs=33
+       integer, parameter :: nrmax=4000
+       double precision :: alfa, etot, dl, zorig, xntot
+       integer :: nst, nr, nel, njrc(4), iuflag
+       double precision, dimension(nrmax) :: r,dr,r2
+       integer, dimension(iorbs) :: no,nl,nm,xnj,is
+       double precision, dimension(iorbs) :: ev,occ,ek
+       double precision :: phe(nrmax,iorbs),vi(nrmax,7)
+       double precision :: orb(nrmax,iorbs),rpower(nrmax,0:15)
+       integer :: i, j, k, nj, nfc
+       double precision :: xi, ratio, xnum, rel
+       double precision :: eerror, etol, etot2
        ! note: this will be good for going up to and including l=3...
 
        do i=0,7
-         xi=i
+         xi=real(i)
          do k=1,nr
            rpower(k,i)=r(k)**xi
          end do
@@ -356,18 +360,18 @@
      +    nr,r,dr,r2,dl,
      +    phe,njrc,vi,zorig,xntot,nel,no,nl,nm,xnj,ev,occ,is,ek,
      +    ratio,orb,rpower,xnum,etot2,iuflag)
-       implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
-       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
-       dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
-       dimension phe(nrmax,iorbs),njrc(4),vi(nrmax,7)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax),orb(nrmax,iorbs)
-       dimension rpower(nrmax,0:15)
-
+       implicit none
+       integer, parameter :: iorbs=33,nrmax=4000
+       double precision, dimension(nrmax) :: r,dr,r2,v
+       integer, dimension(iorbs) :: no,nl,nm,xnj,is
+       double precision, dimension(iorbs) :: ek,ev,occ
+       double precision, dimension(nrmax) :: q0,xm1,xm2
+       double precision :: phe(nrmax,iorbs),vi(nrmax,7)
+       double precision :: orb(nrmax,iorbs), rpower(nrmax,0:15)
+       integer :: njrc(4), nst, nfc, nr, nel, iuflag
+       double precision :: alfa,etot,eerror,etot2,dl,ratio,xnum,xntot
+       integer :: i, j, ll, idoflag
+       double precision :: dq, ekk, rel, evi, xkappa, zeff, zorig
        ! initialize eerror, the biggest change in an eigenvalue, and etot.
 
        eerror=0.d0
@@ -424,20 +428,21 @@
      +    nel,nl,nm,no,xnj,rpower,xnum,etot2,iuflag)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension dr(nrmax),r(nrmax),r2(nrmax)
-       dimension phe(nrmax,iorbs),occ(iorbs)
-       dimension is(iorbs),orb(nrmax,iorbs),nl(iorbs)
-       dimension nm(iorbs),xnj(iorbs),no(iorbs)
-       dimension rpower(nrmax,0:15)
-       dimension xq1(nrmax),xq2(nrmax),xq0(nrmax)
-       dimension cg(0:6,0:6,0:12,-6:6,-6:6),pin(0:8,0:8,0:16)
-       dimension xqj0(nrmax),xqj1(nrmax)
-       dimension xqj2(nrmax),xqi0(nrmax)
-       dimension xqi1(nrmax),xqi2(nrmax),rsp(2)
+       integer, parameter :: iorbs=33,iside=600
+       integer, parameter :: io2=iorbs*(iorbs+1)/2
+       integer, parameter :: ijive=io2*(io2+1)/2
+       integer, parameter :: lmax=4,ihmax=20,nrmax=4000
+       integer, parameter :: ntmax=10,npmax=60
+       double precision, dimension(nrmax) :: dr,r,r2
+       double precision, dimension(nrmax,iorbs) :: phe,orb
+       double precision, dimension(iorbs) :: occ,xnj
+       integer, dimension(iorbs) :: nl,nm,no,is
+       double precision :: rpower(nrmax,0:15)
+       double precision :: cg(0:6,0:6,0:12,-6:6,-6:6),pin(0:8,0:8,0:16)
+       double precision, dimension(nrmax) :: xq1,xq2,xq0
+       double precision, dimension(nrmax) :: xqj0,xqj1,xqj2
+       double precision, dimension(nrmax) :: xqi0,xqi1,xqi2
+       double precision :: rsp(2)
 
        call clebschgordan(nel,nl,cg)
        call getillls(pin)
@@ -767,15 +772,13 @@
 
       end subroutine
 
-!--------------------------------------------------------------------------
+!-----------------------------------------------------------------------
       subroutine augment(e,l,xj,phi,v,nr,r,dl)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension phi(nrmax),phi2(nrmax),v(nrmax),r(nrmax)
+       integer, parameter :: nrmax=4000
+       double precision :: e, xj, dl
+       double precision, dimension(nrmax) :: phi,phi2,v,r
 
        c=137.038d0
        cc=c*c
@@ -818,12 +821,10 @@
      +    nr,r,r2,dl,q0,xm1,xm2,njrc,vi)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension v(nrmax),r(nrmax),r2(nrmax),orb(nrmax,iorbs)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax),njrc(4),vi(nrmax,7)
+       integer, parameter:: iorbs=33,nrmax=4000
+       double precision, dimension(nrmax) :: v,r,r2, q0,xm1,xm2
+       double precision :: orb(nrmax,iorbs)
+       double precision :: njrc(4),vi(nrmax,7)
 
        c=137.038d0
        alpha=rel/c
@@ -902,12 +903,13 @@
       subroutine initiali(zorig,nr,rmin,rmax,r,dr,r2,dl,njrc,
      +                    xntot,nel)
 
-       implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension r(nrmax),dr(nrmax),r2(nrmax),njrc(4)
+       implicit none
+       integer, parameter :: nrmax=4000
+       double precision, dimension(nrmax), intent(inout) :: r,dr,r2
+       double precision, intent(inout) :: dl
+       double precision, intent(out) :: xntot, rmin, rmax, zorig
+       integer, intent(out) :: nr, njrc(4), nel
+       integer :: j
 
        ! enter Z, NR
        read (5,*) zorig,nr
@@ -926,14 +928,11 @@
 
       end subroutine
 
-!---------------------------------------------------------------------------
+!-----------------------------------------------------------------------
       subroutine setgrid(nr,rmin,rmax,r,dr,r2,dl)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       integer, parameter :: nrmax=4000
        dimension r(nrmax),dr(nrmax),r2(nrmax)
 
        ratio=rmax/rmin
@@ -951,7 +950,7 @@
 
       end subroutine
 
-!-----------------------------------------------------------------------------
+!-----------------------------------------------------------------------
       subroutine integ(e,l,xkappa,n,nn,istop,ief,x0,phi,z,v,q0,xm1,
      +    xm2,nr,r,dr,r2,dl,rel)
 
@@ -1125,7 +1124,7 @@
 
       end subroutine
 
-!-------------------------------------------------------------------------
+!-----------------------------------------------------------------------
 !  routine to generate Clebsch-Gordan coefficients, in the form of
 !  cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's
 !  'Elementary Theory of Angular Momentum', p. 39, Wigner's formula.
@@ -1135,11 +1134,9 @@
       subroutine clebschgordan(nel,nl,cg)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
-       dimension nl(iorbs)
+       integer, parameter :: iorbs=33
+       integer, intent(in) :: nl(iorbs), nel
+       double precision :: cg
        dimension cg(0:6,0:6,0:12,-6:6,-6:6),si(0:32),fa(0:32)
 
        lmx=0
@@ -1782,16 +1779,13 @@
      +                    no,nl,xnj,is,ev,ek,occ,njrc,vi,phe,orb)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       integer, parameter :: iorbs=33,nrmax=4000
        dimension no(iorbs),nl(iorbs),xnj(iorbs),is(iorbs)
        dimension ev(iorbs),ek(iorbs),occ(iorbs),r(nrmax)
        dimension phe(nrmax,iorbs),orb(nrmax,iorbs)
        dimension njrc(4),vi(nrmax,7),rho(nrmax)
-       character(len=255) filename, dummy
-       integer pos, i
+       character(len=255) :: filename
+       integer :: pos, i
 
        pi=4.*atan(1.)
        pi4=4.*pi
@@ -2004,7 +1998,7 @@
        character(len=*), intent(IN) :: MTZ_STRING, INFO_FILE
        integer, intent(IN)          :: SLAB_FLAG
        real                         :: CAVPOT
-       integer NIEQ, NTOT
+       integer NIEQ
        real RX(550),RS(550),POT(550),RC(3,3)
        real TITLE(20), SUM
        real, allocatable    :: RK(:,:), ZM(:), TRK(:,:), TZM(:)
@@ -2019,7 +2013,6 @@
        common /WF/ WF2(250,14),WC(14),LC(14)
        data NGRID,MC,PI/250,30,3.1415926536/
        data WFN0,WFN1,WFN2,WFN3/"RELA","HERM","CLEM","POTE"/
-       integer pos1, pos2
 
        INDEX(X)=20.0*(log(X)+8.8)+2.0
 
@@ -3996,7 +3989,7 @@
        common / CM16 / E1, E2, NE, IX,NEUO
        common / CMRV / R, V, NR, NL, Z
        dimension R(201), V(201, 15)
-       real RS(200),          ZS(200), ZTT(201)
+       real RS(200), ZS(200), ZTT(201)
        dimension FMT(18)
        namelist / NL16 / CS,Z,E1,E2,NE,NL,NR,IX,RT,NEUI,NEUO,POTYP
 
@@ -4120,6 +4113,7 @@
 !***********************************************************************
       subroutine S5(E)
 
+       real, intent(in) :: E
        real EEST(30), VME(15)
        common / CMRV / R(201), V(201, 15), NR, NL, Z
        common / CM5 / Y(30, 4), F(30, 4), IP1
@@ -4182,6 +4176,7 @@
 !***********************************************************************
       subroutine S10(E)
 
+       real, intent(in) :: E
        integer TLP1
        real A(10), B(10), TR(4)
        common / CMRV / R(201), V(201, 15), NR, NL, Z
@@ -4249,8 +4244,8 @@
 !  F44  EVALUATES THE SPECIAL VERSION OF THE SPHERICAL BESSEL FUNCT.
 !***********************************************************************
       function F44(L, X)
-
-       real S(20)
+       real :: L, X
+       real :: S(20)
 
        JS = L + L + 1
 
@@ -4323,7 +4318,7 @@
 !  F45  EVALUATES SPECIAL VERSION OF THE SPHERICAL NEUMANN function
 !***********************************************************************
       function F45(L, X)
-
+       real, intent(in) :: L, X
        real S(20)
 
        if (L .lt. 0) then
@@ -4403,9 +4398,9 @@
 !  S41 PLOTS Y AGAINST X
 !***********************************************************************
       subroutine S41(X, Y, N)
-
-       character B, C, O, D, P
-       dimension X(100), Y(100), P(97)
+       real, intent(in) :: X(100), Y(100)
+       integer, intent(in) :: N
+       character :: B, C, O, D, P(97)
        data B, C, O, D / " ", "*", "0", "I" /
        Y1 = 0
        Y2 = 0
@@ -4508,8 +4503,8 @@
          write (4,12) (ZP(J),J=1,JRI)
          RHOZ=-0.90306514D+01
          DELRHO=0.3125D-01
-         RM=DEXP(RHOZ)
-         XRX=DEXP(DELRHO)
+         RM=exp(RHOZ)
+         XRX=exp(DELRHO)
 
 c$OMP PARALLEL DO
          do J=1,JRI
@@ -4657,7 +4652,7 @@ c$OMP END PARALLEL DO
        data DX/3.125D-2/,C/2.740746D+2/,CIN/1.3312581146D-5/,HF/.5D+0/
        data TH/.3333333333D+0/,T2/2.D+0/,T7/7.D+0/,T11/11.D+0/
        data T12/12.D+0/,T14/14.D+0/,T26/26.D+0/,T32/32.D+0/,ZERO/.1D+0/
-
+       double precision, intent(in) :: e, kappa
        !SET UP FOR RELATIVISTIC OR NO RELATIVISTIC EFFECT
        if (IPT .le. 0) then
          CIN=0.0D00
@@ -4667,8 +4662,8 @@ c$OMP END PARALLEL DO
        DX2=HF*DX
        X20=(.3)*DX
        XMFT=(4.4444444444444D-2)*DX
-       TS=DEXP(XS)
-       TDX=DEXP(DX)
+       TS=exp(XS)
+       TDX=exp(DX)
        HOC=(VCZ*TS+POT(1))/C
        XK=KAPPA
        U(1)=USTART
@@ -4698,7 +4693,7 @@ c$OMP END PARALLEL DO
 
  20    IK=IK+1
 
-       T=DEXP(XC)
+       T=exp(XC)
        TC=(E+VCZ)*T+BGC
        VC=CIN*TC
 
@@ -4738,7 +4733,7 @@ c$OMP END PARALLEL DO
        end select
 
        ! END OF STARTING INTEGRATION.  BEGIN MILNE PROCEDURE.
-       T=DEXP(X)
+       T=exp(X)
    26  T=T*TDX
        NP1=N+1
        NM1=N-1
@@ -4796,11 +4791,15 @@ c$OMP END PARALLEL DO
       subroutine SBFIT(T,E,L,R,JFS)
 
        implicit double precision(E,R,T)
-       real JFS,KAPPA
+       double precision, intent(in) :: T, E, R
+       integer, intent(in) :: L
+       real, intent(out) :: JFS
+       real :: KAPPA
+       integer :: LS
 
-       SE=SNGL(E)
-       SR=SNGL(R)
-       ST=SNGL(T)
+       SE=real(E)
+       SR=real(R)
+       ST=real(T)
        KAPPA=sqrt(SE)
        X=KAPPA*SR
        BJ1=sin(X)/X
