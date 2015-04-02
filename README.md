@@ -6,6 +6,8 @@ This is the developer's readme - for more information please visit the project [
 
 For a general overview of the project or for the latest production release, please look [here](https://pypi.python.org/pypi)
 
+A list of current issues and enhancement proposals can be found at: https://bitbucket.org/Liam_Deacon/phaseshifts/issues?status=new&status=open
+
 ### Who do I talk to? ###
 
 * Liam Deacon <liam.deacon@diamond.ac.uk> for general information and help with this project.
