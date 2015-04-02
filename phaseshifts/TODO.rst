@@ -47,10 +47,14 @@ be included as this package matures, which include:
 	
     .. important:: *NOT YET ASSIGNED* - any takers?
 
- 5. Miscellanea - address limitations of libphsh.f. In particular:
+ 5. Miscellanea:
+    
+    Address limitations of libphsh.f. In particular:
       + Allow dynamic allocation of key arrays for input files with any number of atoms
       + Address truncation of phase shift labels over 9 characters in length
       + Improve readability (it would be nice to eliminate *goto* statements)
       + Possibly form into a FORTRAN module to allow optional arguments to 
         functions and subroutines.
-      
+    
+    Ensure mutual compatibility between hartfock and model input files from 
+    EEASiSSS and Barbieri/Van Hove backends.
