@@ -59,10 +59,14 @@ will produce a list of command line options::
                           installed, the input will be validated.
     -s <slab_file>, --slab <slab_file>
                           path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    -g, --generate-only
+                          Exit after generating phaseshifts; do not launch 
+                          subprocess using PHASESHIFTS_LEED environment 
+                          variable. [default: False]
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
-    -v, --verbose         set verbosity level [default: None].
-    -V, --version         show program's version number and exit
+    -v, --verbose         Set verbosity level [default: None].
+    -V, --version         Show program's version number and exit
 
 .. note::
    To install the optional dependencies for structured input and validation,
