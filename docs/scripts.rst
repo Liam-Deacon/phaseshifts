@@ -51,10 +51,23 @@ will produce a list of command line options::
                           '<start> <stop> [<step>]', where the <step> value is
                           optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
+    -g, --generate-only
+                          Exit after generating phaseshifts; do not launch 
+                          subprocess using PHASESHIFTS_LEED environment 
+                          variable. [default: False]
+    -a, --atorbs-only
+                          Only generate atomic orbitals of elements found in 
+                          the input files using Eric Shirley's hartfock 
+                          routine, then exit. [default: False]
+    -p, --package
+                          Selects package to use for phase shift calculations. 
+                          Choices are 'VHT' (van Hove-Tong) or 'Rundgren' 
+                          (EEASiSSS). [default: 'VHT')
+    
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
-    -v, --verbose         set verbosity level [default: None].
-    -V, --version         show program's version number and exit
+    -v, --verbose         Set verbosity level [default: None].
+    -V, --version         Show program's version number and exit
 
 CLEED compatibility
 -------------------

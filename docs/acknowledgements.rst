@@ -16,6 +16,10 @@ following people who have made this package a reality:
    PhD thesis (refer to the thesis: *E.L. Shirley, "Quasiparticle calculations in
    atoms and many-body core-valence partitioning", University of Illinois, Urbana, 1991*).
 
+ - **J. Rundgren** - who developed the EEASiSSS package and collaborated on 
+   numerous improvements to the underlying FORTRAN code base. Please cite
+   *J. Rundgren, Phys. Rev. B 68 125405 (2003).*
+
  - **Christoph Gohlke** - who developed the elements.py module used extensively throughout
    for the modelling convenience functions (see 'elements.py' for license details).
 
