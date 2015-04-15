@@ -275,21 +275,20 @@ f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
              
              Extension(name='phaseshifts.lib.libhartfock',
                        extra_compile_args=[],
-                       sources=[os.path.join(phsh_lib, 'EEASiSSS', 'hf_.f'),
-                                os.path.join(phsh_lib, 'EEASiSSS', 
-                                             'params.f90')]), ]
+                       sources=[os.path.join(phsh_lib, 'EEASiSSS', 'hf.f90')]),
+             ]
     
 dist = setup(
         name='phaseshifts', 
         # packages=['phaseshifts', 'phaseshifts.gui', 'phaseshifts.lib', 'phaseshifts.contrib'],
         packages=find_packages(),
-        version='0.1.5-dev',
+        version='0.1.6-dev',
         author='Liam Deacon',
         author_email='liam.deacon@diamond.ac.uk',
         license='MIT License',
         url='https://pypi.python.org/pypi/phaseshifts',
-        description='Python-based version of the Barbieri/Van Hove phase '
-        'shift calculation package for LEED/XPD modelling',
+        description='Python package for calculating phase shifts '
+                    'for LEED/XPD modelling',
         long_description=open(os.path.join('phaseshifts','README.rst')
            ).read() if os.path.exists(os.path.join(
             'phaseshifts','README.rst')) else None,

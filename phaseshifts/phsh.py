@@ -52,15 +52,16 @@ import tempfile
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from phaseshifts.factories import PhaseshiftFactory 
+from .factories import PhaseshiftFactory 
+from .utils import FileUtils
 
 from subprocess import Popen
 import platform
 
 __all__ = []
-__version__ = '0.1.5-dev'
+__version__ = '0.1.6-dev'
 __date__ = '2013-11-15'
-__updated__ = '2014-09-04'
+__updated__ = '2015-04-17'
 __contact__ = 'liam.deacon@diamond.ac.uk'
 
 DEBUG = 0
@@ -119,7 +120,7 @@ def main(argv=None):
     program_license = '''%s
 
       Created by Liam Deacon on %s.
-      Copyright 2013-2014 Liam Deacon. All rights reserved.
+      Copyright 2013-2015 Liam Deacon. All rights reserved.
 
       Licensed under the MIT license (see LICENSE file for details)
 
@@ -179,7 +180,9 @@ def main(argv=None):
                             default=False,
                             help="Keep intermediate files in subdir when done")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count",
-                            help="set verbosity level [default: %(default)s]")
+                            help="Set verbosity level. Note this will also "
+                            "produce postscript graphs when using the EEASiSSS" 
+                            "backend. [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', 
                             version=program_version_message)
 
@@ -235,7 +238,12 @@ def main(argv=None):
         package = args.package
     except:
         package = 'vht'
-    
+        
+    if args.atorbs_only is True:
+        # only produce atomic orbital input files for Eric Shirley's hartfock
+        sys.stderr.write("option '-a' or '--atorb-only' is not implemented\n")
+        sys.exit(0)
+        
     phaseshifts = PhaseshiftFactory(package, bulk_file=args.bulk, slab_file=args.slab, 
                                 tmp_dir=args.tmpdir, lmax=int(args.lmax),
                                 format=args.format, store=args.store,
@@ -257,7 +265,7 @@ def main(argv=None):
             parent = os.path.dirname(args.slab)
             name, ext = os.path.splitext(os.path.basename(args.slab))
             dest = os.path.join(parent, 'phsh_' + model, name + '_' + it + ext)
-            Wrapper._copy_files(phsh_files, dest, verbose)
+            FileUtils._copy_files(phsh_files, dest, verbose)
         
         # create subprocess
         leed_cmd = [os.environ['PHASESHIFTS_LEED']]

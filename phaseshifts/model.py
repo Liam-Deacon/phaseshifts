@@ -50,7 +50,8 @@ from glob import glob
 from math import pi
 
 from elements import Element
-from lib import libphsh 
+from lib import libphsh
+from .leed import Converter, CLEED_validator 
 
 
 class Atom(Element):
@@ -616,6 +617,11 @@ class Model(object):
                                    'is unique!\n%s\n' % info)
 
     @property
+    def elements(self):
+        '''Returns a list of unique elements within the model'''
+        return list(set([atom.element for atom in self.atoms()]))
+
+    @property
     def atoms(self):
         ''' Returns a list of atoms within this model '''
         return self.atoms or []
@@ -787,7 +793,7 @@ class MTZ_model(Model):
         except:
             pass
 
-    def load_from_file(self, filename):
+    def _load_input_file(self, filename):
         """
         Description
         -----------
@@ -806,9 +812,6 @@ class MTZ_model(Model):
           If a input line cannot be parsed correctly.
 
         """
-        
-        filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
-        
         try:
             with open(filename, 'r') as f:
                 self.header = f.readline()
@@ -855,7 +858,35 @@ class MTZ_model(Model):
             raise IOError("cannot read '%s'" % filename)
         
         except ValueError:
-            raise ValueError("malformatted input in '%s'" % filename)            
+            raise ValueError("malformatted input in '%s'" % filename)  
+
+    def load_from_file(self, filename):
+        """
+        Description
+        -----------
+        Load an input file and update the class instance variables
+
+        Parameters
+        ----------
+        filename : str
+            The path of the input file (e.g. cluster*.i or *slab*.i)
+
+        Raises
+        ------
+        IOError : exception
+          If the file cannot be read.
+        TypeError : exception 
+          If a input line cannot be parsed correctly.
+
+        """
+        
+        filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
+        if CLEED_validator.is_CLEED_file(filename):
+            self = Converter.import_CLEED(filename)
+        else:
+            self._load_input_file(filename)
+        
+          
 
     def create_atorbs(self, **kwargs):
         """

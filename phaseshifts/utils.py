@@ -6,7 +6,9 @@
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Copyright: Copyright (C) 2014-2015 Liam Deacon                                  #
+# Created on 15 Apr 2015                                                       #
+#                                                                            #
+# Copyright: Copyright (C) 2015 Liam Deacon                                #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -29,44 +31,60 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
+'''
 
-''' Provides an abstract factory class for phase shift calculations '''
+'''
+from __future__ import print_function, unicode_literals
+from __future__ import absolute_import, division, with_statement
 
-from wrappers import VHTWrapper, EEASiSSSWrapper
 import sys
+import os
+from shutil import copy
 
+class FileUtils(object):
+    '''
+    Class for performing phase shift related file operations
+    '''
 
-class PhaseshiftFactory(object):
-    '''Class for backend selection'''
-    backend = object
-    phsh_files = []
+    def __init__(self, params):
+        '''
+        Constructor
+        '''
+        pass
     
-    def __init__(self, backend, **kwargs):
-        package = str(backend).lower()
-        self.__dict__.update(kwargs)
-        try:
-            if package not in ["vht", "eeasisss"]:
-                sys.stderr.write("Invalid package selected - "
-                                 "using default (VHT)\n")
+    @staticmethod
+    def expand_filepath(path):
+        '''Expands the filepath for environment and user variables'''
+        return os.path.expanduser(os.path.expandvars(os.path.expanduser(path))) 
+    
+    @staticmethod
+    def copy_files(files, dst, verbose=False):
+        '''copy list of files into destination directory'''
+        # check if using native Windows Python with cygwin
+        env = ''
+        if str(sys.platform).startswith('win') and dst.startswith('/cygdrive'):
+            if os.environ['CLEED_PHASE'] == dst:
+                env = 'CLEED_PHASE='
+            dst = '"%s"' % (dst.split('/')[2] + ':' +
+                             os.path.sep.join(dst.split('/')[3:]))
+
+        # do check and create directory if needed
+        if os.path.isfile(dst):
+            dst = os.path.dirname(dst)
+        if not os.path.exists(dst):
+            try:
+                os.makedirs(dst)
+            except WindowsError:
+                pass
+
+        # copy each phase shift file to directory
+        if verbose:
+            print("\nCopying files to %s'%s'" % (env, dst))
+        for filename in files:
+            try:
+                copy(filename, dst)
+                if verbose:
+                    print(os.path.basename(filename))
+            except IOError:
+                sys.stderr.write("Cannot copy file '%s'\n" % filename)
                 sys.stderr.flush()
-                self.backend = VHTWrapper
-            else:
-                if (package == "vht" or package == "van hove" 
-                   or package == "barbieri"):
-                    self.backend = VHTWrapper
-                elif package == "eeasisss" or package == "rundgren":
-                    self.backend = EEASiSSSWrapper
-        except KeyError:
-            sys.stderr.write("Invalid phaseshifts backend\n")
-            sys.stderr.flush()
-            sys.exit(-2)
-            
-    def getPhaseShiftFiles(self):
-        return self.backend.autogen_from_input(self.bulk_file, 
-                                               self.slab_file, 
-                                               tmp_dir=self.tmp_dir, 
-                                               lmax=int(self.lmax),
-                                               format=self.format, 
-                                               store=self.store,
-                                               range=self.range
-                                               )     

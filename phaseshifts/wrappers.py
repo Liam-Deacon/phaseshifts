@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+from phaseshifts.utils import FileUtils
 
 ##############################################################################
 # Author: Liam Deacon                                                        #
@@ -41,18 +42,84 @@ import os
 import tempfile
 
 from glob import glob
-from shutil import copy
+from abc import ABCMeta, abstractmethod, abstractproperty
 
 from . import model, atorb
 from .leed import Converter, CLEED_validator
 from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
 from .conphas import Conphas
+from .utils import FileUtils
 
 
-class EEASiSSSWrapper(object):
-    '''Wrapper class to easily generate phase shifts'''
+class Wrapper(object):
+    '''Abstract base wrapper class for generating phase shifts'''
+    __metaclass__ = ABCMeta
+    
+    @abstractmethod
+    def autogen_from_input(self):
+        pass
+    
+    @abstractmethod
+    def autogen_atorbs(self, elements=[], output_dir='.'):
+        ''' 
+        Abstract base method for generating atomic orbital input for 
+        Eric Shirley's hartfock program.
+        
+        Parameters
+        ----------
+        elements : set of elements.Element objects.
+        output_dir : destination directory for generated files.
+        '''
+        pass
+    
+    def __init__(self):
+        pass 
+    
+    @staticmethod
+    def _copy_phsh_files(phsh_files, store='.', out_format=None):
+        if out_format != 'cleed':
+            dst = FileUtils.expand_filepath(str(store)) if store != '.' else '.'
+            dst = dst if os.path.isdir(dst) else '.'
+            dst = os.path.abspath(dst)
+            FileUtils.copy_files(phsh_files, dst, verbose=True)
+
+        elif 'CLEED_PHASE' in os.environ and out_format == 'cleed':
+            dst = os.path.abspath(FileUtils.expand_filepath('$CLEED_PHASE'))
+            FileUtils.copy_files(phsh_files, dst, verbose=True)
+
+        else:
+            FileUtils.copy_files(phsh_files, os.path.abspath('.'), verbose=True)
+
+class EEASiSSSWrapper(Wrapper):
+    '''Wrapper class to easily generate phase shifts using EEASiSSS backend'''
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
+    def autogen_atorbs(self, elements=[], output_dir='.'):
+        ''' 
+        Generates chgden input files for a set of elements and calculates their 
+        atomic charge densities using the EEASiSS variant of Eric Shirley's 
+        hartfock program.
+        
+        Parameters
+        ----------
+        elements : set of elements.Element objects.
+        output_dir : destination directory for generated files.
+        
+        Returns
+        -------
+        dictionary of atorb filepaths for all elements
+        '''
+        atomic_dict = {}
+        for elem in [element.symbol for element in elements]:
+            chgden_file = os.path.join(output_dir, "chgden{}".format(elem))
+            if not os.path.isfile(chgden_file):
+                print('\nCalculating atomic charge density for %s...' % elem)
+                atomic_dict[elem] = atorb.RundgrenAtorb.calculate_Q_density(
+                                        element=elem, output_dir=output_dir)
+            else:
+                atomic_dict[elem] = chgden_file
+        return atomic_dict
 
     @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None,
@@ -65,9 +132,9 @@ class EEASiSSSWrapper(object):
         Parameters
         ----------
         slab_file : str
-            Path to the cluster slab MTZ input file.
+            Path to the cluster slab input file.
         bulk_file : str
-            Path to the cluster bulk MTZ input file.
+            Path to the cluster bulk input file.
         tmp_dir : str
             Temporary directory for intermediate files.
         store : bool or int
@@ -124,20 +191,14 @@ class EEASiSSSWrapper(object):
 
         # generate atomic charge densities for each element in bulk model
         if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model")
+            raise AttributeError("bulk_mtz is not an MTZ_model() instance")
 
         # get unique elements in bulk and slab
-        atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        for elem in set(bulk_elements + slab_elements):
-            at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
-            if not os.path.isfile(at_file):
-                print('\nCalculating atomic charge density for %s...' % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                                        element=elem, output_dir=tmp_dir)
-            else:
-                atomic_dict[elem] = at_file
+        atomic_dict = EEASiSSSWrapper.autogen_atorbs(
+                                elements=set(bulk_elements + slab_elements),
+                                output_dir=tmp_dir)  
 
         # prepare at files for appending into atomic file
         bulk_at_files = [atomic_dict[atom.element.symbol]
@@ -287,9 +348,6 @@ class EEASiSSSWrapper(object):
                         # edit energy range
                         lines[1] = str('%12.4f%12.4f%12.4f    %3i    %12.4f\n'
                                     % (ei, de, ef, lsm, vc)).replace('e', 'D')
-#                         lines[1] = ff.FortranRecordWriter(
-#                                         '(3D12.4,4X,I3,4X,D12.4)'
-#                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
                         with open(mufftin_filepath, 'w') as f:
                             f.write("".join([str(line) for line in lines]))
@@ -349,43 +407,40 @@ class EEASiSSSWrapper(object):
 
         return phsh_files
 
-    @staticmethod
-    def _copy_files(files, dst, verbose=False):
-        '''copy list of files into destination directory'''
-        # check if using native Windows Python with cygwin
-        env = ''
-        if str(sys.platform).startswith('win') and dst.startswith('/cygdrive'):
-            if os.environ['CLEED_PHASE'] == dst:
-                env = 'CLEED_PHASE='
-            dst = '"{}"'.format(dst.split('/')[2] + ':' +
-                                os.path.sep.join(dst.split('/')[3:]))
-
-        # do check and create directory if needed
-        if os.path.isfile(dst):
-            dst = os.path.dirname(dst)
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-            except WindowsError:
-                pass
-
-        # copy each phase shift file to directory
-        if verbose:
-            print("\nCopying files to %s'%s'" % (env, dst))
-        for filename in files:
-            try:
-                copy(filename, dst)
-                if verbose:
-                    print(os.path.basename(filename))
-            except IOError:
-                sys.stderr.write("Cannot copy file '%s'\n" % filename)
-                sys.stderr.flush()
-
 
 class VHTWrapper(object):
-    '''Wrapper class to easily generate phase shifts'''
+    '''
+    Wrapper class to easily generate phase shifts 
+    using the Barbieri - Van Hove backend.
+    '''
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
+    def autogen_atorbs(self, elements=[], output_dir='.'):
+        ''' 
+        Generates atomic orbital input files for a set of elements and 
+        calculates their atomic charge densities according to the Barbieri /
+        Van Hove variant of Eric Shirley's hartfock program.
+        
+        Parameters
+        ----------
+        elements : set of elements.Element objects.
+        output_dir : destination directory for generated files.
+        
+        Returns
+        -------
+        dictionary of atorb filepaths for all elements
+        '''
+        atomic_dict = {}
+        for elem in [element.symbol for element in elements]:
+            at_file = os.path.join(output_dir, "at_%s.i" % elem)
+            if not os.path.isfile(at_file):
+                print('\nCalculating atomic charge density for %s...' % elem)
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
+                                        element=elem, output_dir=output_dir)
+            else:
+                atomic_dict[elem] = at_file
+        return atomic_dict
 
     @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None,
@@ -422,20 +477,13 @@ class VHTWrapper(object):
         model_name = model_name or 'atomic'
 
         # check formatting
-        if 'format' in kwargs:
-            out_format = kwargs['format'].lower()
-        else:
-            out_format = None
-
-        # check lmax
-        if 'lmax' in kwargs:
-            lmax = kwargs['lmax']
-        else:
-            lmax = 10
+        store = kwargs['store'] if 'store' in kwargs else '.'
+        out_format = kwargs['format'].lower() if 'format' in kwargs else None
+        lmax = kwargs['lmax'] if 'lmax' in kwargs else 10
 
         # check for intermediate storage directory, temp folder otherwise
         tmp_dir = str(tmp_dir)  # ensure string does not have escape chars
-        if not os.path.isdir(tmp_dir):
+        if os.path.isdir(str(tmp_dir)):
             tmp_dir = tempfile.gettempdir()
 
         # Load bulk model and calculate MTZ
@@ -472,14 +520,9 @@ class VHTWrapper(object):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        for elem in set(bulk_elements + slab_elements):
-            at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
-            if not os.path.isfile(at_file):
-                print('\nCalculating atomic charge density for %s...' % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                                        element=elem, output_dir=tmp_dir)
-            else:
-                atomic_dict[elem] = at_file
+        atomic_dict = VHTWrapper.autogen_atorbs(elements=set(bulk_elements + 
+                                                             slab_elements),
+                                                output_dir=tmp_dir)
 
         # prepare at files for appending into atomic file
         bulk_at_files = [atomic_dict[atom.element.symbol]
@@ -529,7 +572,7 @@ class VHTWrapper(object):
 
         # calculate muffin-tin potential for slab model
         mufftin_filepath = os.path.join(tmp_dir,
-                                            slab_model_name + '_mufftin.d')
+                                        slab_model_name + '_mufftin.d')
         print('\nCalculating slab muff-tin potential...')
         if verbose:
             print("\tcluster file: '%s'" % slab_file)
@@ -561,7 +604,7 @@ class VHTWrapper(object):
         phsh_files = []
 
         # assign phase shift specific lmax values
-        lmax_dict = {}
+        lmax_dict = _get_lmax_dict({}
         for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
             try:
                 lmax_dict[atom.tag] = atom.lmax
@@ -629,9 +672,6 @@ class VHTWrapper(object):
                         # edit energy range
                         lines[1] = str('%12.4f%12.4f%12.4f    %3i    %12.4f\n'
                                     % (ei, de, ef, lsm, vc)).replace('e', 'D')
-#                         lines[1] = ff.FortranRecordWriter(
-#                                         '(3D12.4,4X,I3,4X,D12.4)'
-#                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
                         with open(mufftin_filepath, 'w') as f:
                             f.write("".join([str(line) for line in lines]))
@@ -672,54 +712,7 @@ class VHTWrapper(object):
             raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
 
         # copy files to storage location
-        if 'store' in kwargs and out_format != 'cleed':
-            if kwargs['store'] != '.':
-                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(
-                        kwargs['store'])))
-            else:
-                dst = os.path.abspath('.')
-            VHTWrapper._copy_files(phsh_files, dst, verbose=True)
-
-        elif 'CLEED_PHASE' in os.environ and out_format == 'cleed':
-            dst = os.path.abspath(os.path.expanduser(os.path.expandvars(
-                        '$CLEED_PHASE')))
-            VHTWrapper._copy_files(phsh_files, dst, verbose=True)
-
-        else:
-            VHTWrapper._copy_files(phsh_files, os.path.abspath('.'), verbose=True)
-
+        Wrapper._copy_phsh_files(phsh_files, store, out_format)
+        
         return phsh_files
-
-    @staticmethod
-    def _copy_files(files, dst, verbose=False):
-        '''copy list of files into destination directory'''
-        # check if using native Windows Python with cygwin
-        env = ''
-        if str(sys.platform).startswith('win') and dst.startswith('/cygdrive'):
-            if os.environ['CLEED_PHASE'] == dst:
-                env = 'CLEED_PHASE='
-            dst = '"%s"' % (dst.split('/')[2] + ':' +
-                             os.path.sep.join(dst.split('/')[3:]))
-
-        # do check and create directory if needed
-        if os.path.isfile(dst):
-            dst = os.path.dirname(dst)
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-            except WindowsError:
-                pass
-
-        # copy each phase shift file to directory
-        if verbose:
-            print("\nCopying files to %s'%s'" % (env, dst))
-        for filename in files:
-            try:
-                copy(filename, dst)
-                if verbose:
-                    print(os.path.basename(filename))
-            except IOError:
-                sys.stderr.write("Cannot copy file '%s'\n" % filename)
-                sys.stderr.flush()
-
 
