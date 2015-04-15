@@ -20,6 +20,8 @@ Contents:
    scripts
    modules
    authors
+   Van_Hove_Phase_Shift_Package_Guide
+   EEASiSSS_Phase_Shift_Package_Guide
    *
 
 Indices and tables

@@ -4,12 +4,17 @@
 APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide
 **********************************************************************
 
-\ A. Barbieri, M.A. Van Hove
+\ **A. Barbieri, M.A. Van Hove**
 
 Lawrence Berkeley Laboratory,
+
 University of California,
+
 Berkeley,
-California 94720, USA
+
+California 94720, 
+
+USA
 
 
 Acknowledgement notice
@@ -23,7 +28,7 @@ phase shift package, as:
 Contact
 =======
 
-M.A. Van Hove:  vanhove@cityu.edu.hk
+M. A. Van Hove:  vanhove@cityu.edu.hk
 
 
 Contents
