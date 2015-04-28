@@ -41,6 +41,15 @@ import sys
 import os
 from shutil import copy
 
+
+def expand_filepath(path):
+    '''Expands the filepath for environment and user variables'''
+    return os.path.normpath(
+                os.path.expanduser(
+                    os.path.expandvars(
+                        os.path.expanduser(path)))) 
+
+
 class FileUtils(object):
     '''
     Class for performing phase shift related file operations
@@ -51,11 +60,6 @@ class FileUtils(object):
         Constructor
         '''
         pass
-    
-    @staticmethod
-    def expand_filepath(path):
-        '''Expands the filepath for environment and user variables'''
-        return os.path.expanduser(os.path.expandvars(os.path.expanduser(path))) 
     
     @staticmethod
     def copy_files(files, dst, verbose=False):

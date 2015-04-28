@@ -278,7 +278,6 @@ class Element(object):
             raise ValueError(
                 "%s - sum of isotope abundances != 1.0" % self.symbol)
 
-
 class Isotope(object):
     """Isotope massnumber, relative atomic mass, and abundance."""
     __slots__ = ['massnumber', 'mass', 'abundance']

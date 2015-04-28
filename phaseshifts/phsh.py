@@ -172,9 +172,9 @@ def main(argv=None):
                             "hartfock routine, then exit. " 
                             "[default: %(default)s]")
         parser.add_argument('-p', '--package', dest='package', 
-                            metavar='<package>', default='VHT', 
+                            metavar='<package>', default='BVH', 
                             help="Selects package to use for phase shift "
-                            "calculations. Choices are 'VHT' (van Hove-Tong) "
+                            "calculations. Choices are 'BVH' (Barbieri-Van Hove) "
                             "or 'Rundgren' (EEASiSSS). [default: %(default)s]")
         parser.add_argument('-S', '--store', dest='store', metavar='<subdir>', 
                             default=False,

@@ -1,0 +1,29 @@
+#  Si(111)-Er (1x1)
+#  (control file for R factor program CRFAC)
+#
+#  Theor. indices are listed for 3-fold rot. symmetry output
+#  and a calculation up to 250 eV. Delete if no experimental
+#  data are available for certain spots.
+#
+#
+#  ef=<experimental input file>
+#  ti=<corresponding indices in theoretical input file>
+#  id=<group ID> (does not really matter)
+#  wt=<weight>
+#  : = separator
+#
+#
+ef=Si111_Er_expt_01:ti=(0.00,1.00):id=01:wt=1.
+ef=Si111_Er_expt_02:ti=(1.00,0.00):id=02:wt=1.
+ef=Si111_Er_expt_03:ti=(1.00,1.00)+(2.00,-1.00):id=03:wt=1.
+ef=Si111_Er_expt_04:ti=(0.00,2.00):id=04:wt=1.
+ef=Si111_Er_expt_05:ti=(2.00,0.00):id=05:wt=1.
+ef=Si111_Er_expt_06:ti=(-1.00,3.00)+(1.00,2.00):id=06:wt=1.
+ef=Si111_Er_expt_07:ti=(3.00,-1.00)+(2.00,1.00):id=07:wt=1.
+ef=Si111_Er_expt_08:ti=(0.00,3.00):id=08:wt=1.
+ef=Si111_Er_expt_09:ti=(3.00,0.00):id=09:wt=1.
+ef=Si111_Er_expt_10:ti=(2.00,2.00)+(4.00,-2.00):id=10:wt=1.
+ef=Si111_Er_expt_11:ti=(-1.00,4.00)+(1.00,3.00):id=11:wt=1.
+ef=Si111_Er_expt_12:ti=(4.00,-1.00)+(3.00,1.00):id=12:wt=1.
+ef=Si111_Er_expt_13:ti=(0.00,4.00):id=13:wt=1.
+ef=Si111_Er_expt_14:ti=(4.00,0.00):id=14:wt=1.

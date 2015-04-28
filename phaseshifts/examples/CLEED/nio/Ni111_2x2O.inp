@@ -1,0 +1,37 @@
+# input file for SEARCH
+# Ni(111) + 2x2 O center on fcc site
+# 25 Mai 2001   
+# lattice parameters
+a1:       1.2450       -2.1564    0.0000
+a2:       1.2450        2.1564    0.0000
+#
+m1:  2.  0.
+m2:  0.  2. 
+#
+# atomic positions (centre on hcp site: (0.0, 0.0), sigma_d):
+# and parameter reference list
+# number of parameters
+# spn: 23
+# par_no: 1 
+#
+po: O_CO_Pendry_cs    0.0000  0.0000  5.2000       dr3  0.061  0.061  0.061
+#
+po: Ni_Wakoh_cs       1.2450 -0.7188  4.1000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs      -1.2450 -0.7188  4.1000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs       2.4900  1.4376  4.1000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs       0.0000  1.4376  4.1000       dr3  0.025  0.025  0.025
+#
+po: Ni_Wakoh_cs       1.2450  0.7188  2.0000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs      -1.2450  0.7188  2.0000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs       0.0000 -1.4376  2.0000       dr3  0.025  0.025  0.025
+po: Ni_Wakoh_cs      -2.4900 -1.4376  2.0000       dr3  0.025  0.025  0.025
+#
+# minimum radii:
+rm: Ni_Wakoh_cs  1.10
+rm: O_CO_Pendry_cs   0.40
+# z range
+zr: 1.60  6.00
+# sz: 0 (xyz search), 1 (z only)
+sz: 0
+# sr: rotational axis
+sr: 3  0.000 0.00

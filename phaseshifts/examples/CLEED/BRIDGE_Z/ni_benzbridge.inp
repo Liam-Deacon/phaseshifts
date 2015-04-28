@@ -1,0 +1,48 @@
+# input file for SEARCH
+# start with best geometry of xyz variation R_p = 0.38
+# with manual entry of parameter reference list
+# Ni(111) (root7xroot7) C6H6 center on bridge site
+#
+# lattice parameters
+a1:       1.2450       -2.1564    0.0000
+a2:       1.2450        2.1564    0.0000
+#
+m1:  2. -1.
+m2:  1. 3.
+#
+# atomic positions (centre on hcp site: (0.0, 0.0), sigma_d):
+# and parameter reference list
+# number of parameters
+# spn: 25
+# par_no: 
+po: C1_Benz_Ni    1.220111 1.387857 6.082780       dr1 0.05
+po: C1_Benz_Ni    0.100577 1.996497 6.079472       dr1 0.05
+po: C1_Benz_Ni   -0.992933 1.419617 6.077308       dr1 0.05
+po: C1_Benz_Ni   -1.303329 -0.005327 6.114511      dr1 0.05
+po: C1_Benz_Ni   -0.133353 -0.959138 6.074652      dr1 0.05
+po: C1_Benz_Ni    1.471097 -0.115933 6.111553      dr1 0.05
+#
+po: Ni_BVH   0.000000     -1.437600    4.163969     dr1 0.0433
+po: Ni_BVH   1.245000     +0.718800    4.091362     dr1 0.0433
+po: Ni_BVH   -1.245000    0.718800     4.139737     dr1 0.0433
+po: Ni_BVH   0.000000     2.875200     4.109375     dr1 0.0433
+po: Ni_BVH   2.490000     -1.437600    3.978607     dr1 0.0433
+po: Ni_BVH   -2.490000    -1.437600    4.014523     dr1 0.0433
+po: Ni_BVH   -2.490000    2.875200     3.975417     dr1 0.0433
+#                                      
+po: Ni_BVH   0.000000     0.000000     2.036269     dr1 0.0433
+po: Ni_BVH   2.490000     0.000000     1.998378     dr1 0.0433
+po: Ni_BVH  -2.490000     0.000000     2.019299     dr1 0.0433
+po: Ni_BVH   1.245000     2.1564       2.030103     dr1 0.0433
+po: Ni_BVH  -1.245000     2.1564       2.013739     dr1 0.0433
+po: Ni_BVH   1.245000    -2.1564       2.058388     dr1 0.0433
+po: Ni_BVH  -1.245000    -2.1564       2.027178     dr1 0.0433  
+# minimum radii:
+rm: Ni_BVH   1.10
+rm: C1_Benz_Ni 0.60
+# z range
+zr: 1.60  7.00
+# sz: 0 (xyz search), 1 (z only)
+sz: 1
+# sr: rotational axis
+sr: 1 0.0 0.0         

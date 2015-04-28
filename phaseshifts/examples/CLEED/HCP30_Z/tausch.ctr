@@ -1,0 +1,24 @@
+#  Ni(111) (root7xroot7) center on hcp30 site
+#  (control file for R factor program CRFAC)
+#  ef=<experimental input file>
+#  ti=<corresponding indices in theoretical input file>
+#  id=<group ID>
+#  : = separator
+ef=c6h6_9717.fsm:ti=(1.429,-0.143):id=01:wt=1.
+ef=c6h6_107_27.fsm:ti=(1.143,0.286):id=02:wt=1.
+ef=c6h6_107_97.fsm:ti=(0.143,1.286):id=03:wt=1.
+ef=c6h6_2787.smo4:ti=(1.429,-1.143):id=04:wt=1.
+ef=c6h6_3757.smo4:ti=(1.143,-0.714):id=05:wt=1.
+ef=c6h6_6737.fsm:ti=(-0.857,1.286):id=07:wt=1.
+ef=c6h6_87_37.fsm:ti=(0.429,-1.143):id=06:wt=1.
+#ef=              :ti=(             :id=08:wt=1. 
+ef=c6h6_67_47.fsm:ti=(-0.857,0.286):id=09:wt=1.
+ef=c6h6_4727.fsm:ti=(-0.571,0.857):id=10:wt=1.
+ef=c6h6_57_17.fsm:ti=(0.143,-0.714):id=11:wt=1.
+ef=c6h6_1747.fsm:ti=(-0.571,-0.143):id=12:wt=1.
+ef=c6h6_2717.fsm:ti=(0.429,-0.143):id=13:wt=1.
+ef=c6h6_37_27.fsm:ti=(0.143,0.286):id=14:wt=1.
+ef=c6h6_01.smo4:ti=(0.000,1.000):id=15:wt=1.
+ef=c6h6_10.smo1:ti=(1.000,0.000):id=16:wt=1.
+ef=c6h6_11.fsm:ti=(1.000,1.000)+(2.000,-1.000):id=17:wt=1.
+

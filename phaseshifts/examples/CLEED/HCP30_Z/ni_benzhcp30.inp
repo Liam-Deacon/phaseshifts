@@ -1,0 +1,51 @@
+# input file for SEARCH
+# Geometry of best fit vary 1 Ni layer Rp = 0.49
+# Now we use new Ni potentials and best vib Amps
+# Ni(111) + (root7xroot7) C6D6 center on hcp site
+#
+# lattice parameters
+a1:       1.2450       -2.1564    0.0000
+a2:       1.2450        2.1564    0.0000
+#
+m1:  2. -1.
+m2:  1.  3. 
+#
+# atomic positions (centre on hcp site: (0.0, 0.0), sigma_d):
+# and parameter reference list
+# number of parameters
+# spn: 1
+# par_no: 1 
+po: C1_Benz_Ni  0.724121  1.287269 6.109059 dr1 0.050
+po: C2_Benz_Ni  1.512584 -0.057748 6.116822 dr1 0.050     
+po: C1_Benz_Ni  0.752748 -1.270740 6.109059 dr1 0.050     
+po: C2_Benz_Ni -0.806303 -1.281061 6.116822 dr1 0.050     
+po: C1_Benz_Ni -1.476868 -0.016527 6.109059 dr1 0.050         
+po: C2_Benz_Ni -0.706281  1.338810 6.116822 dr1 0.050             
+#
+po: Ni_Benz_A1   0.028061 -1.471909  4.142240  dr1 0.0433
+po: Ni_Benz_A1   1.260681  0.760257  4.142240  dr1 0.0433
+po: Ni_Benz_A1  -1.288743  0.711652  4.142240  dr1 0.0433
+po: Ni_Benz_A2   0.017737  2.868106  4.023088  dr1 0.0433
+po: Ni_Benz_A2   2.474988 -1.449413  4.023088  dr1 0.0433
+po: Ni_Benz_A2  -2.492725 -1.418692  4.023088  dr1 0.0433
+po: Ni_Benz_A3  -2.490000  2.875200  3.991109  dr1 0.0433   
+#
+po: Ni_BVH   0.000000  0.000000  2.0330    dr1 0.0433
+po: Ni_BVH   2.4900    0.000000  2.0330    dr1 0.0433
+po: Ni_BVH  -2.4900    0.000000  2.0330    dr1 0.0433
+po: Ni_BVH   1.2450    2.1564    2.0330    dr1 0.0433
+po: Ni_BVH   1.2450   -2.1564    2.0330    dr1 0.0433
+po: Ni_BVH  -1.2450   -2.1564    2.0330    dr1 0.0433
+po: Ni_BVH  -1.2450    2.1564    2.0330    dr1 0.0433 
+# minimum radii:
+rm: C1_Benz_Ni 0.6
+rm: C2_Benz_Ni 0.6
+rm: Ni_Benz_A1 1.10 
+rm: Ni_Benz_A2 1.10
+rm: Ni_Benz_A3 1.10
+# z range
+zr: 1.60  7.00
+# sz: 0 (xyz search), 1 (z only)
+sz: 1
+# sr: rotational axis
+sr: 3  0.000 0.000

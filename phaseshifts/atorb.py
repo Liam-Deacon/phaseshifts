@@ -54,12 +54,17 @@ shift calculation package.
 """
 
 import os
+import re
 from sys import platform, version_info, exit
 from collections import OrderedDict
-import re
+from tempfile import gettempdir
+from ctypes import cdll, create_string_buffer
+from ctypes.util import find_library
 
-from elements import Element, ELEMENTS
+from elements import Element, ELEMENTS, SERIES
 from lib.libphsh import hartfock as vht_hartfock 
+
+from utils import expand_filepath
 
 # get best StringIO available for this platform
 if version_info[0] < 3:
@@ -67,17 +72,17 @@ if version_info[0] < 3:
         from cStringIO import StringIO
     except ImportError:
         from StringIO import StringIO
+        
+    from ConfigParser import SafeConfigParser as ConfigParser 
 else:
     from io import StringIO
+    from configparser import ConfigParser
     
 try:
     from lib.libhartfock import hartfock as eeasisss_hartfock
 except ImportError:
     
     def eeasisss_hartfock(input_file='inputA'):
-        from ctypes import cdll, create_string_buffer
-        from ctypes.util import find_library
-        
         # load library
         ext = '.dll' if str(platform).startswith('win') else '.so'
         lib = os.path.join(os.path.dirname(__file__), 'lib')
@@ -90,125 +95,125 @@ except ImportError:
         
 
 elements_dict = OrderedDict([
-('H', 'Hydrogen'), 
-('He', 'Helium'), 
-('Li', 'Lithium'), 
-('Be', 'Beryllium'), 
-('B', 'Boron'), 
-('C', 'Carbon'), 
-('N', 'Nitrogen'), 
-('O', 'Oxygen'), 
-('F', 'Fluorine'), 
-('Ne', 'Neon'), 
-('Na', 'Sodium'), 
-('Mg', 'Magnesium'), 
-('Al', 'Aluminium'), 
-('Si', 'Silicon'), 
-('P', 'Phosphorus'), 
-('S', 'Sulfur'), 
-('Cl', 'Chlorine'), 
-('Ar', 'Argon'), 
-('K', 'Potassium'), 
-('Ca', 'Calcium'), 
-('Sc', 'Scandium'), 
-('Ti', 'Titanium'), 
-('V', 'Vanadium'), 
-('Cr', 'Chromium'), 
-('Mn', 'Manganese'), 
-('Fe', 'Iron'), 
-('Co', 'Cobalt'), 
-('Ni', 'Nickel'), 
-('Cu', 'Copper'), 
-('Zn', 'Zinc'), 
-('Ga', 'Gallium'), 
-('Ge', 'Germanium'), 
-('As', 'Arsenic'), 
-('Se', 'Selenium'), 
-('Br', 'Bromine'), 
-('Kr', 'Krypton'), 
-('Rb', 'Rubidium'), 
-('Sr', 'Strontium'), 
-('Y', 'Yttrium'), 
-('Zr', 'Zirconium'), 
-('Nb', 'Niobium'), 
-('Mo', 'Molybdenum'), 
-('Tc', 'Technetium'), 
-('Ru', 'Ruthenium'), 
-('Rh', 'Rhodium'), 
-('Pd', 'Palladium'), 
-('Ag', 'Silver'), 
-('Cd', 'Cadmium'), 
-('In', 'Indium'), 
-('Sn', 'Tin'), 
-('Sb', 'Antimony'), 
-('Te', 'Tellurium'), 
-('I', 'Iodine'), 
-('Xe', 'Xenon'), 
-('Cs', 'Cesium'), 
-('Ba', 'Barium'), 
-('La', 'Lanthanum'), 
-('Ce', 'Cerium'), 
-('Pr', 'Praseodymium'), 
-('Nd', 'Neodymium'), 
-('Pm', 'Promethium'), 
-('Sm', 'Samarium'), 
-('Eu', 'Europium'), 
-('Gd', 'Gadolinium'), 
-('Tb', 'Terbium'), 
-('Dy', 'Dysprosium'), 
-('Ho', 'Holmium'), 
-('Er', 'Erbium'), 
-('Tm', 'Thulium'), 
-('Yb', 'Ytterbium'), 
-('Lu', 'Lutetium'), 
-('Hf', 'Hafnium'), 
-('Ta', 'Tantalum'), 
-('W', 'Tungsten'), 
-('Re', 'Rhenium'), 
-('Os', 'Osmium'), 
-('Ir', 'Iridium'), 
-('Pt', 'Platinum'), 
-('Au', 'Gold'), 
-('Hg', 'Mercury'), 
-('Tl', 'Thallium'), 
-('Pb', 'Lead'), 
-('Bi', 'Bismuth'), 
-('Po', 'Polonium'), 
-('At', 'Astatine'), 
-('Rn', 'Radon'), 
-('Fr', 'Francium'), 
-('Ra', 'Radium'), 
-('Ac', 'Actinium'), 
-('Th', 'Thorium'), 
-('Pa', 'Protactinium'), 
-('U', 'Uranium'), 
-('Np', 'Neptunium'), 
-('Pu', 'Plutonium'), 
-('Am', 'Americium'), 
-('Cm', 'Curium'), 
-('Bk', 'Berkelium'), 
-('Cf', 'Californium'), 
-('Es', 'Einsteinium'), 
-('Fm', 'Fermium'), 
-('Md', 'Mendelevium'), 
-('No', 'Nobelium'), 
-('Lr', 'Lawrencium'), 
-('Rf', 'Rutherfordium'), 
-('Db', 'Dubnium'), 
-('Sg', 'Seaborgium'), 
-('Bh', 'Bohrium'), 
-('Hs', 'Hassium'), 
-('Mt', 'Meitnerium'), 
-('Ds', 'Darmstadtium'), 
-('Rg', 'Roentgenium'), 
-('Cn', 'Copernicium'), 
-('Uut', 'Ununtrium'), 
-('Fl', 'Flerovium'), 
-('Uup', 'Ununpentium'), 
-('Lv', 'Livermorium'), 
-('Uus', 'Ununseptium'), 
-('Uuo', 'Ununoctium'), 
-])
+                            ('H', 'Hydrogen'), 
+                            ('He', 'Helium'), 
+                            ('Li', 'Lithium'), 
+                            ('Be', 'Beryllium'), 
+                            ('B', 'Boron'), 
+                            ('C', 'Carbon'), 
+                            ('N', 'Nitrogen'), 
+                            ('O', 'Oxygen'), 
+                            ('F', 'Fluorine'), 
+                            ('Ne', 'Neon'), 
+                            ('Na', 'Sodium'), 
+                            ('Mg', 'Magnesium'), 
+                            ('Al', 'Aluminium'), 
+                            ('Si', 'Silicon'), 
+                            ('P', 'Phosphorus'), 
+                            ('S', 'Sulfur'), 
+                            ('Cl', 'Chlorine'), 
+                            ('Ar', 'Argon'), 
+                            ('K', 'Potassium'), 
+                            ('Ca', 'Calcium'), 
+                            ('Sc', 'Scandium'), 
+                            ('Ti', 'Titanium'), 
+                            ('V', 'Vanadium'), 
+                            ('Cr', 'Chromium'), 
+                            ('Mn', 'Manganese'), 
+                            ('Fe', 'Iron'), 
+                            ('Co', 'Cobalt'), 
+                            ('Ni', 'Nickel'), 
+                            ('Cu', 'Copper'), 
+                            ('Zn', 'Zinc'), 
+                            ('Ga', 'Gallium'), 
+                            ('Ge', 'Germanium'), 
+                            ('As', 'Arsenic'), 
+                            ('Se', 'Selenium'), 
+                            ('Br', 'Bromine'), 
+                            ('Kr', 'Krypton'), 
+                            ('Rb', 'Rubidium'), 
+                            ('Sr', 'Strontium'), 
+                            ('Y', 'Yttrium'), 
+                            ('Zr', 'Zirconium'), 
+                            ('Nb', 'Niobium'), 
+                            ('Mo', 'Molybdenum'), 
+                            ('Tc', 'Technetium'), 
+                            ('Ru', 'Ruthenium'), 
+                            ('Rh', 'Rhodium'), 
+                            ('Pd', 'Palladium'), 
+                            ('Ag', 'Silver'), 
+                            ('Cd', 'Cadmium'), 
+                            ('In', 'Indium'), 
+                            ('Sn', 'Tin'), 
+                            ('Sb', 'Antimony'), 
+                            ('Te', 'Tellurium'), 
+                            ('I', 'Iodine'), 
+                            ('Xe', 'Xenon'), 
+                            ('Cs', 'Cesium'), 
+                            ('Ba', 'Barium'), 
+                            ('La', 'Lanthanum'), 
+                            ('Ce', 'Cerium'), 
+                            ('Pr', 'Praseodymium'), 
+                            ('Nd', 'Neodymium'), 
+                            ('Pm', 'Promethium'), 
+                            ('Sm', 'Samarium'), 
+                            ('Eu', 'Europium'), 
+                            ('Gd', 'Gadolinium'), 
+                            ('Tb', 'Terbium'), 
+                            ('Dy', 'Dysprosium'), 
+                            ('Ho', 'Holmium'), 
+                            ('Er', 'Erbium'), 
+                            ('Tm', 'Thulium'), 
+                            ('Yb', 'Ytterbium'), 
+                            ('Lu', 'Lutetium'), 
+                            ('Hf', 'Hafnium'), 
+                            ('Ta', 'Tantalum'), 
+                            ('W', 'Tungsten'), 
+                            ('Re', 'Rhenium'), 
+                            ('Os', 'Osmium'), 
+                            ('Ir', 'Iridium'), 
+                            ('Pt', 'Platinum'), 
+                            ('Au', 'Gold'), 
+                            ('Hg', 'Mercury'), 
+                            ('Tl', 'Thallium'), 
+                            ('Pb', 'Lead'), 
+                            ('Bi', 'Bismuth'), 
+                            ('Po', 'Polonium'), 
+                            ('At', 'Astatine'), 
+                            ('Rn', 'Radon'), 
+                            ('Fr', 'Francium'), 
+                            ('Ra', 'Radium'), 
+                            ('Ac', 'Actinium'), 
+                            ('Th', 'Thorium'), 
+                            ('Pa', 'Protactinium'), 
+                            ('U', 'Uranium'), 
+                            ('Np', 'Neptunium'), 
+                            ('Pu', 'Plutonium'), 
+                            ('Am', 'Americium'), 
+                            ('Cm', 'Curium'), 
+                            ('Bk', 'Berkelium'), 
+                            ('Cf', 'Californium'), 
+                            ('Es', 'Einsteinium'), 
+                            ('Fm', 'Fermium'), 
+                            ('Md', 'Mendelevium'), 
+                            ('No', 'Nobelium'), 
+                            ('Lr', 'Lawrencium'), 
+                            ('Rf', 'Rutherfordium'), 
+                            ('Db', 'Dubnium'), 
+                            ('Sg', 'Seaborgium'), 
+                            ('Bh', 'Bohrium'), 
+                            ('Hs', 'Hassium'), 
+                            ('Mt', 'Meitnerium'), 
+                            ('Ds', 'Darmstadtium'), 
+                            ('Rg', 'Roentgenium'), 
+                            ('Cn', 'Copernicium'), 
+                            ('Uut', 'Ununtrium'), 
+                            ('Fl', 'Flerovium'), 
+                            ('Uup', 'Ununpentium'), 
+                            ('Lv', 'Livermorium'), 
+                            ('Uus', 'Ununseptium'), 
+                            ('Uuo', 'Ununoctium'), 
+                            ])
 
 
 class Atorb(object):
@@ -255,12 +260,294 @@ class Atorb(object):
     have a huge effect on the charge density you are concerned with...
     
     '''
-    def __init__(self, **kwargs):
+    
+    atlib = '$ATLIB' if 'ATLIB' in os.environ else '~/atlib/'
+    userhome = '~/hf.conf'
+    datalib = (os.path.join(os.environ['APPDATA'], 'phaseshifts')
+               if platform.lower().startswith('win') else '~/.phaseshifts')
+    
+    def __init__(self, 
+                 ngrid=1000, 
+                 rel=True, 
+                 exchange=0.0, 
+                 relic=0, 
+                 mixing_SCF=0.05,
+                 tolerance=0.0005, 
+                 xnum=100, 
+                 ifil=0, 
+                 **kwargs):
         '''
         Constructor
         '''
-        self.__dict__.update(kwargs)
+        # set private data members
+        self.ngrid = ngrid if isinstance(ngrid, int) else 1000
+        self.rel = rel if isinstance(rel, bool) else True
+        self.exchange = (exchange if isinstance(exchange, float) 
+                         or isinstance(exchange, int) else 0.0)
+        self.relic = relic if isinstance(relic, int) else 0
+        self.mixing_SCF = mixing_SCF if isinstance(mixing_SCF, float) else 0.05
+        self.tolerance = tolerance if isinstance(tolerance, float) else 0.0005
+        self.xnum = xnum if isinstance(xnum, int) else 100
         
+        # set other (compatibility) kwargs
+        self.ifil = ifil if isinstance(ifil, int) else 0
+        self.fmt = kwargs['fmt'] if 'fmt' in kwargs else 'bhv'
+        self.__dict__.update(kwargs)
+    
+    @property
+    def ngrid(self):
+        '''Returns the number of points in the radial charge grid'''
+        return self._ngrid
+    
+    @ngrid.setter
+    def ngrid(self, ngrid):
+        '''
+        Description
+        -----------
+        Sets the number of points in the radial charge grid
+        
+        Parameters
+        ----------
+        ngrid : int
+            Number of points in the radial grid.
+        '''
+        try:
+            self._ngrid = abs(int(ngrid))
+        except ValueError:
+            pass
+    
+    @property
+    def rel(self):
+        '''Returns boolean value of whether to consider relativistic effects''' 
+        return self._rel
+    
+    @rel.setter
+    def rel(self, rel):
+        '''Sets flag to consider relativistic effects'''
+        try:
+            self._rel = (True if rel == 'rel' or 
+                         rel is True or rel == 1 else False)
+        except ValueError:
+            pass
+    
+    @property
+    def exchange(self):
+        '''
+        Returns the exchange correlation value, 
+        where 0.0=Hartree-Fock, 1.0=LDA or <float>=-alpha '''
+        return self._exchange
+    
+    @exchange.setter
+    def exchange(self, exchange):
+        ''' 
+        Description
+        -----------
+        Sets the exchange correlation value.
+        
+        Parameters
+        ----------
+        exchange : float 
+            Exchange value for calculation. The value determines the 
+            calculation method, where :code:`0.0` = Hartee-Fock, 
+            :code:`1.0` = LDA or :code:`<float>` = -alpha .
+        ''' 
+        try:
+            self._exchange = float(exchange)
+        except ValueError:
+            pass
+        
+    @property
+    def tolerance(self):
+        '''Returns the eigenvalue tolerance'''
+        return self._tolerance
+    
+    @tolerance.setter
+    def tolerance(self, tolerance):
+        '''
+        Description
+        -----------
+        Sets the eigenvalue tolerance
+        
+        Parameters
+        ----------
+        tolerance : float
+            The eigenvalue tolerance value to set to.
+        '''
+        try:
+            self._tolerance = float(tolerance)
+        except ValueError:
+            pass
+        
+    @property
+    def relic(self):
+        '''Returns the relic value for calculation'''
+        return self._relic
+    
+    @relic.setter
+    def relic(self, relic):
+        '''
+        Description
+        -----------
+        Sets the relic value for calculation.
+        
+        Parameters
+        ---------- 
+        relic : int 
+            Relic value for calculation.
+        '''
+        try:
+            self._relic = int(relic)
+        except ValueError:
+            pass
+        
+    @property
+    def mixing_SCF(self):
+        '''Returns the self-consisting field value''' 
+        return self._mixing_SCF
+    
+    @mixing_SCF.setter
+    def mixing_SCF(self, mixing):
+        '''Sets the self-consisting field value'''
+        try:
+            self._mixing_SCF = mixing
+        except ValueError:
+            pass
+    
+    @property
+    def xnum(self):
+        '''Returns xnum value'''
+        return self._xnum
+    
+    @xnum.setter
+    def xnum(self, xnum):
+        '''
+        Description
+        -----------
+        Sets the xnum value.
+        
+        Parameters
+        ----------
+        xnum : float
+            ???
+        '''
+        try:
+            self._xnum = float(xnum)
+        except ValueError:
+            pass
+    
+    def gen_conf_file(self, conf_file='hf.conf'):
+        '''
+        Description
+        -----------
+        Generates conf file from Atorb() object instance.
+        
+        Parameters
+        ----------
+        conf_file : str
+            Filepath for conf output file (default: 'hf.conf').
+        
+        '''
+        conf_file = expand_filepath(conf_file)
+        if not os.path.isdir(os.path.dirname(conf_file)):
+            os.makedirs(os.path.dirname(conf_file))
+            
+        config = ConfigParser(allow_no_value=True)
+        config.set('DEFAULT', '# parameters common to all backends')
+        config.set('DEFAULT', 'ngrid', str(self.ngrid))
+        config.set('DEFAULT', 'rel', str(self.ngrid))
+        config.set('DEFAULT', 'exchange', str(self.exchange))
+        config.set('DEFAULT', 'exchange', str(self.exchange))
+        config.set('DEFAULT', 'relic', str(self.relic))
+        config.set('DEFAULT', 'mixing_SCF', str(self.mixing_SCF))
+        config.set('DEFAULT', 'tolerance', str(self.tolerance))
+        config.set('DEFAULT', 'xnum', str(self.xnum))
+        
+        # write to file
+        header = 'hartfock config file'
+        with open(conf_file, 'w') as f:
+            f.write(str("#").ljust(len(header) + 3, '#') + "\n")
+            f.write("# {} #\n".format(header))
+            f.write(str("#").ljust(len(header) + 3, '#') + "\n")
+            config.write(f)
+    
+    def update_config(self, conf):
+        '''
+        Description
+        -----------
+        Updates Atorb() instance with arguments found from ``conf``.
+        
+        Parameters
+        ----------
+        conf : str or dict
+            Either filepath to the user-specified ``*.conf`` file containing 
+            the atomic charge density calculation parameters or else 
+            a dictionary of the keyword arguments to update.
+            
+        Raises
+        ------
+        ValueError if ``conf`` is neither a str or dict instance.
+        '''
+        if isinstance(conf, str):
+            if os.path.isfile(conf):                
+                self.__dict__.update(self._get_conf_parameters(conf))
+        elif isinstance(conf, dict):
+            self.__dict__.update(conf)
+        else:
+            raise ValueError("conf argument '{}' is neither a "
+                             "str or dict instance".format(conf))
+    
+    def _get_conf_lookup_dirs(self):
+        '''
+        Description
+        -----------
+        Returns a list of lookup locations for configuration files.
+        
+        Locations include (in order):
+            
+                1. :envvar:`ATLIB` or ``~/atlib/``
+                2. ``~/`` or ``%USERPROFILE%/``
+                3. ``~/.phaseshifts/`` or ``%APPDATA%/phaseshifts``
+                4. './'
+        
+        '''
+        filenames = [os.path.join(directory, 'hf.conf') 
+                     for directory in list(self.atlib, 
+                                           self.userhome, 
+                                           self.datalib,
+                                           os.path.curdir)]
+        return [os.path.abspath(expand_filepath(f)) for f in filenames]
+    
+    def _get_conf_parameters(self, conf_file='hf.conf'):
+        '''
+        Description
+        -----------
+        Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
+        returns a dictionary of the relevant keyword arguments.
+        
+        Parameters
+        ----------
+        conf_file : str
+            Path to ``*.conf`` file to read from. If the file does not exist 
+            then the function will attempt to read ``hf.conf`` from normal 
+            lookup storage locations, including (in order):
+            
+                1. :envvar:`ATLIB` or ``~/atlib/``
+                2. ``~/`` or ``%USERPROFILE%/``
+                3. ``~/.phaseshifts/`` or ``%APPDATA%/phaseshifts``
+                4. './'
+        
+        Returns
+        -------
+        Dictionary of Atorb.gen_input() keyword arguments.
+        
+        '''        
+        conf_file = expand_filepath(conf_file)
+        
+        config = ConfigParser()
+        config.read(list(conf_file) + self._get_conf_lookup_dirs())
+
+        return config.items('DEFAULT')
+    
     @staticmethod
     def get_quantum_info(shell):
         """
@@ -370,6 +657,31 @@ class Atorb(object):
         else:
             return electron_config
 
+    def _gen_input(self, element, conf_file=None):
+        if conf_file is not None:
+            self.update_config(self.get_conf_parameters(conf_file))
+            
+        Atorb.gen_input(element, 
+                        ngrid=self.ngrid(), 
+                        rel=self.rel(),  
+                        exchange_method=self.exchange(),
+                        relic=self.relic(), 
+                        mixing_SCF=self.mixing_SCF(), 
+                        tolerance=self.tolerance(), 
+                        xnum=self.xnum(),
+                        atorb_file=(self.__dict__['atorb_file'] 
+                                    if 'atorb_file' in self.__dict__ 
+                                    else None), 
+                        output=(self.__dict__['output'] 
+                                if 'output' in self.__dict__ else None), 
+                        header=(self.__dict__['header'] 
+                                if 'header' in self.__dict__ else None),
+                        ifil=(0 if 'ifil' not in self.__dict__ 
+                              else int(self.__dict__['ifil'])), 
+                        fmt=('vht' if 'fmt' not in self.__dict__ 
+                             else self.__dict__['fmt'])
+                        )
+                        
     @staticmethod
     def gen_input(element, ngrid=1000, rel=True, 
                   atorb_file=None, output=None, header=None, 
@@ -379,8 +691,9 @@ class Atorb(object):
         """
         Description
         -----------
-        Generate atorb input file from <element> and optional **kwargs 
-        arguments. 
+        Generate hartfock atorb input file from <element> and optional **kwargs 
+        arguments. The generated input can then be inputted into 
+        :py:meth:`Atorb.calculate_Q_density()`.
         
         Parameters
         ----------
@@ -408,7 +721,8 @@ class Atorb(object):
         xnum : float, optional 
             ??? (default: 100)
         ifil : int, optional
-            ??? - Only used when fmt='rundgren' (default: 0)
+            flag to read :code:`vpert` array from :file:`vvalence` - possibly 
+            redundant. Only used when fmt='rundgren' or 'eeasisss' (default: 0)
         fmt : str, optional
             Format of generated atorb input file; can be either 'vht' for the 
             van Hove-Tong package or 'rundgren' for the EEASiSSS package
@@ -484,7 +798,7 @@ class Atorb(object):
             f = atorb_file
 
         ifil_str = ', ifil'
-        if fmt.lower() != 'rundgren':
+        if fmt.lower() not in ['rundgren', 'eeasisss']:
             ifil = ''
             ifil_str = ''
 
@@ -495,12 +809,13 @@ class Atorb(object):
                 f.write("!".ljust(70, '*') + "\n")
             elif f.tell() == 0:
                 f.write("!".ljust(70, '*') + "\n")
-                f.write("! %s hartfock input autogenerated by phaseshifts\n"
-                        % (fmt.upper() if fmt in ['vht'] else fmt.title()))
+                f.write("! %s hartfock input auto-generated by phaseshifts\n"
+                        % (fmt.upper() if fmt.lower() in ['vht', 'eeasisss'] 
+                           else fmt.title()))
                 f.write("!".ljust(70, '*') + "\n")
             
             f.write('i\n')
-            if fmt == 'rundgren':  
+            if fmt.lower() in ['rundgren', 'eeasisss']:  
                 # add line for element symbol 
                 f.write('{}\n'.format(ele.symbol))
             f.write('{0} {1}'.format(Z, int(ngrid)).ljust(30, ' ')
@@ -541,10 +856,6 @@ class Atorb(object):
         Calculate the radial charge density of a given element or atorb input 
         file.
         
-        Usage
-        -----
-        Atorb.calculate_Q_density(**kwargs)
-        
         Parameters
         ----------
         kwargs may be any of the following.
@@ -567,6 +878,7 @@ class Atorb(object):
         Returns
         -------
         str : filename
+            Path to calculated charge density file or :code:`None` if failed.
         
         Examples
         --------
@@ -655,16 +967,204 @@ class Atorb(object):
                 if output_dir is not None else output_filename)
 
 
-class RundgrenAtorb(Atorb):
+class EEASiSSSAtorb(Atorb):
+    def __init__(self, ifil=0, **kwargs):
+        # set higher default number of grid points for EEASiSSS
+        kwargs['ngrid'] = 2000 if 'ngrid' not in kwargs else kwargs
+        kwargs['fmt'] = 'eeasisss'
+        Atorb.__init__(self, kwargs)
+        self.ifil = (int(ifil) if isinstance(ifil, bool) or 
+                     isinstance(ifil, int) else 0)
+        
+    @property
+    def ifil(self):
+        '''
+        Returns flag for reading :code:`vpert` array from file :file:`vvalence`
+        '''
+        return self._ifil
+    
+    @ifil.setter
+    def ifil(self, ifil):
+        '''
+        Sets whether to read :code:`vpert` array from :file:`vvalence`
+        '''
+        try:
+            self._ifil = int(ifil)
+        except ValueError:
+            pass
+    
+    def gen_conf_file(self, 
+                      conf_file=('$ATLIB/hf.conf' if 'ATLIB' in os.environ 
+                                 else '~/atlib/hf.conf')
+                      ):
+        '''
+        Description
+        -----------
+        Generates hartfock conf file from EEASiSSSAtorb() object
+        
+        Parameters
+        ----------
+        conf_file : str
+            Filepath for conf output file (default: '~/atlib/hf.conf').
+        
+        Examples
+        -------- 
+        >>> from phaseshifts.atorb import EEASiSSSAtorb 
+        >>> atorb = EEASiSSSAtorb()  # create an object instance
+        >>> # create a config file in the default location
+        >>> atorb.gen_conf_file()
+        '''
+        conf_file = expand_filepath(conf_file)
+        
+        # call parent method
+        Atorb.gen_conf_file(self, conf_file)
+        
+        # add new section specific to EEASiSSS
+        config = ConfigParser(allow_no_value=True)
+        config.add_section('EEASiSSS')
+        config.set('EEASiSSS', '# parameters specific to EEASiSSS backend')
+        config.set('EEASiSSS', 'ngrid', str(self.ngrid))  # override of base
+        config.set('EEASiSSS', 'ifil', str(self.ifil))
+        
+        # append new configuration data
+        with open(conf_file, 'a') as f:
+            config.write(f)
+    
+    def _get_conf_parameters(self, conf_file='~/atlib/hf.conf'):
+        '''
+        Description
+        -----------
+        Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
+        returns a dictionary of the relevant keyword arguments.
+        
+        Parameters
+        ----------
+        conf_file : str
+            Path to ``*.conf`` file to read from. If the file does not exist 
+            then the function will attempt to read ``hf.conf`` from normal 
+            storage locations, including (in order):
+            
+                1. :envvar:`ATLIB` or ``~/atlib/``
+                2. ``~/`` or ``%USERPROFILE%/``
+                3. ``~/.phaseshifts/`` or ``%APPDATA%/phaseshifts``
+                4. './'
+        
+        Returns
+        -------
+        Dictionary of keyword arguments for :py:meth:`Atorb.gen_input()`.
+        
+        '''        
+        conf_file = expand_filepath(conf_file)
+        
+        config = ConfigParser()
+        config.read(list(conf_file) + self._get_conf_lookup_dirs())
+
+        conf_dict = {}
+        conf_dict.update(config.items('DEFAULT'))
+        conf_dict.update(config.items('EEASiSSS'))
+        return conf_dict
+    
+    def _gen_input(self, element, conf_file=None):
+        '''Internal bound version of :py:meth:`EEEASiSSSAtorb.gen_input`'''
+        if conf_file is not None:
+            self.update_config(self.get_conf_parameters(conf_file))
+            
+        EEASiSSSAtorb.gen_input(element, 
+                                ngrid=self.ngrid(), 
+                                rel=self.rel(),  
+                                exchange_method=self.exchange(),
+                                relic=self.relic(), 
+                                mixing_SCF=self.mixing_SCF(), 
+                                tolerance=self.tolerance(), 
+                                xnum=self.xnum(),
+                                ifil=self.ifil(), 
+                                atorb_file=('inputA'  
+                                            if 'atorb_file' in self.__dict__ 
+                                            else self.__dict__['atorb_file']), 
+                                output=(self.__dict__['output'] 
+                                        if 'output' in self.__dict__ 
+                                        else None), 
+                                header=(self.__dict__['header'] 
+                                        if 'header' in self.__dict__ 
+                                        else None),
+                                fmt=('eeasisss' if 'fmt' not in self.__dict__ 
+                                     else self.__dict__['fmt'])
+                                )
+    
     @staticmethod
     def gen_input(elements=[], atorb_file='inputA', **kwargs):
+        '''
+        Description
+        -----------
+        :py:class:`EEASiSSSAtorb` override of :py:class:`Atorb` base class 
+        method which produces an input file for a set of elements rather 
+        than just individual ones. 
+        
+        Parameters
+        ----------
+        elements : list
+            List of elements to include in the generated input file. Each 
+            element can be either the atomic number, symbol, name or an 
+            :py:class:`phaseshifts.Element` instance.
+        output : str, optional
+            File string for atomic orbital output (default: 'at_<symbol>.i')
+        ngrid : int, optional 
+            Number of points in radial grid (default: 1000)
+        rel : bool, optional
+            Specify whether to consider relativistic effects (default: True)
+        atorb_file : str, optional
+            Name for generated input file (default: 'inputA')
+        header : str, optional
+            Comment at beginning of input file (default: None)
+        method : str or float, optional
+            Exchange correlation method using either 0.0=Hartree-Fock,
+            1.0=LDA, -alpha = float (default: 0.0)
+        relic : float, optional
+            Relic value for calculation (default: 0)
+        mixing_SCF : float, optional
+            Self consisting field value (default: 0.5)
+        tolerance : float, optional
+            Eigenvalue tolerance (default: 0.0005)
+        xnum : float, optional 
+            ??? (default: 100)
+        ifil : int, optional
+            flag to read :code:`vpert` array from :file:`vvalence` - possibly 
+            redundant. Only used when fmt='rundgren' or 'eeasisss' (default: 0)
+        
+        Returns
+        -------
+        Filename of input file once generated or else instance of StringIO 
+        object containing written input text. :code:`None` will be returned if 
+        the method failed to generate the input.
+        
+        Notes
+        -----
+        output can also be a StringIO() object to avoid saving to file.
+        
+        Examples
+        --------
+        >>> from phaseshifts.elements import ELEMENTS, SERIES
+        >>>
+        >>> # generate hartfock input file for InGaAs
+        >>> InGaAs = ['In', 31, 'Arsenic']
+        >>> EEASiSSS.gen_input(elements=InGaAs, atorb_file='~/atlib/InGaAs.hf')
+        >>>
+        >>> # generate hartfock input file for all halogens
+        >>> halogens = [e for e in ELEMENTS if SERIES[e.series] == 'Halogens']
+        >>> EEASiSSS.gen_input(halogens, atorb_file='$ATLIB/halogens.hf')
+        >>>
+        >>> # do likewise for all non-metals, but using hf.conf file parameters
+        >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == 'Nonmetals']
+        >>> EEASiSSS.gen_input(non_metals, atorb_file='./nonmetals.hf')
+        '''
         io = StringIO()
         successful = False
         try:
+            kwargs = kwargs.pop('fmt') if 'fmt' in kwargs else kwargs
             # generate buffer string of input for each element
             for element in set(elements):
                 Atorb.gen_input(element, atorb_file=io, 
-                                fmt='rundgren', **kwargs)
+                                fmt='eeasisss', **kwargs)
             # write buffered string to disk
             with open(atorb_file, 'w') as f:
                 f.write(io.getvalue())
@@ -679,12 +1179,97 @@ class RundgrenAtorb(Atorb):
     @staticmethod
     def calculate_Q_density(elements=[], 
                             atorb_input='inputA', 
-                            output_dir=None, 
+                            output_dir=(expand_filepath('ATLIB') 
+                                        if 'ATLIB' in os.environ
+                                        else expand_filepath('~/atlib/')), 
                             **kwargs):
+        '''
+        Description
+        -----------
+        :py:class:`EEASiSSS` override of 
+        :py:class:`Atorb.calculate_Q_density()` 
+        base method to produce hartfock input files for calculating the 
+        atomic charge densities of different elements.
+
+        Parameters
+        ----------
+        elements : list of Element, int or str
+            Generate atorb input file on the fly. If the list is empty then 
+            the function will return an empty list.
+        atorb_input : str, optional
+            Specifies the path to the atorb input file. If :code:`None` then 
+            a temporary file will be created.
+        output_dir : str, optional
+            Specifies the output directory for the `at_*.i` file
+            generated. (default: :envar:`$ATLIB` or :file:`~/atlib`)
+        subroutine : function, optional
+            Specifies the hartfock function to use (default: eeasisss_hartfock)
+            
+            .. warning:: Do not modify the :option:`subroutine` value without 
+                         good cause - here be dragons!
+
+        Returns
+        -------
+        List of filepaths to the calculated atomic charge density files. 
         
-        output_dir = output_dir or os.curdir 
+        Notes
+        -----
+        This method implicitly calls :py:meth:`EEASiSSSAtorb.gen_input` for 
+        generating a suitable input file for the charge density calculations.
         
-        RundgrenAtorb.gen_input(elements=elements, 
+        For the patient, it may be worth having a initial one-time atomic 
+        charge density calculation for every element. 
+        This can be done like so::
+        
+            from phaseshifts.elements import ELEMENTS, SERIES
+            from phaseshifts.atorb import EEASiSSSAtorb
+            # calculate chgden* files for EVERY element 
+            # and place them in the default location
+            EEASiSSSAtorb.calculate_Q_density(elements=ELEMENTS)
+        
+        .. note::
+            The above calculation is very useful and can be customised using a 
+            user generated ``hf.conf`` file. 
+            For more details see 
+            :py:meth:`EEASiSSSAtorb.gen_conf_file()` 
+        
+        Examples
+        --------
+        >>> from phaseshifts.elements import ELEMENTS, SERIES
+        >>> from phaseshifts.atorb import EEASiSSSAtorb
+        >>>
+        >>> # generate hartfock input file for InGaAs
+        >>> InGaAs = ['In', 31, 'Arsenic']
+        >>> input = '~/atlib/InGaAs.hf'
+        >>> EEASiSSSAtorb.calculate_Q_density(elements=InGaAs, 
+        >>>                                   atorb_input=input)
+        >>> 
+        >>> # generate hartfock input file for all halogens
+        >>> halogens = [e for e in ELEMENTS if SERIES[e.series] == 'Halogens']
+        >>> input = '$ATLIB/halogens.hf'
+        >>> EEASiSSSAtorb.calculate_Q_density(halogens, atorb_file=input)
+        >>>
+        >>> # do likewise for all non-metals, but using hf.conf file parameters
+        >>> series = 'Nonmetals'
+        >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == series]
+        >>> input = './nonmetals.hf'
+        >>> EEASiSSSAtorb.calculate_Q_density(non_metals, atorb_file=input)
+        '''
+        # do not do anything if no elements given, otherwise get the set
+        if elements == []:
+            return []
+        else:
+            elements = set([ELEMENTS[element] 
+                            if not isinstance(element, Element) 
+                            else element for element in elements])
+            
+        output_dir = expand_filepath(output_dir) or os.curdir
+        atorb_input = (expand_filepath(atorb_input) or 
+                       os.path.join(gettempdir(), 
+                                    "".join([e.symbol for e in elements]) 
+                                    + '.hf'))
+        
+        EEASiSSSAtorb.gen_input(elements=elements, 
                                 atorb_file=atorb_input, **kwargs)
             
         Atorb.calculate_Q_density(atorb_input=atorb_input, 
@@ -694,19 +1279,17 @@ class RundgrenAtorb(Atorb):
         
         elements = [ELEMENTS[element] if not isinstance(element, Element) 
                     else element for element in set(elements)]
-        print(os.path.abspath(os.path.curdir))
+
         return [os.path.join(output_dir, 'chgden' + element.symbol) 
                 if output_dir != os.path.curdir else 'chgden' + element.symbol
                 for element in set(elements)]
-        
-        
-    
+
 if __name__ == '__main__':
-    elements = [11, 33, ELEMENTS[79], 'C', 'Hydrogen']
-    print(RundgrenAtorb.calculate_Q_density(elements))
+    atorb = EEASiSSSAtorb()
+    atorb.gen_conf_file('~/atlib/hf.conf')
+    for i in range(1, 112):
+        atorb.calculate_Q_density(elements=[ELEMENTS[i].symbol])
     
-
-
 
 def get_substr_positions(string, substring='\n'): 
     return [m.start() for m in re.finditer(substring, string)]

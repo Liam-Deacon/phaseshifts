@@ -40,6 +40,8 @@ from numpy.distutils import ccompiler
 from numpy.distutils.fcompiler.intel import BaseIntelFCompiler
 from numpy.distutils.fcompiler.gnu import GnuFCompiler
 from tempfile import gettempdir
+from abc import abstractmethod, ABCMeta
+from glob import glob
 
 try:
     from Cython.Build import BuildExecutable, cythonize, Cythonize
@@ -58,6 +60,7 @@ if len(sys.argv) == 1:
     sys.argv.append('install')
 
 phsh_lib = os.path.join('phaseshifts', 'lib')
+
 
 class Builder(object):
     def __init__(self, name, sources,
@@ -92,11 +95,14 @@ class Builder(object):
         self.language = language
         self.module_dirs = module_dirs or []
         self.debug = debug
-        self.ccompiler = ccompiler.CCompiler()
         self.ccompiler = ccompiler
-        
+
+    def _clean(self, build_dir='.'):
+        [os.remove(f) for f in glob(os.path.join(build_dir, '*.o'))]
+
+
 class CBuilder(Builder):
-        def __init__(self, name, sources,
+    def __init__(self, name, sources,
                  include_dirs=None,
                  define_macros=None,
                  undef_macros=None,
@@ -112,25 +118,24 @@ class CBuilder(Builder):
                  module_dirs=None,
                  debug=False,
                  ccompiler=ccompiler.new_compiler()):
-            Builder.__init__(name, sources,
-                             include_dirs=include_dirs, 
-                             define_macros=define_macros, 
-                             undef_macros=undef_macros, 
-                             library_dirs=library_dirs, 
-                             libraries=libraries, 
-                             runtime_library_dirs=runtime_library_dirs, 
-                             export_symbols=export_symbols, 
-                             extra_objects=extra_objects, 
-                             extra_compile_args=extra_compile_args, 
-                             extra_link_args=extra_link_args, 
-                             depends=depends, 
-                             language=language, 
-                             module_dirs=module_dirs, 
-                             debug=debug, 
-                             ccompiler=ccompiler)
+        Builder.__init__(name, sources,
+                         include_dirs=include_dirs, 
+                         define_macros=define_macros, 
+                         undef_macros=undef_macros, 
+                         library_dirs=library_dirs, 
+                         libraries=libraries, 
+                         runtime_library_dirs=runtime_library_dirs, 
+                         export_symbols=export_symbols, 
+                         extra_objects=extra_objects, 
+                         extra_compile_args=extra_compile_args, 
+                         extra_link_args=extra_link_args, 
+                         depends=depends, 
+                         language=language, 
+                         module_dirs=module_dirs, 
+                         debug=debug, 
+                         ccompiler=ccompiler)
         
         
-
 class FortranBuilder(Builder):
     ''' 
     Class for building Fortran shared libraries and executables using NumPy.
@@ -164,7 +169,7 @@ class FortranBuilder(Builder):
                  extra_f90_compile_args=None,
                  debug=False,
                  fcompiler=fcompiler.new_fcompiler(requiref90=True)):
-        Builder.__init__(name, sources, 
+        Builder.__init__(self, name, sources, 
                          include_dirs=include_dirs, 
                          define_macros=define_macros, 
                          undef_macros=undef_macros, 
@@ -183,15 +188,25 @@ class FortranBuilder(Builder):
         self.extra_f77_compile_args = extra_f77_compile_args or []
         self.extra_f90_compile_args = extra_f90_compile_args or []
         self.fcompiler._is_customised = True
+        
+    def _clean(self, build_dir='.'):
+        '''
+        Cleans up compiled objects in the specified build directory
+        '''
+        Builder._clean(self, build_dir=build_dir)
+        [os.remove(f) for f in glob(os.path.join(build_dir, '*.mod'))]
     
     def _compile_sources(self):
-        ''' Compiles source files and returns list of compiled object files '''
+        ''' 
+        Compiles source files and returns list of compiled object files 
+        '''
         print("Compiling sources: {srcs}...".format(srcs=self.sources))
         cwd = os.path.abspath(os.path.curdir) 
         sources = [src if os.path.isabs(src) 
                    else os.path.join(os.path.abspath(cwd), src)
                    for src in self.sources]
         os.chdir(gettempdir())
+        self._clean(gettempdir())
         objects = self.fcompiler.compile(sources, 
                                          output_dir=gettempdir(), 
                                          macros=self.define_macros, 
@@ -227,7 +242,9 @@ class FortranBuilder(Builder):
                             target_lang=self.language)
         
     def make_exe(self, output_dir='.'):
-        ''' Creates an executable and places it into output_dir '''
+        ''' 
+        Creates an executable and places it into output_dir 
+        '''
         objects = self._compile_sources()
         exe_flags = set(self.extra_link_args + 
                         self.fcompiler.get_flags_linker_exe())
@@ -252,20 +269,22 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
     compile_args = []
     if isinstance(default_fcompiler, GnuFCompiler):
         compile_args = ['-O2', '-msse4.1', '-march=native', 
-                        '-finline-functions', '-fbacktrace']
+                        '-finline-functions', '-fbacktrace', '-fopenmp']
     elif isinstance(default_fcompiler, BaseIntelFCompiler):
         compile_args = ['-O2', '-xSSE4.1', '-finline-functions', '-traceback']
  
-    builder = FortranBuilder(sources=[os.path.join(phsh_lib, 'EEASiSSS', 
-                                                   'EEASiSSS.f90')], 
-                             name='EEASiSSS', extra_compile_args=compile_args)
+    builder = FortranBuilder(name='EEASiSSS',
+                             sources=[os.path.join(phsh_lib, 'EEASiSSS', 
+                                                   'EEASiSSS_2015_03_28.f90')], 
+                             extra_compile_args=compile_args)
 
     # create shared library
     builder.make_lib(output_dir=phsh_lib)
     
     # now add executable
-    builder.sources += [os.path.join(phsh_lib, 'EEASiSSS', 'EEASiSSS_main.f90')]
-    builder.make_exe(output_dir=phsh_lib)
+    builder.sources += [os.path.join(phsh_lib, 'EEASiSSS', 
+                                     'EEASiSSS_main.f90')]
+    # builder.make_exe(output_dir=phsh_lib)
 
 # build f2py extensions
 f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
@@ -277,60 +296,65 @@ f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
                        extra_compile_args=[],
                        sources=[os.path.join(phsh_lib, 'EEASiSSS', 'hf.f90')]),
              ]
+
+readme = os.path.join('phaseshifts', 'README.rst')
     
-dist = setup(
-        name='phaseshifts', 
-        # packages=['phaseshifts', 'phaseshifts.gui', 'phaseshifts.lib', 'phaseshifts.contrib'],
-        packages=find_packages(),
-        version='0.1.6-dev',
-        author='Liam Deacon',
-        author_email='liam.deacon@diamond.ac.uk',
-        license='MIT License',
-        url='https://pypi.python.org/pypi/phaseshifts',
-        description='Python package for calculating phase shifts '
-                    'for LEED/XPD modelling',
-        long_description=open(os.path.join('phaseshifts','README.rst')
-           ).read() if os.path.exists(os.path.join(
-            'phaseshifts','README.rst')) else None,
-        classifiers=[
-            'Development Status :: 4 - Beta',
-            'Environment :: Console',
-            'Environment :: X11 Applications :: Qt',  # The end goal is to have Qt or other GUI frontend
-            'Intended Audience :: Science/Research',
-            'License :: OSI Approved :: MIT License',
-            'Operating System :: OS Independent',
-            'Programming Language :: Python',
-            'Topic :: Scientific/Engineering :: Chemistry',
-            'Topic :: Scientific/Engineering :: Physics',
-            ],
-        keywords='phaseshifts atomic scattering muffin-tin diffraction',
-        # recursive-include phaseshifts *.py *.pyw
-        include_package_data=True,
-        package_data={
-            # If any package contains *.txt or *.rst files, include them:
-            '': ['*.txt', '*.rst', '*.pyw', 'ChangeLog'],
-            'lib': ['lib/*.f', 'lib/*.c', 'lib/*.h', 'lib/*.dll','lib/*.so'],
-            'gui': ['gui/*.ui', 'gui/*.bat'],
-            'gui/res': ['gui/res/*.*']
-            },
-        scripts=["phaseshifts/phsh.py", "phaseshifts/lib/eeasisss.py"],
-        # data_files = cython_exts,
-        install_requires=['scipy >= 0.7', 'numpy >= 1.3', 'periodictable'],
-        ext_modules=f2py_exts,
-        console=[os.path.join("phaseshifts", "phsh.py")],
-        options={
-                 'py2exe': { 
-                           'skip_archive':1,
-                           'compressed':0,  
-                           'bundle_files': 2, 
-                           'dist_dir': os.path.join("dist", "py2exe"),
-                           'excludes':['tcl', 'bz2'],
-                           'dll_excludes':['w9xpopen.exe', 'tk85.dll', 'tcl85.dll']
-                        }
-                },
-        #zipfile = None
+dist = setup(name='phaseshifts', 
+             packages=find_packages(),
+             version='0.1.6-dev',
+             author='Liam Deacon',
+             author_email='liam.deacon@diamond.ac.uk',
+             license='MIT License',
+             url='https://pypi.python.org/pypi/phaseshifts',
+             description='Python package for calculating phase shifts '
+                         'for LEED/XPD modelling',
+             long_description=(open(readme).read() 
+                               if os.path.exists(readme) else None),
+             classifiers=['Development Status :: 4 - Beta',
+                          'Environment :: Console',
+                          # The end goal is to have Qt or other GUI frontend
+                          'Environment :: X11 Applications :: Qt',  
+                          'Intended Audience :: Science/Research',
+                          'License :: OSI Approved :: MIT License',
+                          'Operating System :: OS Independent',
+                          'Programming Language :: Python',
+                          'Topic :: Scientific/Engineering :: Chemistry',
+                          'Topic :: Scientific/Engineering :: Physics',
+                          ],
+             keywords='phaseshifts atomic scattering muffin-tin diffraction',
+             # recursive-include phaseshifts *.py *.pyw
+             include_package_data=True,
+             # If any package contains *.txt or *.rst files, include them:
+             package_data={'': ['*.txt', '*.rst', '*.pyw', 'ChangeLog'],
+                           'lib': ['lib/*.f', 'lib/*.c', 'lib/*.h', 
+                                   'lib/*.dll', 'lib/*.so'],
+                           'gui': ['gui/*.ui', 'gui/*.bat'],
+                           'gui/res': ['gui/res/*.*']
+                           },
+             scripts=[os.path.join("phaseshifts", "phsh.py"), 
+                      os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.py"),
+                      os.path.join("phaseshifts", "lib", "EEASiSSS", 
+                                   "eeasisss.py")
+                      ],
+             # data_files = cython_exts,
+             install_requires=['scipy >= 0.7', 
+                               'numpy >= 1.3', 
+                               'periodictable'],
+             ext_modules=f2py_exts,
+             #console=[os.path.join("phaseshifts", "phsh.py")],
+             options={'py2exe': {'skip_archive': 1,
+                                 'compressed': 0,  
+                                 'bundle_files': 2, 
+                                 'dist_dir': os.path.join("dist", "py2exe"),
+                                 'excludes': ['tcl', 'bz2'],
+                                 'dll_excludes': ['w9xpopen.exe', 
+                                                  'tk85.dll', 
+                                                  'tcl85.dll']
+                                 }
+                      },
+             # zipfile = None
                
-)
+             )
 
 sys.argv.append('build_ext')
 sys.argv.append('--inplace')

@@ -1,0 +1,6 @@
+Things to be changed:
+
+- currently there are no Er phase shifts, Ru is used instead:
+  Create phase shifts for Er and change in Si111_Er.inp.
+- Si111_Er.ctr has to be edited such that the correspondence
+  between theor. and expt. I-V curves is defined (see there).

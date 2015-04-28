@@ -1,0 +1,5 @@
+3 
+#jmolscript: select *;color bonds lightgrey;background white;set antialiasdisplay true;set perspectiveDepth false;set cameraDepth 10;set diffusePercent 85;boundboxColor = "[xa9a9a9]";set ambientPercent 60;set diffusePercent 85;set specular true;set specularPercent 22;set specularPower 40;set specularExponent 6;set zShadePower 3;
+Ni  0.000000  0.000000  0.000000
+Ni  1.245000 -0.718800 -2.033000
+Ni  1.245000  0.718800 -4.066000

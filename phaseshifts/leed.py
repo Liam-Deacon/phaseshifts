@@ -304,25 +304,51 @@ class Converter(object):
             name, ext = os.path.splitext(filename)
             
             if ext in ['.bul', '.bmin']:  # bulk input file
-                other_input = name + '.inp'
+                if os.path.isfile(name + '.inp'):
+                    surface_input = name + '.inp'
+                elif os.path.isfile(name + '.pmin'):
+                    surface_input = name + '.pmin'
+                elif os.path.isfile(name + '.par'):
+                    surface_input = name + '.par'
+                else:
+                    surface_input = None
+                    sys.stderr.write("cannot find a suitable CLEED surface "
+                                     "input file matching '%s'" % filename)
+                    sys.stderr.flush()
+                bulk_input = filename
             elif ext in ['.inp', '.pmin', '.par']:  # surface input file
-                other_input = name + '.bul'
+                surface_input = filename
+                if os.path.isfile(name + '.bul'):
+                    bulk_input = name + '.bul'
+                elif os.path.isfile(name + '.bmin'):
+                    bulk_input = name + '.bmin'
+                else:
+                    bulk_input = None
+                    sys.stderr.write("cannot find a suitable CLEED bulk "
+                                     "input file matching '%s'" % filename)
+                    sys.stderr.flush()
                 
             try:
-                with open(other_input, 'r') as f:
-                    other_lines = [line for line in f]
+                with open(bulk_input, 'r') as f:
+                    bulk_lines = [line for line in f
+                                  if not line.lstrip().startswith('#')]
                     
             except IOError:
-                other_lines = []
+                bulk_lines = []
+                
+            try:
+                with open(surface_input, 'r') as f:
+                    surface_lines = [line for line in f
+                                     if not line.lstrip().startswith('#')]
+                    
+            except IOError:
+                surface_lines = []
             
         else:
             raise IOError("cannot open '%s'" % filename)
-            
-        with open(filename, 'r') as f:
-            # get input lines, stripping left whitespace and comments
-            lines = [line.lstrip() for line in f 
-                     if not line.lstrip().startswith('#')]
-            
+        
+        lines = surface_lines + bulk_lines
+        
         # initialise model
         atoms = []
         radii_dict = {}
@@ -332,6 +358,10 @@ class Converter(object):
         z_dist = 4.0  # calculate 'c' for slab from atom coordinates
         z_min = sys.float_info.max
         z_max = sys.float_info.min
+        title = "/".join([line.split(':')[1].lstrip() 
+                         for line in lines
+                         if line.startswith('c:')])     
+        
 
         # Hartree-Fock exchange term alpha
         try:
@@ -379,7 +409,7 @@ class Converter(object):
         # try to get minimum radii for mufftin input
         try:
             minimum_radii = [" ".join(line.split(':')[1].split()[:4]) 
-                             for line in lines + other_lines 
+                             for line in lines
                              if line.startswith('rm:')]
             
             for radius in minimum_radii:
@@ -393,7 +423,7 @@ class Converter(object):
         # try to get lmax values for each phaseshift type
         try:
             lmax_values = [" ".join(line.split(':')[1].split()[:4]) 
-                           for line in lines + other_lines 
+                           for line in lines 
                            if line.startswith('lmax:')]
             
             for lmax_str in lmax_values:
@@ -408,7 +438,7 @@ class Converter(object):
         # try to get oxidation values for each phaseshift type
         try:
             oxidation_values = [" ".join(line.split(':')[1].split()[:4]) 
-                                for line in lines + other_lines
+                                for line in lines
                                 if line.startswith('val:')]
             
             for oxi_str in oxidation_values:
@@ -606,7 +636,8 @@ class Converter(object):
         # create unitcell
         unitcell = model.Unitcell(a, c, [a1, a2, a3])
 
-        mtz_model = model.MTZ_model(unitcell, atoms)
+        mtz_model = model.MTZ_model(unitcell, atoms)        
+        mtz_model.name = title
         
         if alpha:
             mtz_model.set_exchange(alpha)

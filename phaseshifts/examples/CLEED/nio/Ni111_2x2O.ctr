@@ -1,0 +1,17 @@
+#  Ni(111) 2x2 center on fcc site
+#  (control file for R factor program CRFAC)
+#  ef=<experimental input file>
+#  ti=<corresponding indices in theoretical input file>
+#  id=<group ID>
+#  : = separator
+ef=nio_0001.fsm:ti=(0.000,1.000):id=01:wt=1.
+ef=nio_0100.fsm:ti=(1.000,0.000):id=02:wt=1.
+ef=nio_0101.smo2:ti=(1.000,1.000)+(2.000,-1.000):id=03:wt=1.
+ef=nio_1212.fsm:ti=(-1.000,0.500)+(1.000,-0.500):id=04:wt=1.
+ef=nio_1200.fsm:ti=(0.000,-0.500):id=05:wt=1.
+ef=nio_0012.fsm:ti=(0.000,0.500):id=06:wt=1.
+ef=nio_1201.fsm:ti=(-1.000,-0.500)+(1.000,-1.500):id=07:wt=1.
+ef=nio_0112.fsm:ti=(-1.000,1.500)+(1.000,0.500):id=08:wt=1.
+ef=nio_3200.fsm:ti=(0.000,-1.500):id=09:wt=1.
+ef=nio_0032.fsm:ti=(0.000,1.500):id=10:wt=1.
+
