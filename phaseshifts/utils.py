@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.deacon@diamond.ac.uk                                         #                                                #
 #                                                                            #
-# Created on 15 Apr 2015                                                       #
-#                                                                            #
-# Copyright: Copyright (C) 2015 Liam Deacon                                #
+# Copyright: Copyright (C) 2015 Liam Deacon                                  #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -32,7 +29,9 @@
 #                                                                            #
 ##############################################################################
 '''
+**utils.py** 
 
+Provides utility functions and classes for performing common low-level tasks.
 '''
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
@@ -43,11 +42,80 @@ from shutil import copy
 
 
 def expand_filepath(path):
-    '''Expands the filepath for environment and user variables'''
+    '''
+    Expands `path` for environment and user variables
+    
+    Examples
+    --------
+    >>> from phaseshifts.utils import expand_filepath
+    >>> expand_filepath('~/')
+     'C:\\Users\\Liam'
+    >>> expand_filepath('parent\\dir/file.ext')
+     'parent\\extension\\file.ext'
+    '''
     return os.path.normpath(
                 os.path.expanduser(
                     os.path.expandvars(
                         os.path.expanduser(path)))) 
+
+
+def fix_path(file_path, fill_char=''):
+    """ 
+    Fixes escaped characters in `file_path`. Implicitly calls 
+    :py:meth:`expand_filepath`
+    
+    .. note:: Offending path characters will be substituted with `fill_char`.
+    
+    Examples
+    --------
+    >>> from phaseshifts.utils import fix_path
+    >>> fix_path("C:\test\new_file.txt")
+    
+    
+    
+    """
+    if sys.platform.lower().startwith('win'):
+
+        file_path = os.path.abspath(expand_filepath(file_path))
+        fix_list = {'\a': '\\a', '\b': '\\b',
+                    '\f': '\\f', '\n': '\\n',
+                    '\r': '\\r', '\t': '\\t',
+                    '\v': '\\v', '\\\\': '\\'}
+        for fix in fix_list:
+            file_path = file_path.replace(fix, fix_list[fix])
+        
+        for fix in fix_list:
+            file_path = file_path.replace(fix, fix_list[fix])
+
+    fill_char = '' if not isinstance(fill_char, str) else fill_char
+
+    return "".join(x if x.isalnum() or x in list(':\\/-_.') 
+                   else fill_char for x in file_path)
+
+
+def stringify(arg):
+    '''
+    Returns string of `arg` or fancy string of items if `arg` is a 
+    :py:obj:`dict`, :py:obj:`list` or :py:obj:`tuple`.
+    
+    Raises
+    ------
+    TypeError
+        If `arg` is unicode and cannot be coerced into a formatted string.
+    '''
+    try:
+        if (isinstance(arg, list) or 
+                isinstance(arg, tuple) or 
+                isinstance(arg, dict)):
+            arr = ("'" + "' '".join(["{}".format(item) for item in arg]) + "'")
+            var = arr.split()
+            var.insert(len(arg) - 1, ' or ')
+            return "".join(var)
+        else:
+            return "{}".format(arg)
+    except TypeError:
+        # !TODO: error handling can go here
+        raise TypeError
 
 
 class FileUtils(object):
@@ -70,7 +138,7 @@ class FileUtils(object):
             if os.environ['CLEED_PHASE'] == dst:
                 env = 'CLEED_PHASE='
             dst = '"%s"' % (dst.split('/')[2] + ':' +
-                             os.path.sep.join(dst.split('/')[3:]))
+                            os.path.sep.join(dst.split('/')[3:]))
 
         # do check and create directory if needed
         if os.path.isfile(dst):

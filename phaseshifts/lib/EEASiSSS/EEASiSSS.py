@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
+#
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -32,17 +32,58 @@
 #                                                                            #
 ##############################################################################
 '''
-eeasisss.py - calculate EEASiSSS phase shifts.
+**eeasisss.py** - calculate EEASiSSS phase shifts.
 
-eeasisss calculates phase shifts using John Rundgren's EEASiSSS() subroutine.
+Description
+-----------
+eeasisss.py is a command line script which calculates phase shifts 
+using John Rundgren's ``EEASiSSS()`` subroutine. 
+
+Warning
+-------
+The EEASiSSS implementation currently relies on making the subroutine call to 
+a compiled shared library of the :ref:`EEASiSSS` code (minus the main program), using 
+ctypes to achieve this. As such the function call may be outdated and is 
+subject to change. 
+
+To do
+-----
+Implement an f2py wrapped version of the EEASiSSS code that will be safer and  
+more tightly integrated into the overall :ref:`phaseshifts` package.  
 
 Examples
 --------
+The following calculates the phase shifts from the modelling parameters within 
+'inputX' and from the atomic charge density file(s) found in '~/atlib'
+and places the generated files into 'results/'. Note that if the necessary
+chgden* files are missing then they will also be generated and placed into 
+the location given by the '-a' option.
+ 
 .. code:: bash
    
-   eeasisss.py -i inputX -a ~/atlib/ -l ilogA
+    eeasisss.py -i inputX -a ~/atlib/ -o results/ 
 
+The above command will print the results to ``stdout`` i.e. to the terminal, 
+however the log can be saved to a file (e.g. 'ilogX') by using:  
 
+.. code:: bash
+   
+    eeasisss.py -i inputX -a ~/atlib/ -o results/ -l ilogX 
+
+The following does the same, but uses file redirection for the calculation log. 
+Note the subtle difference in command line usage.
+
+.. code:: bash
+
+    eeasisss.py -i inputX -a ~/atlib/ -o results/ > ilogX
+    
+On Linux there is also the possibility to use the 'tee' command pipe to print 
+the log to both the terminal screen and to a file.
+
+.. code:: bash
+
+    eeasisss.py -i inputX -a ~/atlib/ -o 'results/' | tee ilogX
+    
 '''
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
@@ -95,7 +136,8 @@ def eeasisss(input_file='inputX',
     
     chgden_dir : str
         Path to the stored chgden* atomic charge density files calculated 
-        using Eric Shirley's :code:`hartfock()` subroutine. Default is either :envvar:`ATLIB` environment variable if it exists, 
+        using Eric Shirley's :code:`hartfock()` subroutine. Default is 
+        either :envvar:`ATLIB` environment variable if it exists, 
         or :code:`~/atlib/`. If neither directory exists then the necessary 
         chgden files will be created for each element that is missing.
     
@@ -130,7 +172,7 @@ def eeasisss(input_file='inputX',
         chgden_dir = os.path.abspath('.')
         
     if not os.path.isdir(output_dir):
-        os.makedirs(output_dir, 0775)
+        os.makedirs(output_dir)
 
     libEEASiSSS.eeasisss_(create_string_buffer(str(input_file), size=255),
                           create_string_buffer(str(output_dir), size=255),
@@ -164,7 +206,8 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = argparse.ArgumentParser(description=program_license, 
+        parser = argparse.ArgumentParser
+        parser = parser(description=program_license, 
                         formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument('-i', '--input', dest='input', metavar='<inputA>', 
                             help="path to the EEASiSSS input file which "
@@ -206,11 +249,12 @@ def main(argv=None):
         
         if args.verbose > 0 and len(unknown) > 0:
             for arg in unknown:
-                sys.stderr.write("eeasisss - warning: Unknown option '%s'\n" % arg)
+                sys.stderr.write("eeasisss - warning: Unknown option '%s'\n" 
+                                 % arg)
             sys.stderr.flush()
                 
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt #
         return 0
     except Exception, e:
         if DEBUG or TESTRUN:

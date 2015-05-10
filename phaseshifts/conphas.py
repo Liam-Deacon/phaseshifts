@@ -6,7 +6,7 @@
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Copyright: Copyright (C) 2013-2014 Liam Deacon                             #
+# Copyright: Copyright (C) 2013-2015 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -32,14 +32,14 @@
 """
 **conphas.py**
 
-Provides a native python version of the conphas (phsh3) FORTRAN program 
+Provides a native python version of the ``conphas`` (``phsh3``) Fortran program 
 by W. Moritz, which is distributed as part of the SATLEED code 
 (see "Barbieri/Van Hove phase shift calculation package" section) and can
-be found at: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/
-leed/leedpack.html
+be found at: `http://
+www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html`_ 
 
-The Conphas() class also provides a number of convenience functions (see 
-docstrings below). 
+The :py:class:`Conphas()` class also provides a number of convenience 
+functions (see docstrings below). 
 
 Examples
 --------
@@ -60,6 +60,8 @@ from math import pi
 from getpass import getuser
 from time import gmtime, strftime
 from copy import copy, deepcopy
+
+from .utils import fix_path
 
 try:
     from numpy import loadtxt
@@ -82,10 +84,7 @@ VERBOSE = 1
 
 
 class Conphas():
-    """Class Conphas
-    
-    Description
-    -----------
+    """
     Generates continuous phase shifts (as a function of energy) 
     from phases with discontinuities (jumps UM +/- PI). It reformats 
     scattered phases and energies to use as input datasets for LEED programs. 
@@ -123,25 +122,6 @@ class Conphas():
         self.lmax = lmax
         self.format = formatting
         self.__dict__.update(kwargs)
-
-    # Fix for escape characters in Windows-based paths
-    # also removes invalid characters
-    def __fix_path(self, file_path):
-        """ Fixes escaped characters in filepath """
-        if platform.system() is 'Windows':
-      
-            file_path = os.path.abspath(file_path)
-            fix_list = {'\a': '\\a', '\b': '\\b',
-                        '\f': '\\f', '\n': '\\n',
-                        '\r': '\\r', '\t': '\\t',
-                        '\v': '\\v', '\\\\': '\\'}
-            for fix in fix_list:
-                file_path = file_path.replace(fix, fix_list[fix])
-        
-            for fix in fix_list:
-                file_path = file_path.replace(fix, fix_list[fix])
-        
-        return "".join(x for x in file_path if x.isalnum() or x in ':\\/-_.')
     
     def read_datafile(self, filename):
         """
@@ -171,7 +151,7 @@ class Conphas():
             
     # Set internal data for conphas
     def __set_data(self, data=None):
-        if data != None:
+        if data is not None:
             self.data = data
     
     # Load phase shift data from file
@@ -200,12 +180,13 @@ class Conphas():
         """
         with open(filename, 'r') as f:
             title = f.readline()  # skip first line
-            (initial_energy, energy_step, n_phases, lmf) = [t(s) 
-                for (t, s) in zip((float, float, int, int),
-                    f.readline().replace('-', ' -').split())]
+            (initial_energy, energy_step, n_phases, lmf) = (
+                [t(s) for (t, s) 
+                 in zip((float, float, int, int),
+                        f.readline().replace('-', ' -').split())])
             # get parameters
             data_lines = [line.replace('-', ' -').replace('\n', '')
-                            for line in f.readlines()]
+                          for line in f.readlines()]
             data = [float(number) for number in "".join(data_lines).split()]
         return (initial_energy, energy_step, n_phases, lmf, data)
     
@@ -261,38 +242,47 @@ class Conphas():
     @property
     def input_files(self):
         ''' Returns a list of input files for Conphas.calculate() '''
-        return self.input_files or []
+        return self._input_files or []
        
     @input_files.setter 
     def input_files(self, input_files=[]):
-        """set list of input filenames"""
+        '''
+        Sets list of input filenames
+        '''
         if input_files:
-            input_files = [self.__fix_path(filename) 
-                           for filename in input_files]
+            input_files = [fix_path(filename) for filename in input_files]
             temp_input_files = [filename for filename 
                                 in input_files if ntpath.isfile(file)]
-            if temp_input_files != None and temp_input_files != []:
-                self.input_files = temp_input_files
+            if temp_input_files is not None and temp_input_files != []:
+                self._input_files = temp_input_files
         
     @property
     def output_file(self):
-        ''' Returns the output file name '''
-        return self.output_file
+        ''' 
+        Returns the output file name 
+        '''
+        return self._output_file
         
     @output_file.setter
     def output_file(self, output_file):
-        """set output filename"""
-        self.output_file = output_file
+        '''
+        Sets output filename
+        '''
+        self._output_file = output_file
                     
     # Set max orbital angular momentum
     @property
     def lmax(self):
-        return self.lmax
+        '''
+        Returns the maximum angular momentum quantum number to be used in 
+        the phase shift calculations.
+        '''
+        return self._lmax
     
     @lmax.setter
     def lmax(self, lmax):
         """
-        Set max orbital angular momentum (azimuthal quantum number)
+        Sets max orbital angular momentum (azimuthal quantum number)
         
         Parameters
         ----------
@@ -300,13 +290,14 @@ class Conphas():
             Maximum azimuthal quantum number to be considered in calculations.
             
         """
-        self.lmax = lmax if lmax > 0 and lmax < 19 else 10
-            
-    
-    # set appropriate format from available options 
+        self._lmax = lmax if lmax > 0 and lmax < 19 else 10
+             
     @property
     def format(self):
-        return self.format
+        '''
+        Returns the format for any generated phase shift files. 
+        '''
+        return self._format
     
     @format.setter
     def format(self, formatting):
@@ -322,9 +313,9 @@ class Conphas():
         """
         formatting = formatting or ''
         if str(formatting).lower() in ['cleed', 'curve']:
-            self.format = str(formatting).lower()
+            self._format = str(formatting).lower()
         else:
-            self.format = None
+            self._format = None
     
     # process to create continuous phase shifts
     def calculate(self):
@@ -457,10 +448,8 @@ class Conphas():
             if str(self.format).lower() == 'cleed': 
                 # add formatted header for Held CLEED package
                 f.write("{0} {1} neng lmax (calculated by {2} on {3})\n"
-                            .format(
-                                    neng, self.lmax, getuser(), 
-                                    strftime("%Y-%m-%d at %H:%M:%S", gmtime())
-                                    )
+                        "".format(neng, self.lmax, getuser(), 
+                                  strftime("%Y-%m-%d at %H:%M:%S", gmtime()))
                         )
             if str(self.format).lower() != 'curve':
                 # data format is kept the same for compatibility reasons

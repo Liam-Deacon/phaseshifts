@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Copyright: Copyright (C) 2014 Liam Deacon                                  #
+# Copyright: Copyright (C) 2014-2015 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -32,17 +31,18 @@
 '''
 Provides CLEED validator and Converter classes.
 
-The CLEED_validator() class provides a method for checking 
-the input files for errors, whereas the Converter.import_CLEED()
-method allows importing CLEED input files as a MTZ_model class 
+The :py:class`CLEED_validator()` class provides a method for checking 
+the input files for errors, whereas the :py:meth:`Converter.import_CLEED()`
+method allows importing CLEED input files as a :py:class:`MTZ_model` instance. 
 
 '''
 
 import os
 import sys
 
-from phaseshifts import model
-from phaseshifts.elements import ELEMENTS
+import model
+from elements import ELEMENTS
+from utils import expand_filepath
 
 try:
     from io import IOBase
@@ -66,21 +66,19 @@ class CLEED_validator(object):
     @staticmethod
     def is_CLEED_file(filename):
         """
-        Determine if file is a CLEED input file
+        Determines if `filename` is a CLEED input file
         
         Returns
         -------
         True
             if a valid filename ending in any of .bul, .inp, .bsr, .bmin
-            
         False
             otherwise 
         """
         
         # expand filename string and match to first file found
         try:
-            filename = glob(os.path.expanduser(
-                                os.path.expandvars(filename)))[0]
+            filename = glob(expand_filepath(filename))[0]
         except IndexError:  # no file
             raise IOError("filename '%s' not found" % filename)
         
@@ -111,7 +109,7 @@ class CLEED_validator(object):
             Check for angle of incidence parameters
 
         '''
-        filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
+        filename = glob(expand_filepath(filename))[0]
         
         basename, ext = os.path.splitext(filename)
         if isinstance(ext, int):
@@ -189,7 +187,7 @@ class CLEED_validator(object):
         # try to get minimum radii for mufftin input
         try:
             minimum_radii = ["".join(line.split(':')[1].split()[:4]) 
-                            for line in lines if line.startswith('rm:')]
+                             for line in lines if line.startswith('rm:')]
         except ValueError:
             raise ValueError("'%s' is not a valid minimum radius input" 
                              % line[:2]) 
@@ -279,8 +277,10 @@ class Converter(object):
         
         Raises
         ------
-        IOError : filename invalid
-        ValueError : bad formatting of input
+        IOError
+            If filename invalid.
+        ValueError
+            If input contains bad formatting.
 
         '''
         
@@ -361,7 +361,6 @@ class Converter(object):
         title = "/".join([line.split(':')[1].lstrip() 
                          for line in lines
                          if line.startswith('c:')])     
-        
 
         # Hartree-Fock exchange term alpha
         try:
@@ -464,9 +463,7 @@ class Converter(object):
                 raise ValueError("'%s' line input is invalid")
             
             # extract further information from id string
-            id_str = os.path.basename(os.path.expanduser(
-                                        os.path.expandvars(id_str))
-                                      )  # ensure path not included
+            id_str = os.path.basename(expand_filepath(id_str))
             element = id_str.split('_')[0]  # assume element name / symbol
             element = "".join([ch for ch in element if ch.isalpha()])
             
@@ -555,15 +552,13 @@ class Converter(object):
                                      (str, float, float, float), 
                                      bulk_atom.split())]
                 # extract further information from id string
-                id_str = os.path.basename(os.path.expanduser(
-                                            os.path.expandvars(id_str))
-                                          )  # ensure path not included
+                id_str = os.path.basename(expand_filepath(id_str))
                 element = id_str.split('_')[0]  # assume element name / symbol
                 element = "".join([ch for ch in element if ch.isalpha()])
             
                 if element not in ELEMENTS:
-                    raise NameError("Unknown element '%s' from phase shift name" 
-                                    "'%s'" % (element, id_str))
+                    raise NameError("Unknown element '%s' from phase "
+                                    "shift name '%s'" % (element, id_str))
             
             except ValueError:
                 print("'%s' line input is invalid")
@@ -601,16 +596,16 @@ class Converter(object):
             
             if rm and lmax:
                 atom = model.Atom(element, [x, y, z], tag=id_str, 
-                              valence=oxidation, radius=rm, lmax=lmax)
+                                  valence=oxidation, radius=rm, lmax=lmax)
             elif rm and not lmax:
                 atom = model.Atom(element, [x, y, z], tag=id_str, 
-                              valence=oxidation, radius=rm)
+                                  valence=oxidation, radius=rm)
             elif not rm and lmax:
                 atom = model.Atom(element, [x, y, z], tag=id_str, 
-                              valence=oxidation, lmax=lmax)
+                                  valence=oxidation, lmax=lmax)
             else:
                 atom = model.Atom(element, [x, y, z], tag=id_str, 
-                              valence=oxidation)
+                                  valence=oxidation)
 
             # update z limits                    
             if z < z_min:
@@ -650,24 +645,24 @@ class Converter(object):
             strings = line.split()
             phase_shift = strings[0]
             phs_atoms = [atom.tag for atom in mtz_model.atoms
-                               if atom.tag == phase_shift] 
+                         if atom.tag == phase_shift] 
             if phase_shift not in phs_atoms:
                 for i in range(len(strings)):
                     try:
                         if strings[i] == 'c':
                             c = strings[i] / float(a) / 0.529
-                            mtz_model.unitcell.set_c(c)
+                            mtz_model.unitcell.c = c
                         
                         elif strings[i] == 'nh':
-                            mtz_model.set_nh(strings[i + 1])
+                            mtz_model.nh = strings[i + 1]
                         
                         elif (strings[i] == 'exc' 
                               or strings[i] == 'exchange'):
-                            mtz_model.set_exchange(strings[i + 1])
+                            mtz_model.exchange = strings[i + 1]
                         
                         elif (strings[i] == 'nf' or 
                               strings[i] == 'nform'):
-                            mtz_model.set_nform(strings[i + 1])
+                            mtz_model.nform = strings[i + 1]
                             
                     except IndexError:
                         break
@@ -677,7 +672,7 @@ class Converter(object):
                 for i in range(1, len(strings)):
                     try:
                         if (strings[i] == 'val' or
-                            strings[i] == 'valence'):
+                                strings[i] == 'valence'):
                             for atom in phs_atoms:
                                 atom.valence = float(strings[i + 1])
                         

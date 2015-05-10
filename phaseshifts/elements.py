@@ -128,7 +128,7 @@ class Element(object):
         Electronegativity (Pauling scale)
     covrad : float
         Covalent radius in Angstrom
-    atmrad :
+    atmrad : float
         Atomic radius in Angstrom
     vdwrad : float
         Van der Waals radius in Angstrom

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #encoding: utf-8
-
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -51,7 +50,8 @@ from math import pi
 
 from elements import Element
 from lib import libphsh
-from .leed import Converter, CLEED_validator 
+from leed import Converter, CLEED_validator
+from utils import stringify, expand_filepath
 
 
 class Atom(Element):
@@ -63,11 +63,10 @@ class Atom(Element):
     def __init__(self, element, coordinates=[0., 0., 0.], valence=0., 
                  tag=None, radius=None, occupancy=None, **kwargs):
         '''
-        Constructor for Atom class.
+        Constructor for :py:class:`Atom` class.
         
         Parameters
         ----------
-        
         element : str or int
             This is either the elemental symbol, name or atomic number.
         coordinates : list[float, float, float] or ndarray
@@ -140,21 +139,40 @@ class Atom(Element):
     # set coordinates of atom within unitcell in terms of a
     @property
     def coordinates(self):
-        return self.coordinates or [0., 0., 0.]
+        ''' Returns coordinates representing the position of the atom '''
+        return self._coordinates or [0., 0., 0.]
     
     @coordinates.setter
     def coordinates(self, coordinates):
+        ''' 
+        Sets coordinates representing the position of the atom 
+        
+        Raises
+        ------
+        CoordinatesError 
+            If coordinates do not have 3 items in the array
+            or if coordinates is not a supported array-like variable.
+        '''
         try:
-            self.coordinates = coordinates
+            if isinstance(coordinates, list) or isinstance(coordinates, tuple): 
+                if len(coordinates) == 3:
+                    self._coordinates = coordinates
+                else:
+                    raise IndexError("coordinates must have 3 items")
+            else:
+                raise ValueError("coordinates is an unsupported type (%s)"
+                                 % type(coordinates))
         except any as e:
-            raise e
+            raise CoordinatesError(e.msg)
         
     @property
     def bohr_coordinates(self):
+        ''' Returns the coordinates in Bohr '''
         return [r / 0.529 for r in self.coordinates]
     
     @bohr_coordinates.setter
     def bohr_coordinates(self, coordinates):
+        ''' Sets the coordinates in Bohr '''
         self.coordinates = [r * 0.529 for r in coordinates]
     
     # set valence of atom
@@ -164,50 +182,47 @@ class Atom(Element):
         Returns the valency of the atom 
         (i.e. whether it is neutral or an ion) 
         '''
-        return self.valence or 0.
+        return self._valence or 0.
     
     @valence.setter
     def valence(self, valency):
         '''Sets the valency of the atom'''
-        self.valence = float(valency)
+        self._valence = float(valency)
         
     # set muffin-tin radius of atom 
     @property
     def radius(self):
         ''' Returns the muffin-tin radius of the atom in Angstroms '''
-        return self.radius 
+        return self._radius 
     
     @radius.setter
     def radius(self, radius):
-        """
-        Sets the muffin-tin radius of the atom in Angstroms.
-        """
+        ''' Sets the muffin-tin radius of the atom in Angstroms. '''
         try:
-            self.radius = float(radius)
+            self._radius = float(radius)
         except:
-            pass
+            raise ValueError
     
     @property
     def bohr_radius(self):
-        ''' 
-        Returns the muffin-tin radius in Bohr 
-        '''
-        return self.radius / 0.529
+        ''' Returns the muffin-tin radius in Bohr '''
+        return self._radius / 0.529
     
     @bohr_radius.setter
     def bohr_radius(self, radius):
-        self.radius = radius * 0.529
+        ''' Sets the muffin-tin radius in Bohr '''
+        self._radius = radius * 0.529
     
     @property
     def tag(self):
         ''' Unique identification for Atom instance '''
-        return self.tag or self.element.symbol
+        return self._tag or self.element.symbol
     
     @tag.setter
     def tag(self, tag):
         ''' Sets the unique identifer for Atom instance '''
-        self.tag = (tag or self.element.symbol if self.valence == 0. 
-                    else str(self.element.symbol + self._get_valency_str()))
+        self._tag = (tag or self.element.symbol if self.valence == 0. 
+                     else str(self.element.symbol + self._get_valency_str()))
 
     @property
     def Z(self):
@@ -220,39 +235,87 @@ class Atom(Element):
         number = str("%g" % float(str("%f" % self.valence))).replace('-', '')
         return number + suffix
   
-  
+    @property
+    def element(self):
+        ''' Returns the element instance '''
+        return self._element
+    
+    @element.setter
+    def element(self, other):
+        ''' Sets the element '''
+        if isinstance(other, Element):
+            self._element = other
+        else:
+            raise ValueError("'{}' is not an Element() instance".format(other)) 
+
+
 class Unitcell(object):
     '''
-    Unitcell class        
+    Unitcell class for describing unit cells of atoms.
+    
+    Attributes
+    ----------
+    a : float
+        The in-plane lattice vector in Angstroms
+    b : float
+        Other in-plane lattice vector in Angstroms. For cubic and hexagonal 
+        systems this will be equal to `a` and is therefore not normally needed.
+    c : float
+        The out-of-plane lattice vector in Angstroms. For cubic systems 
+        this will be equal to `a`.
+    basis: list
+        A 3x3 matrix describing the x,y,z construction of **a**, **b**, **c** 
+        basis vectors of the unit cell. Units for x, y & z should be in terms 
+        of fractional coordinates. 
+    alpha : float
+        Angle alpha in degrees.
+    beta : float
+        Angle beta in degrees.
+    gamma : float
+        Angle gamma in degrees.
+        
+    Methods
+    -------
+    get_volume()
+        Returns the volumes of the unit cell.
+    to_bohr(angstroms)
+        Converts a value from `angstroms` into Bohr units.
+    to_radians(degrees)
+        Converts angle given in `degrees` into radians.
     '''
  
-    def __init__(self, a, c, basis=None, 
+    def __init__(self, a, b=None, c=None, basis=None, 
                  alpha=90., beta=90., gamma=90., **kwargs):
         '''
-        Constructor for the Unitcell class
+        Constructor for the :py:class:`Unitcell` class
         
         Parameters
         ----------
         a : float
-            The in-plane lattice vector in Angstroms
-        c : float
+            The 1st in-plane lattice vector in Angstroms.
+        b : float, optional
+            The 2nd in-plane lattice vector in Angstroms. 
+            (default: `a` if `b` is not specified)
+        c : float, optional
             The out-of-plane lattice vector in Angstroms. For cubic systems 
-            this will be equal to a.
-        basis: ndarray, optional
+            this will be equal to `a`. (default: `a` if `c` is not specified)
+        basis: list, optional
             A 3x3 matrix describing the x,y,z construction of a,b,c basis 
-            vectors of the unitcell. Units for x, y & z should be in terms 
+            vectors of the unit cell. Units for x, y & z should be in terms 
             of fractional coordinates. 
+            (default: [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]) 
         alpha : float, optional
-            Angle alpha in degrees.
+            Angle alpha in degrees. (default: 90.)
         beta : float, optional
-            Angle beta in degrees.
+            Angle beta in degrees. (default: 90.)
         gamma : float, optional
-            Angle gamma in degrees.
+            Angle gamma in degrees. (default: 90.)
 
         '''
         # Convert Angstrom input to Bohr radii
         self.a = a
-        self.c = c
+        self.b = b or self.a
+        self.c = c or self.a
         
         # Set basis vectors
         self.basis = basis or [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]]
@@ -268,7 +331,8 @@ class Unitcell(object):
     # checks if two class instances are equal w.r.t. name, radius & valence
     def __eq__(self, other):
         if isinstance(other, Atom):
-            return (self.a == other.a and 
+            return (self.a == other.a and
+                    self.b == other.b and 
                     self.c == other.c and
                     self.alpha == other.alpha and
                     self.beta == other.beta and 
@@ -283,9 +347,10 @@ class Unitcell(object):
     
     # reprinting of class object
     def __repr__(self):
-        return (str(
-            "Unitcell(a=%s, c=%s, alpha=%s, beta=%s, gamma=%s, basis=%s)")  
-            % (self.a, self.c, self.alpha, self.beta, self.gamma, self.basis))
+        return (str("Unitcell(a=%s, b=%s, c=%s, "
+                    "alpha=%s, beta=%s, gamma=%s, basis=%s)")  
+                    % (self.a, self.b, self.c, 
+                       self.alpha, self.beta, self.gamma, self.basis))
     
     # redefine hash method for checking uniqueness of class instance 
     def __hash__(self):
@@ -305,68 +370,78 @@ class Unitcell(object):
     def basis(self):
         ''' 
         Returns a 3x3 matrix representing the basis vectors 
-        in fractional coordinates 
+        in fractional coordinates.
         '''
-        return self.basis
+        return self._basis
     
     @basis.setter
     def basis(self, basis):
         ''' 
-        Sets the basis vectors from (3x3) matrix in fractional coordinates 
+        Sets the basis vectors from (3x3) matrix in fractional coordinates.
         '''
-        self.basis = basis
+        try:
+            self._basis = ([float(basis[0, i]) for i in range(3)],
+                           [float(basis[1, i]) for i in range(3)],
+                           [float(basis[2, i]) for i in range(3)])
+        except ValueError:
+            raise ValueError('basis must be a 3x3 array of float')
+        except IndexError:
+            raise IndexError('basis must be a 3x3 array of float')
 
-    @property
-    def a_in_bohr(self):
-        ''' Returns the magnitude of the in-plane lattice vector in Bohr '''
-        return self.a / 0.529  # (1 Bohr = 0.529Å)
+    def angstroms_to_bohr(self, angstroms):
+        ''' Returns the magnitude of `angstroms` in terms of Bohr radii. '''
+        return angstroms / 0.529  # (1 Bohr = 0.529Å)
     
-    @a_in_bohr.setter
-    def a_in_bohr(self, a):
-        ''' Sets the magnitude of the in-plane lattice vector in Bohr '''
-        self.a = a * 0.529
+    def bohr_to_angstroms(self, bohrs):
+        ''' Returns the number of Bohr radii, `bohrs`, in Angstroms. '''
+        return bohrs * 0.529  # (1 Bohr = 0.529Å)
 
     @property
     def a(self):
         ''' 
-        Returns the magnitude of the in-plane lattice vector in Angstroms 
+        Returns the magnitude of the in-plane lattice vector in Angstroms.
         '''
-        return self.a 
+        return self._a 
     
     @a.setter
     def a(self, a):
         """
-        Description
-        -----------
-        Set the magnitude of the in-plane lattice vector a in Angstroms.
+        Sets the magnitude of the in-plane lattice vector `a` in Angstroms.
         
         Parameters
         ----------
         a: float
-            The magnitude of the in-plane lattice vector in Angstroms  
+            The magnitude of the first in-plane lattice vector in Angstroms.  
         
         Notes
         -----
-        To retrieve a in terms of Angstroms use 'unitcell.a', whereas the
-        internal parameter 'unitcell.a_in_bohr' converts a into Bohr radii 
-        (1 Bohr = 0.529Å), which is used for the muffin-tin potential
-        calculations in libphsh (CAVPOT subroutine).
+        To retrieve a in terms of Angstroms use 'Unitcell.a', whereas the
+        internal parameter 'unitcell.angstroms_to_bohr(Unitcell.a)' converts 
+        `a` into Bohr radii (1 Bohr = 0.529Å), which is used for 
+        the muffin-tin potential calculations in libphsh (CAVPOT subroutine).
         
         """
-        self.a = float(a)
+        self._a = float(a)
         self.a_in_bohr = self.a / 0.529  # (1 Bohr = 0.529Å)
 
     @property
-    def c_in_bohr(self):
+    def b(self):
         ''' 
-        Returns the magnitude of the out-of-plane lattice vector in Bohr 
+        Returns the magnitude of the in-plane lattice vector in Angstroms 
         '''
-        return self.c / 0.529  # (1 Bohr = 0.529Å)
-
-    @c_in_bohr.setter
-    def c_in_bohr(self, c):
-        ''' Sets the magnitude of the out-of-plane lattice vector in Bohr '''
-        self.c = c * 0.529
+        return self._b 
+    
+    @b.setter
+    def b(self, b):
+        """
+        Sets the magnitude of the 2nd in-plane lattice vector `b` in Angstroms.
+        
+        Parameters
+        ----------
+        b: float
+            The magnitude of the 2nd in-plane lattice vector in Angstroms.  
+        """
+        self._b = float(b)
 
     @property
     def c(self):
@@ -376,85 +451,53 @@ class Unitcell(object):
     @c.setter
     def c(self, c):
         """
-        Description
-        -----------
         Set the magnitude of the out-of-plane lattice vector c. 
         
         Parameters
         ----------
         c : float
-            The magnitude of the in-plane lattice vector in Angstroms 
-        
-        Notes
-        -----
-        To retrieve c in terms of Angstroms use 'unitcell.c', whereas the
-        internal parameter 'unitcell.c_in_bohr' converts c into Bohr radii 
-        (1 Bohr = 0.529Å), which is used for the muffin-tin potential
-        calculations in libphsh (CAVPOT subroutine).
-        
+            The magnitude of the in-plane lattice vector in Angstroms
+             
         """
         self.c = float(c)
-
-    # set angle alpha in degrees
-    @property
-    def alpha_in_radians(self):
-        ''' Returns angle alpha in radians '''
-        return self.alpha * pi / 180.
     
-    @alpha_in_radians.setter
-    def alpha_in_radians(self, alpha):
+    def degrees_to_radians(self, degrees):
+        ''' Returns angle alpha in radians '''
+        return degrees * pi / 180.
+    
+    def radians_to_degrees(self, radians):
         ''' Sets angle alpha in radians '''
-        self.alpha = alpha * 180. / pi
+        return radians * 180. / pi
     
     @property
     def alpha(self):
         ''' Returns angle alpha in degrees '''
-        return self.alpha 
+        return self._alpha 
     
     @alpha.setter 
     def alpha(self, alpha):
         ''' Sets angle alpha in degrees '''
-        self.alpha = float(alpha) % 360.0
-    
-    @property
-    def beta_in_radians(self):
-        ''' Returns angle beta in radians '''
-        return self.beta * pi / 180.
-    
-    @beta_in_radians.setter
-    def beta_in_radians(self, beta):
-        ''' Sets angle beta in radians '''
-        self.beta = beta * 180. / pi
+        self._alpha = float(alpha) % 360.0
     
     @property
     def beta(self):
         ''' Returns angle beta in degrees '''
-        return self.beta
+        return self._beta
     
     @beta.setter
     def beta(self, beta):
         ''' Returns angle alpha in radians '''
-        self.beta = float(beta) % 360.0
-
-    @property
-    def gamma_in_radians(self):
-        ''' Returns angle gamma in radians '''
-        return self.gamma * pi / 180.
-    
-    @gamma_in_radians.setter
-    def gamma_in_radians(self, gamma):
-        ''' Sets angle gamma in radians '''
-        self.gamma = gamma * 180. / pi
+        self._beta = float(beta) % 360.0
     
     @property
     def gamma(self):
         ''' Returns angle gamma in degrees '''
-        return self.gamma
+        return self._gamma
     
     @gamma.setter
     def gamma(self, gamma):
         ''' Sets angle gamma in degrees '''
-        self.gamma = float(gamma) % 360.0
+        self._gamma = float(gamma) % 360.0
 
 
 class CoordinatesError(Exception):
@@ -473,9 +516,20 @@ class CoordinatesError(Exception):
 class Model(object):
     '''
     Generic model class.
+    
+    Attributes
+    ----------
+    
+    
+    Methods
+    -------
+    check_coordinates
+    
+    add_atom(atom)
+    
     '''
     
-    def __init__(self, unitcell, atoms=None, **kwargs):
+    def __init__(self, unitcell, atoms=[], **kwargs):
         '''
         Constructor for Model class.
         
@@ -487,7 +541,6 @@ class Model(object):
             Array of Atom class instances which constitute the model. 
             
         '''
-        self.atoms = []
         self.atoms = atoms or []
         self.unitcell = unitcell or Unitcell(0., 0., [0., 0., 0.])
         self.__dict__.update(kwargs)
@@ -530,9 +583,7 @@ class Model(object):
     # estimate number of inequivalent atoms
     def _nineq_atoms(self):
         '''
-        Description
-        -----------
-        Internal method for estimating the number of inequivalent atoms
+        Internal method for estimating the number of inequivalent atoms.
         
         Returns
         -------
@@ -543,8 +594,8 @@ class Model(object):
                 each element contains an atom dictionary of 'nineq_atoms', 
                 'n_atoms' and a complete 'atom_list'
                 
-        Example
-        -------
+        Examples
+        --------
         >>> C1 = Atom('C', [0, 0, 0])
         >>> Re1 = Atom('Re', [0, 0, 0], valence=2.0)
         >>> Re2 = Atom('Re', [0, 0, 0], radius=1)
@@ -587,7 +638,7 @@ class Model(object):
         ----------
         element : str or int
             Either an element name, symbol or atomic number.
-        position : list(float) or ndarray
+        position : list of float or ndarray
             (1x3) array of the fractional coordinates of the atom
             within the unit cell in terms of the lattice vector a.
             
@@ -600,8 +651,8 @@ class Model(object):
         
         Raises
         ------
-        CoordinateError : exception
-          If duplicate positions found.
+        CoordinateError
+            If duplicate positions found.
 
         """
         positions = [str(atom.coordinates) for atom in self.atoms]
@@ -643,39 +694,40 @@ class Model(object):
         
         Parameters
         ----------
-        atoms : list(Atoms)
-            Array of Atom instances. Entries in the list which are
-            not of type Atom will be ignored.
+        atoms : array of Atom
+            Array of :py:class:`Atom` instances. Entries in the list which are
+            not of type :py:class:`Atom` will be ignored.
               
         Raises
         ------
-        TypeError : exception
-          If atoms parameter is not a list.
+        TypeError
+          If `atoms` parameter is not array-like.
 
         """
-        if isinstance(atoms, list):
+        try:
             self.atoms = [atom for atom in atoms if isinstance(atom, Atom)]
-        else:
-            raise TypeError
+        except:
+            raise TypeError('atoms must be array-like')
 
     @property
     def unitcell(self):
+        ''' Returns the unit cell for the model. ''' 
         return self.unitcell
     
     @unitcell.setter
     def unitcell(self, unitcell):
         """
-        Set the unitcell for the model
+        Sets the unit cell for the model.
         
         Parameters
         ----------
         unitcell : Unitcell
-            Instance of Unitcell class to set to model.
+            Instance of :py:class:`Unitcell` class to set to model.
             
         Raises
         ------
-        TypeError : exception 
-          If unitcell parameter is not a Unitcell.
+        TypeError
+          If `unitcell` parameter is not an instance of :py:class:`Unitcell`.
         
         """
         if isinstance(unitcell, Unitcell):
@@ -686,13 +738,41 @@ class Model(object):
 
 class MTZ_model(Model):
     '''
-    Muffin-tin potential Model subclass for producing input file 
+    Muffin-tin potential :py:class:`Model` subclass for producing input file 
     for muffin-tin calculations in the Barbieri/Van Hove phase 
     shift calculation package.
+    
+    Attributes
+    ----------
+    unitcell : Unitcell
+        An instance of the Unitcell class.
+    atoms : list
+        Array of Atom class instances which constitute the model.
+    nh : int
+        Parameter for estimating the muffin-tin zero.
+    exchange : float
+        Hartree type exchange term alpha.
+    c : float
+        The height of the slab in Angstroms - if this is much larger 
+        than the bulk c distance then there will be a large vacuum 
+        and therefore should be used when calculating a thin slab 
+        rather than a bulk muffin-tin potential. Default is to lookup
+        the out-of-plane basis vector bulk value.
+    nform : int
+        The phase shift calculation type, which can be 0 or 'cav' for
+        using the cavpot subroutine, 1 or 'wil' for using the William's
+        method, and 2 or 'rel' for using relativistic calculations suitable
+        for the CLEED package.
+    
     '''
+    CAV = 0
+    WIL = 1
+    REL = 2
+    NFORMS = {'cav': CAV, 'wil': WIL, 'rel': REL, 
+              '0': CAV, '1': WIL, '2': REL}
 
     def __init__(self, unitcell, atoms=[], 
-                 nh=10, exchange=0.72, nform='rel', kwargs):
+                 nh=10, exchange=0.72, nform='rel', **kwargs):
         '''
         Constructor for Model class.
 
@@ -723,32 +803,35 @@ class MTZ_model(Model):
         self.exchange = exchange
         self.nh = nh
         self.mtz = None
+        self.nform = nform
         self.__dict__.update(kwargs)
 
     @property
     def nh(self):
-        return self.nh
+        return self._nh
     
     @nh.setter
     def nh(self, nh):
         '''Sets the nh muffin-tin zero estimation parameter'''
-        self.nh = int(nh)  # check this is not float
+        self._nh = int(nh)  # check this is not float
 
     @property
     def exchange(self):
-        return self.exchange
+        '''Returns the alpha exchange term for muffin-tin calculation'''
+        return self._exchange
 
     @exchange.setter
     def exchange(self, alpha):
         '''Sets the alpha exchange term for muffin-tin calculation'''
         try:
-            self.exchange = float(alpha)
+            self._exchange = float(alpha)
         except:
             pass
 
     @property
     def nform(self):
-        return self.nform
+        '''Returns the form of muffin-tin calculation'''
+        return self._nform
 
     @nform.setter
     def nform(self, nform):
@@ -757,37 +840,24 @@ class MTZ_model(Model):
         
         Parameters
         ----------
+        
         nform : int or str
           This governs the type of calculation, where nform can be:
           
-          **1.** "cav" or 0 - use Cavendish method
-          
-          **2.** "wil" or 1 - use William's method
-          
-          **3.** "rel" or 2 - Relativistic calculations  
+          #. :py:obj:`"cav"` or :py:obj:`0` - use Cavendish method
+          #. :py:obj:`"wil"` or :py:obj:`1` - use William's method
+          #. :py:obj:`"rel"` or :py:obj:`2` - Relativistic calculations  
           
         '''
         try:
-            if isinstance(nform, int):
-                if nform >= 0 and nform <= 2:
-                    self.nform = nform
-            elif isinstance(nform, str):
-                if nform == 'cav':
-                    self.nform = 0
-                elif nform == 'wil':
-                    self.nform = 1
-                elif nform == 'rel':
-                    self.nform = 2
-                elif nform in ['0', '1', '2']:
-                    self.nform = int(nform)
-        except any as e:
-            raise TypeError(e.msg)
+            self._nform = self.NFORMS[nform]
+        except:
+            raise TypeError("Invalid option for nform. Use any of: %s"
+                            % stringify(self.NFORMS))
 
     def set_slab_c(self, c):
         """
-        Description
-        -----------
-        Set the maximum height of the slab in Angstroms - if this is 
+        Sets the maximum height of the slab in Angstroms - if this is 
         much larger than the bulk c distance then there will be a large 
         vacuum and therefore should be used when calculating a thin slab 
         rather than a bulk muffin-tin potential.
@@ -805,17 +875,18 @@ class MTZ_model(Model):
 
     def _load_input_file(self, filename):
         """
-        Description
-        -----------
-        Load an cluster/slab input file and update the class instance variables
+        Loads an cluster/slab input file and update the class instance 
+        variables.
 
         Parameters
         ----------
+        
         filename : str
             The path of the input file (e.g. cluster*.i or *slab*.i)
 
         Raises
         ------
+        
         IOError : exception
           If the file cannot be read.
         TypeError : exception 
@@ -872,17 +943,17 @@ class MTZ_model(Model):
 
     def load_from_file(self, filename):
         """
-        Description
-        -----------
-        Load an input file and update the class instance variables
+        Loads an input file and update the class instance variables
 
         Parameters
         ----------
+        
         filename : str
             The path of the input file (e.g. cluster*.i or *slab*.i)
 
         Raises
         ------
+        
         IOError : exception
           If the file cannot be read.
         TypeError : exception 
@@ -896,16 +967,13 @@ class MTZ_model(Model):
         else:
             self._load_input_file(filename)
         
-          
-
     def create_atorbs(self, **kwargs):
         """
-        Description
-        -----------
-        Create Atorb input files for each element in model.
+        Creates Atorb input files for each element in model.
         
-        Arguments
-        ---------
+        Parameters
+        ----------
+        
         output_dir : str
             Path to output directory for files
         library_dir : str
@@ -919,6 +987,7 @@ class MTZ_model(Model):
             
         Returns
         -------
+        
         output_files : dict
             Dictionary list of atorb*.i input files for the Atorb class to
             calculate the charge density from.
@@ -964,14 +1033,12 @@ class MTZ_model(Model):
     
     def gen_atomic(self, **kwargs):
         """
-        Description
-        -----------
-        
-        Create atomic*.i input file for MTZ input based on model or 
+        Creates ``atomic*.i`` input file for MTZ input based on model or 
         list of files. 
         
         Parameters
         ----------
+        
         input_dir : str
             Input directory where at*.i files are kept.
         input_files : tuple
@@ -983,27 +1050,27 @@ class MTZ_model(Model):
         
         Returns
         -------
+        
         output_file : str
             Returns the output file path string.
         
         Raises
         ------
+        
         IOError : exception 
             If either input directory or files do not exist. 
         
         Notes
         -----
+        
         If 'input_files' is not given then the default list of input files are 
         inferred from the list of atoms in the model. 
         
         """
         
         # input
-        if 'input_dir' in kwargs:
-            input_dir = os.path.abspath(glob(os.path.expanduser(
-                            os.path.expandvars(kwargs['input_dir'])))[0])
-        else:
-            input_dir = os.path.abspath('.')
+        input_dir = kwargs['input_dir'] if 'input_dir' in kwargs else '.'
+        input_dir = os.path.abspath(glob(expand_filepath(input_dir)))[0]
         
         if os.path.isfile(input_dir):
             input_dir = os.path.dirname(input_dir)
@@ -1030,7 +1097,7 @@ class MTZ_model(Model):
         
             # loop through each atomic charge density file in list
             for input_file in files:
-                if not os.path.isfile(str(input_file)) or input_file == None:
+                if not os.path.isfile(str(input_file)) or input_file is None:
                     raise IOError("Radial charge density file " 
                                   "'%s' does not exist!" % input_file)
                 
@@ -1050,18 +1117,17 @@ class MTZ_model(Model):
     
     def calculate_MTZ(self, mtz_string='', **kwargs):
         """
-        Description
-        -----------
         Calculate the muffin-tin potential (MTZ) for a given cluster file
         
         Parameters
         ----------
+        
         atomic_file : str
             The path to the atomic input file. If this is omitted the default
             is generate one using the MTZ_model.gen_atomic() method. 
-        cluster_file : str
+        cluster_file : str, optional
             The path to the cluster input file which may be a bulk or slab 
-            model.
+            model. (default: 'cluster.i')
         slab : int or bool
             Determines whether the MTZ calculation is for a slab model (True).
             The default is a bulk calculation.
@@ -1072,18 +1138,21 @@ class MTZ_model(Model):
         
         Returns
         -------
+        
         output_files : list(str)
             Paths to the MTZ output file.
+            
+        Raises
+        ------
+        
+        IOError if any of the input files do not exist.
         
         """
         
         # check to see if cluster input exists
-        if 'cluster_file' in kwargs:
-            cluster_file = os.path.abspath(glob(os.path.expanduser(
-                                            os.path.expandvars(
-                                            kwargs['cluster_file'])))[0])
-        else:
-            cluster_file = os.path.abspath('cluster.i')
+        cluster_file = (kwargs['cluster_file'] 
+                        if 'cluster_file' in kwargs else 'cluster.i')
+        cluster_file = os.path.abspath(glob(expand_filepath(cluster_file))[0])
         
         if not os.path.isfile(cluster_file):
             raise IOError("MTZ cluster file '%s' does not exist!" 
@@ -1145,13 +1214,12 @@ class MTZ_model(Model):
         
     def gen_input(self, **kwargs):
         """
-        Description
-        -----------
         Generate input file for use in the Barbieri/Van Hove phase shift 
         calculation package (phsh1 or libphsh)
 
-        Arguments
-        ---------
+        Parameters
+        ----------
+        
         bulk : bool
             If True the c value is set to the bulk value...
         filename : str
@@ -1175,10 +1243,12 @@ class MTZ_model(Model):
             
         Returns
         -------
+        
         filename on success
         
         Raises
         ------
+        
         CoordinatesError : exception  
           if the model atoms have duplicate coordinates and the 'pos_check' 
           kwarg is set to True.
@@ -1245,9 +1315,8 @@ class MTZ_model(Model):
                                                 self.unitcell.basis[2][1] / a,
                                                 self.unitcell.basis[2][2] / a)
                         ).ljust(33) + 
-                        '# Notice the value %.2f (%s calculation)\n' % (
-                            self.unitcell.basis[2][2] / a, 
-                            fid.replace('_', '')))
+                    '# Notice the value %.2f (%s calculation)\n' 
+                    % (self.unitcell.basis[2][2] / a, fid.replace('_', '')))
             
             # TODO: better nineq_atoms prediction
             try:
@@ -1261,8 +1330,8 @@ class MTZ_model(Model):
             
             # check to see if nineq_atoms is estimated in code
             if isinstance(nineq_atoms, tuple):
-                f.write(str("%4i" % nineq_atoms[0]).ljust(33) 
-                    + '# number of ineq. atoms in this file (NINEQ)\n')
+                f.write(str("%4i" % nineq_atoms[0]).ljust(33) + 
+                        '# number of ineq. atoms in this file (NINEQ)\n')
                 
                 # now loop through each inequivalent atom and add to file
                 elements_dict = nineq_atoms[1]
@@ -1295,9 +1364,9 @@ class MTZ_model(Model):
                             except ValueError:
                                 number = 1
                             ineq_atom.tag = ("".join([ch for ch in 
-                                            ineq_atom.tag if ch.isalpha() 
-                                            or ch in ['_', '-', '+']]
-                                            ) + '_' + str(number))
+                                             ineq_atom.tag if ch.isalpha() 
+                                             or ch in ['_', '-', '+']] +
+                                             '_' + str(number)))
 
                         f.write("{0} {1}".format(
                                 ineq_atom.element.name.capitalize(),
@@ -1332,15 +1401,15 @@ class MTZ_model(Model):
                         except ValueError:
                             number = 1
                         atom.tag = ("".join([ch for ch in atom.tag 
-                                    if ch.isalpha() or ch in ['_', '-', '+']]
-                                   ) + '_' + str(number))
+                                    if ch.isalpha() or ch in 
+                                    ['_', '-', '+']]) + '_' + str(number))
     
                     tags.append(atom.tag)
                     f.write("{0} {1}".format(atom.element.name.capitalize(), 
                             atom.tag).ljust(33) + '# element, name tag\n')
-                    f.write(str("%4i %7.4f %7.4f %7.4f" % (tags.count(
-                            atom.tag), atom.Z, atom.valence, 
-                            atom.radius / 0.529)).ljust(33) + 
+                    f.write(str("%4i %7.4f %7.4f %7.4f" 
+                                % (tags.count(atom.tag), atom.Z, atom.valence, 
+                                   atom.radius / 0.529)).ljust(33) + 
                             '# atoms in unit cell, Z, valence, '
                             'Muffin-tin radius (Bohr radii)\n')
                     f.write(str(" %7.4f %7.4f %7.4f" 

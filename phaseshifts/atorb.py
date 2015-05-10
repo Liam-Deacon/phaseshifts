@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 #encoding: utf-8
-
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -30,7 +29,7 @@
 #                                                                            #
 ##############################################################################
 """
-**atorb.py**
+**atorb.py** - perform atomic charge density calculations.
 
 Provides convenience functions for generating input and calculating 
 atomic charge densities for use with the Barbieri/Van Hove phase 
@@ -64,7 +63,7 @@ from ctypes.util import find_library
 from elements import Element, ELEMENTS, SERIES
 from lib.libphsh import hartfock as vht_hartfock 
 
-from utils import expand_filepath
+from utils import expand_filepath, stringify
 
 # get best StringIO available for this platform
 if version_info[0] < 3:
@@ -218,16 +217,15 @@ elements_dict = OrderedDict([
 
 class Atorb(object):
     '''
-    Description
-    -----------
-     A python wrapper for the atorb program by Eric Shirley for use in
-     calculating atomic scattering for different elements
+    A python wrapper for the atorb program by Eric Shirley for use in
+    calculating atomic scattering for different elements
     
     Notes
     -----
-    Original author: Eric Shirley  
+    Interfaces with Eric Shirley's hartfock program, which he summarises in 
+    the following words. 
 
-    There are nr grid points, and distances are in Bohr radii
+    There are :math:`n_r` grid points, and distances are in Bohr radii
     :math:`a_0 \simeq 0.539 \mathrm{\AA}`
     
     :math:`r(i) = r_{min} \cdot (r_{max} / r_{min})^{(i/n_r)}`, 
@@ -251,7 +249,8 @@ class Atorb(object):
     
     So we are doing Dirac-Fock, except that we are not treating exchange 
     exactly, in terms of working with major and minor components of the 
-    orbitals, and the phe's give the CORRECT CHARGE DENSITY...
+    orbitals, and the :code:`phe(:,:)` array values give the correct 
+    charge density...
     
     The above approximation ought to be very small for valence states,
     so you need not worry about it...
@@ -265,6 +264,18 @@ class Atorb(object):
     userhome = '~/hf.conf'
     datalib = (os.path.join(os.environ['APPDATA'], 'phaseshifts')
                if platform.lower().startswith('win') else '~/.phaseshifts')
+    
+    cores = {'[He]': '1s2', '[Ne]': '1s2 2s2 2p6', 
+             '[Ar]': '1s2 2s2 2p6 3s2 3p6', 
+             '[Kr]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6',
+             '[Xe]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6', 
+             '[Rn]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6'
+                     '4f14 5d10 6s2 6p6'}
+    
+    orbitals = {'s': {'l': 0, 'so_split': None, 'max_occ': 2}, 
+            'p': {'l': 1, 'so_split': True, 'max_occ': 6},
+            'd': {'l': 2, 'so_split': True, 'max_occ': 10},
+            'f': {'l': 3, 'so_split': True, 'max_occ': 14}} 
     
     def __init__(self, 
                  ngrid=1000, 
@@ -302,8 +313,6 @@ class Atorb(object):
     @ngrid.setter
     def ngrid(self, ngrid):
         '''
-        Description
-        -----------
         Sets the number of points in the radial charge grid
         
         Parameters
@@ -340,8 +349,6 @@ class Atorb(object):
     @exchange.setter
     def exchange(self, exchange):
         ''' 
-        Description
-        -----------
         Sets the exchange correlation value.
         
         Parameters
@@ -364,8 +371,6 @@ class Atorb(object):
     @tolerance.setter
     def tolerance(self, tolerance):
         '''
-        Description
-        -----------
         Sets the eigenvalue tolerance
         
         Parameters
@@ -386,8 +391,6 @@ class Atorb(object):
     @relic.setter
     def relic(self, relic):
         '''
-        Description
-        -----------
         Sets the relic value for calculation.
         
         Parameters
@@ -421,8 +424,6 @@ class Atorb(object):
     @xnum.setter
     def xnum(self, xnum):
         '''
-        Description
-        -----------
         Sets the xnum value.
         
         Parameters
@@ -437,8 +438,6 @@ class Atorb(object):
     
     def gen_conf_file(self, conf_file='hf.conf'):
         '''
-        Description
-        -----------
         Generates conf file from Atorb() object instance.
         
         Parameters
@@ -456,7 +455,6 @@ class Atorb(object):
         config.set('DEFAULT', 'ngrid', str(self.ngrid))
         config.set('DEFAULT', 'rel', str(self.ngrid))
         config.set('DEFAULT', 'exchange', str(self.exchange))
-        config.set('DEFAULT', 'exchange', str(self.exchange))
         config.set('DEFAULT', 'relic', str(self.relic))
         config.set('DEFAULT', 'mixing_SCF', str(self.mixing_SCF))
         config.set('DEFAULT', 'tolerance', str(self.tolerance))
@@ -472,9 +470,8 @@ class Atorb(object):
     
     def update_config(self, conf):
         '''
-        Description
-        -----------
-        Updates Atorb() instance with arguments found from ``conf``.
+        Updates :py:class:`Atorb()` instance with arguments found from 
+        ``conf``.
         
         Parameters
         ----------
@@ -498,8 +495,6 @@ class Atorb(object):
     
     def _get_conf_lookup_dirs(self):
         '''
-        Description
-        -----------
         Returns a list of lookup locations for configuration files.
         
         Locations include (in order):
@@ -519,8 +514,6 @@ class Atorb(object):
     
     def _get_conf_parameters(self, conf_file='hf.conf'):
         '''
-        Description
-        -----------
         Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
         returns a dictionary of the relevant keyword arguments.
         
@@ -551,30 +544,35 @@ class Atorb(object):
     @staticmethod
     def get_quantum_info(shell):
         """
-        Description
-        -----------
         Get a tuple of quantum information for a given orbital 's', 'p', 'd' 
         or 'f' from a given subshell string.
         
         Returns
-        =======
-        tuple : (int, int, list[float, float], list[float, float])
+        -------
+        tuple : (int, int, list of float, list of float)
             (n, l, j=[l-s, l+s], occ=[:math:`n^-_r`, :math:`n^+_r`])
             
         Notes
         -----
-        - *n* is the principle quantum number (:math:`n > 0`).
-        - *l* is the azimuthal quantum number (:math:`0 \leq l \leq n-1`).
-        - *s* is the spin quantum number (:math:`s \pm \frac{1}{2}`).
-        - *j* is the total angular momentum quantum numbers for both 
+        The return values are as follows:
+        
+        - `n` is the principle quantum number, where :math:`n < 0` 
+        - `l` is the azimuthal quantum number, where :math:`0 \leq l \leq n-1` 
+        - `s` is the spin quantum number, where :math:`s \pm ^1/_2` 
+        - `j` is the total angular momentum quantum numbers for both 
           :math:`l-s` or :math:`l+s`, respectively.
         - :math:`n_r` is the occupancy of the spin-split :math:`l-s` 
           and :math:`l+s` levels, respectively. 
         
-        Example
-        -------
+        Examples
+        --------
         >>> Atorb.get_quantum_info('3d6')
          (3, 2, [1.5, 2.5], [2.4, 3.6])
+        
+        Raises
+        ------
+        KeyError
+            If `shell` is not a valid electron configuration.
         
         """
         
@@ -585,43 +583,85 @@ class Atorb(object):
         except ValueError:  # assume 1 electron in shell
             n = int(shell.replace(subshell, ' ').split()[0])
             nelectrons = 1
-            
+        
         s = 0.5
-        if subshell == 's':
-            l = 0
-            occ = [nelectrons / 1.0]
-            j = [l + s]
-            return (n, l, j, occ)
-        elif subshell == 'p':
-            # 3 subshells
-            l = 1
-            max_occ = 6 
-            occ = []
-            for j in [l - s, l + s]:
-                occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
-        elif subshell == 'd':
-            # 5 subshells
-            l = 2
-            max_occ = 10 
-            occ = []
-            for j in [l - s, l + s]:
-                occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
-        elif subshell == 'f':
-            # 7 subshells!
-            l = 3
-            max_occ = 14
-            occ = []
-            for j in [l - s, l + s]:
-                occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
+        
+        try:
+            orb = Atorb.orbitals[subshell]
+        except KeyError:
+            raise KeyError("invalid orbital (shell) given - "
+                           "please use one of: {}".format(stringify(orb)))
+        
+        l = orb['l']
+        j = [l - s, l + s] if orb['so_split'] is True else [l + s]        
+        occ = Atorb._get_occupancies(subshell, nelectrons, l, j)
+        
+        return (n, l, j, occ)
+        
+    def _get_occupancies(self, subshell, nelectrons, l, j):
+        '''
+        Returns the occancies for a given electron orbital, accounting for 
+        spin-obit splitting.
+        
+        Parameters
+        ----------
+        subshell : str
+            Electron orbital, either: {orbitals}
+        nelectrons : int
+            Number of electrons in `subshell`, which must be less than or 
+            equal to the maximum number of electrons which can occupy the 
+            given `subshell` ({max_occ}, for each of the subshells above, 
+            respectively). 
+        l : int
+            The orbital angular momentum quantum number, :math:`l`, where
+            :math:`0 \le l \le n-1`.  
+        j : list of float
+            List of total angular momemntum quantum number states given by
+            :math:`j = |l ^+_- s|`, where :math:`s = ^+_-\frac{1}{2}`
+        
+        Returns
+        -------
+        list of float
+            A list of occupancies for each spin-split state. 
+        
+        Raises
+        ------
+        KeyError
+            If either `subshell` is invalid or 'max_occ' key is not defined 
+            in the `subshell` dictionary.
+        ValueError
+            If `nelectrons` is greater than the maximum occupancy for 
+            `subshell`.
+        
+        '''.format(orbitals=stringify(Atorb.orbitals), 
+                   max_occ=stringify([orb['max_occ'] 
+                                      for orb in Atorb.orbitals])
+                   )
+        
+        s = 0.5
+        orb = Atorb.orbitals[subshell] if subshell in Atorb.orbitals else None
+        try:
+            if orb is None:
+                raise ValueError
+            max_occ = orb['max_occ']
+        except ValueError:
+            raise KeyError("Unknown orbital - valid options are: {}"
+                           "".format(stringify(Atorb.orbitals)))
+        except KeyError:
+            raise KeyError("Orbital {} does not have a 'max_occ' defined"
+                           "".format(subshell))
+        j = j or [l + s]
+        
+        if nelectrons > max_occ:
+            raise ValueError("Too many electrons in {}-orbital: {} "
+                             "({} allowed)"
+                             "".format(subshell, nelectrons, max_occ))
+
+        return [(((2.0 * ls) + 1) * nelectrons / max_occ) for ls in j] 
 
     @staticmethod
     def replace_core_config(electron_config):
         """
-        Description
-        -----------
         Replace nobel gas core with equivalent electronic shell configuration
         
         Parameters
@@ -632,7 +672,7 @@ class Atorb(object):
         
         Returns
         -------
-        str :
+        str
             A substituted string where the nobel gas core has been replaced.
         
         Examples
@@ -644,12 +684,6 @@ class Atorb(object):
          '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6 6s2 5d1'
             
         """
-        cores = {'[He]': '1s2', '[Ne]': '1s2 2s2 2p6', 
-                 '[Ar]': '1s2 2s2 2p6 3s2 3p6', 
-                 '[Kr]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6',
-                 '[Xe]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6', 
-                 '[Rn]': '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6'
-                         '4f14 5d10 6s2 6p6'}
         core = electron_config.split()[0]
 
         if core in cores:
@@ -689,8 +723,6 @@ class Atorb(object):
                   tolerance=0.0005, xnum=100, ifil=0,
                   fmt='vht', **kwargs):
         """
-        Description
-        -----------
         Generate hartfock atorb input file from <element> and optional **kwargs 
         arguments. The generated input can then be inputted into 
         :py:meth:`Atorb.calculate_Q_density()`.
@@ -708,37 +740,40 @@ class Atorb(object):
         atorb_file : str, optional
             Name for generated input file (default: 'atorb')
         header : str, optional
-            Comment at beginning of input file (default: None)
+            Comment at beginning of input file (default: :py:obj:`None`)
         method : str or float, optional
             Exchange correlation method using either 0.0=Hartree-Fock,
-            1.0=LDA, -alpha = float (default: 0.0)
+            1.0=LDA, -alpha = float (default: :py:obj:`0.0`)
         relic : float, optional
-            Relic value for calculation (default: 0)
+            Relic value for calculation (default: :py:obj:`0`)
         mixing_SCF : float, optional
-            Self consisting field value (default: 0.5)
+            Self consisting field value (default: :py:obj:`0.5`)
         tolerance : float, optional
-            Eigenvalue tolerance (default: 0.0005)
+            Eigenvalue tolerance (default: :py:obj:`0.0005`)
         xnum : float, optional 
-            ??? (default: 100)
+            ??? (default: :py:obj:`100`)
         ifil : int, optional
             flag to read :code:`vpert` array from :file:`vvalence` - possibly 
-            redundant. Only used when fmt='rundgren' or 'eeasisss' (default: 0)
+            redundant. Only used when :py:obj:`fmt='rundgren'` or 
+            :py:obj:`'eeasisss'` (default: 0)
         fmt : str, optional
-            Format of generated atorb input file; can be either 'vht' for the 
-            van Hove-Tong package or 'rundgren' for the EEASiSSS package
-            (default: 'vht')
+            Format of generated atorb input file; can be either :py:obj:`'vht'` 
+            for the van Hove-Tong package or :py:obj:`'rundgren'` for 
+            the EEASiSSS package (default: :py:obj:`'vht'`)
         
         Returns
         -------
-        Filename of input file once generated or else instance of StringIO 
-        object containing written input text.
+        str
+            Filename of input file once generated or else instance of 
+            :py:obj:`StringIO` object containing written input text.
         
         Notes
         -----
-        output can also be a StringIO() object to avoid saving to file.
+        `output` can also be a :py:obj:`StringIO` object to avoid saving 
+        to file.
         
-        Example
-        -------
+        Examples
+        --------
         >>> Atorb.gen_input('H',rel=False,filename="atorb.txt",output='at_H.i')
         >>> with open('atorb_H.txt', 'r') as f: print("".join(f.readlines())
          C*********************************************************************
@@ -757,7 +792,8 @@ class Atorb(object):
          at_H.i
          q
          
-
+        
+        
         """
         ele = element if isinstance(element, Element) else ELEMENTS[element]
         Z = ele.protons
@@ -851,15 +887,11 @@ class Atorb(object):
     def calculate_Q_density(element=None, atorb_input=None, output_dir=None, 
                             subroutine=vht_hartfock, **kwargs):
         """
-        Description
-        -----------
         Calculate the radial charge density of a given element or atorb input 
         file.
         
         Parameters
         ----------
-        kwargs may be any of the following.
-        
         element : int or str, optional
             Generate element atorb input file on the fly. Additional
             kwargs may be used to govern the structure of the input
@@ -998,8 +1030,6 @@ class EEASiSSSAtorb(Atorb):
                                  else '~/atlib/hf.conf')
                       ):
         '''
-        Description
-        -----------
         Generates hartfock conf file from EEASiSSSAtorb() object
         
         Parameters
@@ -1032,8 +1062,6 @@ class EEASiSSSAtorb(Atorb):
     
     def _get_conf_parameters(self, conf_file='~/atlib/hf.conf'):
         '''
-        Description
-        -----------
         Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
         returns a dictionary of the relevant keyword arguments.
         
@@ -1094,8 +1122,6 @@ class EEASiSSSAtorb(Atorb):
     @staticmethod
     def gen_input(elements=[], atorb_file='inputA', **kwargs):
         '''
-        Description
-        -----------
         :py:class:`EEASiSSSAtorb` override of :py:class:`Atorb` base class 
         method which produces an input file for a set of elements rather 
         than just individual ones. 
@@ -1184,8 +1210,6 @@ class EEASiSSSAtorb(Atorb):
                                         else expand_filepath('~/atlib/')), 
                             **kwargs):
         '''
-        Description
-        -----------
         :py:class:`EEASiSSS` override of 
         :py:class:`Atorb.calculate_Q_density()` 
         base method to produce hartfock input files for calculating the 
@@ -1201,7 +1225,7 @@ class EEASiSSSAtorb(Atorb):
             a temporary file will be created.
         output_dir : str, optional
             Specifies the output directory for the `at_*.i` file
-            generated. (default: :envar:`$ATLIB` or :file:`~/atlib`)
+            generated. (default: :envvar:`$ATLIB` or :file:`~/atlib`)
         subroutine : function, optional
             Specifies the hartfock function to use (default: eeasisss_hartfock)
             

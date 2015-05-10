@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -29,40 +28,52 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-
 ''' Provides an abstract factory class for phase shift calculations '''
 
-from wrappers import BVHWrapper, EEASiSSSWrapper
-import sys
+from wrappers import BVHWrapper, EEASiSSSWrapper, PhaseShiftWrapper
 
 
 class PhaseshiftFactory(object):
-    '''Class for backend selection'''
-    backend = object
-    phsh_files = []
+    '''
+    Abstract factory class for backend selection of 
+    phase shift package wrapper.
+    '''
     
-    def __init__(self, backend, **kwargs):
-        package = str(backend).lower()
+    BACKENDS = {None: PhaseShiftWrapper,
+                'bvh': BVHWrapper, 
+                'eeasisss': EEASiSSSWrapper}
+    ''':py:obj:`dict` of available backends and their corresponding wrappers'''
+    
+    def __init__(self, backend='bvh', **kwargs):
+        ''' Barbieri/Van Hove package is currently the default '''
+        self.backend = backend or 'bvh'  
         self.__dict__.update(kwargs)
-        try:
-            if package not in ["vht", "eeasisss"]:
-                sys.stderr.write("Invalid package selected - "
-                                 "using default (BVH)\n")
-                sys.stderr.flush()
-                self.backend = BVHWrapper
-            else:
-                if (package == "bvh" or package == "van hove" 
-                   or package == "barbieri"):
-                    self.backend = BVHWrapper
-                elif package == "eeasisss" or package == "rundgren":
-                    self.backend = EEASiSSSWrapper
-        except KeyError:
-            sys.stderr.write("Invalid phaseshifts backend\n")
-            sys.stderr.flush()
-            sys.exit(-2)
     
-    def createAtorbFiles(self):
-        pass
+    @property
+    def backend(self):
+        '''
+        Returns the backend package wrapper class used for calculating the 
+        phase shifts.
+        '''
+        return self._backend
+    
+    @backend.setter
+    def backend(self, package):
+        '''
+        Sets the backend package wrapper to use for the phase shift 
+        calculations. The current backends supported are: {} 
+        
+        Raises
+        ------
+        ValueError if ``package`` is not a known and supported backend.
+        
+        '''.format(str("'" + "' '".join([k for k in self.BACKENDS]) + "'")) 
+        
+        if str(package).lower() not in self.BACKENDS:
+            raise ValueError("Invalid package selected - please use one of: '"
+                             "' '".join([key for key in self.BACKENDS] + "'"))
+        else:
+            self._backend = self.BACKENDS[package]
     
     def getPhaseShiftFiles(self):
         '''Returns a list of generated phase shift files'''

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-
+#
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -32,17 +32,44 @@
 #                                                                            #
 ##############################################################################
 '''
-hf.py - calculate atomic charge densities
+**hf.py** - calculate atomic charge densities
 
-hf calculates atomic charge densities using a modified version of 
-Eric Shirley's hartfock() subroutine.
+Description
+-----------
+hf.py is a command line script which calculates atomic charge densities 
+for a given element or elements using a modified version of Eric Shirley's 
+``hartfock()`` subroutine.
 
 Examples
 --------
+The following calculates the the atomic charge density file(s) specified in 
+the input file (e.g. 'inputA') and places them into the directory given by 
+the '-a' option, which is  '~/atlib/' in this example.
+ 
 .. code:: bash
    
-   hf.py -i inputA -a ~/atlib/ -l ilogA
+    hf.py -i inputA -a ~/atlib/ 
 
+The above command will print the results to ``stdout`` i.e. to the terminal, 
+however the log can be saved to a file (e.g. 'ilogA') by using:  
+
+.. code:: bash
+   
+    hf.py -i inputA -a ~/atlib/ -l ilogA 
+
+The following does the same, but uses file redirection for the calculation log. 
+Note the subtle difference in command line usage.
+
+.. code:: bash
+
+    hf.py -i inputA -a ~/atlib/ > ilogA
+    
+On Linux there is also the possibility to use the 'tee' command pipe to print 
+the log to both the terminal screen and to a file.
+
+.. code:: bash
+
+    hf.py -i inputA -a ~/atlib/ | tee ilogA
 
 '''
 from __future__ import print_function, unicode_literals
@@ -52,7 +79,8 @@ import sys
 import os
 import argparse
 
-from ..libhartfock import hartfock
+from phaseshifts.utils import expand_filepath
+from phaseshifts.lib.libhartfock import hartfock
 
 __date__ = '2015-04-26'
 __updated__ = '2015-04-26'
@@ -61,6 +89,7 @@ __contact__ = 'liam.deacon@diamond.ac.uk'
 DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
+
 
 def main(argv=None):
     '''Command line options to hf'''
@@ -89,7 +118,8 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = argparse.ArgumentParser(description=program_license, 
+        parser = argparse.ArgumentParser
+        parser = parser(description=program_license, 
                         formatter_class=argparse.RawDescriptionHelpFormatter)
         parser.add_argument('-i', '--input', dest='input', metavar='<inputA>', 
                             help="path to the atomic orbital input file which "
@@ -139,8 +169,7 @@ def main(argv=None):
                              % args.input)
             sys.stderr.flush()
         
-        args.chgden_dir = os.path.expanduser(
-                            os.path.expandvars(args.chgden_dir))
+        args.chgden_dir = expand_filepath(args.chgden_dir)
         if not os.path.isdir(args.chgden_dir):
             if verbose:
                 sys.stderr.write("hf - warning: '%s' does not exist. "
@@ -149,7 +178,7 @@ def main(argv=None):
             os.makedirs(args.chgden_dir)
         
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt #
         return 0
     except Exception, e:
         if DEBUG or TESTRUN:

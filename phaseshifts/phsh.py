@@ -47,16 +47,17 @@ from __future__ import absolute_import, division, with_statement
 
 import sys
 import os
-import tempfile
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
 from .factories import PhaseshiftFactory 
-from .utils import FileUtils
+from .utils import FileUtils, stringify
+from .leed import CSearch
 
 from subprocess import Popen
 import platform
+import argparse
 
 __all__ = []
 __version__ = '0.1.6-dev'
@@ -68,7 +69,7 @@ DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
 
-import argparse
+PHASESHIFT_FORMATS = ['cleed', 'curve', 'none'] 
 
 
 def required_length(nmin, nmax):
@@ -148,10 +149,10 @@ def main(argv=None):
                             help="Maximum angular momentum "
                             "quantum number [default: %(default)s]")
         parser.add_argument('-f', '--format', dest='format', 
-                            metavar='<format>', default="CLEED",
+                            metavar='<format>', default="cleed",
                             help="Use specific phase shift format "
-                            "i.e. 'cleed' or 'curve' "
-                            "[default: %(default)s]")
+                            "options are: {list}. [default: %(default)s]"
+                            "".format(list=stringify(PHASESHIFT_FORMATS)))
         parser.add_argument('-r', '--range', dest='range', nargs='+', 
                             action=required_length(2, 3), type=float,
                             metavar='<energy>', default=(20., 600., 5.), 
@@ -172,10 +173,11 @@ def main(argv=None):
                             "hartfock routine, then exit. " 
                             "[default: %(default)s]")
         parser.add_argument('-p', '--package', dest='package', 
-                            metavar='<package>', default='BVH', 
+                            metavar='<package>', default='bvh', 
                             help="Selects package to use for phase shift "
-                            "calculations. Choices are 'BVH' (Barbieri-Van Hove) "
-                            "or 'Rundgren' (EEASiSSS). [default: %(default)s]")
+                            "calculations. Choices are: {}. "
+                            "[default: %(default)s]"
+                            "".format(stringify(PhaseshiftFactory.BACKENDS)))
         parser.add_argument('-S', '--store', dest='store', metavar='<subdir>', 
                             default=False,
                             help="Keep intermediate files in subdir when done")
@@ -202,10 +204,10 @@ def main(argv=None):
                                  % arg)
             sys.stderr.flush()
         
-        if args.bulk == None:
+        if args.bulk is None:
             args.bulk = str(os.path.splitext(args.slab)[0] + '.bul')
         
-        if args.store == False:
+        if args.store is False:
             args.store = '.'
         
         if args.lmax < 1 or args.lmax > 18:
@@ -215,7 +217,7 @@ def main(argv=None):
             args.range = list(args.range).append(5)
         
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt #
         return 0
     except Exception, e:
         if DEBUG or TESTRUN:
@@ -244,36 +246,40 @@ def main(argv=None):
         sys.stderr.write("option '-a' or '--atorb-only' is not implemented\n")
         sys.exit(0)
         
-    phaseshifts = PhaseshiftFactory(package, bulk_file=args.bulk, slab_file=args.slab, 
-                                tmp_dir=args.tmpdir, lmax=int(args.lmax),
-                                format=args.format, store=args.store,
-                                range=args.range
-                                )
+    phaseshifts = PhaseshiftFactory(package, 
+                                    bulk_file=args.bulk, 
+                                    slab_file=args.slab, 
+                                    tmp_dir=args.tmpdir, 
+                                    lmax=int(args.lmax),
+                                    format=args.format, 
+                                    store=args.store,
+                                    range=args.range
+                                    )
     
     phsh_files = phaseshifts.getPhaseShiftFiles()
     
     # chain loop commands to next program
     if 'PHASESHIFTS_LEED' in os.environ and not args.generate:
         
-        # copy files into subdirectory
+        # copy files into sub-directory
         csearch = CSearch(os.path.splitext(args.slab)[0])
         last_iteration = csearch.getIteration(-1)
         if last_iteration is not None:
-            it = str(last_iteration).split('par:')[0].replace(
-                               ' ', '').replace('#', '').rjust(3, '0')
+            it = str(last_iteration).split('par:')[0].replace(' ', '')
+            it = it.replace('#', '').rjust(3, '0')
             model = os.path.splitext(os.path.basename(args.slab))[0]
             parent = os.path.dirname(args.slab)
             name, ext = os.path.splitext(os.path.basename(args.slab))
             dest = os.path.join(parent, 'phsh_' + model, name + '_' + it + ext)
-            FileUtils._copy_files(phsh_files, dest, verbose)
+            FileUtils.copy_files(phsh_files, dest, verbose)
         
         # create subprocess
         leed_cmd = [os.environ['PHASESHIFTS_LEED']]
         # check if using native Windows Python with cygwin
         if (platform.system() == 'Windows' and 
-            leed_cmd.startwith('/cygdrive')):
+                leed_cmd.startwith('/cygdrive')):
                 leed_cmd = '"%s"' % (leed_cmd.split('/')[2] + ':' + 
-                                 os.path.sep.join(leed_cmd.split('/')[3:])) 
+                                     os.path.sep.join(leed_cmd.split('/')[3:])) 
 
         for arg in argv:
             leed_cmd.append(arg) 
@@ -287,9 +293,9 @@ def main(argv=None):
 
 if __name__ == "__main__":
     if DEBUG:
-        #sys.argv.append("-h")
+        #  sys.argv.append("-h")
         sys.argv.append("-v")
-        #sys.argv.append("-r")
+        #  sys.argv.append("-r")
         
     if TESTRUN:
         import doctest
