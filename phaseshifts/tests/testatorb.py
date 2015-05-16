@@ -47,8 +47,7 @@ class TestAtorbModule(tests.TestCase):
         self.failIf(not os.path.isfile(filename))
 
 if __name__ == "__main__":
-    # import sys; sys.argv = ['', 'Test.testName']
-    sys.stderr.write('======================================================================\n')
+    sys.stderr.write('=' * 72 + '\n')
     sys.stderr.write('TESTING: %s\n' % os.path.basename(__file__))
-    sys.stderr.write('======================================================================\n')
+    sys.stderr.write('=' * 72 + '\n')
     unittest.main()

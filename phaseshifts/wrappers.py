@@ -33,7 +33,6 @@
 
 Provides wrapper classes for phaseshift calculation backends.
 '''
-
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
@@ -49,13 +48,14 @@ from re import compile
 from copy import deepcopy
 from tempfile import gettempdir
 
-from . import model, atorb
-from .leed import Converter, CLEED_validator
-from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
-from .conphas import Conphas
-from .elements import Element, ELEMENTS
-from .model import Atom, Model, MTZ_model
-from .utils import FileUtils, expand_filepath, stringify
+from phaseshifts import model
+from phaseshifts import atorb
+from phaseshifts.leed import Converter, CLEED_validator
+from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav
+from phaseshifts.conphas import Conphas
+from phaseshifts.elements import Element, ELEMENTS
+from phaseshifts.model import Atom, Model, MTZ_model
+from phaseshifts.utils import FileUtils, expand_filepath, stringify
 
 
 class PhaseShiftWrapper(object):

@@ -40,9 +40,8 @@ method allows importing CLEED input files as a :py:class:`MTZ_model` instance.
 import os
 import sys
 
-import model
-from elements import ELEMENTS
-from utils import expand_filepath
+from phaseshifts.elements import ELEMENTS
+from phaseshifts.utils import expand_filepath
 
 try:
     from io import IOBase
@@ -350,6 +349,7 @@ class Converter(object):
         lines = surface_lines + bulk_lines
         
         # initialise model
+        from phaseshifts import model  # delay import until actual needed
         atoms = []
         radii_dict = {}
         lmax_dict = {}
@@ -689,6 +689,7 @@ class Converter(object):
 
 class CSearch(object):
     '''class for csearch related data exchange'''
+    
     def __init__(self, model_name, leed_command=None):
         self.set_Model(model_name)
         self._getResults()

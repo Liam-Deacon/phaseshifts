@@ -294,7 +294,8 @@ f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
              
              Extension(name='phaseshifts.lib.libhartfock',
                        extra_compile_args=[],
-                       sources=[os.path.join(phsh_lib, 'EEASiSSS', 'hf.f90')]),
+                       sources=[os.path.join(phsh_lib, 'EEASiSSS', 
+                                             'hf.f90')]),
              ]
 
 readme = os.path.join('phaseshifts', 'README.rst')

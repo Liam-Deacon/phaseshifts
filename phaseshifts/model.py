@@ -48,10 +48,10 @@ from shutil import move
 from glob import glob
 from math import pi
 
-from elements import Element
-from lib import libphsh
-from leed import Converter, CLEED_validator
-from utils import stringify, expand_filepath
+from phaseshifts.elements import Element
+from phaseshifts.lib import libphsh
+from phaseshifts.leed import Converter, CLEED_validator
+from phaseshifts.utils import stringify, expand_filepath
 
 
 class Atom(Element):
@@ -67,7 +67,7 @@ class Atom(Element):
         
         Parameters
         ----------
-        element : str or int
+        element : str, int or Element
             This is either the elemental symbol, name or atomic number.
         coordinates : list[float, float, float] or ndarray
             The fractional coordinates within the unitcell in terms of the
@@ -93,7 +93,7 @@ class Atom(Element):
                         else elements.ELEMENTS[element.title()]) 
         
         # initialise Element base class
-        Element.__init__(self.element.number, 
+        Element.__init__(self, self.element.number, 
                          self.element.symbol, 
                          self.element.name, **kwargs)
         
@@ -105,6 +105,7 @@ class Atom(Element):
         if self.valence != 0.:
             # assume covrad for non-zero valency
             self.radius = self.element.covrad
+        self.occupancy = occupancy or 1.
         self.__dict__.update(kwargs)
         
     # checks whether two atoms are equal w.r.t. name, radius and valence
@@ -150,21 +151,29 @@ class Atom(Element):
         Raises
         ------
         CoordinatesError 
-            If coordinates do not have 3 items in the array
-            or if coordinates is not a supported array-like variable.
+            If coordinates do not have 3 items in the array.
+        TypeError
+            If coordinates is not a supported array-like variable.
+        ValueError
+            If the coordinates cannot be converted to floating point numbers.
         '''
-        try:
-            if isinstance(coordinates, list) or isinstance(coordinates, tuple): 
-                if len(coordinates) == 3:
-                    self._coordinates = coordinates
-                else:
-                    raise IndexError("coordinates must have 3 items")
+        if isinstance(coordinates, list) or isinstance(coordinates, tuple): 
+            if len(coordinates) == 3:
+                try:
+                    self._coordinates = [float(pt) for pt in coordinates]
+                except ValueError:
+                    raise ValueError
             else:
-                raise ValueError("coordinates is an unsupported type (%s)"
-                                 % type(coordinates))
-        except any as e:
-            raise CoordinatesError(e.msg)
-        
+                raise CoordinatesError("coordinates must have 3 items")
+        else:
+            try:
+                import numpy as np
+                if isinstance(coordinates, np.array):
+                    self.coordinates = list(coordinates)
+            except:
+                raise TypeError("coordinates is an unsupported type (%s)"
+                                % type(coordinates))
+                        
     @property
     def bohr_coordinates(self):
         ''' Returns the coordinates in Bohr '''
@@ -248,6 +257,24 @@ class Atom(Element):
         else:
             raise ValueError("'{}' is not an Element() instance".format(other)) 
 
+    @property
+    def occupancy(self):
+        ''' Returns the fractional occupancy of the atom '''
+        return self._occupancy
+        
+    @occupancy.setter
+    def occupancy(self, fraction):
+        ''' Sets the fractional occupancy of the atom '''
+        try:
+            fraction = float(fraction)
+            if fraction >= 0. and fraction <= 1.:
+                self._occupancy = fraction 
+            else:
+                raise ValueError('fractional occupancy must be '
+                                 'between 0. and 1.')
+        except any as error:
+            raise error
+            
 
 class Unitcell(object):
     '''

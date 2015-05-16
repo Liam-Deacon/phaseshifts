@@ -50,8 +50,9 @@ def expand_filepath(path):
     >>> from phaseshifts.utils import expand_filepath
     >>> expand_filepath('~/')
      'C:\\Users\\Liam'
-    >>> expand_filepath('parent\\dir/file.ext')
-     'parent\\extension\\file.ext'
+    >>> expand_filepath(r'parent\dir/file.ext')
+     'parent\\dir\\file.ext'
+     
     '''
     return os.path.normpath(
                 os.path.expanduser(
@@ -60,7 +61,7 @@ def expand_filepath(path):
 
 
 def fix_path(file_path, fill_char=''):
-    """ 
+    '''
     Fixes escaped characters in `file_path`. Implicitly calls 
     :py:meth:`expand_filepath`
     
@@ -69,14 +70,12 @@ def fix_path(file_path, fill_char=''):
     Examples
     --------
     >>> from phaseshifts.utils import fix_path
-    >>> fix_path("C:\test\new_file.txt")
+    >>> fix_path(r"C:\test\a_file.txt")
     
-    
-    
-    """
-    if sys.platform.lower().startwith('win'):
+    '''
+    if sys.platform.lower().startswith('win'):
 
-        file_path = os.path.abspath(expand_filepath(file_path))
+        file_path = expand_filepath(file_path)
         fix_list = {'\a': '\\a', '\b': '\\b',
                     '\f': '\\f', '\n': '\\n',
                     '\r': '\\r', '\t': '\\t',
@@ -102,15 +101,26 @@ def stringify(arg):
     ------
     TypeError
         If `arg` is unicode and cannot be coerced into a formatted string.
+        
+    Examples
+    --------
+    >>> from phaseshifts.utils import stringify
+    >>> stringify(None)
+     u'None'
+    >>> stringify([1, 'two', None])
+     u"'1', 'two', or 'None'"
+    >>> stringify({3: 'three', 'four': 4, False: None})
+     u"'3', 'four', or 'False'"
+    
     '''
     try:
         if (isinstance(arg, list) or 
                 isinstance(arg, tuple) or 
                 isinstance(arg, dict)):
-            arr = ("'" + "' '".join(["{}".format(item) for item in arg]) + "'")
+            arr = ("'" + "', '".join(["{}".format(item) for item in arg]) + "'")
             var = arr.split()
-            var.insert(len(arg) - 1, ' or ')
-            return "".join(var)
+            var.insert(len(arg) - 1, 'or')
+            return " ".join(var)
         else:
             return "{}".format(arg)
     except TypeError:

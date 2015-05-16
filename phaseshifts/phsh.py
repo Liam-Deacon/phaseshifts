@@ -51,9 +51,9 @@ import os
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from .factories import PhaseshiftFactory 
-from .utils import FileUtils, stringify
-from .leed import CSearch
+from phaseshifts.factories import PhaseshiftFactory 
+from phaseshifts.utils import FileUtils, stringify
+from phaseshifts.leed import CSearch
 
 from subprocess import Popen
 import platform
