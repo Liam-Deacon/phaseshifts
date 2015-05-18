@@ -59,6 +59,11 @@ class Atom(Element):
     Atom class for input into cluster model for muffin-tin potential
     calculations.
     '''
+    
+    bohr = 0.529
+    '''
+    Conversion factor of Bohr radii to Angstroms (1 Bohr = 0.529Å).
+    '''
 
     def __init__(self, element, coordinates=[0., 0., 0.], valence=0., 
                  tag=None, radius=None, occupancy=None, **kwargs):
@@ -99,9 +104,9 @@ class Atom(Element):
         
         # continue initialising Atom attributes
         self.coordinates = coordinates or [0., 0., 0.]
+        self.valence = valence or 0.
         self.tag = tag or self.element.symbol.title()
         self.radius = radius or self.element.atmrad
-        self.valence = valence or 0.
         if self.valence != 0.:
             # assume covrad for non-zero valency
             self.radius = self.element.covrad
@@ -113,7 +118,8 @@ class Atom(Element):
         if isinstance(other, Atom):
             return (self.name == other.name and 
                     self.radius == other.radius and
-                    self.valence == other.valence)
+                    self.valence == other.valence and 
+                    self.occupancy == other.occupancy)
         else:
             return False
     
@@ -123,9 +129,9 @@ class Atom(Element):
     
     # reprinting of Atom object
     def __repr__(self):
-        return (str("Atom(%s, tag='%s', radius=%s, " 
-                "valence=%s)") % (self.name, self.tag, 
-                                  self.radius, self.valence))
+        return (str("Atom(%s, tag='%s', radius=%s, valence=%s, occupancy=%f)") 
+                % (self.name, self.tag, self.radius, self.valence, 
+                   self.occupancy))
     
     # redefine hash method for checking uniqueness of class instance 
     def __hash__(self):
@@ -136,6 +142,9 @@ class Atom(Element):
         
     def __add__(self, value):
         self.valence = self.valence + value
+    
+    def __copy__(self):
+        return deepcopy(self)
     
     # set coordinates of atom within unitcell in terms of a
     @property
@@ -177,12 +186,12 @@ class Atom(Element):
     @property
     def bohr_coordinates(self):
         ''' Returns the coordinates in Bohr '''
-        return [r / 0.529 for r in self.coordinates]
+        return [r / self.bohr for r in self.coordinates]
     
     @bohr_coordinates.setter
     def bohr_coordinates(self, coordinates):
         ''' Sets the coordinates in Bohr '''
-        self.coordinates = [r * 0.529 for r in coordinates]
+        self.coordinates = [r * self.bohr for r in coordinates]
     
     # set valence of atom
     @property
@@ -191,7 +200,7 @@ class Atom(Element):
         Returns the valency of the atom 
         (i.e. whether it is neutral or an ion) 
         '''
-        return self._valence or 0.
+        return self._valence
     
     @valence.setter
     def valence(self, valency):
@@ -215,12 +224,12 @@ class Atom(Element):
     @property
     def bohr_radius(self):
         ''' Returns the muffin-tin radius in Bohr '''
-        return self._radius / 0.529
+        return self._radius / self.bohr
     
     @bohr_radius.setter
     def bohr_radius(self, radius):
         ''' Sets the muffin-tin radius in Bohr '''
-        self._radius = radius * 0.529
+        self._radius = radius * self.bohr
     
     @property
     def tag(self):
@@ -231,7 +240,8 @@ class Atom(Element):
     def tag(self, tag):
         ''' Sets the unique identifer for Atom instance '''
         self._tag = (tag or self.element.symbol if self.valence == 0. 
-                     else str(self.element.symbol + self._get_valency_str()))
+                     else str(self.element.symbol + '_' + 
+                              self._get_valency_str()))
 
     @property
     def Z(self):
@@ -311,7 +321,7 @@ class Unitcell(object):
         Converts angle given in `degrees` into radians.
     '''
  
-    def __init__(self, a, b=None, c=None, basis=None, 
+    def __init__(self, a=1., b=None, c=None, basis=None, 
                  alpha=90., beta=90., gamma=90., **kwargs):
         '''
         Constructor for the :py:class:`Unitcell` class
@@ -340,7 +350,7 @@ class Unitcell(object):
 
         '''
         # Convert Angstrom input to Bohr radii
-        self.a = a
+        self.a = a or 1.
         self.b = b or self.a
         self.c = c or self.a
         
@@ -376,8 +386,8 @@ class Unitcell(object):
     def __repr__(self):
         return (str("Unitcell(a=%s, b=%s, c=%s, "
                     "alpha=%s, beta=%s, gamma=%s, basis=%s)")  
-                    % (self.a, self.b, self.c, 
-                       self.alpha, self.beta, self.gamma, self.basis))
+                % (self.a, self.b, self.c, 
+                   self.alpha, self.beta, self.gamma, self.basis))
     
     # redefine hash method for checking uniqueness of class instance 
     def __hash__(self):
@@ -407,21 +417,19 @@ class Unitcell(object):
         Sets the basis vectors from (3x3) matrix in fractional coordinates.
         '''
         try:
-            self._basis = ([float(basis[0, i]) for i in range(3)],
-                           [float(basis[1, i]) for i in range(3)],
-                           [float(basis[2, i]) for i in range(3)])
-        except ValueError:
-            raise ValueError('basis must be a 3x3 array of float')
-        except IndexError:
-            raise IndexError('basis must be a 3x3 array of float')
+            self._basis = ([float(basis[0][i]) for i in range(3)],
+                           [float(basis[1][i]) for i in range(3)],
+                           [float(basis[2][i]) for i in range(3)])
+        except (ValueError, IndexError, TypeError) as e:
+            raise e('basis must be a 3x3 array of float')
 
     def angstroms_to_bohr(self, angstroms):
         ''' Returns the magnitude of `angstroms` in terms of Bohr radii. '''
-        return angstroms / 0.529  # (1 Bohr = 0.529Å)
+        return angstroms / self.bohr  # (1 Bohr = 0.529Å)
     
     def bohr_to_angstroms(self, bohrs):
         ''' Returns the number of Bohr radii, `bohrs`, in Angstroms. '''
-        return bohrs * 0.529  # (1 Bohr = 0.529Å)
+        return bohrs * self.bohr  # (1 Bohr = 0.529Å)
 
     @property
     def a(self):
@@ -449,7 +457,7 @@ class Unitcell(object):
         
         """
         self._a = float(a)
-        self.a_in_bohr = self.a / 0.529  # (1 Bohr = 0.529Å)
+        self.a_in_bohr = self.a / self.bohr  # (1 Bohr = 0.529Å)
 
     @property
     def b(self):
@@ -473,7 +481,7 @@ class Unitcell(object):
     @property
     def c(self):
         ''' Returns the magnitude of the out-of-plane lattice vector c '''
-        return self.c
+        return self._c
 
     @c.setter
     def c(self, c):
@@ -486,7 +494,7 @@ class Unitcell(object):
             The magnitude of the in-plane lattice vector in Angstroms
              
         """
-        self.c = float(c)
+        self._c = float(c)
     
     def degrees_to_radians(self, degrees):
         ''' Returns angle alpha in radians '''
@@ -556,7 +564,7 @@ class Model(object):
     
     '''
     
-    def __init__(self, unitcell, atoms=[], **kwargs):
+    def __init__(self, unitcell=None, atoms=[], **kwargs):
         '''
         Constructor for Model class.
         
@@ -569,7 +577,7 @@ class Model(object):
             
         '''
         self.atoms = atoms or []
-        self.unitcell = unitcell or Unitcell(0., 0., [0., 0., 0.])
+        self.unitcell = unitcell or Unitcell()
         self.__dict__.update(kwargs)
 
     # checks if two models are equal 
@@ -626,9 +634,9 @@ class Model(object):
         >>> C1 = Atom('C', [0, 0, 0])
         >>> Re1 = Atom('Re', [0, 0, 0], valence=2.0)
         >>> Re2 = Atom('Re', [0, 0, 0], radius=1)
-        >>> uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        >>> mtz = MTZ_model(uc, atoms=[C1, Re1, Re2])
-        >>> print(mtz._nineq_atoms())
+        >>> uc = Unitcell(1, 2, 3, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        >>> model = Model(uc, atoms=[C1, Re1, Re2])
+        >>> print(model._nineq_atoms())
          (3, {'Carbon': {'n_atoms': 1, 'atom_list': [Atom(Carbon, tag='C',
          coordinates=[0, 0, 0], Z=6, radius=0.91, valence=0)], 'nineq_atoms': 
          1,'nineq_atoms_list': set([Atom(Carbon, tag='C', 
@@ -667,10 +675,13 @@ class Model(object):
             Either an element name, symbol or atomic number.
         position : list of float or ndarray
             (1x3) array of the fractional coordinates of the atom
-            within the unit cell in terms of the lattice vector a.
+            within the unit cell in terms of the lattice vector **a**.
             
         """
-        self.atoms.append(Atom(element, position, kwargs))
+        self.atoms.append(Atom(element, coordinates=position, kwargs))
+
+    def copy(self):
+        return deepcopy(self)
 
     def check_coordinates(self):
         """
@@ -697,7 +708,7 @@ class Model(object):
     @property
     def name(self):
         '''Returns the model name'''
-        return self.name or ''
+        return self.name
     
     @name.setter
     def name(self, name):
@@ -712,7 +723,7 @@ class Model(object):
     @property
     def atoms(self):
         ''' Returns a list of atoms within this model '''
-        return self.atoms or []
+        return self.atoms
         
     @atoms.setter
     def atoms(self, atoms):
@@ -760,7 +771,7 @@ class Model(object):
         if isinstance(unitcell, Unitcell):
             self.unitcell = unitcell
         else:
-            raise TypeError
+            raise TypeError('unitcell is not a Unitcell() class instance')
     
 
 class MTZ_model(Model):
@@ -923,7 +934,7 @@ class MTZ_model(Model):
         try:
             with open(filename, 'r') as f:
                 self.header = f.readline()
-                a = float(f.readline().split('#')[0].split()[0]) * 0.529
+                a = float(f.readline().split('#')[0].split()[0]) * self.bohr
                 a1 = [t(s) for (t, s) 
                       in zip((float, float, float), 
                              f.readline().split('#')[0].split()[:3])]
@@ -934,7 +945,7 @@ class MTZ_model(Model):
                       in zip((float, float, float), 
                              f.readline().split('#')[0].split()[:3])]
                 basis = [a1, a2, a3]
-                c = float(a3[-1]) * 0.529  # change to Angstroms from Bohr
+                c = float(a3[-1]) * self.bohr  # change to Angstroms from Bohr
                 self.set_unitcell(Unitcell(a, c, basis))
                 self.nineq_atoms = int(f.readline().split('#')[0].split()[0])
                 
@@ -1325,7 +1336,7 @@ class MTZ_model(Model):
                 self.check_coordinates()
 
         # auto-generate file
-        a = float(self.unitcell._a) * 0.529
+        a = float(self.unitcell._a) * self.bohr
         with open(filename, 'w') as f:
             f.write(header + '\n')
             f.write(str(" %7.4f" % self.unitcell._a).ljust(33) + 
@@ -1401,7 +1412,7 @@ class MTZ_model(Model):
                                 '# element, name tag\n')
                         f.write(str("%4i %7.4f %7.4f %7.4f" % (len(ineq_atoms), 
                                     ineq_atom.Z, ineq_atom.valence, 
-                                    ineq_atom.radius / 0.529)
+                                    ineq_atom.radius / self.bohr)
                                     ).ljust(33) + '# atoms in unit cell, '
                                 'Z, valence, Muffin-tin radius (Bohr radii)\n')
 
@@ -1436,7 +1447,7 @@ class MTZ_model(Model):
                             atom.tag).ljust(33) + '# element, name tag\n')
                     f.write(str("%4i %7.4f %7.4f %7.4f" 
                                 % (tags.count(atom.tag), atom.Z, atom.valence, 
-                                   atom.radius / 0.529)).ljust(33) + 
+                                   atom.radius / self.bohr)).ljust(33) + 
                             '# atoms in unit cell, Z, valence, '
                             'Muffin-tin radius (Bohr radii)\n')
                     f.write(str(" %7.4f %7.4f %7.4f" 

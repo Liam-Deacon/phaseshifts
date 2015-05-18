@@ -5,9 +5,8 @@
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Created on 12 May 2015                                                       #
 #                                                                            #
-# Copyright: Copyright (C) 2015 Liam Deacon                                #
+# Copyright: Copyright (C) 2015 Liam Deacon                                  #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -38,6 +37,7 @@ from __future__ import absolute_import, division, with_statement
 
 import unittest
 
+from unittest import TestSuite
 from phaseshifts.tests.tests import TestCase
 
 
@@ -47,7 +47,9 @@ class TestAtomClass(TestCase):
         ''' Test Atom constructor '''
         from phaseshifts.model import Atom
         atom = Atom('H')
-        self.assertTrue(isinstance(atom, Atom))
+        self.assertIsInstance(atom, Atom)
+        with self.assertRaises(TypeError):
+            atom = Atom()  # cannot determine element for atom
     
     def test_coordinates(self):
         from phaseshifts.model import Atom, CoordinatesError
@@ -80,12 +82,19 @@ class TestAtomClass(TestCase):
             
     def test_bohr_coordinates(self):
         from phaseshifts.model import Atom
-        atom = Atom('H')
+        atom = Atom('H', coordinates=[0., 1., 2.])
+        self.assertTrue(atom.bohr_coordinates == 
+                        [0., 1. / Atom.bohr, 2. / Atom.bohr])
     
     def test_valence(self):
         from phaseshifts.model import Atom
-        atom = Atom('H')
-    
+        atom = Atom('H', valence=2.)
+        self.assertTrue(atom.valence == 2.)
+        atom.valence = -2
+        self.assertTrue(atom.valence == -2)
+        with self.assertRaises(ValueError):
+            atom.valence = 'NaN'
+        
     def test_tag(self):
         from phaseshifts.model import Atom
         atom = Atom('H')
@@ -93,14 +102,26 @@ class TestAtomClass(TestCase):
     
     def test_radius(self):
         from phaseshifts.model import Atom
+        atom = Atom('H', radius=(10. * Atom.bohr))
+        self.assertTrue(atom.bohr_radius == 10.)
+            
+    def test_bohr_radius(self):
+        from phaseshifts.model import Atom
         atom = Atom('H', radius=10.)
         self.assertTrue(atom.radius == 10.)
         atom.radius = 20.
         self.assertTrue(atom.radius == 20.)
+        with self.assertRaises(TypeError):
+            atom.radius = 'tiny'
     
     def test_occupancy(self):
         from phaseshifts.model import Atom
-        atom = Atom('H')
+        atom = Atom('H', occupancy=1.)
+        self.assertTrue(atom.occupancy == 1.)
+        atom.occupancy = 0.
+        self.assertTrue(atom.occupancy == 0.)
+        with self.assertRaises(ValueError):
+            atom.occupancy = 2.
     
     def test_element(self):
         from phaseshifts.model import Atom
@@ -108,6 +129,12 @@ class TestAtomClass(TestCase):
         self.assertEqual(Atom('H'), ELEMENTS[1])
         self.assertEqual(Atom('1'), ELEMENTS[1])
         self.assertEqual(Atom('Hydrogen'), ELEMENTS[1])
+        with self.assertRaises(KeyError):
+            Atom('Krytonite')
+        with self.assertRaises(KeyError):
+            Atom(-1)
+        with self.assertRaises(KeyError):
+            Atom(9001)  # its over nine thousand!  
     
     def test_Z(self):
         from phaseshifts.model import Atom
@@ -117,10 +144,129 @@ class TestAtomClass(TestCase):
         atom.element = Atom('Ar')
         self.assertFalse(atom.Z == 1)
         self.assertTrue(atom.Z == atom.element.protons)
+        
+    def test_uniqueness(self):
+        from phaseshifts.model import Atom
+        atoms = [Atom('H'), Atom('H', valence=1), Atom('H'),
+                 Atom('C'), Atom('H', tag='?'), Atom('H', occupancy=0.5)]
+        self.assertNotEqual(atoms, set(atoms))
 
 
-class TestModelModule(TestCase):
+class TestUnitcellClass(TestCase):
+    
+    def test_instance(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell()
+        self.assertIsInstance(uc, Unitcell)
+        self.assertTrue(uc.a == 1.)
+        uc = Unitcell(a=1., c=1.6)
+        self.assertTrue(uc.a == 1. and uc.b == uc.a and uc.c == 1.6)
 
+    def test_a(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell(a=10)
+        self.assertTrue(uc.a == 10.)
+        uc.a = 20.
+        self.assertTrue(uc.a == 20.)
+
+    def test_b(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell(a=10)
+        self.assertTrue(uc.b == uc.a and uc.b == 10.)
+        uc.b = 20.
+        self.assertTrue(uc.b == 20.)
+        
+    def test_c(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell(a=10, c=5.)
+        self.assertTrue(uc.b == uc.a and uc.a == 10. and uc.c == 5.)
+        uc.c = 20.
+        self.assertTrue(uc.b == uc.a and uc.a == 10. and uc.c == 20.)
+        
+    def test_alpha(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell()
+        self.assertTrue(uc.alpha == 90.)
+        uc.alpha = 45.
+        self.assertTrue(uc.alpha == 45.)
+        uc.alpha = -45.
+        self.assertTrue(uc.alpha == 315.)
+        
+    def test_beta(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell()
+        self.assertTrue(uc.beta == 90.)
+        uc.beta = 45.
+        self.assertTrue(uc.beta == 45.)
+        
+    def test_gamma(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell()
+        self.assertTrue(uc.gamma == 90.)
+        uc.gamma = 45.
+        self.assertTrue(uc.gamma == 45.)
+        
+    def test_basis(self):
+        from phaseshifts.model import Unitcell
+        uc = Unitcell()
+        self.assertTrue(uc.basis == [[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
+        new_basis = [[1., 1., 0.], [0., 1., 1.], [1., 0., 1.]]
+        uc.basis = new_basis
+        self.assertTrue(uc.basis == new_basis)
+        with self.assertRaises(IndexError):
+            uc.basis = [[0.], [1., 2.]]
+        with self.assertRaises(TypeError):
+            uc.basis = [[0.]]
+        with self.assertRaises(ValueError):
+            uc.basis = [[1., 0., 'zero'], [0., 1., 0.], [0., 0., 1.]]
+
+
+class TestModelClass(TestCase):
+    
+    def test_instance(self):
+        from phaseshifts.model import Model, Unitcell
+        model = Model()
+        self.assertIsInstance(model, Model)
+        
+        # check defaults
+        self.assertTrue(model.unitcell == Unitcell)
+        self.assertTrue(model.atoms == [])
+    
+    def test_add_atom(self):
+        from phaseshifts.model import Atom, Model
+        model = Model(atoms=[Atom('H')])
+        model.add_atom(element, position)
+        
+
+    def test_atoms(self):
+        from phaseshifts.model import Atom, Model
+        model = Model(atoms=(Atom('C'), Atom('H'), Atom('O')))
+        self.assertTrue(model.atoms == list(Atom('C'), Atom('H'), Atom('O')))
+        with self.assertRaises(TypeError):
+            Model(atoms=Atom('H'))
+    
+    def test_name(self):
+        from phaseshifts.model import Model
+        model = Model()
+    
+    def test_unitcell(self):
+        from phaseshifts.model import Model, Unitcell
+        model = Model()
+        self.assertEqual(model.unitcell, Unitcell())
+        model.unitcell = Unitcell(a=1., b=2., c=3., 
+                                  alpha=120., beta=60., gamma=90.)
+        self.assertEqual(model.unitcell, 
+                         Unitcell(a=1., b=2., c=3., 
+                                  alpha=120., beta=60., gamma=90.))
+        with self.assertRaises(TypeError):
+            model.unitcell = None
+      
+    def test_uniqueness(self):
+        pass
+        
+    
+
+class TestModelModule(TestSuite):
 
     def testName(self):
         pass
