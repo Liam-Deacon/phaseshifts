@@ -122,6 +122,8 @@ class TestAtomClass(TestCase):
         self.assertTrue(atom.occupancy == 0.)
         with self.assertRaises(ValueError):
             atom.occupancy = 2.
+        with self.assertRaises(ValueError):
+            atom.occupancy = -0.5
     
     def test_element(self):
         from phaseshifts.model import Atom
@@ -235,9 +237,8 @@ class TestModelClass(TestCase):
     def test_add_atom(self):
         from phaseshifts.model import Atom, Model
         model = Model(atoms=[Atom('H')])
-        model.add_atom(element, position)
+        model.add_atom('C', [0., 0., 0.])
         
-
     def test_atoms(self):
         from phaseshifts.model import Atom, Model
         model = Model(atoms=(Atom('C'), Atom('H'), Atom('O')))
@@ -247,7 +248,17 @@ class TestModelClass(TestCase):
     
     def test_name(self):
         from phaseshifts.model import Model
-        model = Model()
+        model = Model(name='The Standard Model')  # Pun intended
+        self.assertTrue(model.name == 'The Standard Model')
+        model = Model(atoms=['C', 'O', 'O'])
+        self.assertTrue(model.name == model.formula)
+        model.name = 'The Greenhouse Effect'
+        self.assertTrue(model.name == 'The Greenhouse Effect')
+        
+    def test_formula(self):
+        from phaseshifts.model import Model
+        model = Model(atoms=['C', 'O', 'O'])
+        self.assertTrue(model.formula == 'CO2')
     
     def test_unitcell(self):
         from phaseshifts.model import Model, Unitcell
@@ -264,7 +275,51 @@ class TestModelClass(TestCase):
     def test_uniqueness(self):
         pass
         
+    def test_check_coordinates(self):
+        from phaseshifts.model import Atom, Model, CoordinatesError
+        CoZnO = [Atom('Zn', coordinates=[0., 0., 0.], occupancy=0.5), 
+                 Atom('Co', coordinates=[0., 0., 0.], occupancy=0.5), 
+                 Atom('O', coordinates=[1., 0., 0.], occupancy=1.0)]
+        model = Model(atoms=CoZnO)
+        self.assertIsInstance(model.check_coordinates(), dict)
+        with self.assertRaises(CoordinatesError):
+            CoZnO[1].occupancy = 0.999  
+            # occupancy for site [0., 0., 0.] is now > 1. 
+            model.check_coordinates()
+
+
+class TestMTZModelClass(TestCase):
     
+    @classmethod
+    def setUpClass(cls):
+        from phaseshifts.model import MTZModel
+        super(TestMTZModelClass, cls).setUpClass()
+        cls._model = MTZModel()
+    
+    def test_nh(self):
+        self.assertTrue(self._model.nh == 10)
+        self._model.nh = 12
+        self.assertTrue(self._model.nh == 12)    
+    
+    def test_nform(self):
+        from phaseshifts.model import MTZModel
+        self.assertTrue(self._model.nform == MTZModel.rel)
+        self._model.nform = MTZModel.cav
+        self.assertTrue(self._model.nform == MTZModel.cav)
+        self._model.nform = MTZModel.wil
+        self.assertTrue(self._model.nform == MTZModel.wil)
+        self._model.nform = 'rel'
+        self.assertTrue(self._model.nform == MTZModel.rel)
+        self._model.nform = 'wil'
+        self.assertTrue(self._model.nform == MTZModel.wil)
+        self._model.nform = 'cav'
+        self.assertTrue(self._model.nform == MTZModel.cav)        
+        with self.assertRaises(ValueError):
+            self._model.nform = None
+        
+    def test_exchange(self):
+        pass
+        
 
 class TestModelModule(TestSuite):
 

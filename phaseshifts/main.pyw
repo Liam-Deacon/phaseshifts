@@ -29,10 +29,9 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-
-'''
+"""
 Wrapper module for launching main window of GUI
-'''
+"""
 from gui import MainWindow
 import sys
 

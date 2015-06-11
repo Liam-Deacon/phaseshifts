@@ -177,7 +177,7 @@ class Conphas(object):
             
     @property
     def data(self):
-        ''' Internal data for :py:meth:`Conphas.calculate` '''
+        """ Internal data for :py:meth:`Conphas.calculate` """
         return self._data
     
     @data.setter
@@ -282,14 +282,14 @@ class Conphas(object):
          
     @property
     def input_files(self):
-        ''' List of input files for :py:meth:`Conphas.calculate()` '''
+        """ List of input files for :py:meth:`Conphas.calculate()` """
         return self._input_files or []
        
     @input_files.setter 
     def input_files(self, input_files=[]):
-        '''
+        """
         Sets list of input filenames
-        '''
+        """
         if input_files:
             input_files = [fix_path(filename) for filename in input_files]
             temp_input_files = [filename for filename 
@@ -299,25 +299,25 @@ class Conphas(object):
         
     @property
     def output_file(self):
-        ''' 
+        """ 
         Output file name 
-        '''
+        """
         return self._output_file
         
     @output_file.setter
     def output_file(self, output_file):
-        '''
+        """
         Sets output filename
-        '''
+        """
         self._output_file = output_file
                     
     # Set max orbital angular momentum
     @property
     def lmax(self):
-        '''
+        """
         Returns the maximum angular momentum (azimuthal) quantum number to 
         be used in the phase shift calculations.
-        '''
+        """
         return self._lmax
     
     @lmax.setter
@@ -335,9 +335,9 @@ class Conphas(object):
              
     @property
     def format(self):
-        '''
+        """
         Returns the format for any generated phase shift files. 
-        '''
+        """
         return self._format
     
     @format.setter

@@ -79,7 +79,7 @@ author, John Rundgren, the main qualifications of the program are:
   `Differential Evolution <http://www.physik.uni-augsburg.de/~eyert/ASWhome.shtml/>`_ 
   , an extremely efficient minimizer.
 
-.. Note:: Please refer to the short :ref:`EEASiSSS_Phase_Shift_Package_Guide` for more information 
+.. Note:: Please refer to the short `_EEASiSSS_Phase_Shift_Package_Guide`_ for more information 
           relating to using EEASiSSS.
 
 .. [#] J Rundgren, Phys. Rev. B 68, 125405 (2003).

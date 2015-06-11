@@ -37,6 +37,7 @@ from __future__ import absolute_import, division, with_statement
 
 import unittest
 import sys
+import glob
 
 
 class TestCase(unittest.TestCase):
@@ -45,13 +46,6 @@ class TestCase(unittest.TestCase):
         ch = '\n' if newline else ''
         sys.stderr.write(ch + str(text) + '...')
         sys.stderr.flush()
-
-    def setUp(self):
-        pass
-
-
-    def tearDown(self):
-        pass
 
 
 class TestSuite(unittest.TestSuite):
@@ -77,9 +71,11 @@ class TestSuite(unittest.TestSuite):
                        tests.testatorb.TestAtorbModule('Test atorb module'),
                        tests.testmodel.TestAtomClass('Test Atom class'),
                        tests.testmodel.TestModelModule('Test model module')
-                     ])
+                       ])
 
 
 if __name__ == "__main__":
+    testSuite = unittest.TestSuite()
+    module_strings = [test_unit[0:len(test_unit) - 3] 
+                      for test_unit in glob.glob('test_*.py')]
     unittest.main()
-    

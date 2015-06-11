@@ -1,4 +1,4 @@
-.. EEASiSSS_Phase_Shift_Package_Guide:
+.. _EEASiSSS_Phase_Shift_Package_Guide:
 
 **************************************************************************************
 APPENDIX II: Elastic Electron-Atom Scattering in Solids and Surface Slabs - User Guide
@@ -131,14 +131,16 @@ The options are described below:
     Specifies the path to the atomic orbital input file. Default is './InputA'.
 
 :code:`-a <chgden_dir>`
-    Optional argument which specifies the output directory to place the calculated 
-    atomic charge density :code:`chgden*` files into. If no argument is given, the 
-    :code:`ATLIB` environment variable is used as the output directory, else 
-    '~/atlib' path is used. Use '.' for :code:`<chgden_dir>` to place the output files 
-    into the current working directory.
+    Optional argument which specifies the output directory to place the 
+    calculated atomic charge density :code:`chgden*` files into. If no 
+    argument is given, the :code:`ATLIB` environment variable is used as 
+    the output directory, else '~/atlib' path is used. Use '.' for 
+    :code:`<chgden_dir>` to place the output files into the current 
+    working directory.
 
 :code:`-o <log_file>`
-    Optionally redirects the calculation log to the file specified by :code:`<log_file>`.  
+    Optionally redirects the calculation log to the file specified by 
+    :code:`<log_file>`.  
     The default is to print to :code:`stdout` if the argument is omitted.
     
 .. note::
@@ -149,7 +151,8 @@ The options are described below:
 An example input file can be found under `examples/EEASiSSS/GaAs/inputA` and 
 covers the format of the atomic orbital input file.
 
-The charge density output files for each element in the form: :code:`chgden<symbol>`
+The charge density output files for each element in the form: 
+:code:`chgden<symbol>`
 
 :code:`eeasisss.py`
 -------------------
@@ -177,8 +180,15 @@ The command line options for calling the program are:
     
 :code:`-a <chgden_dir>`
     path to charge density files and to intermediate electrostatic 
-    MT charge file(s). Default, in order, is :code:`ATLIB` environment variable,
-    then the path given by '~/atlib/'.
+    MT charge file(s). Default, in order, is :envvar:`ATLIB` 
+    environment variable, then the path given by '~/atlib/'. 
+    
+.. note:: that if a particular element's :file:`chgden*` file is missing 
+          then it will be automatically generated using the default 
+          calculation parameters. Users may optionally override the in-built 
+          defaults by creating a special configuration file 'hf.conf' 
+          which should reside in the same directory as ``<chgden_dir>``. An 
+          example configuration is given in the `hf.conf`_ section.  
     
 EEASiSSS input 
 ==============
@@ -187,7 +197,6 @@ What follows is an example of EEASiSSS applied to GaAs(110)-(1x1) surface struct
 
 
 .. code-block:: text
-  :caption: inputX
   :linenos:
 
   STRUCTURE: 
@@ -393,3 +402,37 @@ http://www1.icsi.berkeley.edu/~storn/code.html.
 of atoms is high or low; fitness and number of iterations are 
 inspected in the EEASiSSS log.
 
+:code:`hf.conf`
+===============
+
+This is an optional configuration file which can be used to override the 
+default settings of `eeasisss.py`_ when generating ``chgden<symbol>`` 
+atomic charge density files on-the-fly for missing elements.
+
+.. code-block:: ini
+
+  ###############################
+  # hartfock configuration file #
+  ###############################
+  
+  # aim is to automatically read configuration 
+  # from either $ATLIB or ~/atlib/ when on-the-fly 
+  # calculation of the atomic charge densities is 
+  # needed for a given element.
+  
+  [DEFAULT]
+  ngrid=1000
+  rel=1
+  exchange=0.
+  mixing_SCF=0.2
+  tolerance=0.001
+  xnum=100
+  
+  # next follows EEASiSSS overrides 
+  # and parameters specific to it.
+  
+  [EEASISSS]
+  ngrid=2000
+  tolerance=0.0005
+  ifil=0
+  # etc.

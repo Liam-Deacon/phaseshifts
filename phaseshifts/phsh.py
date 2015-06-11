@@ -28,7 +28,7 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-'''
+"""
 phsh.py - quickly generate phase shifts
 
 phsh provides convenience functions to create phase shifts files
@@ -41,7 +41,7 @@ Examples
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
 
 
-'''
+"""
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
@@ -73,7 +73,7 @@ PHASESHIFT_FORMATS = ['cleed', 'curve', 'none']
 
 
 def required_length(nmin, nmax):
-    '''custom action to check range'''
+    """custom action to check range"""
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not nmin <= len(values) <= nmax:
@@ -86,7 +86,7 @@ def required_length(nmin, nmax):
 
 
 class CLIError(Exception):
-    '''Generic exception to raise and log different fatal errors.'''
+    """Generic exception to raise and log different fatal errors."""
     def __init__(self, msg):
         super(CLIError).__init__(type(self))
         self.msg = "E: %s" % msg
@@ -99,7 +99,7 @@ class CLIError(Exception):
 
 
 def main(argv=None):
-    '''Command line options.'''
+    """Command line options."""
 
     global VERBOSE
 
@@ -118,7 +118,7 @@ def main(argv=None):
     program_version_message = '%%(prog)s %s (%s)' % (program_version, 
                                                      program_build_date)
     program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
-    program_license = '''%s
+    program_license = """%s
 
       Created by Liam Deacon on %s.
       Copyright 2013-2015 Liam Deacon. All rights reserved.
@@ -129,7 +129,7 @@ def main(argv=None):
       and fixes, to: %s
 
     usage:-
-    ''' % (program_shortdesc, str(__date__), __contact__)
+    """ % (program_shortdesc, str(__date__), __contact__)
 
     try:
         # Setup argument parser

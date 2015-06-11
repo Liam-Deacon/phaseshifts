@@ -217,7 +217,7 @@ elements_dict = OrderedDict([
 
 
 class Atorb(object):
-    '''
+    """
     A python wrapper for the atorb program by Eric Shirley for use in
     calculating atomic scattering for different elements
     
@@ -259,7 +259,7 @@ class Atorb(object):
     The Breit interaction has been neglected altogether...it should not 
     have a huge effect on the charge density you are concerned with...
     
-    '''
+    """
     
     atlib = '$ATLIB' if 'ATLIB' in os.environ else '~/atlib/'
     userhome = '~/hf.conf'
@@ -288,9 +288,9 @@ class Atorb(object):
                  xnum=100, 
                  ifil=0, 
                  **kwargs):
-        '''
+        """
         Constructor
-        '''
+        """
         # set private data members
         self.ngrid = ngrid if isinstance(ngrid, int) else 1000
         self.rel = rel if isinstance(rel, bool) else True
@@ -308,19 +308,19 @@ class Atorb(object):
     
     @property
     def ngrid(self):
-        '''Returns the number of points in the radial charge grid'''
+        """Returns the number of points in the radial charge grid"""
         return self._ngrid
     
     @ngrid.setter
     def ngrid(self, ngrid):
-        '''
+        """
         Sets the number of points in the radial charge grid
         
         Parameters
         ----------
         ngrid : int
             Number of points in the radial grid.
-        '''
+        """
         try:
             self._ngrid = abs(int(ngrid))
         except ValueError:
@@ -328,12 +328,12 @@ class Atorb(object):
     
     @property
     def rel(self):
-        '''Returns boolean value of whether to consider relativistic effects''' 
+        """Returns boolean value of whether to consider relativistic effects""" 
         return self._rel
     
     @rel.setter
     def rel(self, rel):
-        '''Sets flag to consider relativistic effects'''
+        """Sets flag to consider relativistic effects"""
         try:
             self._rel = (True if rel == 'rel' or 
                          rel is True or rel == 1 else False)
@@ -342,14 +342,14 @@ class Atorb(object):
     
     @property
     def exchange(self):
-        '''
+        """
         Returns the exchange correlation value, 
-        where 0.0=Hartree-Fock, 1.0=LDA or <float>=-alpha '''
+        where 0.0=Hartree-Fock, 1.0=LDA or <float>=-alpha """
         return self._exchange
     
     @exchange.setter
     def exchange(self, exchange):
-        ''' 
+        """ 
         Sets the exchange correlation value.
         
         Parameters
@@ -358,7 +358,7 @@ class Atorb(object):
             Exchange value for calculation. The value determines the 
             calculation method, where :code:`0.0` = Hartee-Fock, 
             :code:`1.0` = LDA or :code:`<float>` = -alpha .
-        ''' 
+        """ 
         try:
             self._exchange = float(exchange)
         except ValueError:
@@ -366,19 +366,19 @@ class Atorb(object):
         
     @property
     def tolerance(self):
-        '''Returns the eigenvalue tolerance'''
+        """Returns the eigenvalue tolerance"""
         return self._tolerance
     
     @tolerance.setter
     def tolerance(self, tolerance):
-        '''
+        """
         Sets the eigenvalue tolerance
         
         Parameters
         ----------
         tolerance : float
             The eigenvalue tolerance value to set to.
-        '''
+        """
         try:
             self._tolerance = float(tolerance)
         except ValueError:
@@ -386,19 +386,19 @@ class Atorb(object):
         
     @property
     def relic(self):
-        '''Returns the relic value for calculation'''
+        """Returns the relic value for calculation"""
         return self._relic
     
     @relic.setter
     def relic(self, relic):
-        '''
+        """
         Sets the relic value for calculation.
         
         Parameters
         ---------- 
         relic : int 
             Relic value for calculation.
-        '''
+        """
         try:
             self._relic = int(relic)
         except ValueError:
@@ -406,12 +406,12 @@ class Atorb(object):
         
     @property
     def mixing_SCF(self):
-        '''Returns the self-consisting field value''' 
+        """Returns the self-consisting field value""" 
         return self._mixing_SCF
     
     @mixing_SCF.setter
     def mixing_SCF(self, mixing):
-        '''Sets the self-consisting field value'''
+        """Sets the self-consisting field value"""
         try:
             self._mixing_SCF = mixing
         except ValueError:
@@ -419,26 +419,26 @@ class Atorb(object):
     
     @property
     def xnum(self):
-        '''Returns xnum value'''
+        """Returns xnum value"""
         return self._xnum
     
     @xnum.setter
     def xnum(self, xnum):
-        '''
+        """
         Sets the xnum value.
         
         Parameters
         ----------
         xnum : float
             ???
-        '''
+        """
         try:
             self._xnum = float(xnum)
         except ValueError:
             pass
     
     def gen_conf_file(self, conf_file='hf.conf'):
-        '''
+        """
         Generates conf file from Atorb() object instance.
         
         Parameters
@@ -446,7 +446,7 @@ class Atorb(object):
         conf_file : str
             Filepath for conf output file (default: 'hf.conf').
         
-        '''
+        """
         conf_file = expand_filepath(conf_file)
         if not os.path.isdir(os.path.dirname(conf_file)):
             os.makedirs(os.path.dirname(conf_file))
@@ -470,7 +470,7 @@ class Atorb(object):
             config.write(f)
     
     def update_config(self, conf):
-        '''
+        """
         Updates :py:class:`Atorb()` instance with arguments found from 
         ``conf``.
         
@@ -484,7 +484,7 @@ class Atorb(object):
         Raises
         ------
         ValueError if ``conf`` is neither a str or dict instance.
-        '''
+        """
         if isinstance(conf, str):
             if os.path.isfile(conf):                
                 self.__dict__.update(self._get_conf_parameters(conf))
@@ -495,7 +495,7 @@ class Atorb(object):
                              "str or dict instance".format(conf))
     
     def _get_conf_lookup_dirs(self):
-        '''
+        """
         Returns a list of lookup locations for configuration files.
         
         Locations include (in order):
@@ -505,7 +505,7 @@ class Atorb(object):
                 3. ``~/.phaseshifts/`` or ``%APPDATA%/phaseshifts``
                 4. './'
         
-        '''
+        """
         filenames = [os.path.join(directory, 'hf.conf') 
                      for directory in list(self.atlib, 
                                            self.userhome, 
@@ -514,7 +514,7 @@ class Atorb(object):
         return [os.path.abspath(expand_filepath(f)) for f in filenames]
     
     def _get_conf_parameters(self, conf_file='hf.conf'):
-        '''
+        """
         Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
         returns a dictionary of the relevant keyword arguments.
         
@@ -534,7 +534,7 @@ class Atorb(object):
         -------
         Dictionary of Atorb.gen_input() keyword arguments.
         
-        '''        
+        """        
         conf_file = expand_filepath(conf_file)
         
         config = ConfigParser()
@@ -600,7 +600,7 @@ class Atorb(object):
         return (n, l, j, occ)
         
     def _get_occupancies(self, subshell, nelectrons, l, j):
-        '''
+        """
         Returns the occancies for a given electron orbital, accounting for 
         spin-obit splitting.
         
@@ -634,7 +634,7 @@ class Atorb(object):
             If `nelectrons` is greater than the maximum occupancy for 
             `subshell`.
         
-        '''.format(orbitals=stringify(Atorb.orbitals), 
+        """.format(orbitals=stringify(Atorb.orbitals), 
                    max_occ=stringify([orb['max_occ'] 
                                       for orb in Atorb.orbitals])
                    )
@@ -1011,16 +1011,16 @@ class EEASiSSSAtorb(Atorb):
         
     @property
     def ifil(self):
-        '''
+        """
         Returns flag for reading :code:`vpert` array from file :file:`vvalence`
-        '''
+        """
         return self._ifil
     
     @ifil.setter
     def ifil(self, ifil):
-        '''
+        """
         Sets whether to read :code:`vpert` array from :file:`vvalence`
-        '''
+        """
         try:
             self._ifil = int(ifil)
         except ValueError:
@@ -1030,7 +1030,7 @@ class EEASiSSSAtorb(Atorb):
                       conf_file=('$ATLIB/hf.conf' if 'ATLIB' in os.environ 
                                  else '~/atlib/hf.conf')
                       ):
-        '''
+        """
         Generates hartfock conf file from EEASiSSSAtorb() object
         
         Parameters
@@ -1044,7 +1044,7 @@ class EEASiSSSAtorb(Atorb):
         >>> atorb = EEASiSSSAtorb()  # create an object instance
         >>> # create a config file in the default location
         >>> atorb.gen_conf_file()
-        '''
+        """
         conf_file = expand_filepath(conf_file)
         
         # call parent method
@@ -1062,7 +1062,7 @@ class EEASiSSSAtorb(Atorb):
             config.write(f)
     
     def _get_conf_parameters(self, conf_file='~/atlib/hf.conf'):
-        '''
+        """
         Reads ``*.conf`` file for Atorb.gen_input() user-specified defaults and
         returns a dictionary of the relevant keyword arguments.
         
@@ -1082,7 +1082,7 @@ class EEASiSSSAtorb(Atorb):
         -------
         Dictionary of keyword arguments for :py:meth:`Atorb.gen_input()`.
         
-        '''        
+        """        
         conf_file = expand_filepath(conf_file)
         
         config = ConfigParser()
@@ -1094,7 +1094,7 @@ class EEASiSSSAtorb(Atorb):
         return conf_dict
     
     def _gen_input(self, element, conf_file=None):
-        '''Internal bound version of :py:meth:`EEEASiSSSAtorb.gen_input`'''
+        """Internal bound version of :py:meth:`EEEASiSSSAtorb.gen_input`"""
         if conf_file is not None:
             self.update_config(self.get_conf_parameters(conf_file))
             
@@ -1122,7 +1122,7 @@ class EEASiSSSAtorb(Atorb):
     
     @staticmethod
     def gen_input(elements=[], atorb_file='inputA', **kwargs):
-        '''
+        """
         :py:class:`EEASiSSSAtorb` override of :py:class:`Atorb` base class 
         method which produces an input file for a set of elements rather 
         than just individual ones. 
@@ -1183,7 +1183,7 @@ class EEASiSSSAtorb(Atorb):
         >>> # do likewise for all non-metals, but using hf.conf file parameters
         >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == 'Nonmetals']
         >>> EEASiSSS.gen_input(non_metals, atorb_file='./nonmetals.hf')
-        '''
+        """
         io = StringIO()
         successful = False
         try:
@@ -1210,7 +1210,7 @@ class EEASiSSSAtorb(Atorb):
                                         if 'ATLIB' in os.environ
                                         else expand_filepath('~/atlib/')), 
                             **kwargs):
-        '''
+        """
         :py:class:`EEASiSSS` override of 
         :py:class:`Atorb.calculate_Q_density()` 
         base method to produce hartfock input files for calculating the 
@@ -1279,7 +1279,7 @@ class EEASiSSSAtorb(Atorb):
         >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == series]
         >>> input = './nonmetals.hf'
         >>> EEASiSSSAtorb.calculate_Q_density(non_metals, atorb_file=input)
-        '''
+        """
         # do not do anything if no elements given, otherwise get the set
         if elements == []:
             return []

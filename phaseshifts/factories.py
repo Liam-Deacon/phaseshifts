@@ -5,7 +5,7 @@
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Copyright: Copyright (C) 2014-2015 Liam Deacon                                  #
+# Copyright: Copyright (C) 2014-2015 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -28,38 +28,38 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-''' Provides an abstract factory class for phase shift calculations '''
+""" Provides an abstract factory class for phase shift calculations """
 
 from phaseshifts.wrappers import BVHWrapper, EEASiSSSWrapper, PhaseShiftWrapper
 
 
 class PhaseshiftFactory(object):
-    '''
+    """
     Abstract factory class for backend selection of 
     phase shift package wrapper.
-    '''
+    """
     
     BACKENDS = {None: PhaseShiftWrapper,
                 'bvh': BVHWrapper, 
                 'eeasisss': EEASiSSSWrapper}
-    ''':py:obj:`dict` of available backends and their corresponding wrappers'''
+    """:py:obj:`dict` of available backends and their corresponding wrappers"""
     
     def __init__(self, backend='bvh', **kwargs):
-        ''' Barbieri/Van Hove package is currently the default '''
+        """ Barbieri/Van Hove package is currently the default """
         self.backend = backend or 'bvh'  
         self.__dict__.update(kwargs)
     
     @property
     def backend(self):
-        '''
+        """
         Returns the backend package wrapper class used for calculating the 
         phase shifts.
-        '''
+        """
         return self._backend
     
     @backend.setter
     def backend(self, package):
-        '''
+        """
         Sets the backend package wrapper to use for the phase shift 
         calculations. The current backends supported are: {} 
         
@@ -67,7 +67,7 @@ class PhaseshiftFactory(object):
         ------
         ValueError if ``package`` is not a known and supported backend.
         
-        '''.format(str("'" + "' '".join([k for k in self.BACKENDS]) + "'")) 
+        """.format(str("'" + "' '".join([k for k in self.BACKENDS]) + "'")) 
         
         if str(package).lower() not in self.BACKENDS:
             raise ValueError("Invalid package selected - please use one of: '"
@@ -76,7 +76,7 @@ class PhaseshiftFactory(object):
             self._backend = self.BACKENDS[package]
     
     def getPhaseShiftFiles(self):
-        '''Returns a list of generated phase shift files'''
+        """Returns a list of generated phase shift files"""
         return self.backend.autogen_from_input(self.bulk_file, 
                                                self.slab_file, 
                                                tmp_dir=self.tmp_dir, 

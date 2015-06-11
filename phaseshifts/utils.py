@@ -28,11 +28,11 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-'''
+"""
 **utils.py** 
 
 Provides utility functions and classes for performing common low-level tasks.
-'''
+"""
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
@@ -42,7 +42,7 @@ from shutil import copy
 
 
 def expand_filepath(path):
-    '''
+    """
     Expands `path` for environment and user variables
     
     Examples
@@ -53,7 +53,7 @@ def expand_filepath(path):
     >>> expand_filepath(r'parent\dir/file.ext')
      'parent\\dir\\file.ext'
      
-    '''
+    """
     return os.path.normpath(
                 os.path.expanduser(
                     os.path.expandvars(
@@ -61,7 +61,7 @@ def expand_filepath(path):
 
 
 def fix_path(file_path, fill_char=''):
-    '''
+    """
     Fixes escaped characters in `file_path`. Implicitly calls 
     :py:meth:`expand_filepath`
     
@@ -71,8 +71,8 @@ def fix_path(file_path, fill_char=''):
     --------
     >>> from phaseshifts.utils import fix_path
     >>> fix_path(r"C:\test\a_file.txt")
-    
-    '''
+     u'C:\\test\\a_file.txt'
+    """
     if sys.platform.lower().startswith('win'):
 
         file_path = expand_filepath(file_path)
@@ -93,7 +93,7 @@ def fix_path(file_path, fill_char=''):
 
 
 def stringify(arg):
-    '''
+    """
     Returns string of `arg` or fancy string of items if `arg` is a 
     :py:obj:`dict`, :py:obj:`list` or :py:obj:`tuple`.
     
@@ -112,7 +112,7 @@ def stringify(arg):
     >>> stringify({3: 'three', 'four': 4, False: None})
      u"'3', 'four', or 'False'"
     
-    '''
+    """
     try:
         if (isinstance(arg, list) or 
                 isinstance(arg, tuple) or 
@@ -129,19 +129,19 @@ def stringify(arg):
 
 
 class FileUtils(object):
-    '''
+    """
     Class for performing phase shift related file operations
-    '''
+    """
 
     def __init__(self, params):
-        '''
+        """
         Constructor
-        '''
+        """
         pass
     
     @staticmethod
     def copy_files(files, dst, verbose=False):
-        '''copy list of files into destination directory'''
+        """copy list of files into destination directory"""
         # check if using native Windows Python with cygwin
         env = ''
         if str(sys.platform).startswith('win') and dst.startswith('/cygdrive'):

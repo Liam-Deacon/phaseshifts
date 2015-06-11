@@ -47,6 +47,7 @@ imports = {'phaseshifts': ['atorb', 'conphas', 'elements', 'factories',
 
 class TestImports(unittest.TestCase):
     """ Test class for imports """
+    
     def testimports(self):
         """ 
         Function to determine if modules in packages are importable 
@@ -71,4 +72,4 @@ if __name__ == "__main__":
     sys.stderr.write('TESTING: %s\n' % os.path.basename(__file__))
     sys.stderr.write('=' * 72 + '\n')
     unittest.main()
-    
+ 

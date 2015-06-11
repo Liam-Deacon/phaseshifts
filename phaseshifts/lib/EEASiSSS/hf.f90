@@ -50,6 +50,43 @@
       integer,parameter :: dp=selected_real_kind(15,307)
       end module dprec
 !----------------------------------------------------------------------
+      module paths
+      contains
+
+      function normalize_windows_path(filepath)
+        implicit none
+        character(len=255), intent(in) :: filepath
+        character(len=255) :: normalize_windows_path
+        integer :: i
+
+        normalize_windows_path = filepath
+        do i=1,len_trim(filepath)
+          if (filepath(i:i) == "/") then
+            normalize_windows_path(i:i) = "\\"
+          end if
+        end do
+
+        return
+      end function
+
+      function get_unix_path(filepath)
+        implicit none
+        character(len=255), intent(in) :: filepath
+        character(len=255) :: get_unix_path
+        integer :: i
+
+        get_unix_path = filepath
+        do i=1,len_trim(filepath)
+          if (filepath(i:i) == "\\") then
+            get_unix_path(i:i) = "/"
+          end if
+        end do
+
+        return
+      end function
+
+      end module paths
+!----------------------------------------------------------------------
       module PARAMS
       use dprec
       implicit none
@@ -65,19 +102,20 @@
       parameter (rmafac = 200.d0)        !800.d0       !JR
       parameter (x137 = 137.0359895d0)
       logical, parameter  :: verb = .true.
-      character(len=255)  :: outfile
+      character(len=255)  :: outdir,atdir,outfile
       integer io
       integer logunit                    !LD: file unit for log file (may be stdout)
       integer, parameter :: inpunit = 21 !LD: file unit for atorb input
       end module PARAMS
 !----------------------------------------------------------------------
       !program hartfock
-      subroutine hartfock(input_file, log_file, outdir)
+      subroutine hartfock(input_file,log_file,output_dir,atom_dir)
       use dprec
+      use paths
       use PARAMS
       use iso_fortran_env ! requires compiler adhering to Fortran 2003 standard
       implicit none
-      character(len=255):: input_file, log_file, outdir
+      character(len=255):: input_file, log_file, output_dir, atom_dir
       integer, allocatable :: no(:),nl(:),nm(:),is(:)
       integer, allocatable :: njrc(:),ilp(:)
       real(dp), allocatable :: r(:),dr(:),r2(:)
@@ -97,26 +135,56 @@
       character(len=1) :: ichar,txt
       character(len=3) :: mode
       character(len=10) :: atom
-      
+      character(len=255) :: env
+
+      write(outdir,'(255(" "))')
+      outdir(1:len_trim(output_dir)) = output_dir
+      outdir = adjustl(outdir)
+
+      if (len_trim(log_file) > 0) then
+        logunit=61
+        open(logunit,file=trim(log_file),status='replace')
+        write(logunit,'(2a)') trim(outdir)//adjustl(trim(log_file)),' is logfile.'
+      else
+        !logunit=6 ! stdout (on ifort & gfortran) => no need to open unit
+        logunit=output_unit ! portable stdout but needs Fortran 2003 compliant compiler
+        !write(logunit,*) 'Logging to stdout:'
+      end if
+
+      !Check atom_dir is not empty
+      write(atdir,'(255(" "))')
+      if (len_trim(atom_dir) > 0) then
+        atdir(1:len_trim(atom_dir)) = atom_dir
+      else
+        !Try $ATDIR environment variable
+        call getenv('ATDIR',env)
+        if (len_trim(env) > 0) then
+            atdir(1:len_trim(env)) = env
+        else
+            !Fail-safe is current working directory
+            atdir = '.'
+        end if
+      end if
+      atdir = adjustl(atdir)
+
+      ! make atlib directory if needed
+      call getenv('SystemDrive',env)
+      if (len_trim(env) > 0) then
+        call system('mkdir '//trim(normalize_windows_path(atdir)))
+      else
+        call system('mkdir -p '//trim(atdir))
+      end if
+
+      open(inpunit,file=trim(adjustl(input_file)),status='old')
+
+
       allocate( no(iorbs),nl(iorbs),nm(iorbs),is(iorbs))
       allocate( njrc(4),ilp(iorbs),r(nrmax),dr(nrmax),r2(nrmax))
       allocate( ev(iorbs),occ(iorbs),xnj(iorbs))
       allocate( ek(iorbs),phe(nrmax,iorbs),orb(nrmax,iorbs))
       allocate( vi(nrmax,7),cq(nrmax),vctab(nrmax,0:3))
-      allocate( vold(iorbs),vnew(iorbs), wgts( nwgmx ) ) 
-      
-      !Setup input and log file units
-      open(inpunit,file=trim(input_file),status='old')
-      if (len_trim(log_file) .gt. 0) then
-        logunit=61
-        open(logunit,file=trim(log_file),status='replace')
-      else
-        !logunit=6 ! stdout (on ifort & gfortran) => no need to open unit 
-        logunit=output_unit ! portable stdout but needs Fortran 2003 compliant compiler
-      end if
-      if (len_trim(outdir) .eq. 0) outdir = '.' ! empty string passed to function 
-      outdir = adjustl(outdir)
-      
+      allocate( vold(iorbs),vnew(iorbs), wgts( nwgmx ) )
+
       rel = 0.d0
       nst = 2
       read(inpunit,'(a)') ichar

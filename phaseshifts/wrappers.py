@@ -28,11 +28,11 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-'''
+"""
 **wrappers.py**
 
 Provides wrapper classes for phaseshift calculation backends.
-'''
+"""
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
@@ -54,12 +54,12 @@ from phaseshifts.leed import Converter, CLEED_validator
 from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav
 from phaseshifts.conphas import Conphas
 from phaseshifts.elements import Element, ELEMENTS
-from phaseshifts.model import Atom, Model, MTZ_model
+from phaseshifts.model import Atom, Model, MTZModel
 from phaseshifts.utils import FileUtils, expand_filepath, stringify
 
 
 class PhaseShiftWrapper(object):
-    '''
+    """
     Abstract base wrapper class for generating phase shifts
     
     Attributes
@@ -99,7 +99,7 @@ class PhaseShiftWrapper(object):
     autogen_from_input(kwargs)
         Generates phase shifts from an input file (either `slab`, `bulk` 
         or both).
-    '''
+    """
     __metaclass__ = ABCMeta
     
     FORMATS = [None, 'bvh', 'eeasisss', 'cleed', 'curve']
@@ -115,22 +115,21 @@ class PhaseShiftWrapper(object):
     
     @abstractmethod
     def calculate_phaseshifts(self, model, tmp_dir=None, lmax=None):
-        '''
+        """
         Abstract base method for calculating phase shifts for model.
-        '''
+        """
         pass
     
     @abstractmethod
     def autogen_from_input(self, **kwargs):
-        '''
+        """
         Abstract base method for generating phase shifts from an input file.
-        '''
+        """
         pass
-        
     
     @abstractmethod
     def autogen_atorbs(self, elements=[], output_dir='.'):
-        ''' 
+        """ 
         Abstract base method for generating atomic orbital input for 
         Eric Shirley's hartfock program.
         
@@ -140,7 +139,7 @@ class PhaseShiftWrapper(object):
             Set of elements.
         output_dir : str
             Destination directory for generated files.
-        '''
+        """
         pass
     
     def __init_defaults__(self):
@@ -178,18 +177,18 @@ class PhaseShiftWrapper(object):
     
     @property
     def lmax(self):
-        '''
+        """
         Returns the default maximum angular momentum quantum number used in the 
         phase shift calculations.
-        '''
+        """
         return self._lmax
     
     @lmax.setter
     def lmax(self, lmax):
-        '''
+        """
         Sets the default maximum angular momentum quantum number used in the 
         phase shift calculations.
-        '''
+        """
         try:
             self._lmax = lmax if lmax > 0 and lmax < 19 else self._lmax
         except ValueError:
@@ -197,16 +196,16 @@ class PhaseShiftWrapper(object):
     
     @property
     def format(self):
-        '''
+        """
         Returns the format of the generated output. 
-        '''
+        """
         return self._format or None
     
     @format.setter
     def format(self, fmt):
-        '''
+        """
         Sets the format of the generated output. (default: None)
-        '''
+        """
         try:
             self._format = fmt if fmt in self.FORMATS else None
         except:
@@ -214,16 +213,16 @@ class PhaseShiftWrapper(object):
     
     @property
     def range(self):
-        '''
+        """
         Returns a tuple of the minimum energy, maximum energy and energy step.
-        '''
+        """
         return self._range
     
     @range.setter
     def range(self, energy_range):
-        '''
+        """
         Sets a tuple of the minimum energy, maximum energy and energy step.
-        '''
+        """
         try:
             self._range = tuple([t(s) for t, s in zip((float, float, float), 
                                                       energy_range)])
@@ -232,38 +231,38 @@ class PhaseShiftWrapper(object):
     
     @property
     def min_energy(self):
-        ''' 
+        """ 
         Returns the minimum energy used in the phase shift calculations. 
-        '''
+        """
         return self.range[0]
     
     @property
     def max_energy(self):
-        '''
+        """
         Returns the maximum energy used in the phase shift calculations.
-        '''
+        """
         return self.range[1]
     
     @property
     def energy_step(self):
-        '''
+        """
         Returns the energy step used in the phase shift calculations.
-        '''
+        """
         return self.range[2]
     
     @property
     def tmp_dir(self):
-        ''' 
+        """ 
         Returns the directory that is used to store temporary files. 
-        '''
+        """
         return self._tmp_dir
     
     @tmp_dir.setter
     def tmp_dir(self, tmp_dir):
-        ''' 
+        """ 
         Sets the directory that is used to store temporary files. 
         (default: :py:meth:`tempfile.gettempdir()`) 
-        '''
+        """
         try:
             self._tmp_dir = (tmp_dir if isinstance(tmp_dir, str) 
                              else gettempdir())
@@ -272,34 +271,34 @@ class PhaseShiftWrapper(object):
     
     @property
     def slab(self):
-        ''' 
+        """ 
         Returns the slab model or filename
-        '''
+        """
         return self._slab
     
     @slab.setter
     def slab(self, model):
-        ''' 
+        """ 
         Sets the slab model or filename
-        '''
+        """
         self._set_model(model, "slab")
         
     @property
     def bulk(self):
-        ''' 
+        """ 
         Returns the bulk model or filename
-        '''
+        """
         return self._bulk
     
     @bulk.setter
     def bulk(self, model):
-        ''' 
+        """ 
         Returns the bulk model or filename
-        '''
+        """
         self._set_model(model, "bulk")
         
     def _set_model(self, model, model_type='slab'):
-        ''' 
+        """ 
         Helper method for setting the specified model data member.
         
         Raises
@@ -309,7 +308,7 @@ class PhaseShiftWrapper(object):
             instance.
         ValueError
             If `model_type` is invalid.
-        '''
+        """
         model_types = ['slab', 'bulk']
         if model_type in model_types:
             try:
@@ -330,16 +329,16 @@ class PhaseShiftWrapper(object):
         
     @property
     def model_name(self):
-        '''
+        """
         Returns the name of the model.
-        '''
+        """
         return self._model_name
     
     @model_name.setter
     def model_name(self, model):
-        '''
+        """
         Sets the name of the model.
-        '''
+        """
         try:
             if isinstance(model, str):
                 self._model_name = model
@@ -350,20 +349,20 @@ class PhaseShiftWrapper(object):
         
     @property
     def store_all_files(self):
-        '''
+        """
         Returns boolean value stating whether to store all 
         intermediate generated files during the phase shifts 
         calculation(s). Used primarily for debugging purposes.
-        '''
+        """
         return self._store_all_files
     
     @store_all_files.setter
     def store_all_files(self, store):
-        '''
+        """
         Sets boolean value stating whether to store all 
         intermediate generated files during the phase shifts 
         calculation(s). Used primarily for debugging purposes.
-        '''
+        """
         try:
             self._store_all_files = bool(store)
         except:
@@ -371,9 +370,9 @@ class PhaseShiftWrapper(object):
     
     @staticmethod
     def _copy_phsh_files(phsh_files, store='.', out_format=None):
-        '''
+        """
         Copies a list of phase shift files
-        ''' 
+        """ 
         out_format = None if out_format is None else out_format.lower()
         
         # change file extension for CLEED phase shifts
@@ -395,7 +394,7 @@ class PhaseShiftWrapper(object):
                                  os.path.abspath('.'), verbose=True)
             
     def _add_header(self, phsh_file=None, fmt=None):
-        '''
+        """
         Prepends a header line to the beginning of the phase shift file. 
         It assumes that the number of lines in the file are the number of phase 
         shifts (excluding any trailing blank lines).
@@ -425,7 +424,7 @@ class PhaseShiftWrapper(object):
         If `neng` and `lmax` cannot be found in the object dictionary then 
         a best estimate will be made from the input file given.
         
-        '''
+        """
         if str(self.format).lower() == 'cleed': 
             # add formatted header for Held CLEED package
             header = ''
@@ -479,10 +478,10 @@ class PhaseShiftWrapper(object):
         return ""  # zero length string
     
     def _get_phaseshift_input(self, line):
-        '''
+        """
         Parses a Fortran formatted string containing (multiple) decimal numbers
         and returns a Python-friendly line string to be processed further.
-        '''
+        """
         regex = '[-+0-9]{1,5}\.\d{1,6}'  # basic decimal number
         decimal = compile('({})'.format(regex))
         decimal_and_exponent = compile('({}[eED][+-\d]\d{0,6})'.format(regex))
@@ -494,14 +493,14 @@ class PhaseShiftWrapper(object):
     
 
 class EEASiSSSWrapper(PhaseShiftWrapper):
-    '''
+    """
     Wrapper class to easily generate phase shifts using EEASiSSS backend
-    '''
+    """
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
     def autogen_atorbs(self, elements=[], output_dir='.'):
-        ''' 
+        """ 
         Generates chgden input files for a set of elements and calculates their 
         atomic charge densities using the EEASiSS variant of Eric Shirley's 
         hartfock program.
@@ -517,7 +516,7 @@ class EEASiSSSWrapper(PhaseShiftWrapper):
         -------
         dict   
             Dictionary of atorb filepaths for all elements
-        '''
+        """
         EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
         atomic_dict = {}
         for symbol in [element.symbol for element in elements]:
@@ -527,7 +526,7 @@ class EEASiSSSWrapper(PhaseShiftWrapper):
     @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None,
                            model_name=None, lmax=10, verbose=False, **kwargs):
-        '''
+        """
         Generate phase shifts from a slab/cluster input file.
 
         Parameters
@@ -553,7 +552,7 @@ class EEASiSSSWrapper(PhaseShiftWrapper):
         -------
         output_files : list of str
            A list of phase shift output filenames
-        '''
+        """
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         
         # check formatting of arguments
@@ -565,46 +564,42 @@ class EEASiSSSWrapper(PhaseShiftWrapper):
         tmp_dir = tmp_dir or tempfile.gettempdir() 
 
         # Load bulk model and calculate MTZ
-        bulk_mtz = model.MTZ_model(dummycell, atoms=[])
+        bulk_mtz = model.MTZModel(dummycell, atoms=[])
         if CLEED_validator.is_CLEED_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(expand_filepath(bulk_file))[0]
-            bulk_file = os.path.join(tmp_dir,
-                            os.path.splitext(os.path.basename(full_fname))[0]
-                            + '_bulk.i')
+            bulk_root = os.path.splitext(os.path.basename(full_fname))[0]
+            bulk_file = os.path.join(tmp_dir, bulk_root + '_bulk.i')
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
 
         # Load slab model and calculate MTZ
-        slab_mtz = model.MTZ_model(dummycell, atoms=[])
+        slab_mtz = model.MTZModel(dummycell, atoms=[])
         if CLEED_validator.is_CLEED_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(expand_filepath(slab_file))[0]
-            slab_file = os.path.join(tmp_dir,
-                            os.path.splitext(os.path.basename(full_fname))[0]
-                            + '_slab.i')
+            slab_root = os.path.splitext(os.path.basename(full_fname))[0]
+            slab_file = os.path.join(tmp_dir, slab_root + '_slab.i')
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
 
         # generate atomic charge densities for each element in bulk model
-        if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model() instance")
+        if not isinstance(bulk_mtz, model.MTZModel):
+            raise AttributeError("bulk_mtz is not an MTZModel() instance")
 
         # get unique elements in bulk and slab
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = EEASiSSSWrapper.autogen_atorbs(
-                                elements=set(bulk_elements + slab_elements),
-                                output_dir=tmp_dir)  
+        all_elements = set(bulk_elements + slab_elements)
+        atomic_dict = EEASiSSSWrapper.autogen_atorbs(elements=all_elements,
+                                                     output_dir=tmp_dir)  
 
         if verbose:
             print("\nModel")
             print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
             print("slab atoms: %s" % [s for s in slab_mtz.atoms])
-
-        
 
         phsh_files = EEASiSSSWrapper.autogen_from_input(inputX, 
                                                         tmp_dir=tmp_dir, 
@@ -630,15 +625,15 @@ class EEASiSSSWrapper(PhaseShiftWrapper):
 
 
 class BVHWrapper(PhaseShiftWrapper):
-    '''
+    """
     Wrapper class to easily generate phase shifts 
     using the Barbieri - Van Hove backend.
-    '''
+    """
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
     def _adjust_range(self, energy_range, mufftin_file):
-        '''
+        """
         Adjusts the minimum energy, maximum energy and energy step of a 
         mufftin.d file generated using the Barbieri/Van Hove package.
         
@@ -652,8 +647,9 @@ class BVHWrapper(PhaseShiftWrapper):
         Returns
         -------
         tuple 
-            Tuple containing :math:`E_i`, :math:`E_f` and :math:`\delta E` used.
-        '''
+            Tuple containing :math:`E_i`, :math:`E_f` and :math:`\delta E` 
+            used.
+        """
         try:
             # get values
             with open(mufftin_file, 'r') as f:
@@ -695,9 +691,9 @@ class BVHWrapper(PhaseShiftWrapper):
     def _phsh_cav(self, mufftin_filepath, phasout_filepath, 
                   dataph_filepath, phasout_files, phaseshifts, lmax_dict,
                   zph_filepath='zph.o', out_format=None, **kwargs):
-        '''
+        """
         Perform Cavendish phase shift calculation 
-        '''
+        """
         # calculate phase shifts
         phsh_cav(mufftin_filepath, phasout_filepath,
                  dataph_filepath, zph_filepath)
@@ -729,9 +725,9 @@ class BVHWrapper(PhaseShiftWrapper):
                   dataph_filepath, phasout_files, energy_range, 
                   fmt=None, phaseshifts=[],
                   **kwargs):
-        '''
+        """
         Perform William's phase shift calculation 
-        '''
+        """
         # calculate phase shifts
         phsh_wil(mufftin_filepath, phasout_filepath,
                  dataph_filepath, filepath + '_zph.o')
@@ -740,17 +736,26 @@ class BVHWrapper(PhaseShiftWrapper):
         phasout_files = Conphas.split_phasout(filename=phasout_filepath,
                                               output_filenames=phasout_files)
         
-    def _phsh_rel(self, filepath, mufftin_filepath, phasout_filepath, 
-                  dataph_filepath, phasout_files, energy_range, fmt=None, 
-                  phaseshifts=[], lmax_dict={}, tmp_dir=gettempdir(), **kwargs):
-        '''
+    def _phsh_rel(self, 
+                  filepath, 
+                  mufftin_filepath, 
+                  phasout_filepath, 
+                  dataph_filepath, 
+                  phasout_files, 
+                  energy_range, 
+                  fmt=None, 
+                  phaseshifts=[], 
+                  lmax_dict={}, 
+                  tmp_dir=gettempdir(), 
+                  **kwargs):
+        """
         Perform relativistic phase shift calculation 
-        '''
+        """
         # calculate phase shifts
-        #print("Current time " + time.strftime("%X"))
+        # print("Current time " + time.strftime("%X"))
         phsh_rel(mufftin_filepath, phasout_filepath,
                  dataph_filepath, filepath + '_inpdat.txt')
-        #print("Current time " + time.strftime("%X"))
+        # print("Current time " + time.strftime("%X"))
 
         # split phasout
         phasout_files = Conphas.split_phasout(filename=phasout_filepath,
@@ -776,7 +781,7 @@ class BVHWrapper(PhaseShiftWrapper):
         return phsh_files or []
 
     def autogen_atorbs(self, elements=[], output_dir='.'):
-        ''' 
+        """ 
         Generates atomic orbital input files for a set of elements and 
         calculates their atomic charge densities according to the Barbieri /
         Van Hove variant of Eric Shirley's hartfock program.
@@ -790,15 +795,15 @@ class BVHWrapper(PhaseShiftWrapper):
         -------
         dict
             Dictionary of atorb filepaths for all elements.
-        '''
+        """
         atomic_dict = {}
         for elem in [element.symbol if isinstance(element, Element) 
                      else ELEMENTS[element] for element in elements]:
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print('\nCalculating atomic charge density for %s...' % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                                        element=elem, output_dir=output_dir)
+                chgden = atorb.Atorb.calculate_Q_density
+                atomic_dict[elem] = chgden(element=elem, output_dir=output_dir)
             else:
                 atomic_dict[elem] = at_file
         return atomic_dict
@@ -806,7 +811,7 @@ class BVHWrapper(PhaseShiftWrapper):
     @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None,
                            model_name=None, verbose=False, **kwargs):
-        '''
+        """
         Generate phase shifts from a slab/cluster input file.
 
         Parameters
@@ -830,7 +835,7 @@ class BVHWrapper(PhaseShiftWrapper):
         -------
         output_files : list(str)
            A list of phase shift output filenames
-        '''
+        """
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         
         model_name = model_name or 'atomic'
@@ -846,32 +851,30 @@ class BVHWrapper(PhaseShiftWrapper):
             tmp_dir = tempfile.gettempdir()
 
         # Load bulk model and calculate MTZ
-        bulk_mtz = model.MTZ_model(dummycell, atoms=[])
+        bulk_mtz = model.MTZModel(dummycell, atoms=[])
         if CLEED_validator.is_CLEED_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(expand_filepath(bulk_file))[0]
-            bulk_file = os.path.join(tmp_dir,
-                            os.path.splitext(os.path.basename(full_fname))[0]
-                            + '_bulk.i')
+            bulk_root = os.path.splitext(os.path.basename(full_fname))[0]
+            bulk_file = os.path.join(tmp_dir, bulk_root + '_bulk.i')
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
 
         # Load slab model and calculate MTZ
-        slab_mtz = model.MTZ_model(dummycell, atoms=[])
+        slab_mtz = model.MTZModel(dummycell, atoms=[])
         if CLEED_validator.is_CLEED_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(expand_filepath(slab_file))[0]
-            slab_file = os.path.join(tmp_dir,
-                            os.path.splitext(os.path.basename(full_fname))[0]
-                            + '_slab.i')
+            slab_root = os.path.splitext(os.path.basename(full_fname))[0]
+            slab_file = os.path.join(tmp_dir, slab_root + '_slab.i')
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
 
         # generate atomic charge densities for each element in bulk model
-        if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model")
+        if not isinstance(bulk_mtz, model.MTZModel):
+            raise AttributeError("bulk_mtz is not an MTZModel")
 
         # get unique elements in bulk and slab
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
@@ -886,9 +889,11 @@ class BVHWrapper(PhaseShiftWrapper):
 
         # create atomic.i input file from mtz model
         bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
+        model_root = os.path.join(tmp_dir, bulk_model_name) 
         bulk_atomic_file = bulk_mtz.gen_atomic(input_files=bulk_at_files,
-                                            output_file=os.path.join(tmp_dir,
-                                                bulk_model_name + '_bulk.i'))
+                                               output_file=(model_root + 
+                                                            '_bulk.i')
+                                               )
 
         if verbose:
             print("\nModel")
@@ -906,14 +911,14 @@ class BVHWrapper(PhaseShiftWrapper):
             print("\tmufftin file: '%s'" 
                   % os.path.join(tmp_dir, bulk_model_name + '_mufftin.d'))
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
-                                    cluster_file=bulk_file,
-                                    atomic_file=bulk_atomic_file,
-                                    slab=False,
-                                    output_file=os.path.join(tmp_dir,
-                                            bulk_model_name + '.bmtz'),
-                                    mufftin_file=os.path.join(tmp_dir,
-                                            bulk_model_name + '_mufftin.d'))
+        bulk_mtz_file = bulk_mtz.calculate_MTZ(cluster_file=bulk_file,
+                                               atomic_file=bulk_atomic_file,
+                                               slab=False,
+                                               output_file=(model_root + 
+                                                            '.bmtz'),
+                                               mufftin_file=(model_root + 
+                                                             '_mufftin.d')
+                                               )
         print('Bulk MTZ = %f' % bulk_mtz.mtz)
 
         # prepare at files for appending into atomic file
@@ -922,10 +927,11 @@ class BVHWrapper(PhaseShiftWrapper):
 
         # create atomic.i input file from mtz model
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
+        model_root = os.path.join(tmp_dir, slab_model_name) 
         slab_atomic_file = slab_mtz.gen_atomic(input_files=slab_at_files,
-                                               output_file=os.path.join(
-                                                 tmp_dir,
-                                                 slab_model_name + '_slab.i'))
+                                               output_file=(model_root + 
+                                                            '_slab.i')
+                                               )
 
         # calculate muffin-tin potential for slab model
         mufftin_filepath = os.path.join(tmp_dir,
@@ -942,12 +948,11 @@ class BVHWrapper(PhaseShiftWrapper):
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
         slab_mtz_file = slab_mtz.calculate_MTZ(cluster_file=slab_file,
-                                output_file=os.path.join(tmp_dir,
-                                                         slab_model_name + 
-                                                         '.mtz'),
-                                atomic_file=slab_atomic_file,
-                                mufftin_file=mufftin_filepath,
-                                mtz_string=str(bulk_mtz.mtz), slab=True)
+                                               output_file=model_root + '.mtz',
+                                               atomic_file=slab_atomic_file,
+                                               mufftin_file=mufftin_filepath,
+                                               mtz_string=str(bulk_mtz.mtz), 
+                                               slab=True)
 
         # create raw phase shift files
         print("\nGenerating phase shifts from '%s'..."
@@ -974,7 +979,7 @@ class BVHWrapper(PhaseShiftWrapper):
                                lmax=None,
                                energy_range=None,
                                mufftin_filepath=None):
-        '''
+        """
         Calculates phase shifts for model.
         
         Parameters
@@ -986,9 +991,9 @@ class BVHWrapper(PhaseShiftWrapper):
             
         Notes
         -----
-        If `lmax` or `tmp_dir` is :py:obj:`None` then the class instance data member 
-        value is used instead. 
-        '''
+        If `lmax` or `tmp_dir` is :py:obj:`None` then the class instance 
+        data member value is used instead. 
+        """
         filepath = os.path.join(tmp_dir, model.name)
         
         # check arguments
@@ -1026,7 +1031,7 @@ class BVHWrapper(PhaseShiftWrapper):
                            )
             
     def _select_method(self, nform):
-        '''
+        """
         Returns the method to invoke for the phase shift calculations
         depending on `nform`.
         
@@ -1034,16 +1039,14 @@ class BVHWrapper(PhaseShiftWrapper):
         ------
         ValueError
             If `nform` is not one of: {nform_dict}
-        '''.format(stringify(nform_dict=MTZ_model.NFORMS))
+        """.format(stringify(nform_dict=MTZModel.nforms))
         nform = str(nform)[:3]
-        if MTZ_model.NFORMS[nform] == MTZ_model.CAV:
+        if MTZModel.nforms[nform] == MTZModel.cav:
             return self._phsh_cav
-        elif MTZ_model.NFORMS[nform] == MTZ_model.WIL:
+        elif MTZModel.nforms[nform] == MTZModel.wil:
             return self._phsh_wil
-        elif MTZ_model.NFORMS[nform] == MTZ_model.REL:
+        elif MTZModel.nforms[nform] == MTZModel.rel:
             return self._phsh_rel
         else:
-            raise ValueError('Invalid MTZ_model nform (0-2). '
-                             'Value should be one of: "' + 
-                             '" "'.join(set([str(key) for key in 
-                                             MTZ_model.NFORMS])) + '"')
+            raise ValueError('Invalid MTZModel nform (0-2). Value should be '
+                             'one of: {}'.format(stringify(MTZModel.nforms)))

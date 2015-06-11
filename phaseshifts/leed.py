@@ -28,14 +28,14 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-'''
+"""
 Provides CLEED validator and Converter classes.
 
 The :py:class`CLEED_validator()` class provides a method for checking 
 the input files for errors, whereas the :py:meth:`Converter.import_CLEED()`
-method allows importing CLEED input files as a :py:class:`MTZ_model` instance. 
+method allows importing CLEED input files as a :py:class:`MTZModel` instance. 
 
-'''
+"""
 
 import os
 import sys
@@ -53,13 +53,13 @@ from glob import glob
 
 
 class CLEED_validator(object):
-    '''
+    """
     Class for validation of CLEED input files
-    '''
+    """
     def __init__(self):
-        '''
+        """
         Constructor
-        '''
+        """
         pass
     
     @staticmethod
@@ -97,7 +97,7 @@ class CLEED_validator(object):
             return True
     
     def validate(self, filename, aoi=False):
-        '''
+        """
         Checks CLEED input file for errors
         
         Parameters
@@ -107,7 +107,7 @@ class CLEED_validator(object):
         aoi : bool
             Check for angle of incidence parameters
 
-        '''
+        """
         filename = glob(expand_filepath(filename))[0]
         
         basename, ext = os.path.splitext(filename)
@@ -130,7 +130,7 @@ class CLEED_validator(object):
                                  if not line.lstrip().startswith('#')])
                 # check for control parameters
                 if ('ef=' in lines and 'ti=' in lines and 
-                    'id=' in lines and 'wt=' in lines):  
+                        'id=' in lines and 'wt=' in lines):  
                     # probably control file
                     filetype = 'control'
                 elif ('pb:' in lines and ('ei:' in lines or 'ef:' in lines
@@ -212,19 +212,19 @@ class CLEED_validator(object):
 
 
 class Converter(object):
-    '''
+    """
     Convert different input into phaseshift compatible input
     
-    '''
+    """
     def __init__(self):
-        '''
+        """
         Constructor
-        '''
+        """
         pass
     
     @staticmethod
     def import_CLEED(filename, **kwargs):
-        '''
+        """
         Imports CLEED input file and converts model to muffin-tin input.
          
         It assumes the following:
@@ -235,9 +235,9 @@ class Converter(object):
           * the unitcell is converted from cartezian to fractional coordinates
           * atom sites are converted from Angstrom to Bohr units
           * additional info from the phase shift filename is provided by 
-            splitting the '_' chars:
-              1. First string segment is element or symbol, e.g. Ni
-              2. Second string segment is the oxidation (valence), e.g. +2
+          splitting the '_' chars:
+            1. First string segment is element or symbol, e.g. Ni
+            2. Second string segment is the oxidation (valence), e.g. +2
           * lines with :code:`rm:` provide the radii dictionary of the 
             individual phase shifts, whereas lines starting with 
             :code:`lmax:` provide the lmax dictionary for individual phase 
@@ -272,7 +272,8 @@ class Converter(object):
             
         Returns
         -------
-        phaseshifts.model.MTZ_model
+        muffpot_model : phaseshifts.model.MTZModel
+            Muffin-tin potential model for phase shift calculations.
         
         Raises
         ------
@@ -281,7 +282,7 @@ class Converter(object):
         ValueError
             If input contains bad formatting.
 
-        '''
+        """
         
         try:
             verbose = kwargs['verbose']
@@ -631,11 +632,11 @@ class Converter(object):
         # create unitcell
         unitcell = model.Unitcell(a, c, [a1, a2, a3])
 
-        mtz_model = model.MTZ_model(unitcell, atoms)        
-        mtz_model.name = title
+        muffpot_model = model.MTZModel(unitcell, atoms)        
+        muffpot_model.name = title
         
         if alpha:
-            mtz_model.set_exchange(alpha)
+            muffpot_model.exchange = alpha
         
         # read additional phaseshift statement lines 'phs:'
         phs_lines = [line.lower().lstrip("phs:").rstrip("#") 
@@ -644,25 +645,25 @@ class Converter(object):
         for line in phs_lines:
             strings = line.split()
             phase_shift = strings[0]
-            phs_atoms = [atom.tag for atom in mtz_model.atoms
+            phs_atoms = [atom.tag for atom in muffpot_model.atoms
                          if atom.tag == phase_shift] 
             if phase_shift not in phs_atoms:
                 for i in range(len(strings)):
                     try:
                         if strings[i] == 'c':
                             c = strings[i] / float(a) / 0.529
-                            mtz_model.unitcell.c = c
+                            muffpot_model.unitcell.c = c
                         
                         elif strings[i] == 'nh':
-                            mtz_model.nh = strings[i + 1]
+                            muffpot_model.nh = strings[i + 1]
                         
                         elif (strings[i] == 'exc' 
                               or strings[i] == 'exchange'):
-                            mtz_model.exchange = strings[i + 1]
+                            muffpot_model.exchange = strings[i + 1]
                         
                         elif (strings[i] == 'nf' or 
                               strings[i] == 'nform'):
-                            mtz_model.nform = strings[i + 1]
+                            muffpot_model.nform = strings[i + 1]
                             
                     except IndexError:
                         break
@@ -684,18 +685,18 @@ class Converter(object):
                     except IndexError:
                         break
                         
-        return mtz_model  # converted muffin-tin potential model
+        return muffpot_model  # converted muffin-tin potential model
     
 
 class CSearch(object):
-    '''class for csearch related data exchange'''
+    """class for csearch related data exchange"""
     
     def __init__(self, model_name, leed_command=None):
         self.set_Model(model_name)
         self._getResults()
     
     def setModel(self, name):
-        '''sets the model name'''
+        """sets the model name"""
         self.model = str(name)
     
     def getIteration(self, iteration):

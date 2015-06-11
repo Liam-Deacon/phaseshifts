@@ -137,7 +137,7 @@ class CBuilder(Builder):
         
         
 class FortranBuilder(Builder):
-    ''' 
+    """ 
     Class for building Fortran shared libraries and executables using NumPy.
     
     Notes
@@ -150,7 +150,7 @@ class FortranBuilder(Builder):
     This class should only be used for experts as there are no/limited checks 
     for the integrity of the initialisation arguments.
     
-    '''
+    """
     def __init__(self, name, sources,
                  include_dirs=None,
                  define_macros=None,
@@ -190,16 +190,16 @@ class FortranBuilder(Builder):
         self.fcompiler._is_customised = True
         
     def _clean(self, build_dir='.'):
-        '''
+        """
         Cleans up compiled objects in the specified build directory
-        '''
+        """
         Builder._clean(self, build_dir=build_dir)
         [os.remove(f) for f in glob(os.path.join(build_dir, '*.mod'))]
     
     def _compile_sources(self):
-        ''' 
+        """ 
         Compiles source files and returns list of compiled object files 
-        '''
+        """
         print("Compiling sources: {srcs}...".format(srcs=self.sources))
         cwd = os.path.abspath(os.path.curdir) 
         sources = [src if os.path.isabs(src) 
@@ -218,10 +218,10 @@ class FortranBuilder(Builder):
         return objects
         
     def make_lib(self, output_dir='.'):
-        ''' 
+        """ 
         Creates a FORTRAN shared library for use with ctypes and places it 
         in output_dir. 
-        '''
+        """
         objects = self._compile_sources() 
         linker_flags = set(self.extra_link_args + 
                            self.fcompiler.get_flags_linker_so())
@@ -242,9 +242,9 @@ class FortranBuilder(Builder):
                             target_lang=self.language)
         
     def make_exe(self, output_dir='.'):
-        ''' 
+        """ 
         Creates an executable and places it into output_dir 
-        '''
+        """
         objects = self._compile_sources()
         exe_flags = set(self.extra_link_args + 
                         self.fcompiler.get_flags_linker_exe())
