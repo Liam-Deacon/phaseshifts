@@ -5,7 +5,7 @@ Created on 31 Jan 2014
 
 @contact: liam.m.deacon@gmail.com
 
-@copyright: Copyright 2014 Liam Deacon
+@copyright: Copyright 2014-2016 Liam Deacon
 
 @license: MIT License 
 
@@ -27,7 +27,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
 '''
-
+from __future__ import (absolute_import, division, 
+                        print_function, with_statement, unicode_literals)
 from qtsix import uic
 from qtsix.QtWidgets import QDialog, QMessageBox
 import os
