@@ -3,9 +3,9 @@ Created on 10 Feb 2014
 
 @author: Liam Deacon
 
-@contact: liam.deacon@diamond.ac.uk
+@contact: liam.m.deacon@gmail.com
 
-@copyright: Copyright 2014 Liam Deacon
+@copyright: Copyright 2014-2016 Liam Deacon
 
 @license: MIT License 
 
@@ -27,11 +27,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
 '''
-from PyQt4 import QtGui, uic
+from __future__ import (absolute_import, division, 
+                        print_function, with_statement, unicode_literals)
+from qtsix import uic
+from qtsix.QtWidgets import (QAbstractButton, QDialog)
+import os
 import res_rc
 
 
-class ImportDialog(QtGui.QDialog):
+class ImportDialog(QDialog):
     '''
     Dialog class for updating sequences 
     '''
@@ -42,7 +46,9 @@ class ImportDialog(QtGui.QDialog):
         self.action = None
         
         # dynamically load ui
-        self.ui = uic.loadUi("gui/ImportDialog.ui", self)
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 
+                                            "ImportDialog.ui"))
+        self.ui = uic.loadUi(path, self)
         self.initUi()
         
         if isinstance(model, str):
@@ -54,8 +60,7 @@ class ImportDialog(QtGui.QDialog):
             
     def initUi(self):
         # Setup slots and signals
-        self.ui.buttonBox.clicked[
-                        QtGui.QAbstractButton].connect(self.buttonPress)
+        self.ui.buttonBox.clicked[QAbstractButton].connect(self.buttonPress)
     
     def buttonPress(self, button):
         '''Deal with user interaction of button group'''
