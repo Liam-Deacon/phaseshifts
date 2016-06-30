@@ -953,7 +953,7 @@ static char __pyx_k_92[] = "\n**phsh.py** - quickly generate phase shifts\n\nphs
 static char __pyx_k_93[] = "0.1.1";
 static char __pyx_k_94[] = "2013-11-15";
 static char __pyx_k_95[] = "2014-02-23";
-static char __pyx_k_96[] = "liam.deacon@diamond.ac.uk";
+static char __pyx_k_96[] = "liam.m.deacon@gmail.com";
 static char __pyx_k_99[] = "C:\\Users\\kss07698\\Dropbox\\Programming\\Python\\LEED-PyV\\phaseshifts\\cython\\phsh.pyx";
 static char __pyx_k__e[] = "e";
 static char __pyx_k__p[] = "p";
@@ -8554,7 +8554,7 @@ PyMODINIT_FUNC PyInit_phsh(void)
  * __version__ = '0.1.1'
  * __date__ = '2013-11-15'             # <<<<<<<<<<<<<<
  * __updated__ = '2014-02-23'
- * __contact__ = 'liam.deacon@diamond.ac.uk'
+ * __contact__ = 'liam.m.deacon@gmail.com'
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s____date__, ((PyObject *)__pyx_kp_u_94)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 98; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
@@ -8562,7 +8562,7 @@ PyMODINIT_FUNC PyInit_phsh(void)
  * __version__ = '0.1.1'
  * __date__ = '2013-11-15'
  * __updated__ = '2014-02-23'             # <<<<<<<<<<<<<<
- * __contact__ = 'liam.deacon@diamond.ac.uk'
+ * __contact__ = 'liam.m.deacon@gmail.com'
  * 
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s____updated__, ((PyObject *)__pyx_kp_u_95)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -8570,14 +8570,14 @@ PyMODINIT_FUNC PyInit_phsh(void)
   /* "phsh.pyx":100
  * __date__ = '2013-11-15'
  * __updated__ = '2014-02-23'
- * __contact__ = 'liam.deacon@diamond.ac.uk'             # <<<<<<<<<<<<<<
+ * __contact__ = 'liam.m.deacon@gmail.com'             # <<<<<<<<<<<<<<
  * 
  * DEBUG = 0
  */
   if (PyDict_SetItem(__pyx_d, __pyx_n_s____contact__, ((PyObject *)__pyx_kp_u_96)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
   /* "phsh.pyx":102
- * __contact__ = 'liam.deacon@diamond.ac.uk'
+ * __contact__ = 'liam.m.deacon@gmail.com'
  * 
  * DEBUG = 0             # <<<<<<<<<<<<<<
  * TESTRUN = 0

@@ -29,7 +29,7 @@ of the phaseshifts package. It can then be used from the command line, e.g.
         Licensed under the MIT license (see LICENSE file for details)
 
         Please send your feedback, including bugs notifications
-        and fixes, to: liam.deacon@diamond.ac.uk
+        and fixes, to: liam.m.deacon@gmail.com
 
       usage:-
 

@@ -5,7 +5,7 @@ Created on 4 Feb 2014
 
 @author: Liam Deacon
 
-@contact: liam.deacon@diamond.ac.uk
+@contact: liam.m.deacon@gmail.com
 
 @copyright: Copyright 2014 Liam Deacon
 

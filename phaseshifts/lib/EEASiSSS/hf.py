@@ -4,7 +4,7 @@
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.m.deacon@gmail.com                                           #
 #                                                                            #
 # Created on 26 Apr 2015                                                     #
 #                                                                            #
@@ -84,7 +84,7 @@ from phaseshifts.lib.libhartfock import hartfock
 
 __date__ = '2015-04-26'
 __updated__ = '2015-04-26'
-__contact__ = 'liam.deacon@diamond.ac.uk'
+__contact__ = 'liam.m.deacon@gmail.com'
 
 DEBUG = 0
 TESTRUN = 0

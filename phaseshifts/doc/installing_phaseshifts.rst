@@ -75,7 +75,7 @@ Linux Users
 Installation on Linux hosts is not as rigorously tested compared with Windows, 
 therefore the following is meant as a guide only. If you experience any 
 difficulties then please don't hesitate to contact me using 
-liam.deacon@diamond.ac.uk
+liam.m.deacon@gmail.com
 
 .. note:: You may need to specify an explicit version of ``python`` when trying 
           the commands below (e.g. ``python2.7``)

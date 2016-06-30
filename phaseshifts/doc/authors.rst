@@ -14,4 +14,4 @@ Get Involved
 ============
 
 If you would like to get involved in the phaseshifts project then
-please email liam.deacon@diamond.ac.uk.
+please email liam.m.deacon@gmail.com.

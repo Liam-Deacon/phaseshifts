@@ -3,9 +3,9 @@
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.m.deacon@gmail.com                                           #
 #                                                                            #
-# Copyright: Copyright (C) 2013-2015 Liam Deacon                             #
+# Copyright: Copyright (C) 2013-2016 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -63,7 +63,7 @@ __all__ = []
 __version__ = '0.1.6-dev'
 __date__ = '2013-11-15'
 __updated__ = '2015-04-17'
-__contact__ = 'liam.deacon@diamond.ac.uk'
+__contact__ = 'liam.m.deacon@gmail.com'
 
 DEBUG = 0
 TESTRUN = 0
@@ -121,7 +121,7 @@ def main(argv=None):
     program_license = """%s
 
       Created by Liam Deacon on %s.
-      Copyright 2013-2015 Liam Deacon. All rights reserved.
+      Copyright 2013-2016 Liam Deacon. All rights reserved.
 
       Licensed under the MIT license (see LICENSE file for details)
 

@@ -8,7 +8,7 @@ __author__ = 'Liam Deacon'
 
 dictionary = {}
 
-__author_email__ = 'liam.deacon@diamond.ac.uk'
+__author_email__ = 'liam.m.deacon@gmail.com'
 
 try:
     filename = join(dirname(__file__), 'LICENSE.txt')

@@ -5,7 +5,7 @@ Created on 26 Feb 2014
 
 @author: Liam Deacon
 
-@contact: liam.deacon@diamond.ac.uk
+@contact: liam.m.deacon@gmail.com
 
 @copyright: 2014 Liam Deacon
 
@@ -22,7 +22,7 @@ from argparse import RawDescriptionHelpFormatter
 __version__ = 0.1
 __date__ = '2014-02-23'
 __updated__ = '2014-02-23'
-__contact__ = 'liam.deacon@diamond.ac.uk'
+__contact__ = 'liam.m.deacon@gmail.com'
 
 class Debye_Waller(object):
     '''
@@ -71,7 +71,7 @@ def main(argv=None):
     program_license = '''%s
 
       Created by Liam Deacon on %s.
-      Copyright 2013-2014 Liam Deacon. All rights reserved.
+      Copyright 2013-2016 Liam Deacon. All rights reserved.
 
       Licensed under the MIT license (see LICENSE file for details)
 

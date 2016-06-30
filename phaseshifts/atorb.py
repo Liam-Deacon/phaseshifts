@@ -3,9 +3,9 @@
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.m.deacon@gmail.com                                           #
 #                                                                            #
-# Copyright: Copyright (C) 2013-2014 Liam Deacon                             #
+# Copyright: Copyright (C) 2013-2016 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #

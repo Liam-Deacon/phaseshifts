@@ -3,7 +3,7 @@
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.m.deacon@gmail.com                                           #
 #                                                                            #
 # Copyright: Copyright (C) 2013-2015 Liam Deacon                             #
 #                                                                            #
@@ -304,7 +304,7 @@ dist = setup(name='phaseshifts',
              packages=find_packages(),
              version='0.1.6-dev',
              author='Liam Deacon',
-             author_email='liam.deacon@diamond.ac.uk',
+             author_email='liam.m.deacon@gmail.com',
              license='MIT License',
              url='https://pypi.python.org/pypi/phaseshifts',
              description='Python package for calculating phase shifts '

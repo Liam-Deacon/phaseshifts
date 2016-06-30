@@ -170,7 +170,7 @@ Linux Users
 Installation on Linux hosts is not as rigorously tested compared with Windows, 
 therefore the following is meant as a guide only. If you experience any 
 difficulties then please don't hesitate to contact me using 
-liam.deacon@diamond.ac.uk
+liam.m.deacon@gmail.com
 
 .. note:: You may need to specify an explicit version of ``python`` when trying 
           the commands below (e.g. ``python2.7``)
@@ -321,7 +321,7 @@ Contact
 
 This package is developed/maintained in my spare time so any bug reports, 
 patches, or other feedback are very desirable and should be sent to: 
-liam.deacon@diamond.ac.uk
+liam.m.deacon@gmail.com
 
 The project is in the early developmental stages and so anyone who wishes to get 
 involved are most welcome (simply contact me using the email above).
@@ -350,4 +350,4 @@ See ``TODO.rst`` for more information.
 Author list
 ===========
 
-  - `Liam Deacon <liam.deacon@diamond.ac.uk>`_ - *current maintainer*
+  - `Liam Deacon <liam.m.deacon@gmail.com>`_ - *current maintainer*

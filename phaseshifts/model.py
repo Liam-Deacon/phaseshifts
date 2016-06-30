@@ -3,9 +3,9 @@
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
-# Contact: liam.deacon@diamond.ac.uk                                         #
+# Contact: liam.m.deacon@gmail.com                                           #
 #                                                                            #
-# Copyright: Copyright (C) 2013-2014 Liam Deacon                             #
+# Copyright: Copyright (C) 2013-2016 Liam Deacon                             #
 #                                                                            #
 # License: MIT License                                                       #
 #                                                                            #
@@ -694,7 +694,7 @@ class Model(object):
                 atom.coordinates = position or atom.coordinates
                 self.atoms.append(atom)
         else:
-            self.atoms.append(Atom(element, coordinates=position, kwargs))
+            self.atoms.append(Atom(element, coordinates=position, **kwargs))
 
     def copy(self):
         return deepcopy(self)
