@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on 31 Jan 2014
 
@@ -30,6 +31,7 @@ SOFTWARE.
 from __future__ import (absolute_import, division, 
                         print_function, with_statement, unicode_literals)
 import os
+import re
 import sys
 from time import gmtime, strftime
 from qtsix import QtGui, uic
@@ -257,7 +259,7 @@ class SettingsDialog(QDialog):
                                 QDesktopServices.DataLocation)), 
                                '.phaseshifts', 'config.ini')
         filepath = str(QFileDialog.getSaveFileName(self, 
-                                    'Save ini file...', default))
+                                    'Save ini file...', default)[0])
         
         if filepath == '':
             return  # user abort
@@ -265,10 +267,11 @@ class SettingsDialog(QDialog):
         # try to create parent directory if it doesn't exist
         if not os.path.exists(os.path.dirname(filepath)):
             try:
-                os.makedirs(filepath)
+                os.makedirs(os.path.dirname(filepath))
             except IOError:
                 QMessageBox.critical(self, 'Error!', 
-                            "Unable to create directory '%s'" % filepath)
+                            "Unable to create directory '%s'" 
+                            % os.path.dirname(filepath))
                 return
             
         config.add_section('GENERAL')
