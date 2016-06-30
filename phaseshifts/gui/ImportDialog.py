@@ -32,7 +32,16 @@ from __future__ import (absolute_import, division,
 from qtsix import uic
 from qtsix.QtWidgets import (QAbstractButton, QDialog)
 import os
-import res_rc
+
+try:
+    import res_rc
+except ImportError:
+    try:
+        import sys
+        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+        import res_rc
+    except ImportError:
+        import phaseshifts.gui.res_rc as res_rc   
 
 
 class ImportDialog(QDialog):

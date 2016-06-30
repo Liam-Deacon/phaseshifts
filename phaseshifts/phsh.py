@@ -131,6 +131,10 @@ def main(argv=None):
     usage:-
     """ % (program_shortdesc, str(__date__), __contact__)
 
+    if '--gui' in argv and '-i' not in argv:
+        argv.append('-i')
+        argv.append('.')
+
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, 
@@ -187,6 +191,8 @@ def main(argv=None):
                             "backend. [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', 
                             version=program_version_message)
+        parser.add_argument("--gui", dest="gui", action="store_true",
+                            help="Starts GUI frontend")
 
         # Process arguments
         args, unknown = parser.parse_known_args()
@@ -245,6 +251,11 @@ def main(argv=None):
         # only produce atomic orbital input files for Eric Shirley's hartfock
         sys.stderr.write("option '-a' or '--atorb-only' is not implemented\n")
         sys.exit(0)
+        
+    if args.gui:
+        from phaseshifts.main import MainWindow 
+        MainWindow.main(sys.argv)
+        return
         
     phaseshifts = PhaseshiftFactory(package, 
                                     bulk_file=args.bulk, 
