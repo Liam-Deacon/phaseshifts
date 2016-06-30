@@ -300,7 +300,7 @@ def main():
     app = QApplication(sys.argv)
     icon = QIcon(os.path.join(os.path.dirname(__file__), 
                                     'res', 
-                                    'periodictable.svg'))
+                                    'periodictable_32x32.png'))
     app.setWindowIcon(icon)
     window = PeriodicTableDialog()
     
