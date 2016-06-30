@@ -3,7 +3,7 @@ Created on 31 Jan 2014
 
 @author: Liam Deacon
 
-@contact: liam.deacon@diamond.ac.uk
+@contact: liam.m.deacon@gmail.com
 
 @copyright: Copyright 2014 Liam Deacon
 
@@ -28,11 +28,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
-from PyQt4 import QtGui, uic
+from qtsix import uic
+from qtsix.QtWidgets import QDialog, QMessageBox
+import os
 import res_rc
 
 
-class UpdateDialog(QtGui.QDialog):
+class UpdateDialog(QDialog):
     '''
     Dialog class for updating sequences 
     '''
@@ -47,7 +49,9 @@ class UpdateDialog(QtGui.QDialog):
         self.proxy = proxy
         
         # dynamically load ui
-        self.ui = uic.loadUi("gui/UpdateDialog.ui", self)
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 
+                                            "UpdateDialog.ui"))
+        self.ui = uic.loadUi(path, self)
         self.initUi()
         
         self.ui.show()
@@ -74,7 +78,7 @@ class UpdateDialog(QtGui.QDialog):
             
     def doUpdate(self):
         if self.package is None:
-            QtGui.QMessageBox.information(self, 'Error', 'No package name!')
+            QMessageBox.information(self, 'Error', 'No package name!')
             self.ui.closeEvent()
         import pip
         try:
@@ -82,8 +86,9 @@ class UpdateDialog(QtGui.QDialog):
                      if dist.key == self.package]
             
         except Exception:
-            QtGui.QMessageBox.information(self, "Update %s" 
-                                          % self.package, 'Failed to update!')
+            QMessageBox.information(self, 
+                                    "Update %s" % self.package, 
+                                    'Failed to update!')
     
         from phaseshifts.contrib.xmlrpc_urllib2_transport import ProxyTransport
         try:
@@ -105,9 +110,9 @@ class UpdateDialog(QtGui.QDialog):
             
         except Exception, ex:
             self.logger.error('Unable to contact PyPI server for updates')
-            QtGui.QMessageBox.information(self, "Update %s" % self.package, 
+            QMessageBox.information(self, "Update %s" % self.package, 
                                 'Unable to contact PyPI server for updates')
             
             status = 'No update available'
-            QtGui.QMessageBox.information(self, 
+            QMessageBox.information(self, 
                     "Update {package}".format(package=self.package), status)      
