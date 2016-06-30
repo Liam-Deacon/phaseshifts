@@ -186,7 +186,7 @@ class SettingsDialog(QDialog):
                                 QDesktopServices.DataLocation)), 
                                '.phaseshifts', 'config.ini')
         filepath = str(QFileDialog.getOpenFileName(self, 
-                                'Open ini file...', default))
+                                'Open ini file...', default)[0])
         
         if filepath == '':
             return  # user abort
@@ -364,6 +364,8 @@ class SettingsDialog(QDialog):
         self.ui.lineWritePath.setText(self.settings.filepath)
         self.ui.lineLogFile.setText(self.settings.logfile)
         self.ui.checkLog.setChecked(self.settings.logging)
+        
+        self.ui.spinExchange.setValue(self.settings.atorb_exchange)
         
         # muffin-tin potential and phase shifts 
         self.updatePhaseMethod(method=self.settings.phsh_method)
