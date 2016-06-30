@@ -3,7 +3,7 @@ Created on 30 Jan 2014
 
 @author: Liam Deacon
 
-@contact: liam.deacon@diamond.ac.uk
+@contact: liam.m.deacon@gmail.com
 
 @copyright: 2014 Liam Deacon
 
@@ -38,28 +38,35 @@ import os
 import platform
 import sys
 from collections import OrderedDict
+from datetime import datetime
 
-# Import Qt modules
-import PyQt4
-from PyQt4 import QtCore, QtGui, uic
-import res_rc  # note this requires compiled resource file res_rc.py
-__QT_TYPE__ = 'PyQt4' 
+os.environ['QT_API'] = os.environ.get('QT_API', 'pyqt4')
+from qtsix import QtCore, uic, qt_api
+from qtsix.QtGui import QDesktopServices
+from qtsix.QtWidgets import (QMainWindow, QMessageBox, 
+                             QTreeWidget, QTreeWidgetItem)
+from qtsix.Qt import QApplication
+
+
+
 
 # other modules
 from settings import Settings
 from ImportDialog import ImportDialog
-from phaseshifts.model import MTZ_model, Unitcell, Atom
+from phaseshifts.model import MTZModel, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = 'Liam Deacon'
-__APP_COPYRIGHT__ = '\xa9' + '2013 {0}'.format(__APP_AUTHOR__)
+__APP_COPYRIGHT__ = '\xa9' + '2013-{} {}'.format(datetime.now().year, 
+                                                 __APP_AUTHOR__)
 __APP_DESCRIPTION__ = ('A simple Python-based program \n '
                         'for generation of phase shifts')
 __APP_DISTRIBUTION__ = 'phaseshifts'
-__APP_EMAIL__ = 'liam.m.deacon@diamond.ac.uk'
+__APP_EMAIL__ = 'liam.m.deacon@gmail.com'
 __APP_LICENSE__ = 'MIT License'
 __APP_NAME__ = 'Phase Shifts'
 __APP_VERSION__ = '0.1-alpha'
+__APP_WEBSITE__ = 'http://pythonhosted.org/phaseshifts/'
 __PYTHON__ = "{0}.{1}.{2}".format(sys.version_info.major,
                                          sys.version_info.minor,
                                          sys.version_info.micro, 
@@ -78,13 +85,14 @@ if platform.system() is 'Windows':
 # BEGIN GUI WIDGET PROGRAMMING
 #==============================================================================
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QMainWindow):
     '''Class for main application widget'''
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         
         # dynamically load ui
-        uiFile = "gui/MainWindow.ui"  # change to desired relative ui file path
+        uiFile = os.path.abspath(os.path.join(os.path.dirname(__file__), 
+                                              "MainWindow.ui"))  # change to desired relative ui file path
         self.ui = uic.loadUi(uiFile, self) 
         self.ui.show()
         
@@ -177,21 +185,23 @@ class MainWindow(QtGui.QMainWindow):
         text += '\n{0}'.format(__APP_COPYRIGHT__)
         text += '\n' + __APP_LICENSE__
         text += '\n\nPython: {0}'.format(__PYTHON__)
-        text += '\nGUI frontend: {0} {1}'.format(__QT_TYPE__, 
+        text += '\nGUI frontend: {0} (version {1})'.format(qt_api.replace("qt", "Qt").replace("py", "Py"), 
                                                  QtCore.QT_VERSION_STR)
 
-        msg = QtGui.QMessageBox.about(self, self.ui.windowTitle(), text)
+        msg = QMessageBox.about(self, self.ui.windowTitle(), text)
     
     # Display about dialog
     def aboutQt(self):
         """Display Qt dialog"""
-        QtGui.QApplication.aboutQt()
+        QApplication.aboutQt()
     
     # Report bug / email devs
     def contactDeveloper(self):
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(
-                str("mailto: {email}?subject={name} feedback&body=").format(
-                            email=__APP_EMAIL__, name=__APP_NAME__)))
+        QDesktopServices.openUrl(QtCore.QUrl(
+                str("mailto: {email}?cc={others}&subject={name} feedback&body="
+                    "").format(email=__APP_EMAIL__, 
+                               others='; '.join(['']),
+                               name=__APP_NAME__)))
     
     # check for update
     def getUpdate(self):
@@ -259,12 +269,9 @@ class MainWindow(QtGui.QMainWindow):
     def help(self):
         """Display help"""
         try:
-            helpDialog = Help.HelpWidget(parent=self)
-            helpDialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-            helpDialog.exec_()
-            
+            QDesktopServices.openUrl(QtCore.QUrl(__APP_WEBSITE__))
         except NameError:
-            QtGui.QMessageBox.information(self, 'Help', 
+            QMessageBox.information(self, 'Help', 
                                     'Help is not currently available')
             self.logger.error('unable to create Help dialog')
 
@@ -274,8 +281,8 @@ class MainWindow(QtGui.QMainWindow):
         pass
 
     def getInputFile(self, startpath=str(
-                        QtGui.QDesktopServices.storageLocation(
-                            QtGui.QDesktopServices.HomeLocation)), model=None):
+                        QDesktopServices.storageLocation(
+                            QDesktopServices.HomeLocation)), model=None):
         '''returns file path of input'''
         if model == None:
             model = ''
@@ -291,7 +298,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 startpath = self.lastpath
         
-        filepath = str(QtGui.QFileDialog.getOpenFileName(parent=None, 
+        filepath = str(QFileDialog.getOpenFileName(parent=None, 
                      caption='Open %sInput File' % model, directory=startpath))
         
         return filepath
@@ -328,7 +335,7 @@ class MainWindow(QtGui.QMainWindow):
         try:
             atom = Atom('H')  # dummy atom
             uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]) 
-            mtz = MTZ_model(uc, atoms=[atom])  # initialise muffin-tin model
+            mtz = MTZModel(uc, atoms=[atom])  # initialise muffin-tin model
             mtz.load_from_file(filename)  # load file
             exec('self.%s = mtz' % model)
             self.updateModelUi(model)
@@ -349,7 +356,7 @@ class MainWindow(QtGui.QMainWindow):
         """Update model in gui""" 
         if isinstance(model, str):
             model = model.lower()
-            mtz = MTZ_model(Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), 
+            mtz = MTZModel(Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), 
                             atoms=[Atom('H')])
             if model == 'bulk':
                 tree = self.ui.treeWidgetBulk
@@ -394,9 +401,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def getChildItemsDict(self, obj):
         try:
-            if isinstance(obj, QtGui.QTreeWidget):
+            if isinstance(obj, QTreeWidget):
                 root = obj.invisibleRootItem()
-            elif isinstance(obj, QtGui.QTreeWidgetItem):
+            elif isinstance(obj, QTreeWidgetItem):
                 root = obj
             child_count = root.childCount()
             topLevelDict = {}
@@ -410,9 +417,9 @@ class MainWindow(QtGui.QMainWindow):
             self.logger.error(e.msg)
             
     def getChildItemHandle(self, obj, name=str):
-        if isinstance(obj, QtGui.QTreeWidget):
+        if isinstance(obj, QTreeWidget):
             root = obj.invisibleRootItem()
-        elif isinstance(obj, QtGui.QTreeWidgetItem):
+        elif isinstance(obj, QTreeWidgetItem):
             root = obj
         
         if isinstance(name, int):
@@ -429,7 +436,7 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv
         
-    app = QtGui.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MainWindow()
     
     return app.exec_()
