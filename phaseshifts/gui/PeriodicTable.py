@@ -1,76 +1,86 @@
 #!/usr/bin/env python
 #encoding: utf-8
+#
+##############################################################################
+# Author: Liam Deacon                                                        #
+#                                                                            #
+# Contact: liam.m.deacon@gmail.com                                           #
+#                                                                            #
+# Copyright: Copyright (C) 2014-2016 Liam Deacon                             #
+#                                                                            #
+# License: MIT License                                                       #
+#                                                                            #
+# Permission is hereby granted, free of charge, to any person obtaining a    #
+# copy of this software and associated documentation files (the "Software"), #
+# to deal in the Software without restriction, including without limitation  #
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,   #
+# and/or sell copies of the Software, and to permit persons to whom the      #
+# Software is furnished to do so, subject to the following conditions:       #
+#                                                                            #
+# The above copyright notice and this permission notice shall be included in #
+# all copies or substantial portions of the Software.                        #
+#                                                                            #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR #
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   #
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    #
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER #
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING    #
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER        #
+# DEALINGS IN THE SOFTWARE.                                                  #
+#                                                                            #
+##############################################################################
 """
-atorb.py
+PeridoicTable.py
 
 @author: Liam Deacon
 
 @contact: liam.m.deacon@gmail.com
 
-@copyright: Copyright (C) 2014 Liam Deacon
+@copyright: Copyright (C) 2014-2016 Liam Deacon
 
 @license: MIT License (see LICENSE file for details)
 
 @summary: Periodic Table using Qt
 
 """
+from __future__ import absolute_import, unicode_literals
 
 # Import standard libraries
 import logging
 import ntpath
+import re
 import os
 import platform
 import sys
 
-# Define globals
-__APP_AUTHOR__ = 'Liam Deacon'
-__APP_COPYRIGHT__ = '\xa9'+'2013 {0}'.format(__APP_AUTHOR__)
-__APP_DESCRIPTION__ = 'A simple Python-based program \nfor LEED-IV data extraction'
-__APP_EMAIL__ = 'liam.m.deacon@gmail.com'
-__APP_LICENSE__ = 'MIT License'
-__APP_NAME__ = 'Peridic Table'
-__APP_VERSION__ = '0.1-alpha'
-__PYTHON__ = "{0}.{1}.{2}".format(sys.version_info.major,
-                                         sys.version_info.minor,
-                                         sys.version_info.micro, 
-                                         sys.version_info.releaselevel)
-
-# Platform specific setup
-if platform.system() is 'Windows':
-    from ctypes import windll
-    # Tell Windows Python is merely hosting the application (taskbar icon fix)
-    windll.shell32.SetCurrentProcessExplicitAppUserModelID(__APP_NAME__)
-
+from MainWindow import qt_api
 # Import Qt modules
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-
-def determineGuiFrontend():
-    """Determine which GUI toolkit to use"""
-    try:
-        guiFrontend = 'PySide {0}'.format(PySide.__version__)
-    except NameError:
-        guiFrontend = None
-    
-    if guiFrontend is None:
-        try:
-            guiFrontend = 'PyQt {0}'.format(PYQT_VERSION_STR)
-        except NameError:
-            guiFrontend = None
-            
-    if guiFrontend != None:
-        return "Qt {0} (PyQt {1})".format(QtCore.qVersion(), guiFrontend)
-
-__APP_GUI__ = determineGuiFrontend()
+from qtsix import uic, QtCore
+from qtsix.QtGui import QIcon
+from qtsix.QtCore import Signal, Slot
+from qtsix.QtWidgets import (QApplication, QFrame)
 
 # Load resources & local modules
 import res_rc
-import elements
+
+try:
+    import elements
+except ImportError:
+    try:
+        from .. import elements
+    except (ValueError, ImportError):
+        try:
+            from phaseshifts import elements
+        except ImportError:
+            sys.path.insert(0, os.path.abspath(os.path.dirname(
+                            os.path.dirname(os.path.dirname(__file__)))))
+            import elements
+
 
 import re
 from collections import OrderedDict
+
+__APP_NAME__ = 'PeriodicTable'
 
 elements_dict = OrderedDict([
 ('H', 'Hydrogen'), 
@@ -195,24 +205,28 @@ elements_dict = OrderedDict([
 
 
 # Create a class for our main window
-class PeriodicTableDialog(QtGui.QFrame):
+class PeriodicTableDialog(QFrame):
     """Periodic table dialog class"""
-    def __init__(self, parent=None, toggle=True):
+    
+    selectedElementChanged = Signal(object)
+    
+    def __init__(self, parent=None, toggle=True, element='H'):
         super(PeriodicTableDialog, self).__init__(parent)
  
         # Or more dynamically
-        self.ui = uic.loadUi("gui/PeriodicTable.ui", self)
+        self.ui = uic.loadUi(os.path.abspath(os.path.join(os.path.dirname(__file__), 
+                                                          "PeriodicTable.ui")), self)
         self.ui.show()
         
-        self.selectedElement = 'H'  # default is Hydrogen
+        self.selectedElement = element  # default is Hydrogen
         
         #self.init()
         self.initUi()
     
     # Overload exit event to write configuration before exiting app
     def closeEvent(self, evnt):
-        print(self.selectedElement)
-        sys.exit(0)
+        pass # print(self.selectedElement)
+        
 
     # Setup extra UI elements
     def initUi(self):
@@ -221,6 +235,7 @@ class PeriodicTableDialog(QtGui.QFrame):
         # Setup slots
         
         # set defaults for each element
+        self.elements = []
         for i in range(1, len(elements.ELEMENTS)):
             symbol = elements_dict.keys()[i - 1]
             element = elements.ELEMENTS[symbol]
@@ -232,26 +247,42 @@ class PeriodicTableDialog(QtGui.QFrame):
             #covrad=0.0, atmrad=0.0, vdwrad=0.0,
             tooltip = """
                 <html>
-                    <span style=" font-weight:600;">{name}</span><br/>
+                    <div style="width: 300px">
+                    <span style=" font-weight:600;font-size:18px;">{name}</span><br/>
+                    <span style="font-size:14px;">
                     Z={protons}<br/>
                     {mass}&nbsp;amu<br/>
                     {config}<br/>
                     T<sub>melt</sub>={tmelt}&nbsp;K<br/>
                     T<sub>boil</sub>={tboil}&nbsp;K<br/>
                     &#961;={density}&nbsp;g/L<br/>
-                    &#967;={eleneg}                   
+                    &#967;={eleneg}<br/>
+                    r<sub>atomic</sub>={atmrad}&nbsp;&#8491;<br/>
+                    r<sub>covalent</sub>={covrad}&nbsp;&#8491;<br/>
+                    r<sub>van-der-waal</sub>={vdwrad}&nbsp;&#8491;<br/>
+                    <br/>
+                    </span>
+                    </div>                   
                 </html>""".format(protons=element.protons, name=element.name,
                                   tmelt=element.tmelt, tboil=element.tboil,
-                                  config=config, mass=element.mass, 
+                                  config=re.sub("([0-9]+)([spdf])([0-9]+)", 
+                                                "\\1\\2<sup>\\3</sup>", config), 
+                                  mass=element.mass, 
                                   density=element.density, 
-                                  eleneg=element.eleneg)
+                                  eleneg=element.eleneg,
+                                  atmrad=element.atmrad,
+                                  covrad=element.covrad,
+                                  vdwrad=element.vdwrad)
             
             eval('self.element_%i.clicked.connect(self.buttonClick)' % i)
             eval('''self.element_%i.setToolTip(tooltip)''' % i)
+            self.elements.append(element)
             
     def buttonClick(self):
-        self.selectedElement = elements.ELEMENTS[elements_dict.keys().index(
-                                                    self.sender().text()) + 1]
+        i = elements_dict.keys().index(self.sender().text()) + 1
+        if elements.ELEMENTS[i] == self.selectedElement:
+            return  # do not update
+        self.selectedElement = elements.ELEMENTS[i]
         self.ui.labelMass.setText('''<html><sup>%.1f</sup></html>''' 
                                   % float(self.selectedElement.mass))
         self.ui.labelZ.setText('''<html><sup>%s</sup></html>''' 
@@ -260,15 +291,27 @@ class PeriodicTableDialog(QtGui.QFrame):
                                         font-size:12pt;">%s</span></p></body>
                                         </html>''' 
                                         % self.selectedElement.symbol)
+        self.selectedElementChanged.emit(i)
 
 
 def main():
     # Again, this is boilerplate, it's going to be the same on
     # almost every app you write
-    app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('gui/res/periodictable_32x32.png'))
+    app = QApplication(sys.argv)
+    icon = QIcon(os.path.join(os.path.dirname(__file__), 
+                                    'res', 
+                                    'periodictable.svg'))
+    app.setWindowIcon(icon)
     window = PeriodicTableDialog()
+    
+    # Platform specific setup
+    if platform.system() is 'Windows':
+        from ctypes import windll
+        # Tell Windows Python is merely hosting the application (taskbar icon fix)
+        windll.shell32.SetCurrentProcessExplicitAppUserModelID(__APP_NAME__)
+    
     window.show()
+    
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
 
