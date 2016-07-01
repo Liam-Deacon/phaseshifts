@@ -39,6 +39,8 @@ Examples
 .. code:: bash
    
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
+   
+   phsh.py --gui
 
 
 """
@@ -60,11 +62,11 @@ from subprocess import Popen
 import platform
 import argparse
 
+from phaseshifts import __version__, __author_email__
+
 __all__ = []
-__version__ = '0.1.6-dev'
 __date__ = '2013-11-15'
 __updated__ = '2015-04-17'
-__contact__ = 'liam.m.deacon@gmail.com'
 
 DEBUG = 0
 TESTRUN = 0
@@ -133,7 +135,7 @@ def main(argv=None):
     """.format(short_description=program_shortdesc, 
                build_date=str(__date__), 
                year=datetime.datetime.now().year,
-               contact=__contact__)
+               contact=__author_email__)
 
     if '--gui' in argv and '-i' not in argv:
         argv.append('-i')
