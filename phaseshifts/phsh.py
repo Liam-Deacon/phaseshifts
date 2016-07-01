@@ -47,6 +47,7 @@ from __future__ import absolute_import, division, with_statement
 
 import sys
 import os
+import datetime
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
@@ -118,18 +119,21 @@ def main(argv=None):
     program_version_message = '%%(prog)s %s (%s)' % (program_version, 
                                                      program_build_date)
     program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
-    program_license = """%s
+    program_license = """{short_description}
 
-      Created by Liam Deacon on %s.
-      Copyright 2013-2016 Liam Deacon. All rights reserved.
+      Created by Liam Deacon on {build_date}.
+      Copyright 2013-{year} Liam Deacon. All rights reserved.
 
       Licensed under the MIT license (see LICENSE file for details)
 
       Please send your feedback, including bug notifications
-      and fixes, to: %s
+      and fixes, to: {contact}
 
     usage:-
-    """ % (program_shortdesc, str(__date__), __contact__)
+    """.format(short_description=program_shortdesc, 
+               build_date=str(__date__), 
+               year=datetime.datetime.now().year,
+               contact=__contact__)
 
     if '--gui' in argv and '-i' not in argv:
         argv.append('-i')
@@ -192,7 +196,7 @@ def main(argv=None):
         parser.add_argument('-V', '--version', action='version', 
                             version=program_version_message)
         parser.add_argument("--gui", dest="gui", action="store_true",
-                            help="Starts GUI frontend")
+                            help="Starts GUI frontend (experimental)")
 
         # Process arguments
         args, unknown = parser.parse_known_args()
