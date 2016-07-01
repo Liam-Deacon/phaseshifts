@@ -61,6 +61,11 @@ if len(sys.argv) == 1:
 
 phsh_lib = os.path.join('phaseshifts', 'lib')
 
+phaseshifts_pkg = os.path.join(os.path.abspath(os.path.dirname(__file__)), 
+                               'phaseshifts')
+sys.path.insert(0, phaseshifts_pkg)
+from phaseshifts import __version__
+
 
 class Builder(object):
     def __init__(self, name, sources,
@@ -302,7 +307,7 @@ readme = os.path.join('phaseshifts', 'README.rst')
     
 dist = setup(name='phaseshifts', 
              packages=find_packages(),
-             version='0.1.6-dev',
+             version=__version__ or '0.1.6',
              author='Liam Deacon',
              author_email='liam.m.deacon@gmail.com',
              license='MIT License',
