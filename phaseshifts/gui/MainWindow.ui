@@ -477,6 +477,8 @@
     <addaction name="separator"/>
     <addaction name="actionBulk"/>
     <addaction name="actionSlab"/>
+    <addaction name="separator"/>
+    <addaction name="actionGeneratePhaseShifts"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -609,6 +611,12 @@
    </property>
   </action>
   <action name="actionBulk">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res/res.qrc">
      <normaloff>:/square_32x32.png</normaloff>:/square_32x32.png</iconset>
@@ -616,14 +624,23 @@
    <property name="text">
     <string>&amp;Bulk</string>
    </property>
+   <property name="shortcut">
+    <string>Alt+B</string>
+   </property>
   </action>
   <action name="actionSlab">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res/res.qrc">
      <normaloff>:/layers_32x28.png</normaloff>:/layers_32x28.png</iconset>
    </property>
    <property name="text">
     <string>&amp;Slab</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+S</string>
    </property>
   </action>
   <action name="actionUpdate">
@@ -641,7 +658,13 @@
      <normaloff>:/blocks.png</normaloff>:/blocks.png</iconset>
    </property>
    <property name="text">
-    <string>&amp;Model Builder</string>
+    <string>&amp;Model Builder...</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens Model Builder...</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+M</string>
    </property>
   </action>
   <action name="actionModel_Editor">
@@ -721,6 +744,24 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+T</string>
+   </property>
+  </action>
+  <action name="actionGeneratePhaseShifts">
+   <property name="icon">
+    <iconset resource="res/res.qrc">
+     <normaloff>:/target_32x32.png</normaloff>:/target_32x32.png</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Generate Phase Shifts...</string>
+   </property>
+   <property name="toolTip">
+    <string>Generates Phase Shifts</string>
+   </property>
+   <property name="statusTip">
+    <string>Generates Phase Shifts</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+G</string>
    </property>
   </action>
  </widget>

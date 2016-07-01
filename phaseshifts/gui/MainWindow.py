@@ -43,7 +43,7 @@ from datetime import datetime
 os.environ['QT_API'] = os.environ.get('QT_API', 'pyqt4')
 from qtsix import QtCore, uic, qt_api
 from qtsix.QtGui import QDesktopServices
-from qtsix.QtWidgets import (QMainWindow, QMessageBox, 
+from qtsix.QtWidgets import (QFileDialog, QMainWindow, QMessageBox, 
                              QTreeWidget, QTreeWidgetItem)
 from qtsix.Qt import QApplication
 
@@ -160,6 +160,7 @@ class MainWindow(QMainWindow):
         self.ui.actionHelp.triggered.connect(self.help)
         self.ui.actionImport.triggered.connect(self.importModel)
         self.ui.actionModelBuilder.triggered.connect(self.modelBuilderDialog)
+        self.ui.actionGeneratePhaseShifts.triggered.connect(self.generatePhaseShifts)
         self.ui.actionOpen.triggered.connect(self.importDialog)
         self.ui.actionSettings.triggered.connect(self.settingsDialog)
         self.ui.actionTextView.triggered.connect(self.changeModelView)
@@ -174,6 +175,9 @@ class MainWindow(QMainWindow):
         self.ui.pushBulkToTree.pressed.connect(self.changeModelView)
         self.ui.pushSlabToText.pressed.connect(self.changeModelView)
         self.ui.pushSlabToTree.pressed.connect(self.changeModelView)
+        
+        self.ui.actionBulk.triggered.connect(lambda: self.ui.tabWidget.setCurrentIndex(0))
+        self.ui.actionSlab.triggered.connect(lambda: self.ui.tabWidget.setCurrentIndex(1))
     
     # Show about dialog
     def about(self):
@@ -218,10 +222,16 @@ class MainWindow(QMainWindow):
                              self.ui.tabWidget.currentIndex())).lower()
         if tabText == 'bulk':  # bulk
             self.model = 'bulk'
+            self.actionBulk.setChecked(True)
+            self.actionSlab.setChecked(False)
         elif tabText == 'slab':  # slab
             self.model = 'slab'
+            self.actionBulk.setChecked(False)
+            self.actionSlab.setChecked(True)
         else:
             self.model = None
+            self.actionBulk.setChecked(False)
+            self.actionSlab.setChecked(False)
         
     # change view of model
     def changeModelView(self):
@@ -278,7 +288,13 @@ class MainWindow(QMainWindow):
     # model builder
     def modelBuilderDialog(self):
         '''Start new instance of model builder wizard'''
-        pass
+        QMessageBox.critical(self, 'TODO', 
+                             "Model builder dialog is not implemented... yet!")
+
+    def generatePhaseShifts(self):
+        '''Generates phase shifts from current models and input parameters'''
+        QMessageBox.critical(self, "TODO", 
+                             "Generation of phaseshifts is not implemented")
 
     def getInputFile(self, startpath=str(
                         QDesktopServices.storageLocation(
