@@ -337,7 +337,8 @@ dist = setup(name='phaseshifts',
                            'gui': ['gui/*.ui', 'gui/*.bat'],
                            'gui/res': ['gui/res/*.*']
                            },
-             scripts=[os.path.join("phaseshifts", "phsh.py"), 
+             scripts=[os.path.join("phaseshifts", "phaseshifts.pyw"),
+                      os.path.join("phaseshifts", "phsh.py"), 
                       os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.py"),
                       os.path.join("phaseshifts", "lib", "EEASiSSS", 
                                    "eeasisss.py")
