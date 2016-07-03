@@ -18,13 +18,13 @@ of the phaseshifts package. It can then be used from the command line, e.g.
 
   usage: phsh.py [-h] -b <bulk_file> -i <slab_file> [-t <temp_dir>] [-l <lmax>]
                [-r <start_energy> <final_energy> <step>] [-f <format>] 
-               [-S <subdir>] [-v] [-V]
+               [-S <subdir>] [-v] [-V] [--gui]
 
 
   phsh - quickly generate phase shifts
 
-        Created by Liam Deacon on 2013-11-15.
-        Copyright 2013-2015 Liam Deacon. All rights reserved.
+        Created by Liam Deacon on 2016-07-01.
+        Copyright 2013-2016 Liam Deacon. All rights reserved.
 
         Licensed under the MIT license (see LICENSE file for details)
 
@@ -70,6 +70,14 @@ of the phaseshifts package. It can then be used from the command line, e.g.
                           Keep intermediate files in subdir when done
     -v, --verbose         Set verbosity level [default: None].
     -V, --version         Show program's version number and exit
+    
+    --gui                 Show GUI frontend (experimental)
+
+GUI Frontend
+------------
+
+An experimental version of a graphical frontend to generate atomic phase 
+shifts can be executed with `phaseshifts.pyw` from the command line.
 
 CLEED compatibility
 -------------------

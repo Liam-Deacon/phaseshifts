@@ -18,6 +18,7 @@ Contents:
    contact
    acknowledgements
    scripts
+   gui
    modules
    authors
    bvh_package
