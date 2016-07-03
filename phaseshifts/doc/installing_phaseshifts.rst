@@ -4,7 +4,7 @@
 Installing the phaseshifts package
 **********************************
 
-The `phaseshifts <http://https://pypi.python.org/pypi/phaseshifts/>`_ package 
+The `phaseshifts <https://pypi.python.org/pypi/phaseshifts/>`_ package 
 requires CPython 2.6 or later and also uses the `numpy 
 <http://www.scipy.org/scipylib/download.html>`_, `scipy 
 <http://www.scipy.org/scipylib/download.html>`_ and `periodictable 
@@ -34,8 +34,17 @@ To perform a setup follow the steps below.
     Alternatively download and install these packages manually following the
     instructions provided for the respective packages.
 
- 2. To install the phaseshifts package::
+ 2. To install the latest release of the phaseshifts package with pip::
+ 
+      pip install phaseshifts
+      
+    Or download a bleeding-edge development version from 
+    `<https://bitbucket.org/Liam_Deacon/phaseshifts>`_ and install by::
          
+      git clone https://bitbucket.org/Liam_Deacon/phaseshifts
+      cd phaseshifts
+      git fetch origin
+      git checkout develop
       python setup.py install  
 
     With any luck the package has been installed successfully. A set of test scripts
@@ -50,7 +59,8 @@ To perform a setup follow the steps below.
     address the problem quickly.
 
     With any luck the package has been installed successfully. A set of test scripts
-    are provided, however a few simple checks may suffice using the command and an interactive session of the python interpreter::
+    are provided, however a few simple checks may suffice using the command and an 
+    interactive session of the python interpreter::
 
       phsh.py --help
       python
