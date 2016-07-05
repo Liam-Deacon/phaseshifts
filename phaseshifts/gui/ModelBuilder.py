@@ -32,12 +32,12 @@ from __future__ import (absolute_import, division,
 from qtsix import uic
 from qtsix.QtWidgets import (QAbstractButton, QDialog)
 import os
+import sys
 
 try:
     import res_rc
 except ImportError:
     try:
-        import sys
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
         import res_rc
     except ImportError:
@@ -53,7 +53,7 @@ class ModelBuilderDialog(QDialog):
         
         # dynamically load ui
         path = os.path.abspath(os.path.join(os.path.dirname(__file__), 
-                                            os.path.basename(__file__).replace('.py', '.ui')))
+                                            os.path.splitext(os.path.basename(__file__))[0] + '.ui'))
         self.ui = uic.loadUi(path, self)
         self.initUi()
         
@@ -62,3 +62,12 @@ class ModelBuilderDialog(QDialog):
     def initUi(self):
         # Setup slots and signals
         pass
+
+    
+if __name__ == "__main__":
+    from qtsix.QtWidgets import QApplication
+    app = QApplication(sys.argv)
+    dlg = ModelBuilderDialog()
+    dlg.show()
+    
+    sys.exit(app.exec_())
