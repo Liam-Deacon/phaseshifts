@@ -465,7 +465,7 @@ class Unitcell(object):
         
         """
         self._a = float(a)
-        self.a_in_bohr = self.a / self.bohr  # (1 Bohr = 0.529Å)
+        self.a_in_bohr = self._a / self.bohr  # (1 Bohr = 0.529Å)
 
     @property
     def b(self):
@@ -485,6 +485,7 @@ class Unitcell(object):
             The magnitude of the 2nd in-plane lattice vector in Angstroms.  
         """
         self._b = float(b)
+        self.b_in_bohr = self._b / self.bohr  # (1 Bohr = 0.529Å)
 
     @property
     def c(self):
@@ -503,6 +504,7 @@ class Unitcell(object):
              
         """
         self._c = float(c)
+        self.c_in_bohr = self._c / self.bohr  # (1 Bohr = 0.529Å)
     
     def degrees_to_radians(self, degrees):
         """ Returns angle alpha in radians """
