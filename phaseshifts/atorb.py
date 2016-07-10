@@ -61,10 +61,10 @@ from tempfile import gettempdir
 from ctypes import cdll, create_string_buffer
 from ctypes.util import find_library
 
-from phaseshifts.elements import Element, ELEMENTS, SERIES
-from phaseshifts.lib.libphsh import hartfock as vht_hartfock 
+from .elements import Element, ELEMENTS, SERIES
+from .lib.libphsh import hartfock as vht_hartfock 
 
-from phaseshifts.utils import expand_filepath, stringify
+from .utils import expand_filepath, stringify
 
 # get best StringIO available for this platform
 if version_info[0] < 3:

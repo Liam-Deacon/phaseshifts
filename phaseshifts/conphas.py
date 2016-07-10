@@ -61,7 +61,7 @@ from time import gmtime, strftime
 from copy import copy, deepcopy
 
 #from phaseshifts.wrappers import PhaseShiftWrapper
-from phaseshifts.utils import fix_path, stringify
+from .utils import fix_path, stringify
 
 try:
     from numpy import loadtxt

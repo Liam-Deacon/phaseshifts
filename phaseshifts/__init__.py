@@ -11,6 +11,7 @@ try:
     with open(filename, 'r') as f:
         __license__ = f.readlines()[0].strip('\n')
     del(filename)
+    del(f)
 except:
     __license__ = 'unknown'
 
@@ -31,6 +32,19 @@ finally:
     try:
         del(dist)
         del(egg_info)
+        del(f)
         del(pkg_info)
     except:
         pass
+
+del(os)
+
+import atorb
+import conphas
+import lib
+import phsh
+
+__all__ = ['atorb', 'conphas', 'elements', 'factories', 
+           'leed', 'model', 'phaseshifts', 'phsh', 'utils', 'wrappers']
+
+__all__.extend(['gui', 'lib', 'plugins', 'tests', 'tools'])

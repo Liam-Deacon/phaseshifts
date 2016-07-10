@@ -35,13 +35,15 @@ import os
 import sys
 
 try:
-    import res_rc
-except ImportError:
+    from . import res_rc
+except ValueError:
     try:
-        sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
-        import res_rc
+        import phaseshifts.gui.res_rc as res_rc
     except ImportError:
-        import phaseshifts.gui.res_rc as res_rc   
+        raise ImportError
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+    import res_rc
 
 
 class ModelBuilderDialog(QDialog):

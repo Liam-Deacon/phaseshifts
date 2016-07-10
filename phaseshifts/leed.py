@@ -40,8 +40,8 @@ method allows importing CLEED input files as a :py:class:`MTZModel` instance.
 import os
 import sys
 
-from phaseshifts.elements import ELEMENTS
-from phaseshifts.utils import expand_filepath
+from .elements import ELEMENTS
+from .utils import expand_filepath
 
 try:
     from io import IOBase
@@ -214,7 +214,6 @@ class CLEED_validator(object):
 class Converter(object):
     """
     Convert different input into phaseshift compatible input
-    
     """
     def __init__(self):
         """
@@ -281,7 +280,6 @@ class Converter(object):
             If filename invalid.
         ValueError
             If input contains bad formatting.
-
         """
         
         try:

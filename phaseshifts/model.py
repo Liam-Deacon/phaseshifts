@@ -49,10 +49,10 @@ from shutil import move
 from glob import glob
 from math import pi
 
-from phaseshifts.elements import Element
-from phaseshifts.lib import libphsh
-from phaseshifts.leed import Converter, CLEED_validator
-from phaseshifts.utils import stringify, expand_filepath
+from .elements import Element
+from .lib import libphsh
+from .leed import Converter, CLEED_validator
+from .utils import stringify, expand_filepath
 
 
 class Atom(Element):
@@ -583,7 +583,7 @@ class Model(object):
         atoms : list
             Array of Atom class instances which constitute the model. 
         name : str
-            The model name. Default is either the chemical formula of `atoms` .
+            The model name. Default is the chemical formula of `atoms` .
         """
         self.atoms = atoms or []
         self.unitcell = unitcell or Unitcell()
@@ -812,6 +812,19 @@ class Model(object):
             self.unitcell = unitcell
         else:
             raise TypeError('unitcell is not a Unitcell() class instance')
+        
+    @classmethod
+    def fromMaterialsProjectDatabase(cls, name, 
+                                     key=os.environ.get('MAPI_KEY', '')):
+        from pymatgen.matproj.rest import MPRester
+        
+        with MPRester(key) as m:
+            results = m.query(name, ['Structure'])
+            
+        return [Model(unitcell=Unitcell(),
+                      atoms=[Atom(str(i.specie), 
+                                  coordinates=[i.x, i.y, i.z]) for i in r],
+                      name=r.formula) for r in results]
     
 
 class MTZModel(Model):
@@ -1521,3 +1534,6 @@ class MTZModel(Model):
     def tags(self):
         """Return the unique atoms in model"""
         return set([atom.name for atom in self.atoms])
+
+if __name__ == '__main__':
+    print(Model.fromMaterialsProjectDatabase(name='TiO2', key='viPsKqFrR2TNZtQx'))

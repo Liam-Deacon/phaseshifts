@@ -54,15 +54,23 @@ import datetime
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from phaseshifts.factories import PhaseshiftFactory 
-from phaseshifts.utils import FileUtils, stringify
-from phaseshifts.leed import CSearch
+try:
+    from . import __version__, __author_email__
+    from .gui import MainWindow
+    from .factories import PhaseshiftFactory 
+    from .utils import FileUtils, stringify
+    from .leed import CSearch
+except ValueError:
+    from phaseshifts import __version__, __author_email__
+    from phaseshifts.gui import MainWindow
+    from phaseshifts.factories import PhaseshiftFactory 
+    from phaseshifts.utils import FileUtils, stringify
+    from phaseshifts.leed import CSearch
+
 
 from subprocess import Popen
 import platform
 import argparse
-
-from phaseshifts import __version__, __author_email__
 
 __all__ = []
 __date__ = '2013-11-15'
@@ -120,7 +128,11 @@ def main(argv=None):
     program_build_date = str(__updated__)
     program_version_message = '%%(prog)s %s (%s)' % (program_version, 
                                                      program_build_date)
-    program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
+    program_shortdesc = 'phsh.py - quickly generate phase shifts'
+    try:
+        program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
+    except (ImportError, AttributeError):
+        pass
     program_license = """{short_description}
 
       Created by Liam Deacon on {build_date}.
@@ -258,10 +270,8 @@ def main(argv=None):
         sys.stderr.write("option '-a' or '--atorb-only' is not implemented\n")
         sys.exit(0)
         
-    if args.gui:
-        from phaseshifts.main import MainWindow 
-        MainWindow.main(sys.argv)
-        return
+    if args.gui: 
+        sys.exit(MainWindow.main(sys.argv))
         
     phaseshifts = PhaseshiftFactory(package, 
                                     bulk_file=args.bulk, 
@@ -306,7 +316,15 @@ def main(argv=None):
         
         # execute subprocess
         Popen(leed_cmd)
-        
+
+
+def gui_main(argv=sys.argv):
+    """ Simple GUI wrapper function """
+    if '--gui' not in argv:
+        argv.insert(0, '--gui')
+    import subprocess
+    subprocess.Popen(['phsh'] + argv, shell=True)
+
 
 if __name__ == "__main__":
     if DEBUG:

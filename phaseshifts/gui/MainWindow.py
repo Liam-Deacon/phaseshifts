@@ -53,7 +53,8 @@ from qtsix.Qt import QApplication
 # other modules
 from settings import Settings
 from ImportDialog import ImportDialog
-from phaseshifts.model import MTZModel, Unitcell, Atom
+
+from ..model import MTZModel, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = 'Liam Deacon'

@@ -53,15 +53,19 @@ import os
 import platform
 import sys
 
-from MainWindow import qt_api
+try:
+    from . MainWindow import qt_api
+    from . import res_rc
+except ValueError:
+    from phaseshifts.gui.MainWindow import qt_api
+    import phaseshifts.gui.res_rc as res_rc        
+    
 # Import Qt modules
 from qtsix import uic, QtCore
 from qtsix.QtGui import QIcon
 from qtsix.QtCore import Signal, Slot
 from qtsix.QtWidgets import (QApplication, QFrame)
 
-# Load resources & local modules
-import res_rc
 
 try:
     import elements

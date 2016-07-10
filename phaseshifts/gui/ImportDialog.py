@@ -34,8 +34,8 @@ from qtsix.QtWidgets import (QAbstractButton, QDialog)
 import os
 
 try:
-    import res_rc
-except ImportError:
+    from . import res_rc
+except ValueError:
     try:
         import sys
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))

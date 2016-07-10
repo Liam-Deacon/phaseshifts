@@ -48,14 +48,14 @@ from re import compile
 from copy import deepcopy
 from tempfile import gettempdir
 
-from phaseshifts import model
-from phaseshifts import atorb
-from phaseshifts.leed import Converter, CLEED_validator
-from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav
-from phaseshifts.conphas import Conphas
-from phaseshifts.elements import Element, ELEMENTS
-from phaseshifts.model import Atom, Model, MTZModel
-from phaseshifts.utils import FileUtils, expand_filepath, stringify
+from . import model
+from . import atorb
+from .leed import Converter, CLEED_validator
+from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
+from .conphas import Conphas
+from .elements import Element, ELEMENTS
+from .model import Atom, Model, MTZModel
+from .utils import FileUtils, expand_filepath, stringify
 
 
 class PhaseShiftWrapper(object):

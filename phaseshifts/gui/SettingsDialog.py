@@ -45,7 +45,10 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-from settings import Settings
+try:
+    from .settings import Settings
+except ValueError:
+    from settings import Settings
 
 
 class SettingsDialog(QDialog):
