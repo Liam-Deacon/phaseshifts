@@ -50,6 +50,7 @@ except ImportError:
 
 import sys
 import os
+import platform
 
 try:
     import py2exe
@@ -63,9 +64,26 @@ phsh_lib = os.path.join('phaseshifts', 'lib')
 
 phaseshifts_pkg = os.path.join(os.path.abspath(os.path.dirname(__file__)), 
                                'phaseshifts')
-sys.path.insert(0, phaseshifts_pkg)
-from phaseshifts import __version__
 
+from phaseshifts import __version__
+extra_link_args = []
+
+# get documentation files
+pdf_manual = os.path.join('doc', 'phaseshifts_{}.pdf'.format(__version__))
+
+doc_files = []
+if os.path.exists(os.path.join(os.path.dirname(__file__), pdf_manual)):
+    doc_files.append(pdf_manual)
+
+
+### --- WINDOWS TWEAKS --- ###
+if sys.platform.startswith('win32'):
+    # perform windows 'tweaks' here:
+    if 'bdist' in sys.argv and 'bdist_wininst' not in sys.argv:
+        sys.argv.insert(sys.argv.index('bdist')+1, 'bdist_wininst')
+           
+    if platform.machine().endswith('64') and sys.platform.startswith('win'):
+        extra_link_args.append('-Wl,--allow-multiple-definition')  # MinGW workaround (64-bit problem?)
 
 class Builder(object):
     def __init__(self, name, sources,
@@ -294,7 +312,7 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
 # build f2py extensions
 f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
                        extra_compile_args=['-fopenmp'],
-                       extra_link_args=['-lgomp'],
+                       extra_link_args=extra_link_args + ['-lgomp'],
                        sources=[os.path.join(phsh_lib, 'libphsh.f')]), 
              
              Extension(name='phaseshifts.lib.libhartfock',
@@ -303,8 +321,33 @@ f2py_exts = [Extension(name='phaseshifts.lib.libphsh',
                                              'hf.f90')]),
              ]
 
-readme = os.path.join('phaseshifts', 'README.rst')
-    
+
+### --- PY2EXE --- ###
+py2exe_excludes = ['_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debugger',
+                   'pywin.debugger.dbgcon', 'pywin.dialogs', 'tcl',
+                   'Tkconstants', 'Tkinter']
+packages = ['numpy', 'scipy', 'periodictable', 
+            'qtsix', 'PyQt4', 'pymatgen', 'pglib']
+dll_excludes = ['libgdk-win32-2.0-0.dll', 'libgobject-2.0-0.dll', 'tcl84.dll',
+                'tk84.dll', 'w9xpopen.exe', 'tk85.dll', 'tcl85.dll']
+
+py2exe_options = {'skip_archive': 1,
+                  'compressed': 0,  
+                  'bundle_files': 2, 
+                  'dist_dir': os.path.join("dist", "py2exe"),
+                  'excludes': py2exe_excludes,
+                  'dll_excludes': dll_excludes,
+                  'packages': packages,
+                  'dist_dir': "dist",
+                  'xref': False,
+                  'skip_archive': False,
+                  'ascii': False,
+                  'custom_boot_script': '',
+                 }
+
+
+### --- SETUP --- ###
+readme = os.path.join('phaseshifts', 'README.rst')    
 dist = setup(name='phaseshifts', 
              packages=find_packages(),
              version=__version__ or '0.1.6',
@@ -331,13 +374,13 @@ dist = setup(name='phaseshifts',
              # recursive-include phaseshifts *.py *.pyw
              include_package_data=True,
              # If any package contains *.txt or *.rst files, include them:
-             package_data={'': ['*.txt', '*.rst', '*.pyw', 'ChangeLog'],
-                           'lib': ['lib/*.f', 'lib/*.c', 'lib/*.h', 
-                                   'lib/*.dll', 'lib/*.so'],
-                           'gui': ['gui/*.ui', 'gui/*.bat'],
-                           'gui/res': ['gui/res/*.*']
+             package_data={'phaseshifts': ['*.txt', '*.rst', '*.pyw', 'ChangeLog'],
+                           'phaseshifts.lib': ['lib/*.f', 'lib/*.c', 'lib/*.h', 
+                                               'lib/*.dll', 'lib/*.so'],
+                           'phaseshifts.gui': ['*.ui', 'res/*'],
+                           'doc': doc_files + [],
                            },
-             scripts=[os.path.join("phaseshifts", "phaseshifts.pyw"),
+             scripts=[os.path.join("phaseshifts", "PhaseShiftsGUI.pyw"),
                       os.path.join("phaseshifts", "phsh.py"), 
                       os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.py"),
                       os.path.join("phaseshifts", "lib", "EEASiSSS", 
@@ -346,26 +389,25 @@ dist = setup(name='phaseshifts',
              # data_files = cython_exts,
              install_requires=['scipy >= 0.7', 
                                'numpy >= 1.3', 
-                               'periodictable',
-                               'qtsix'],
+                               'periodictable'],
+             extras_require={'gui': ['pypgl', 'pymatgen', 
+                                     'pycifrw', 'cython', 
+                                     'pglib', 'pymatgen',
+                                     'qtsix', 'PyQt4']},
              ext_modules=f2py_exts,
              #console=[os.path.join("phaseshifts", "phsh.py")],
-             options={'py2exe': {'skip_archive': 1,
-                                 'compressed': 0,  
-                                 'bundle_files': 2, 
-                                 'dist_dir': os.path.join("dist", "py2exe"),
-                                 'excludes': ['tcl', 'bz2'],
-                                 'dll_excludes': ['w9xpopen.exe', 
-                                                  'tk85.dll', 
-                                                  'tcl85.dll']
-                                 }
-                      },
-             # zipfile = None
+             #windows=['PhaseShiftsGUI.pyw'],
+             options={'py2exe': py2exe_options,},
+             entry_points={'console_scripts': 
+                           ['xphsh = phsh:gui_main']},
+
+             zipfile = False,
+             
                
              )
 
-sys.argv.append('build_ext')
-sys.argv.append('--inplace')
+#sys.argv.append('build_ext')
+#sys.argv.append('--inplace')
 
 
 # End of file
