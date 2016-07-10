@@ -322,6 +322,8 @@ class Unitcell(object):
         Converts angle given in `degrees` into radians.
     """
  
+    bohr = Atom.bohr
+ 
     def __init__(self, a=1., b=None, c=None, basis=None, 
                  alpha=90., beta=90., gamma=90., **kwargs):
         """
