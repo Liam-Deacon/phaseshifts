@@ -38,7 +38,6 @@ from qtsix import QtGui, uic
 from qtsix.QtWidgets import (QAbstractButton, QComboBox, QDialog, QFileDialog, 
                              QMessageBox, QRadioButton)
 from qtsix.QtGui import QDesktopServices
-import res_rc
 
 try:
     import configparser
@@ -47,8 +46,10 @@ except ImportError:
 
 try:
     from .settings import Settings
+    from . import res_rc
 except ValueError:
     from settings import Settings
+    import res_rc
 
 
 class SettingsDialog(QDialog):

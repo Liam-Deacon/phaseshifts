@@ -32,7 +32,8 @@ from __future__ import (absolute_import, division,
 from qtsix import uic
 from qtsix.QtWidgets import QDialog, QMessageBox
 import os
-import res_rc
+
+from . import res_rc
 
 
 class UpdateDialog(QDialog):
