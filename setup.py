@@ -327,7 +327,7 @@ py2exe_excludes = ['_gtkagg', '_tkagg', 'bsddb', 'curses', 'email', 'pywin.debug
                    'pywin.debugger.dbgcon', 'pywin.dialogs', 'tcl',
                    'Tkconstants', 'Tkinter']
 packages = ['numpy', 'scipy', 'periodictable', 
-            'qtsix', 'PyQt4', 'pymatgen', 'pglib']
+            'qtsix', 'PyQt4', 'pymatgen', 'spglib']
 dll_excludes = ['libgdk-win32-2.0-0.dll', 'libgobject-2.0-0.dll', 'tcl84.dll',
                 'tk84.dll', 'w9xpopen.exe', 'tk85.dll', 'tcl85.dll']
 
@@ -392,7 +392,7 @@ dist = setup(name='phaseshifts',
                                'periodictable'],
              extras_require={'gui': ['pypgl', 'pymatgen', 
                                      'pycifrw', 'cython', 
-                                     'pglib', 'pymatgen',
+                                     'spglib', 'pymatgen',
                                      'qtsix', 'PyQt4']},
              ext_modules=f2py_exts,
              #console=[os.path.join("phaseshifts", "phsh.py")],
