@@ -56,18 +56,25 @@ from argparse import RawDescriptionHelpFormatter
 
 try:
     from . import __version__, __author_email__
-    from .gui import MainWindow
     from .factories import PhaseshiftFactory 
     from .utils import FileUtils, stringify
     from .leed import CSearch
 except ValueError:
     from phaseshifts import __version__, __author_email__
-    from phaseshifts.gui import MainWindow
     from phaseshifts.factories import PhaseshiftFactory 
     from phaseshifts.utils import FileUtils, stringify
     from phaseshifts.leed import CSearch
 
-
+try:
+    from .gui import MainWindow
+except ValueError:
+    try:
+        from phaseshifts.gui import MainWindow
+    except ImportError:
+        MainWindow = lambda x=None: sys.stderr.write("GUI not supported\n")
+except ImportError:
+    MainWindow = lambda x=None: sys.stderr.write("GUI not supported\n")
+    
 from subprocess import Popen
 import platform
 import argparse
