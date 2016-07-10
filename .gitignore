@@ -3,3 +3,5 @@ dist/
 phaseshifts.egg-info/
 libphsh.f.bak
 MANIFEST
+*.pyc
+*.pyo
