@@ -1,0 +1,721 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>637</width>
+    <height>516</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Create Bulk Crystal</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="res/res.qrc">
+    <normaloff>:/unitcell.svg</normaloff>:/unitcell.svg</iconset>
+  </property>
+  <property name="toolTip">
+   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use this dialog to create crystal lattices. First select the structure, either from a set of common crystal structures, or by space group description. Then add all other lattice parameters.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If an experimental crystal structure is available for an atom, you can look up the crystal type and lattice constant, otherwise you have to specify it yourself.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_3">
+   <item>
+    <widget class="QGroupBox" name="latticeGroupBox">
+     <property name="title">
+      <string>Lattice</string>
+     </property>
+     <widget class="QWidget" name="horizontalLayoutWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>23</y>
+        <width>359</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Lattice:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="spaceGroupCombo">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <item>
+          <property name="text">
+           <string>Spacegroup</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Face Centre Cubic">fcc</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Body Centre Cubic">bcc</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Diamond">diamond</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Hexagonal Close Packed">hcp</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Graphite structure">graphite</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Rocksalt structure e.g. NaCl">rocksalt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Rutile Structure e.g. TiO2">rutile</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string extracomment="Wurtzite Structure e.g. GaN">wurtzite</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Space group:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="lineEdit"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Status</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>51</y>
+        <width>251</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>Size:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="xLabel">
+         <property name="text">
+          <string>x</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="xSpinBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="yLabel">
+         <property name="text">
+          <string>y</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="ySpinBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="zLabel">
+         <property name="text">
+          <string>z</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="zSpinBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="value">
+          <number>1</number>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>unit cells</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>79</y>
+        <width>365</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Lattice Parameters</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="latticeCartezianRadioButton">
+         <property name="text">
+          <string>Cartezian Coordinates</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="latticeBasisVectorsRadioButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Basis Vectors</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>135</y>
+        <width>284</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="bLabel">
+         <property name="text">
+          <string>b:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="bSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="bComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals a</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals c</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="betaLabel">
+         <property name="text">
+          <string>β</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="betaSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="betaComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals α</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals β</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>163</y>
+        <width>301</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QLabel" name="cLabel">
+         <property name="text">
+          <string>c</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="cSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals a</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals b</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="gammaLabel">
+         <property name="text">
+          <string>γ</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="gammaSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="gammaComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals α</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals β</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>107</y>
+        <width>306</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLabel" name="aLabel">
+         <property name="text">
+          <string>a:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="aSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="aComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals b</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals c</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="alphaLabel">
+         <property name="text">
+          <string>α</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="alphaSpinBox"/>
+       </item>
+       <item>
+        <widget class="QComboBox" name="alphaComboBox">
+         <item>
+          <property name="text">
+           <string>free</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals β</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>equals γ</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fixed</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="horizontalLayoutWidget_9">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>191</y>
+        <width>332</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_9">
+       <item>
+        <widget class="QPushButton" name="getFromDatabaseButton">
+         <property name="text">
+          <string>Get from database</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Database:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="aseRadioButton">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="toolTip">
+          <string>Use ase database</string>
+         </property>
+         <property name="text">
+          <string>ase</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="pymatgenRadioButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Use pymatgen database</string>
+         </property>
+         <property name="text">
+          <string>pymatgen</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <zorder>horizontalLayoutWidget</zorder>
+     <zorder>horizontalLayoutWidget_2</zorder>
+     <zorder>horizontalLayoutWidget_4</zorder>
+     <zorder>horizontalLayoutWidget_6</zorder>
+     <zorder>horizontalLayoutWidget_8</zorder>
+     <zorder>horizontalLayoutWidget_7</zorder>
+     <zorder>horizontalLayoutWidget_9</zorder>
+     <zorder>horizontalLayoutWidget_5</zorder>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="basisGroupBox">
+     <property name="title">
+      <string>Basis</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QRadioButton" name="radioButton">
+          <property name="text">
+           <string>Cartezian Coordinates</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioButton_2">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Fractional Coordinates</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_3">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="addButton">
+          <property name="text">
+           <string>Add</string>
+          </property>
+          <property name="icon">
+           <iconset resource="res/res.qrc">
+            <normaloff>:/plus_32x32.png</normaloff>:/plus_32x32.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="removeButton">
+          <property name="text">
+           <string>Remove</string>
+          </property>
+          <property name="icon">
+           <iconset resource="res/res.qrc">
+            <normaloff>:/minus_32x8.png</normaloff>:/minus_32x8.png</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="tableWidget">
+        <column>
+         <property name="text">
+          <string extracomment="Chemical Element">Element</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="x-position">x</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="y-position">y</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="z-position">z</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="Unique identifier for phase shifts">tag</string>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string extracomment="Valency of atom">charge</string>
+         </property>
+        </column>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Python</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Apply|QDialogButtonBox::Cancel|QDialogButtonBox::Ok|QDialogButtonBox::Reset</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources>
+  <include location="res/res.qrc"/>
+ </resources>
+ <connections/>
+</ui>
