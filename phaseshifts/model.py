@@ -49,6 +49,8 @@ from shutil import move
 from glob import glob
 from math import pi
 
+from ase import Atom
+
 from .elements import Element
 from .lib import libphsh
 from .leed import Converter, CLEED_validator
@@ -60,8 +62,8 @@ class Atom(Element):
     Atom class for input into cluster model for muffin-tin potential
     calculations.
     """
-    
     bohr = 0.529
+    
     """
     Conversion factor of Bohr radii to Angstroms (1 Bohr = 0.529Å).
     """
@@ -104,7 +106,7 @@ class Atom(Element):
                          self.element.name, **kwargs)
         
         # continue initialising Atom attributes
-        self.coordinates = coordinates or [0., 0., 0.]
+        self.coordinates = coordinates or kwargs.pop('position', [0., 0., 0.])
         self.valence = valence or 0.
         self.tag = tag or self.element.symbol.title()
         self.radius = radius or self.element.atmrad * 10.  # note atmrad in nm
@@ -147,7 +149,16 @@ class Atom(Element):
     def __copy__(self):
         return deepcopy(self)
     
+    def aseAtom(self):
+        return Atom(self.symbol, position=self.position,
+                    momentum=self.__dict__.get('momentum'), tag=self.tag) 
+    
     # set coordinates of atom within unitcell in terms of a
+    @property
+    def position(self):
+        """ Alias of coordinates property """
+        return self.coordinates
+    
     @property
     def coordinates(self):
         """ Returns coordinates representing the position of the atom """
@@ -207,7 +218,12 @@ class Atom(Element):
     def valence(self, valency):
         """Sets the valency of the atom"""
         self._valence = float(valency)
-        
+    
+    @property
+    def charge(self):
+        """ Returns the valency """
+        return self.valence
+    
     # set muffin-tin radius of atom 
     @property
     def radius(self):
@@ -267,6 +283,11 @@ class Atom(Element):
             self._element = other
         else:
             raise ValueError("'{}' is not an Element() instance".format(other)) 
+
+    @property
+    def symbol(self):
+        """ Returns the elemental symbol """
+        return self._element.symbol
 
     @property
     def occupancy(self):
