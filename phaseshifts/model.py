@@ -43,13 +43,14 @@ from __future__ import division
 import elements
 import atorb
 import os
+import re
 
 from copy import deepcopy
 from shutil import move
 from glob import glob
 from math import pi
 
-from ase import Atom
+import ase
 
 from .elements import Element
 from .lib import libphsh
@@ -57,7 +58,7 @@ from .leed import Converter, CLEED_validator
 from .utils import stringify, expand_filepath
 
 
-class Atom(Element):
+class Atom(Element, ase.Atom):
     """
     Atom class for input into cluster model for muffin-tin potential
     calculations.
@@ -95,15 +96,33 @@ class Atom(Element):
         
         """
         # initialise element type
-        self.element = (element if isinstance(element, Element) 
-                        else elements.ELEMENTS[element] 
-                        if isinstance(element, int) 
-                        else elements.ELEMENTS[element.title()]) 
+        try:
+            self.element = (element if isinstance(element, Element) 
+                            else elements.ELEMENTS[element] 
+                            if isinstance(element, int) 
+                            else elements.ELEMENTS[element.title()])
+        except:
+            # attempt to guess element from tag as backup
+            self.tag = str(tag)
+            self.element = elements.ELEMENTS[self.tag_info('element')]
         
         # initialise Element base class
         Element.__init__(self, self.element.number, 
                          self.element.symbol, 
-                         self.element.name, **kwargs)
+                         self.element.name, self.element.__dict__)
+        
+        # now do the same for ase Atom base class - note we are using 
+        # multiple inheritance, so here be dragons...
+        ase.Atom.__init__(self, 
+                          symbol=self.element.symbol, 
+                          position=kwargs.pop('position', coordinates),
+                          tag=tag, 
+                          momentum=kwargs.pop('momentum', None), 
+                          mass=kwargs.pop('mass', self.element.mass), 
+                          magmom=kwargs.pop('magnom', None), 
+                          charge=kwargs.pop('charge', self.valence), 
+                          atoms=kwargs.pop('atoms', None), 
+                          index=kwargs.pop('index', None))
         
         # continue initialising Atom attributes
         self.coordinates = coordinates or kwargs.pop('position', [0., 0., 0.])
@@ -149,51 +168,14 @@ class Atom(Element):
     def __copy__(self):
         return deepcopy(self)
     
-    def aseAtom(self):
-        return Atom(self.symbol, position=self.position,
-                    momentum=self.__dict__.get('momentum'), tag=self.tag) 
-    
-    # set coordinates of atom within unitcell in terms of a
-    @property
-    def position(self):
-        """ Alias of coordinates property """
-        return self.coordinates
-    
     @property
     def coordinates(self):
         """ Returns coordinates representing the position of the atom """
-        return self._coordinates or [0., 0., 0.]
+        return self.position or [0., 0., 0.]
     
     @coordinates.setter
     def coordinates(self, coordinates):
-        """ 
-        Sets coordinates representing the position of the atom 
-        
-        Raises
-        ------
-        CoordinatesError 
-            If coordinates do not have 3 items in the array.
-        TypeError
-            If coordinates is not a supported array-like variable.
-        ValueError
-            If the coordinates cannot be converted to floating point numbers.
-        """
-        if isinstance(coordinates, list) or isinstance(coordinates, tuple): 
-            if len(coordinates) == 3:
-                try:
-                    self._coordinates = [float(pt) for pt in coordinates]
-                except ValueError:
-                    raise ValueError
-            else:
-                raise CoordinatesError("coordinates must have 3 items")
-        else:
-            try:
-                import numpy as np
-                if isinstance(coordinates, np.array):
-                    self.coordinates = list(coordinates)
-            except:
-                raise TypeError("coordinates is an unsupported type (%s)"
-                                % type(coordinates))
+        self.position = coordinates
                         
     @property
     def bohr_coordinates(self):
@@ -212,17 +194,12 @@ class Atom(Element):
         Returns the valency of the atom 
         (i.e. whether it is neutral or an ion) 
         """
-        return self._valence
+        return self.charge
     
     @valence.setter
     def valence(self, valency):
         """Sets the valency of the atom"""
-        self._valence = float(valency)
-    
-    @property
-    def charge(self):
-        """ Returns the valency """
-        return self.valence
+        self.charge = float(valency)
     
     # set muffin-tin radius of atom 
     @property
@@ -255,8 +232,12 @@ class Atom(Element):
     
     @tag.setter
     def tag(self, tag):
-        """ Sets the unique identifer for Atom instance """
-        self._tag = (tag or self.element.symbol if self.valence == 0. 
+        """ Sets the unique identifer for Atom instance 
+        
+        Any invalid character is also removed from tag
+        """
+        self._tag = (re.sub("[@\"\':;*&\^%$\!]", "", tag) or 
+                     self.element.symbol if self.valence == 0. 
                      else str(self.element.symbol + '_' + 
                               self._get_valency_str()))
 
@@ -270,6 +251,33 @@ class Atom(Element):
         suffix = '-' if self.valence < 0 else '+'
         number = str("%g" % float(str("%f" % self.valence))).replace('-', '')
         return number + suffix
+    
+    @staticmethod
+    def tag_info(tag):
+        """ Returns a dictionary of information extracted from the tag string """
+        info = {}
+        if re.match('.*_([+-][0-9]+[.]{0,1}[0-9]{0,}|'
+                    '[0-9]+[.]{0,1}[0-9]{0,}[-+])$', tag):
+            info['valence'] = float(re.sub('([0-9]+[.]{0,}[0-9]{0,})([+-])', 
+                                           '\\2\\1', tag.split('_')[-1]))
+        
+        elem = ''.join(tag.split('_')[:1])
+        try:
+            atom = Atom(elem)
+            info['element'] = atom.symbol
+        except:
+            pass
+        
+        if re.match('.*(_[A-z]+[A-z0-9-.]{0,}){1,}.*', tag):
+            info['site'] = re.sub('_([+-][0-9]+[.]{0,1}[0-9]{0,}|'
+                                  '[0-9]+[.]{0,1}[0-9]{0,}[-+])$', '', 
+                                  re.sub('.*_([A-z]+[A-z0-9]{0,}){1,}.*', 
+                                         '\\1', tag.split('_')[1:]))
+        info['tag'] = tag 
+        
+        return info
+        
+        
   
     @property
     def element(self):

@@ -82,3 +82,10 @@ class ImportDialog(QDialog):
         elif action == 'ok':
             self.action = action 
             self.ui.close()
+
+if __name__ == '__main__':
+    from qtsix.Qt import QApplication
+    app = QApplication(sys.argv)
+    window = ImportDialog()
+    print(window)
+    app.exec_()
