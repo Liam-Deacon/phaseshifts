@@ -40,8 +40,6 @@ shift calculation package.
 from __future__ import print_function
 from __future__ import division
 
-import elements
-import atorb
 import os
 import re
 
@@ -50,15 +48,20 @@ from shutil import move
 from glob import glob
 from math import pi
 
-import ase
+from . import atorb, elements
 
 from .elements import Element
 from .lib import libphsh
 from .leed import Converter, CLEED_validator
 from .utils import stringify, expand_filepath
 
+from ase.atom import Atom as AseAtom, atomproperty, names
 
-class Atom(Element, ase.Atom):
+names.update({'valence': 0.,
+              'occupancy': 1.,
+              'radius': None})
+
+class Atom(AseAtom):
     """
     Atom class for input into cluster model for muffin-tin potential
     calculations.
@@ -66,7 +69,7 @@ class Atom(Element, ase.Atom):
     bohr = 0.529
     
     """
-    Conversion factor of Bohr radii to Angstroms (1 Bohr = 0.529Å).
+    Conversion factor of Bohr radii to Angstroms (1 Bohr = 0.529Ã…).
     """
 
     def __init__(self, element, coordinates=[0., 0., 0.], valence=0., 
@@ -107,26 +110,23 @@ class Atom(Element, ase.Atom):
             self.element = elements.ELEMENTS[self.tag_info('element')]
         
         # initialise Element base class
-        Element.__init__(self, self.element.number, 
-                         self.element.symbol, 
-                         self.element.name, self.element.__dict__)
+        self.__dict__.update(self.element.__dict__)
         
-        # now do the same for ase Atom base class - note we are using 
-        # multiple inheritance, so here be dragons...
-        ase.Atom.__init__(self, 
-                          symbol=self.element.symbol, 
-                          position=kwargs.pop('position', coordinates),
-                          tag=tag, 
-                          momentum=kwargs.pop('momentum', None), 
-                          mass=kwargs.pop('mass', self.element.mass), 
-                          magmom=kwargs.pop('magnom', None), 
-                          charge=kwargs.pop('charge', self.valence), 
-                          atoms=kwargs.pop('atoms', None), 
-                          index=kwargs.pop('index', None))
+        # now initialize ase Atom base class
+        AseAtom.__init__(self, 
+                         symbol=self.element.symbol, 
+                         position=kwargs.pop('position', coordinates),
+                         tag=tag, 
+                         momentum=kwargs.pop('momentum', None), 
+                         mass=kwargs.pop('mass', self.element.mass), 
+                         magmom=kwargs.pop('magnom', None), 
+                         charge=kwargs.pop('charge', valence), 
+                         atoms=kwargs.pop('atoms', None), 
+                         index=kwargs.pop('index', None))
         
-        # continue initialising Atom attributes
-        self.coordinates = coordinates or kwargs.pop('position', [0., 0., 0.])
-        self.valence = valence or 0.
+        self.data['valence'] = valence
+        self.data['radius'] = None
+        
         self.tag = tag or self.element.symbol.title()
         self.radius = radius or self.element.atmrad * 10.  # note atmrad in nm
         if self.valence != 0.:
@@ -187,34 +187,6 @@ class Atom(Element, ase.Atom):
         """ Sets the coordinates in Bohr """
         self.coordinates = [r * self.bohr for r in coordinates]
     
-    # set valence of atom
-    @property
-    def valence(self):
-        """ 
-        Returns the valency of the atom 
-        (i.e. whether it is neutral or an ion) 
-        """
-        return self.charge
-    
-    @valence.setter
-    def valence(self, valency):
-        """Sets the valency of the atom"""
-        self.charge = float(valency)
-    
-    # set muffin-tin radius of atom 
-    @property
-    def radius(self):
-        """ Returns the muffin-tin radius of the atom in Angstroms """
-        return self._radius 
-    
-    @radius.setter
-    def radius(self, radius):
-        """ Sets the muffin-tin radius of the atom in Angstroms. """
-        try:
-            self._radius = float(radius)
-        except:
-            raise ValueError
-    
     @property
     def bohr_radius(self):
         """ Returns the muffin-tin radius in Bohr """
@@ -228,7 +200,7 @@ class Atom(Element, ase.Atom):
     @property
     def tag(self):
         """ Unique identification for Atom instance """
-        return self._tag or self.element.symbol
+        return self.data.get('phsh_tag', self.element.symbol)
     
     @tag.setter
     def tag(self, tag):
@@ -236,10 +208,11 @@ class Atom(Element, ase.Atom):
         
         Any invalid character is also removed from tag
         """
-        self._tag = (re.sub("[@\"\':;*&\^%$\!]", "", tag) or 
-                     self.element.symbol if self.valence == 0. 
-                     else str(self.element.symbol + '_' + 
-                              self._get_valency_str()))
+        self.data['phsh_tag'] = (re.sub("[@\"\':;*&\^%$\!]", "", tag) or 
+                                 self.element.symbol if self.valence == 0. 
+                                 else str(self.element.symbol + '_' + 
+                                          self._get_valency_str()))
+         
 
     @property
     def Z(self):
@@ -275,9 +248,7 @@ class Atom(Element, ase.Atom):
                                          '\\1', tag.split('_')[1:]))
         info['tag'] = tag 
         
-        return info
-        
-        
+        return info      
   
     @property
     def element(self):
@@ -300,7 +271,7 @@ class Atom(Element, ase.Atom):
     @property
     def occupancy(self):
         """ Returns the fractional occupancy of the atom """
-        return self._occupancy
+        return self.data.get('occupancy', None)
         
     @occupancy.setter
     def occupancy(self, fraction):
@@ -308,12 +279,15 @@ class Atom(Element, ase.Atom):
         try:
             fraction = float(fraction)
             if fraction >= 0. and fraction <= 1.:
-                self._occupancy = fraction 
+                self.data['occupancy'] = fraction 
             else:
                 raise ValueError('fractional occupancy must be '
                                  'between 0. and 1.')
         except any as error:
             raise error
+        
+    valence = atomproperty('valence', 'Valency of atom')
+    radius = atomproperty('radius', 'Muffin-Tin radius of atom in Angstroms')
             
 
 class Unitcell(object):
@@ -464,11 +438,11 @@ class Unitcell(object):
 
     def angstroms_to_bohr(self, angstroms):
         """ Returns the magnitude of `angstroms` in terms of Bohr radii. """
-        return angstroms / self.bohr  # (1 Bohr = 0.529Å)
+        return angstroms / self.bohr  # (1 Bohr = 0.529Ã…)
     
     def bohr_to_angstroms(self, bohrs):
         """ Returns the number of Bohr radii, `bohrs`, in Angstroms. """
-        return bohrs * self.bohr  # (1 Bohr = 0.529Å)
+        return bohrs * self.bohr  # (1 Bohr = 0.529Ã…)
 
     @property
     def a(self):
@@ -491,12 +465,12 @@ class Unitcell(object):
         -----
         To retrieve a in terms of Angstroms use 'Unitcell.a', whereas the
         internal parameter 'unitcell.angstroms_to_bohr(Unitcell.a)' converts 
-        `a` into Bohr radii (1 Bohr = 0.529Å), which is used for 
+        `a` into Bohr radii (1 Bohr = 0.529Ã…), which is used for 
         the muffin-tin potential calculations in libphsh (wilPOT subroutine).
         
         """
         self._a = float(a)
-        self.a_in_bohr = self._a / self.bohr  # (1 Bohr = 0.529Å)
+        self.a_in_bohr = self._a / self.bohr  # (1 Bohr = 0.529Ã…)
 
     @property
     def b(self):
@@ -516,7 +490,7 @@ class Unitcell(object):
             The magnitude of the 2nd in-plane lattice vector in Angstroms.  
         """
         self._b = float(b)
-        self.b_in_bohr = self._b / self.bohr  # (1 Bohr = 0.529Å)
+        self.b_in_bohr = self._b / self.bohr  # (1 Bohr = 0.529Ã…)
 
     @property
     def c(self):
@@ -535,7 +509,7 @@ class Unitcell(object):
              
         """
         self._c = float(c)
-        self.c_in_bohr = self._c / self.bohr  # (1 Bohr = 0.529Å)
+        self.c_in_bohr = self._c / self.bohr  # (1 Bohr = 0.529Ã…)
     
     def degrees_to_radians(self, degrees):
         """ Returns angle alpha in radians """
@@ -1006,8 +980,8 @@ class MTZModel(Model):
 
         Examples
         --------
-        For Re the bulk c distance is 2.76Å, whereas a possible slab c distance
-        could be ~10Å.
+        For Re the bulk c distance is 2.76Ã…, whereas a possible slab c distance
+        could be ~10Ã….
 
         """
         try:
