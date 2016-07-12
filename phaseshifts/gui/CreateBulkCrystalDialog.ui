@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
-    <height>516</height>
+    <width>520</width>
+    <height>447</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -26,583 +26,265 @@
      <property name="title">
       <string>Lattice</string>
      </property>
-     <widget class="QWidget" name="horizontalLayoutWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>23</y>
-        <width>359</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Lattice:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="spaceGroupCombo">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <item>
-          <property name="text">
-           <string>Spacegroup</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Face Centre Cubic">fcc</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Body Centre Cubic">bcc</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Diamond">diamond</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Hexagonal Close Packed">hcp</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Graphite structure">graphite</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Rocksalt structure e.g. NaCl">rocksalt</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Rutile Structure e.g. TiO2">rutile</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string extracomment="Wurtzite Structure e.g. GaN">wurtzite</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Space group:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLineEdit" name="lineEdit"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Status</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>51</y>
-        <width>251</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Size:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="xLabel">
-         <property name="text">
-          <string>x</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="xSpinBox">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="value">
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="yLabel">
-         <property name="text">
-          <string>y</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="ySpinBox">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="value">
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="zLabel">
-         <property name="text">
-          <string>z</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="zSpinBox">
-         <property name="minimum">
-          <number>1</number>
-         </property>
-         <property name="value">
-          <number>1</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_8">
-         <property name="text">
-          <string>unit cells</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_4">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>79</y>
-        <width>365</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Lattice Parameters</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="latticeCartezianRadioButton">
-         <property name="text">
-          <string>Cartezian Coordinates</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="latticeBasisVectorsRadioButton">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Basis Vectors</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_6">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>135</y>
-        <width>284</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_6">
-       <item>
-        <widget class="QLabel" name="bLabel">
-         <property name="text">
-          <string>b:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="bSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="bComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals a</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals c</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="betaLabel">
-         <property name="text">
-          <string>β</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="betaSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="betaComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals α</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals β</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_8">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>163</y>
-        <width>301</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_8">
-       <item>
-        <widget class="QLabel" name="cLabel">
-         <property name="text">
-          <string>c</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="cSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="cComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals a</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals b</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="gammaLabel">
-         <property name="text">
-          <string>γ</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="gammaSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="gammaComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals α</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals β</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_7">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>107</y>
-        <width>306</width>
-        <height>22</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
-       <item>
-        <widget class="QLabel" name="aLabel">
-         <property name="text">
-          <string>a:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="aSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="aComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals b</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals c</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="alphaLabel">
-         <property name="text">
-          <string>α</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QDoubleSpinBox" name="alphaSpinBox"/>
-       </item>
-       <item>
-        <widget class="QComboBox" name="alphaComboBox">
-         <item>
-          <property name="text">
-           <string>free</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals β</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>equals γ</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>fixed</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <widget class="QWidget" name="horizontalLayoutWidget_9">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>191</y>
-        <width>332</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_9">
-       <item>
-        <widget class="QPushButton" name="getFromDatabaseButton">
-         <property name="text">
-          <string>Get from database</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Database:</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="aseRadioButton">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="toolTip">
-          <string>Use ase database</string>
-         </property>
-         <property name="text">
-          <string>ase</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QRadioButton" name="pymatgenRadioButton">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>Use pymatgen database</string>
-         </property>
-         <property name="text">
-          <string>pymatgen</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-     <zorder>horizontalLayoutWidget</zorder>
-     <zorder>horizontalLayoutWidget_2</zorder>
-     <zorder>horizontalLayoutWidget_4</zorder>
-     <zorder>horizontalLayoutWidget_6</zorder>
-     <zorder>horizontalLayoutWidget_8</zorder>
-     <zorder>horizontalLayoutWidget_7</zorder>
-     <zorder>horizontalLayoutWidget_9</zorder>
-     <zorder>horizontalLayoutWidget_5</zorder>
-    </widget>
-   </item>
-   <item>
-    <widget class="QGroupBox" name="basisGroupBox">
-     <property name="title">
-      <string>Basis</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
-         <widget class="QRadioButton" name="radioButton">
+         <widget class="QLabel" name="label">
           <property name="text">
-           <string>Cartezian Coordinates</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
+           <string>Lattice:</string>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioButton_2">
-          <property name="enabled">
-           <bool>false</bool>
+         <widget class="QComboBox" name="spaceGroupCombo">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <item>
+           <property name="text">
+            <string>Spacegroup</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Face Centre Cubic">fcc</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Body Centre Cubic">bcc</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Diamond">diamond</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Hexagonal Close Packed">hcp</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Graphite structure">graphite</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Rocksalt structure e.g. NaCl">rocksalt</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Rutile Structure e.g. TiO2">rutile</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string extracomment="Wurtzite Structure e.g. GaN">wurtzite</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Space groups can be 1 to 230 or try to use the full notation (may not be work!)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Fractional Coordinates</string>
+           <string>Space group:</string>
           </property>
          </widget>
         </item>
         <item>
-         <spacer name="horizontalSpacer_3">
+         <widget class="QLineEdit" name="spaceGroupEdit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Space groups can be 1 to 230 or try to use the full notation (may not be work!)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>1</string>
+          </property>
+          <property name="maxLength">
+           <number>10</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_3">
+          <property name="text">
+           <string>Status</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_18">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Size:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="xLabel">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="text">
+           <string>x</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="xSpinBox">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="yLabel">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="text">
+           <string>y</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="ySpinBox">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="zLabel">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="text">
+           <string>z</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="zSpinBox">
+          <property name="toolTip">
+           <string>Specifies the number of repeats of the unit cell along a given direction</string>
+          </property>
+          <property name="minimum">
+           <number>1</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>unit cells</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="text">
+           <string>Lattice Parameters</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_7">
+        <item>
+         <spacer name="horizontalSpacer_8">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -615,59 +297,728 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="addButton">
-          <property name="text">
-           <string>Add</string>
+         <widget class="QLabel" name="aLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="icon">
-           <iconset resource="res/res.qrc">
-            <normaloff>:/plus_32x32.png</normaloff>:/plus_32x32.png</iconset>
+          <property name="text">
+           <string>a:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="removeButton">
-          <property name="text">
-           <string>Remove</string>
+         <widget class="QDoubleSpinBox" name="aSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="icon">
-           <iconset resource="res/res.qrc">
-            <normaloff>:/minus_32x8.png</normaloff>:/minus_32x8.png</iconset>
+          <property name="decimals">
+           <number>4</number>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="aComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals b</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals c</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_9">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="alphaLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle alpha is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;α = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>α:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="alphaSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle alpha is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;α = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>2</number>
+          </property>
+          <property name="minimum">
+           <double>-180.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>180.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>90.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="alphaComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle alpha is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;α = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals β</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals γ</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_7">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <spacer name="horizontalSpacer_10">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="bLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;b&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>b:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="bSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;b&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>4</number>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="bComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;b&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals a</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals c</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_11">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="betaLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle beta is the angle between a and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>β:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="betaSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle beta is the angle between a and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>2</number>
+          </property>
+          <property name="minimum">
+           <double>-180.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>180.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>90.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="betaComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle beta is the angle between a and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals α</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals β</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_12">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_8">
+        <item>
+         <spacer name="horizontalSpacer_13">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="cLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;c&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>c:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="cSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;c&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>4</number>
+          </property>
+          <property name="value">
+           <double>1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="cComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;c&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals a</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals b</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_14">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="gammaLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle gamma is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>γ:</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="gammaSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle gamma is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>2</number>
+          </property>
+          <property name="minimum">
+           <double>-180.000000000000000</double>
+          </property>
+          <property name="maximum">
+           <double>180.000000000000000</double>
+          </property>
+          <property name="value">
+           <double>90.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="gammaComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Angle gamma is the angle between b and c.&lt;/p&gt;&lt;p&gt;More strictly if we have the basis vectors &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt;, &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;3&lt;/span&gt; it is:&lt;/p&gt;&lt;p&gt;β = &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;1&lt;/span&gt; ^ &lt;span style=&quot; font-weight:600;&quot;&gt;a&lt;/span&gt;&lt;span style=&quot; font-weight:600; vertical-align:sub;&quot;&gt;2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>free</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals α</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>equals β</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>fixed</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_15">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_10">
+        <item>
+         <spacer name="horizontalSpacer_17">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="uLabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Internal lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;u &lt;/span&gt; used as a convenience parameter for certain structures e.g. wurtzite &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>u:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QDoubleSpinBox" name="uSpinBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Internal lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;u &lt;/span&gt; used as a convenience parameter for certain structures e.g. wurtzite &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="decimals">
+           <number>4</number>
+          </property>
+          <property name="minimum">
+           <double>0.375000000000000</double>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="uComboBox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Internal lattice parameter &lt;span style=&quot; font-weight:600;&quot;&gt;u &lt;/span&gt; used as a convenience parameter for certain structures e.g. wurtzite &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>custom</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ideal</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_9">
+        <item>
+         <widget class="QPushButton" name="getFromDatabaseButton">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Attempts to collect structural information from the selected database.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;ase&lt;/span&gt; - Atomic Simulation Environment (local database)&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pymatgen&lt;/span&gt; - Python Materials Genomics (query materialsproject online database)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Get from database</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_4">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Database:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="aseRadio">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="toolTip">
+           <string>Use ase database</string>
+          </property>
+          <property name="text">
+           <string>ase</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="pymatgenRadio">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Use pymatgen database</string>
+          </property>
+          <property name="text">
+           <string>pymatgen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_16">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="MAPILabel">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;API key to use the Materials Project database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If you do not have a personal key please visit the &lt;a href=&quot;https://materialsproject.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;materials project website&lt;/span&gt;&lt;/a&gt; and sign up to use their open databases. &lt;/p&gt;&lt;p&gt;Note that this is automatically detected with the &lt;span style=&quot; font-weight:600; font-style:italic; color:#008f00;&quot;&gt;MAPI_KEY&lt;/span&gt; environment variable.&lt;/p&gt;&lt;p&gt;If you have forgotten your key, you can always regerate a new one from: &lt;a href=&quot;https://materialsproject.org/dashboard&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://materialsproject.org/dashboard&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Materials Project API Key:</string>
           </property>
          </widget>
         </item>
        </layout>
       </item>
+     </layout>
+     <zorder>horizontalLayoutWidget</zorder>
+     <zorder>horizontalLayoutWidget_2</zorder>
+     <zorder>horizontalLayoutWidget_4</zorder>
+     <zorder>horizontalLayoutWidget_6</zorder>
+     <zorder>horizontalLayoutWidget_8</zorder>
+     <zorder>horizontalLayoutWidget_7</zorder>
+     <zorder>horizontalLayoutWidget_9</zorder>
+     <zorder>horizontalLayoutWidget_5</zorder>
+     <zorder>horizontalLayoutWidget_10</zorder>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="basisGroupBox">
+     <property name="title">
+      <string>Basis</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QTableWidget" name="tableWidget">
+       <layout class="QVBoxLayout" name="basisVbox">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QRadioButton" name="radioButton">
+            <property name="text">
+             <string>Cartezian Coordinates</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="radioButton_2">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Fractional Coordinates</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="addButton">
+            <property name="toolTip">
+             <string>Add a new atom to model</string>
+            </property>
+            <property name="text">
+             <string>Add</string>
+            </property>
+            <property name="icon">
+             <iconset resource="res/res.qrc">
+              <normaloff>:/plus_32x32.png</normaloff>:/plus_32x32.png</iconset>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="removeButton">
+            <property name="toolTip">
+             <string>Remove selected atom from model</string>
+            </property>
+            <property name="text">
+             <string>Remove</string>
+            </property>
+            <property name="icon">
+             <iconset resource="res/res.qrc">
+              <normaloff>:/minus_32x8.png</normaloff>:/minus_32x8.png</iconset>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTableWidget" name="table">
         <column>
          <property name="text">
-          <string extracomment="Chemical Element">Element</string>
+          <string extracomment="phaseshifts tag">Tag</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string extracomment="x-position">x</string>
+          <string>x</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string extracomment="y-position">y</string>
+          <string>y</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string extracomment="z-position">z</string>
+          <string>z</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string extracomment="Unique identifier for phase shifts">tag</string>
+          <string extracomment="charge">Q</string>
          </property>
         </column>
         <column>
          <property name="text">
-          <string extracomment="Valency of atom">charge</string>
+          <string extracomment="radius">r</string>
          </property>
         </column>
        </widget>
