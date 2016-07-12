@@ -5,6 +5,11 @@ Created on 10 Jul 2016
 '''
 import os
 
+try:
+    from cyordereddict import OrderedDict
+except ImportError:
+    from collections import OrderedDict
+
 from qtsix.QtWidgets import (QLabel, QWidget, QDoubleSpinBox, 
                              QHBoxLayout, QVBoxLayout, QWidgetItem,
                              QTableWidget, QTableWidgetItem,
@@ -13,11 +18,17 @@ from qtsix.QtCore import Slot, Signal
 from qtsix.QtGui import QIcon
 from qtsix import uic
 
-
 try:
+    from . import res_rc
     from ..model import Atom, Unitcell
 except ValueError:
-    from phaseshifts.model import Atom, Unitcell
+    try:
+        from phaseshifts.gui import res_rc
+        from phaseshifts.model import Atom, Unitcell
+    except ImportError:
+        import res_rc
+        Atom = Unitcell = None
+    
 
 class UnitCellWidget(QWidget):
     UNITCELL_CLASS = Unitcell
@@ -59,11 +70,12 @@ class UnitCellWidget(QWidget):
 
 class AtomsTable(QTableWidget):
     
-    column_headers = {'tag': {'tooltip': 'Phaseshifts tag for species'}, 
-                      'x': {'tooltip': 'x position in Angstroms'}, 
-                      'y': {'tooltip': 'x position in Angstroms'}, 
-                      'z': {'tooltip': 'x position in Angstroms'}, 
-                      'Q': {'tooltip': 'Valency of specie e.g. -2'}}
+    column_headers = OrderedDict((('tag', {'tooltip': 'Phaseshifts tag for species'}), 
+                                  ('x', {'tooltip': 'x-position in Angstroms'}), 
+                                  ('y', {'tooltip': 'y-position in Angstroms'}), 
+                                  ('z', {'tooltip': 'z-position in Angstroms'}), 
+                                  ('Q', {'tooltip': 'Valency of specie e.g. -2'}),
+                                  ('r', {'tooltip': 'Muffin-Tin radius'})))
     
     def __init__(self, parent=None, atoms=[]):
         super(self.__class__, self).__init__(parent)
@@ -82,11 +94,41 @@ class AtomsTable(QTableWidget):
             self.setVerticalHeaderItem(i, item)
         self.setHorizontalHeaderLabels(list(self.column_headers.keys()))
         
+        self.atom_items = []
         
+        self.setToolTip('List of atoms in model')
+    
+    @property
+    def atom_items(self):
+        return self._atom_items
+    
+    @atom_items.setter
+    def atom_items(self, items):
+        self._atom_items = items
+    
+    @property
+    def atoms(self):
+        return self._atoms
+    
+    @atoms.setter
+    def atoms(self, atoms):
+        self.clear()
+        self._atoms = atoms
+    
+    def updateToolTip(self):
+        pass
         
     def addAtom(self, atom=None):
-        if atom:
-            pass
+        if not atom:
+            item, ok = QInputDialog.getText(self, "Add atom", 
+                                            "Enter element name, number or phaseshifts tag", 
+                                            text='C')
+            if ok and item:
+                #atom = Atom(**Atom.tag_info(item))
+                row = self.rowCount()
+                self.insertRow(row)
+                self.setVerticalHeaderLabels([item])
+                #self.ui.table.atom_items
         print('adding: {}'.format(atom))
     
     def deleteAtom(self, atom=None):
@@ -110,9 +152,10 @@ class BulkCrystalDialog(QWidget):
         
     def _init_ui(self):
         # create atoms table
-        #table = AtomsTable()
-        #self.ui.basisVbox.addWidget(table)
-        #self.table = table
+        table = AtomsTable()
+        self.ui.table.hide()  # 'delete' vanilla QTableWidget
+        self.ui.basisVbox.addWidget(table)
+        self.table = table
         
         # connect actions
         self.ui.buttonBox.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
@@ -122,8 +165,8 @@ class BulkCrystalDialog(QWidget):
         
         self.modelChanged.connect(lambda x: sys.stdout.write('{}'.format(x)))
         
-        self.ui.addButton.clicked.connect(self.addAtom)
-        self.ui.removeButton.clicked.connect(self.deleteAtom)
+        self.ui.addButton.clicked.connect(self.table.addAtom)
+        self.ui.removeButton.clicked.connect(self.table.deleteAtom)
         
     def _doButtonClick(self, i):
         if i == QDialogButtonBox.Ok:
@@ -144,24 +187,6 @@ class BulkCrystalDialog(QWidget):
     def apply(self):
         ''' Apply value '''
         self.modelChanged.emit(self.model)
-        
-    def addAtom(self, atom=None):
-        if not atom:
-            item, ok = QInputDialog.getText(self, "Add atom", 
-                                            "Enter element name, number or phaseshifts tag", 
-                                            text='C')
-            if ok and item:
-                atom = Atom(**Atom.tag_info(item))
-                row = self.ui.table.rowCount()
-                self.ui.table.insertRow(row)
-                self.ui.table.setHorizontalHeaderLabels([atom.symbol])
-                self.ui.table.item
-                
-            
-        print('adding: {}'.format(atom))
-    
-    def deleteAtom(self, atom=None):
-        print('deleting: {}'.format(atom))
         
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
+    <width>540</width>
     <height>447</height>
    </rect>
   </property>
@@ -896,7 +896,14 @@
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;API key to use the Materials Project database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If you do not have a personal key please visit the &lt;a href=&quot;https://materialsproject.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;materials project website&lt;/span&gt;&lt;/a&gt; and sign up to use their open databases. &lt;/p&gt;&lt;p&gt;Note that this is automatically detected with the &lt;span style=&quot; font-weight:600; font-style:italic; color:#008f00;&quot;&gt;MAPI_KEY&lt;/span&gt; environment variable.&lt;/p&gt;&lt;p&gt;If you have forgotten your key, you can always regerate a new one from: &lt;a href=&quot;https://materialsproject.org/dashboard&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://materialsproject.org/dashboard&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string>Materials Project API Key:</string>
+           <string>MAPI_KEY:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;API key to use the Materials Project database&lt;/span&gt;&lt;/p&gt;&lt;p&gt;If you do not have a personal key please visit the &lt;a href=&quot;https://materialsproject.org&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;materials project website&lt;/span&gt;&lt;/a&gt; and sign up to use their open databases. &lt;/p&gt;&lt;p&gt;Note that this is automatically detected with the &lt;span style=&quot; font-weight:600; font-style:italic; color:#008f00;&quot;&gt;MAPI_KEY&lt;/span&gt; environment variable.&lt;/p&gt;&lt;p&gt;If you have forgotten your key, you can always regerate a new one from: &lt;a href=&quot;https://materialsproject.org/dashboard&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;https://materialsproject.org/dashboard&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
          </widget>
         </item>
