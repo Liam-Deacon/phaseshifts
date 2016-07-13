@@ -19,6 +19,38 @@ from qtsix.QtCore import Slot, Signal
 from qtsix.QtGui import QIcon
 from qtsix import uic
 
+import ase.data
+from ase.spacegroup import Spacegroup
+
+try:
+    from pymatgen.matproj.rest import MPRester
+except ImportError:
+    MPRester = None
+
+crystal_definitions = [
+    ('Spacegroup', 1, True, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 0, 0, 0, 0, 0], [True, True, True, True, True, True], [['', '', '', '']]), 
+    ('fcc', 225, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], [['', '', '', '']]), 
+    ('bcc', 229, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], [['', '', '', '']]), 
+    ('diamond', 227, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], [['', '', '', '']]), 
+    ('hcp', 194, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 120.0], 
+        [0, 1, 0, 3, 3, 3], [False, False, False, False, False, False], [['', '1./3.', '2./3.', '3./4.']]), 
+    ('graphite', 186, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 120.0], 
+        [0, 1, 0, 3, 3, 3], [False, False, False, False, False, False], [['', '0', '0', '0'], ['', '1./3.', 
+         '2./3.', '0']]), 
+    ('rocksalt', 225, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], [['', '0', '0', '0'], ['', '0.5', 
+         '0.5', '0.5']]), 
+    ('rutile', 136, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 0, 3, 3, 3], [False, False, False, False, False, False], [['', '0', '0', '0'], ['O', '0.3', 
+         '0.3', '0']]),
+    ('wurtzite', 186, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 120.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], 
+        [['', '0', '0', '0'], ['', '0.5', '0.5', '0.5']])]
+
 try:
     from . import res_rc
     from ..model import Atom, Unitcell
@@ -187,6 +219,7 @@ class AtomsTable(QTableWidget):
 
 
 class BulkCrystalDialog(QWidget):
+    crystal_definitions = crystal_definitions
     modelChanged = Signal(object)
     
     def __init__(self, parent=None, model=None):
@@ -218,14 +251,16 @@ class BulkCrystalDialog(QWidget):
         
         self.modelChanged.connect(lambda x: sys.stdout.write('{}'.format(x)))
         
+        self.ui.getFromDatabaseButton.clicked.connect(self.getFromDatabase)
+        self.ui.pymatgenRadio.setEnabled(MPRester is not None)
+        
         self.ui.addButton.clicked.connect(self.table.addAtom)
         self.ui.removeButton.clicked.connect(self.table.deleteAtom)
+    
+    def updateModel(self):
         
-    def _doButtonClick(self, i):
-        if i == QDialogButtonBox.Ok:
-            print('Ok')
-        print(i)
-        
+        return self.model
+    
     def ok(self):
         self.apply()
         self.close()
@@ -240,12 +275,51 @@ class BulkCrystalDialog(QWidget):
     def apply(self):
         ''' Apply value '''
         self.modelChanged.emit(self.model)
-        
+    
+    def getFromDatabase(self, *args):
+        if self.ui.aseRadio.isChecked():
+            element = self.elements[0][0].get_text()
+            z = ase.data.atomic_numbers[self.legal_element]
+            ref = ase.data.reference_states[z]
+            lattice = ref['symmetry']
+            index = 0
+            while index < len(crystal_definitions) and crystal_definitions[index][0] != lattice:
+                index += 1
+            if index == len(crystal_definitions) or not self.legal_element:
+                QInputDialog.error(_("Can't find lattice definition!"))
+                return False
+            self.structinfo.set_active(index)
+            self.lattice_lbuts[0].set_value(ref['a'])
+            if lattice == 'hcp':
+                self.lattice_lbuts[2].set_value(ref['c/a']*ref['a'])
+            self.elements[0][0].set_text(element)
+            if lattice in ['fcc', 'bcc', 'diamond']:
+                self.elements[0][1].set_text('0')
+                self.elements[0][2].set_text('0')
+                self.elements[0][3].set_text('0')
+        elif self.ui.pymatgenRadiu.isChecked():
+            print('use pymatgen here')
+            compound, ok = QInputDialog.getText(self, "Search Materials Project", 
+                                                "Enter element or compound:")
+            if not ok:
+                return
+            search_text = compound.replace(" ", "") + " " if compound else ''
+            space_group = SpaceGroup(self.space_group).symbol.replace(" ", "")
+            search_text += space_group
+            with MPRester("USER_API_KEY") as m:
+            
+                # Get the formulas and energies of materials with materials_id mp-1234
+                # or with formula FeO.
+                results = m.query(space_group, ['structure'])
+                print(results)
+
 
 if __name__ == '__main__':
     from qtsix.Qt import QApplication
     import sys
     app = QApplication(sys.argv)
+    
+    
     
     widget = BulkCrystalDialog()
     widget.show()
