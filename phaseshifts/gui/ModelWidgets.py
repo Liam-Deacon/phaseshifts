@@ -176,7 +176,14 @@ class AtomsTable(QTableWidget):
         print('adding: {}'.format(atom))
     
     def deleteAtom(self, atom=None):
-        print('deleting: {}'.format(atom))
+        row = self.currentRow()
+        if row == -1:
+            return  # invalid row
+        print('deleting: {}'.format(row))
+        self.atoms.pop(row)
+        row_data = self.row_data.pop(row)
+        self.removeRow(row)
+        
 
 
 class BulkCrystalDialog(QWidget):
