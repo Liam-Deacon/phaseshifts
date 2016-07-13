@@ -4,6 +4,7 @@ Created on 10 Jul 2016
 @author: Liam Deacon
 '''
 import os
+import sys
 
 try:
     from cyordereddict import OrderedDict
@@ -27,7 +28,20 @@ except ValueError:
         from phaseshifts.model import Atom, Unitcell
     except ImportError:
         import res_rc
-        Atom = Unitcell = None
+        sys.path.insert(0, os.path.abspath(os.path.join("..", os.path.dirname(__file__))))
+        try:
+            from model import Atom, Unitcell
+        except ImportError as err:
+            from warnings import warn
+            sys.stderr.write("ImportWarning: {}\n".format(err.message))
+            try:
+                from ase import Atom
+            except:
+                class DummyAtom(object):
+                    def __init__(self, **kwargs):
+                        self.__dict__.update(kwargs)
+                Atom = DummyAtom
+            Unitcell = None
     
 
 class UnitCellWidget(QWidget):
@@ -95,6 +109,7 @@ class AtomsTable(QTableWidget):
         self.setHorizontalHeaderLabels(list(self.column_headers.keys()))
         
         self.atom_items = []
+        self.row_data = []
         
         self.setToolTip('List of atoms in model')
     
@@ -112,8 +127,11 @@ class AtomsTable(QTableWidget):
     
     @atoms.setter
     def atoms(self, atoms):
-        self.clear()
-        self._atoms = atoms
+        from collections import Iterable
+        if isinstance(atoms, Iterable):
+            self._atoms = atoms
+        else:
+            self._atoms.append(atoms)
     
     def updateToolTip(self):
         pass
@@ -124,10 +142,36 @@ class AtomsTable(QTableWidget):
                                             "Enter element name, number or phaseshifts tag", 
                                             text='C')
             if ok and item:
-                #atom = Atom(**Atom.tag_info(item))
-                row = self.rowCount()
-                self.insertRow(row)
-                self.setVerticalHeaderLabels([item])
+                symbol = item.split('_')[0]
+                atom = Atom(symbol=symbol, position=[0., 0., 0.], tag=item, charge=0)
+                valence = 0.
+                radius = None
+                try:
+                    atom = Atom(**Atom.tag_info(item))
+                    symbol = atom.symbol
+                    valence = atom.valence
+                    radius = atom.radius
+                except AttributeError:
+                    valence = atom.charge
+                finally:
+                    row = self.rowCount()
+                    self.insertRow(row)
+                    self.setVerticalHeaderLabels([i['label'] for i in self.row_data] + [symbol])
+                    row_data = OrderedDict((('tag', QTableWidgetItem(atom.tag)),
+                                            ('x', QTableWidgetItem(str(atom.position[0]))),
+                                            ('y', QTableWidgetItem(str(atom.position[1]))),
+                                            ('z', QTableWidgetItem(str(atom.position[2]))),
+                                            ('Q', QTableWidgetItem(str(valence))),
+                                            ('r', QTableWidgetItem(str(radius))),
+                                            ('label', symbol),
+                                            ('atom', atom)))
+                    self.row_data.append(row_data)
+                    
+                    for (col, name) in enumerate(self.column_headers):
+                        self.setItem(row, col, row_data[name])
+                        
+                    self.atoms.append(atom)
+                    
                 #self.ui.table.atom_items
         print('adding: {}'.format(atom))
     
@@ -146,6 +190,8 @@ class BulkCrystalDialog(QWidget):
         ui_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                    "CreateBulkCrystalDialog.ui"))
         self.ui = uic.loadUi(ui_filename, self)
+        
+        self.ui.MAPIEdit.setText(os.environ.get('MAPI_KEY', '<Not Set>'))
         
         
         self._init_ui()
