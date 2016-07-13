@@ -258,7 +258,6 @@ class BulkCrystalDialog(QWidget):
         self.ui.removeButton.clicked.connect(self.table.deleteAtom)
     
     def updateModel(self):
-        
         return self.model
     
     def ok(self):
