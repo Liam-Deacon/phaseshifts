@@ -127,9 +127,12 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label_3">
+         <widget class="QCheckBox" name="spaceGroupCheck">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Represent the space group in Hermann–Mauguin notation.&lt;/p&gt;&lt;p&gt;Default is to use the space group number.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="text">
-           <string>Status</string>
+           <string>International Name</string>
           </property>
          </widget>
         </item>
@@ -814,6 +817,16 @@
           </property>
          </spacer>
         </item>
+        <item>
+         <widget class="QLabel" name="statusLabel">
+          <property name="text">
+           <string>Status</string>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
       <item>
@@ -910,6 +923,15 @@
        </layout>
       </item>
      </layout>
+     <zorder>horizontalLayoutWidget</zorder>
+     <zorder>horizontalLayoutWidget_2</zorder>
+     <zorder>horizontalLayoutWidget_4</zorder>
+     <zorder>horizontalLayoutWidget_6</zorder>
+     <zorder>horizontalLayoutWidget_8</zorder>
+     <zorder>horizontalLayoutWidget_7</zorder>
+     <zorder>horizontalLayoutWidget_9</zorder>
+     <zorder>horizontalLayoutWidget_5</zorder>
+     <zorder>horizontalLayoutWidget_10</zorder>
     </widget>
    </item>
    <item>

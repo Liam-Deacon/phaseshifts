@@ -5,6 +5,7 @@ Created on 10 Jul 2016
 '''
 import os
 import sys
+from __builtin__ import str
 
 
 try:
@@ -23,6 +24,7 @@ from qtsix import uic
 
 import ase.data
 from ase.spacegroup import Spacegroup
+from ase.spacegroup.spacegroup import SpacegroupNotFoundError
 
 try:
     from pymatgen.matproj.rest import MPRester
@@ -223,11 +225,13 @@ class AtomsTable(QTableWidget):
 class BulkCrystalDialog(QWidget):
     crystal_definitions = crystal_definitions
     modelChanged = Signal(object)
+    spacegroupChanged = Signal(object)
     
     def __init__(self, parent=None, model=None):
         super(self.__class__, self).__init__(parent)
         
         self.model = model
+        self.spacegroup = Spacegroup(1)
         
         ui_filename = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                    "CreateBulkCrystalDialog.ui"))
@@ -252,6 +256,9 @@ class BulkCrystalDialog(QWidget):
         self.ui.buttonBox.button(QDialogButtonBox.Ok).clicked.connect(self.ok)
         
         self.modelChanged.connect(lambda x: sys.stdout.write('{}'.format(x)))
+        self.spacegroupChanged.connect(self.updateSpaceGroup)
+        self.ui.spaceGroupEdit.editingFinished.connect(
+                lambda: self.spacegroupChanged.emit(self.ui.spaceGroupEdit.text()))
         
         self.ui.getFromDatabaseButton.clicked.connect(self.getFromDatabase)
         self.ui.pymatgenRadio.setEnabled(MPRester is not None)
@@ -259,6 +266,47 @@ class BulkCrystalDialog(QWidget):
         self.ui.addButton.clicked.connect(self.table.addAtom)
         self.ui.removeButton.clicked.connect(self.table.deleteAtom)
         
+        self.structinfo = self.ui.spaceGroupCombo
+        self.structinfo.clear() 
+        self.structinfo.addItems([c[0] for c in self.crystal_definitions] + ["custom"])
+        self.structures = dict((c[0], c) for c in self.crystal_definitions)
+        self.ui.spaceGroupCombo.currentIndexChanged.connect(self.updateSpaceGroup)
+        
+        self.ui.spaceGroupCheck.stateChanged.connect(
+                lambda i: self.updateSpaceGroup(bool(i)))
+
+    
+    @Slot()
+    @Slot(bool)
+    @Slot(int, name='updateSpaceGroupNumber')
+    @Slot(str, name='updateSpaceGroupSymbol')
+    def updateSpaceGroup(self, group=None):
+        if not group or isinstance(group, bool):
+            group = self.spacegroup.no
+        if isinstance(group, int):
+            try:
+                group = self.crystal_definitions[group][1]
+            except IndexError:
+                group = self.ui.spaceGroupEdit.text()
+        try:
+            self.spacegroup = Spacegroup(str(group))
+        except SpacegroupNotFoundError:
+            try:
+                self.spacegroup = Spacegroup(int(group))
+            except (ValueError, SpacegroupNotFoundError):
+                QMessageBox.critical(self, "Invalid Space Group",
+                                     "Space group '{}' is not valid".format(group))
+                self.ui.spaceGroupEdit.setText(self.spacegroup.symbol)
+        finally:
+            self.ui.spaceGroupEdit.setText(str(self.spacegroup.symbol if 
+                self.ui.spaceGroupCheck.isChecked() else self.spacegroup.no))
+            number = self.spacegroup.no
+            spacegroups = [c[1] for c in self.crystal_definitions]
+            if number in spacegroups:
+                self.ui.spaceGroupCombo.setCurrentIndex(spacegroups.index(number))
+            else:
+                self.ui.spaceGroupCombo.setCurrentIndex(self.ui.spaceGroupCombo.count()-1)
+                
     def setLatticeType(self, *args):
         """ set defaults from original """
         self.clearing_in_process = True
