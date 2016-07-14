@@ -23,7 +23,7 @@ from qtsix.QtGui import QIcon
 from qtsix import uic
 
 import ase.data
-from ase.spacegroup import Spacegroup
+from ase.spacegroup import Spacegroup, crystal
 from ase.spacegroup.spacegroup import SpacegroupNotFoundError
 
 try:
@@ -226,6 +226,7 @@ class BulkCrystalDialog(QWidget):
     crystal_definitions = crystal_definitions
     modelChanged = Signal(object)
     spacegroupChanged = Signal(object)
+    latticeChanged = Signal(object)
     
     def __init__(self, parent=None, model=None):
         super(self.__class__, self).__init__(parent)
@@ -306,6 +307,24 @@ class BulkCrystalDialog(QWidget):
                 self.ui.spaceGroupCombo.setCurrentIndex(spacegroups.index(number))
             else:
                 self.ui.spaceGroupCombo.setCurrentIndex(self.ui.spaceGroupCombo.count()-1)
+            
+            self.updateLattice(self.spacegroup)
+            
+    @Slot()
+    @Slot(Spacegroup)
+    def updateLattice(self, lattice=None):
+        if isinstance(lattice, Spacegroup):
+            index = [c[1] for c in self.crystal_definitions].index(lattice.no)
+            cell_pars = self.crystal_definitions[index][4]
+            self.ui.aSpinBox.setValue(cell_pars[0])
+            self.ui.bSpinBox.setValue(cell_pars[1])
+            self.ui.cSpinBox.setValue(cell_pars[2])
+            self.ui.alphaSpinBox.setValue(cell_pars[3])
+            self.ui.betaSpinBox.setValue(cell_pars[4])
+            self.ui.gammaSpinBox.setValue(cell_pars[5])
+        else:
+            print("To implement")
+        
                 
     def setLatticeType(self, *args):
         """ set defaults from original """
