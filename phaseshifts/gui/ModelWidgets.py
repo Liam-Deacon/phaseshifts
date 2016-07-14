@@ -6,6 +6,7 @@ Created on 10 Jul 2016
 import os
 import sys
 
+
 try:
     from cyordereddict import OrderedDict
 except ImportError:
@@ -14,7 +15,8 @@ except ImportError:
 from qtsix.QtWidgets import (QLabel, QWidget, QDoubleSpinBox, 
                              QHBoxLayout, QVBoxLayout, QWidgetItem,
                              QTableWidget, QTableWidgetItem,
-                             QDialogButtonBox, QInputDialog)
+                             QDialogButtonBox, QInputDialog, 
+                             QMessageBox)
 from qtsix.QtCore import Slot, Signal
 from qtsix.QtGui import QIcon
 from qtsix import uic
@@ -175,7 +177,7 @@ class AtomsTable(QTableWidget):
                                             text='C')
             if ok and item:
                 symbol = item.split('_')[0]
-                atom = Atom(symbol=symbol, position=[0., 0., 0.], tag=item, charge=0)
+                atom = Atom(symbol, position=[0., 0., 0.], tag=item, charge=0)
                 valence = 0.
                 radius = None
                 try:
@@ -256,13 +258,51 @@ class BulkCrystalDialog(QWidget):
         
         self.ui.addButton.clicked.connect(self.table.addAtom)
         self.ui.removeButton.clicked.connect(self.table.deleteAtom)
+        
+    def setLatticeType(self, *args):
+        """ set defaults from original """
+        self.clearing_in_process = True
+        self.clear_lattice()
+        lattice = crystal_definitions[self.structinfo.get_active()]
+        self.spacegroup.set_text(str(lattice[1]))
+        self.spacegroup.set_sensitive(lattice[2])
+        for s, i in zip(self.size,lattice[3]):
+            s.set_value(i)
+        self.lattice_lbuts[0].set_value(lattice[4][0])
+        self.lattice_lbuts[1].set_value(lattice[4][1])
+        self.lattice_lbuts[2].set_value(lattice[4][2])
+        self.lattice_abuts[0].set_value(lattice[4][3])
+        self.lattice_abuts[1].set_value(lattice[4][4])
+        self.lattice_abuts[2].set_value(lattice[4][5])
+        self.lattice_lequals[0].set_active(lattice[5][0])
+        self.lattice_lequals[1].set_active(lattice[5][1])
+        self.lattice_lequals[2].set_active(lattice[5][2])
+        self.lattice_aequals[0].set_active(lattice[5][3])
+        self.lattice_aequals[1].set_active(lattice[5][4])
+        self.lattice_aequals[2].set_active(lattice[5][5])
+        self.lattice_lequals[0].set_sensitive(lattice[6][0])
+        self.lattice_lequals[1].set_sensitive(lattice[6][1])
+        self.lattice_lequals[2].set_sensitive(lattice[6][2])
+        self.lattice_aequals[0].set_sensitive(lattice[6][3])
+        self.lattice_aequals[1].set_sensitive(lattice[6][4])
+        self.lattice_aequals[2].set_sensitive(lattice[6][5])
+        for n, at in enumerate(lattice[7]):
+            l = 0
+            if n > 0:
+                l = len(self.elements)
+                self.add_basis_atom()
+            for i, s in enumerate(at):
+                self.elements[l][i].set_text(s)
+        self.clearing_in_process = False
+        self.update()
     
-    def updateModel(self):
+    def update(self):
+        self.modelChanged.emit(self.model)
         return self.model
     
     def ok(self):
-        self.apply()
-        self.close()
+        if self.apply():
+            self.close()
     
     def cancel(self):
         self.close()
@@ -273,7 +313,19 @@ class BulkCrystalDialog(QWidget):
     
     def apply(self):
         ''' Apply value '''
-        self.modelChanged.emit(self.model)
+        self.update()
+        if self.atoms:
+            return True
+        else:
+            QMessageBox.critical(self, 'No valid atoms.',
+                                 'You have not (yet) specified a '
+                                 'consistent set of parameters.')
+            return False
+
+    @property
+    def atoms(self):
+        return self.ui.table.atoms
+        
     
     def getFromDatabase(self, *args):
         if self.ui.aseRadio.isChecked():
