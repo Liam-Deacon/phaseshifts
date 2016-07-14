@@ -714,6 +714,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="res/res.qrc">
      <normaloff>:/list_nested_32x28.png</normaloff>:/list_nested_32x28.png</iconset>

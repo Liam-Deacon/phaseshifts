@@ -47,7 +47,7 @@ from qtsix.QtWidgets import (QFileDialog, QMainWindow, QMessageBox,
                              QTreeWidget, QTreeWidgetItem)
 from qtsix.Qt import QApplication
 
-
+import ase.io
 
 
 # other modules
@@ -259,9 +259,32 @@ class MainWindow(QMainWindow):
             self.ui.stackedWidgetSlab.setCurrentIndex(0)
     
     # export model as text file
-    def exportModel(self):
+    def exportModel(self, model=None):
         '''Export model as text file'''
-        pass
+        formats = ase.io.formats.all_formats
+        
+        filters = 'All Files (*);; ' 
+        filters += ';; '.join('{} (*.{})'.format(formats[i][0], i) 
+                              for i in formats)
+        
+        model_type = 'Bulk' if self.actionBulk.isChecked() else 'Slab'
+        
+        filename = QFileDialog.getSaveFileName(self, 
+                                               'Export {} Model'.format(model_type),
+                                               filter=filters)[0]
+        
+        # check for valid file
+        if not filename:
+            return 
+        
+        try:
+            ase.io.write(filename, model or self.model)
+        except ValueError as err:
+            QMessageBox.critical(self, "Export Error",
+                                 "Failed to export {} model to '{}'"
+                                 "({})".format(model_type.lower(),
+                                               filename, err.message)
+        print("TODO")
     
     def importDialog(self):
         '''Open dialog and radio options'''
@@ -275,7 +298,32 @@ class MainWindow(QMainWindow):
     # import model from text file
     def importModel(self):
         '''Import model from text file'''
-        pass
+        
+        formats = ase.io.formats.all_formats
+        
+        filters = 'All Files (*);; ' 
+        filters += ';; '.join('{} (*.{})'.format(formats[i][0], i) 
+                              for i in formats)
+        
+        model = 'Bulk' if self.actionBulk.isChecked() else 'Slab'
+        
+        filename = QFileDialog.getOpenFileName(self, 
+                                               'Import {} Model'.format(model),
+                                               filter=filters)[0]
+        
+        # check for valid file
+        if not filename:
+            return 
+        
+        # read model
+        try:
+            model = ase.io.read(filename)
+            print("TODO: load {} into GUI".format(model))
+            return model
+        except ValueError as err:
+            QMessageBox.critical(self, "Could not import",
+                                 "Unsupported or malformed file format ({})"
+                                 "".format(err.message))
     
     def help(self):
         """Display help"""
