@@ -30,6 +30,12 @@ try:
     from pymatgen.matproj.rest import MPRester
 except ImportError:
     MPRester = None
+    
+try:
+    from .PeriodicTable import PeriodicTableDialog
+except ValueError:
+    from PeriodicTable import PeriodicTableDialog
+
 
 crystal_definitions = [
     ('Spacegroup', 1, True, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
@@ -51,9 +57,12 @@ crystal_definitions = [
     ('rutile', 136, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
         [0, 1, 0, 3, 3, 3], [False, False, False, False, False, False], [['', '0', '0', '0'], ['O', '0.3', 
          '0.3', '0']]),
+    ('skutterudite', 204, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 90.0], 
+        [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], 
+        [['Co', '1./4.', '1./4.', '1./4.'], ['Sb', '0.', '0.335', '0.158']]),
     ('wurtzite', 186, False, [1, 1, 1], [3.0, 3.0, 3.0, 90.0, 90.0, 120.0], 
         [0, 1, 1, 3, 3, 3], [False, False, False, False, False, False], 
-        [['', '0', '0', '0'], ['', '0.5', '0.5', '0.5']])]
+        [['Zn', '0', '0', '0'], ['O', '1./3.', '2./3.', '0']])]
 
 try:
     from . import res_rc
@@ -144,10 +153,25 @@ class AtomsTable(QTableWidget):
             self.setVerticalHeaderItem(i, item)
         self.setHorizontalHeaderLabels(list(self.column_headers.keys()))
         
+        self.horizontalHeader().sectionDoubleClicked.connect(lambda x: sys.stdout.write('Sort column {}\n'.format(x)))
+        self.verticalHeader().sectionDoubleClicked.connect(self.selectElement)
+        self.doubleClicked.connect(lambda x: sys.stdout.write('hello {}\n'.format(x)))
+        
         self.atom_items = []
         self.row_data = []
         
         self.setToolTip('List of atoms in model')
+    
+    @Slot(int)
+    def selectElement(self, row=None):
+        item = self.verticalHeaderItem(row)
+        symbol = item.text()
+        dlg = PeriodicTableDialog(element=symbol)
+        if dlg.exec_():
+            element = dlg.selectedElement.symbol
+            if element != symbol:
+                self.updateAtom(row, element)
+        pass
     
     @property
     def atom_items(self):
@@ -171,6 +195,13 @@ class AtomsTable(QTableWidget):
     
     def updateToolTip(self):
         pass
+    
+    def updateAtom(self, row, element=None, tag=None, 
+                   x=None, y=None, z=None, charge=None):
+        """ Update Atom on row """
+        item = self.verticalHeaderItem(row)
+        item.setText(element)
+        self.atoms[row] = Atom(element)
         
     def addAtom(self, atom=None):
         if not atom:
