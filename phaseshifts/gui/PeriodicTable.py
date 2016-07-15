@@ -288,7 +288,13 @@ class PeriodicTable(QFrame):
         i = elements_dict.keys().index(self.sender().text()) + 1
         if elements.ELEMENTS[i] == self.selectedElement:
             return  # do not update
-        self.selectedElement = elements.ELEMENTS[i]
+        self.updatedSelectedElement(i)
+    
+    @Slot(str)
+    @Slot(int)
+    @Slot(elements.Element)
+    def updatedSelectedElement(self, element):
+        self.selectedElement = element
         self.ui.labelMass.setText('''<html><sup>%.1f</sup></html>''' 
                                   % float(self.selectedElement.mass))
         self.ui.labelZ.setText('''<html><sup>%s</sup></html>''' 
@@ -297,11 +303,7 @@ class PeriodicTable(QFrame):
                                         font-size:12pt;">%s</span></p></body>
                                         </html>''' 
                                         % self.selectedElement.symbol)
-        self.updatedSelectedElement(i)
         
-    @Slot(int)
-    def updatedSelectedElement(self, element):
-        self.selectedElement = element
         self.selectedElementChanged.emit(element)
         
     @property
@@ -310,10 +312,8 @@ class PeriodicTable(QFrame):
     
     @selectedElement.setter
     def selectedElement(self, element):
-        try:
-            self._element = elements.ELEMENTS[element]
-        except KeyError:
-            pass
+        print(element)
+        self._element = elements.ELEMENTS[element]
 
 
 class PeriodicTableDialog(QDialog):
@@ -342,7 +342,9 @@ class PeriodicTableDialog(QDialog):
         
         self.table.selectedElementChanged.connect(self.updateSelectedElement)
     
+    @Slot(str)
     @Slot(int)
+    @Slot(elements.Element)
     def updateSelectedElement(self, element):
         self.selectedElementChanged.emit(element)
         
