@@ -163,7 +163,10 @@ class Element(object):
         self.electrons = number
         self.protons = number
         self.__dict__.update(kwargs)
-        
+    
+    def __int__(self):
+        return self.number
+     
     def __str__(self):
         return self.name
 
