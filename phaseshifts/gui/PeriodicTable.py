@@ -62,9 +62,11 @@ except ValueError:
     
 # Import Qt modules
 from qtsix import uic, QtCore
+from qtsix.Qt import Qt
 from qtsix.QtGui import QIcon
 from qtsix.QtCore import Signal, Slot
-from qtsix.QtWidgets import (QApplication, QFrame)
+from qtsix.QtWidgets import (QApplication, QFrame, QDialog,
+                             QDialogButtonBox, QVBoxLayout)
 
 
 try:
@@ -209,13 +211,13 @@ elements_dict = OrderedDict([
 
 
 # Create a class for our main window
-class PeriodicTableDialog(QFrame):
+class PeriodicTable(QFrame):
     """Periodic table dialog class"""
     
     selectedElementChanged = Signal(object)
     
     def __init__(self, parent=None, toggle=True, element='H'):
-        super(PeriodicTableDialog, self).__init__(parent)
+        super(self.__class__, self).__init__(parent)
  
         # Or more dynamically
         self.ui = uic.loadUi(os.path.abspath(os.path.join(os.path.dirname(__file__), 
@@ -295,8 +297,44 @@ class PeriodicTableDialog(QFrame):
                                         font-size:12pt;">%s</span></p></body>
                                         </html>''' 
                                         % self.selectedElement.symbol)
-        self.selectedElementChanged.emit(i)
+        self.updatedSelectedElement(i)
+        
+    @Slot(int)
+    def updatedSelectedElement(self, element):
+        self.selectedElement = element
+        self.selectedElementChanged.emit(element)
 
+
+class PeriodicTableDialog(QDialog):
+    """ Dialog class for PeriodicTable frame """
+    selectedElementChanged = Signal(object)
+    
+    def __init__(self, parent=None):
+        super(self.__class__, self).__init__(parent)
+        
+        table = PeriodicTable()
+
+        layout = QVBoxLayout()
+        
+        layout.addWidget(table)
+        self.table = table
+        
+        # OK and Cancel buttons
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | 
+                                   QDialogButtonBox.Cancel,
+                                   Qt.Horizontal, self)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        
+        layout.addWidget(buttons)
+        self.setLayout(layout)
+        
+        self.table.selectedElementChanged.connect(self.updateSelectedElement)
+    
+    @Slot(int)
+    def updateSelectedElement(self, element):
+        self.selectedElementChanged.emit(element)
+        
 
 def main():
     # Again, this is boilerplate, it's going to be the same on
