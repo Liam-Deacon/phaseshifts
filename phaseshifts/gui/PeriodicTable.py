@@ -303,16 +303,27 @@ class PeriodicTable(QFrame):
     def updatedSelectedElement(self, element):
         self.selectedElement = element
         self.selectedElementChanged.emit(element)
+        
+    @property
+    def selectedElement(self):
+        return self._element
+    
+    @selectedElement.setter
+    def selectedElement(self, element):
+        try:
+            self._element = elements.ELEMENTS[element]
+        except KeyError:
+            pass
 
 
 class PeriodicTableDialog(QDialog):
     """ Dialog class for PeriodicTable frame """
     selectedElementChanged = Signal(object)
     
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, element='H'):
         super(self.__class__, self).__init__(parent)
         
-        table = PeriodicTable()
+        table = PeriodicTable(None, element)
 
         layout = QVBoxLayout()
         
@@ -335,6 +346,9 @@ class PeriodicTableDialog(QDialog):
     def updateSelectedElement(self, element):
         self.selectedElementChanged.emit(element)
         
+    @property
+    def selectedElement(self):
+        return self.table.selectedElement
 
 def main():
     # Again, this is boilerplate, it's going to be the same on
