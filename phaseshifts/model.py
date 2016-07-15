@@ -55,7 +55,9 @@ from .lib import libphsh
 from .leed import Converter, CLEED_validator
 from .utils import stringify, expand_filepath
 
+from ase import Atoms
 from ase.atom import Atom as AseAtom, atomproperty, names
+from ase.lattice.bravais import Lattice
 
 names.update({'valence': 0.,
               'occupancy': 1.,
@@ -563,7 +565,7 @@ class CoordinatesError(Exception):
         return self.msg
 
 
-class Model(object):
+class Model(Atoms):
     """
     Generic model class.
     
@@ -592,9 +594,30 @@ class Model(object):
         name : str
             The model name. Default is the chemical formula of `atoms` .
         """
+        cell = kwargs.pop("cell", None)
+        self.unitcell = unitcell or Unitcell(basis=cell)
         self.atoms = atoms or []
-        self.unitcell = unitcell or Unitcell()
         self.name = name or self.formula
+        
+        # initialise base Atoms class with sensible defaults
+        super(self.__class__, self).__init__(symbols=atoms, 
+                                             positions=kwargs.pop('positions', None), 
+                                             numbers=kwargs.pop('numbers', None), 
+                                             tags=kwargs.pop('tags', None), 
+                                             momenta=kwargs.pop('momenta', None), 
+                                             masses=kwargs.pop('masses', None), 
+                                             magmoms=kwargs.pop('magnoms', None), 
+                                             charges=kwargs.pop('charges', None), 
+                                             scaled_positions=kwargs.pop('scaled_positions', None), 
+                                             cell=cell or self.unitcell.basis,
+                                             pbc=kwargs.pop('pbc', True), 
+                                             celldisp=kwargs.pop('celldisp', None), 
+                                             constraint=kwargs.pop('constraint', None), 
+                                             calculator=kwargs.pop('calculator', None), 
+                                             info=kwargs.pop('info', None) or self.name
+                                             )
+        
+        # update any left over kwargs to become attributes 
         self.__dict__.update(kwargs)
 
     # checks if two models are equal 
