@@ -335,7 +335,10 @@ class ElementsDict(object):
                 start, stop, step = key.indices(len(self._list))
                 return self._list[slice(start - 1, stop - 1, step)]
             except:
-                raise KeyError
+                try:
+                    return self._dict[int(key)]
+                except:
+                    raise KeyError
 
 
 ELEMENTS = ElementsDict(
