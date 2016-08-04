@@ -283,7 +283,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Export Error",
                                  "Failed to export {} model to '{}'"
                                  "({})".format(model_type.lower(),
-                                               filename, err.message)
+                                               filename, err.message))
         print("TODO")
     
     def importDialog(self):

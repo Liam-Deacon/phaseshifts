@@ -164,14 +164,16 @@ class AtomsTable(QTableWidget):
     
     @Slot(int)
     def selectElement(self, row=None):
-        item = self.verticalHeaderItem(row)
-        symbol = item.text()
-        dlg = PeriodicTableDialog(element=symbol)
-        if dlg.exec_():
-            element = dlg.selectedElement.symbol
-            if element != symbol:
-                self.updateAtom(row, element)
-        pass
+        try:
+            item = self.verticalHeaderItem(row)
+            symbol = item.text()
+            dlg = PeriodicTableDialog(element=symbol)
+            if dlg.exec_():
+                element = dlg.selectedElement.symbol
+                if element != symbol:
+                    self.updateAtom(row, element)
+        except AttributeError:
+            pass  # invalid item
     
     @property
     def atom_items(self):
@@ -345,14 +347,17 @@ class BulkCrystalDialog(QWidget):
     @Slot(Spacegroup)
     def updateLattice(self, lattice=None):
         if isinstance(lattice, Spacegroup):
-            index = [c[1] for c in self.crystal_definitions].index(lattice.no)
-            cell_pars = self.crystal_definitions[index][4]
-            self.ui.aSpinBox.setValue(cell_pars[0])
-            self.ui.bSpinBox.setValue(cell_pars[1])
-            self.ui.cSpinBox.setValue(cell_pars[2])
-            self.ui.alphaSpinBox.setValue(cell_pars[3])
-            self.ui.betaSpinBox.setValue(cell_pars[4])
-            self.ui.gammaSpinBox.setValue(cell_pars[5])
+            try:
+                index = [c[1] for c in self.crystal_definitions].index(lattice.no)
+                cell_pars = self.crystal_definitions[index][4]
+                self.ui.aSpinBox.setValue(cell_pars[0])
+                self.ui.bSpinBox.setValue(cell_pars[1])
+                self.ui.cSpinBox.setValue(cell_pars[2])
+                self.ui.alphaSpinBox.setValue(cell_pars[3])
+                self.ui.betaSpinBox.setValue(cell_pars[4])
+                self.ui.gammaSpinBox.setValue(cell_pars[5])
+            except ValueError:
+                pass  # space group number is not in crystal_definitions list
         else:
             print("To implement")
         
