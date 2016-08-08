@@ -103,6 +103,8 @@ class SettingsDialog(QDialog):
         self.ui.radioRelativistic.clicked.connect(self.updatePhaseMethod)
         self.ui.comboFormat.currentIndexChanged.connect(self.updateFormat)
         
+        self.ui.radioEEASiSSS.toggled.connect(lambda x: self.ui.groupEEASiSSS.setEnabled(x))
+        
         self.resetSettings()
         
     def adjustSettings(self, button):
@@ -129,7 +131,7 @@ class SettingsDialog(QDialog):
         elif action == 'save':
             # save settings ini file
             self.saveConfig()
-        
+    
     def applySettings(self):
         '''update Settings class'''
         self.settings = Settings(

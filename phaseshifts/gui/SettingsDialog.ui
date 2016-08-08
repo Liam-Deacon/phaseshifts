@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>287</width>
-    <height>610</height>
+    <width>307</width>
+    <height>755</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,7 +17,7 @@
    <iconset resource="res/res.qrc">
     <normaloff>:/wrench_32x32.png</normaloff>:/wrench_32x32.png</iconset>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_4">
+  <layout class="QVBoxLayout" name="verticalLayout_7">
    <item>
     <widget class="QGroupBox" name="groupAtorb">
      <property name="title">
@@ -431,11 +431,58 @@
      <property name="title">
       <string>Phase Shifts</string>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_17">
+        <item>
+         <widget class="QLabel" name="labelCalculation">
+          <property name="text">
+           <string>Calculation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioVHT">
+          <property name="toolTip">
+           <string>Perform traditional calculations of atomic phase shifts using Barbieri/Van Hove programs</string>
+          </property>
+          <property name="text">
+           <string>Barbieri/Van Hove</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioEEASiSSS">
+          <property name="toolTip">
+           <string>Use John Rundgren's Elastic Electron-Atom Scattering in Solids program for calculating atomic phase shifts (potientially more accurate, but experimental)</string>
+          </property>
+          <property name="text">
+           <string>EEASiSS</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_17">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_15">
         <item>
-         <widget class="QLabel" name="label_3">
+         <widget class="QLabel" name="labelFormatting">
           <property name="text">
            <string>Formatting</string>
           </property>
@@ -463,6 +510,177 @@
         </item>
         <item>
          <spacer name="horizontalSpacer_15">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupEEASiSSS">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="title">
+      <string>EEASiSSS Options</string>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_6">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_22">
+        <item>
+         <widget class="QLabel" name="label_6">
+          <property name="text">
+           <string>Vxc</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboVxc">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;Energy Dependent&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt; - The exchange-correlation potential &lt;/span&gt;&lt;a name=&quot;MathJax-Element-18-Frame&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Math-italic'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;V&lt;/span&gt;&lt;a name=&quot;MathJax-Span-176&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff; vertical-align:sub;&quot;&gt;0&lt;/span&gt;&lt;a name=&quot;MathJax-Span-177&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;(&lt;/span&gt;&lt;a name=&quot;MathJax-Span-178&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Math-italic'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;E&lt;/span&gt;&lt;a name=&quot;MathJax-Span-179&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt; is calculated from Kohn-Sham theory via the Hedin-Lundqvist local density approximation.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;Constant&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt; - The inner potential is put equal to &lt;/span&gt;&lt;a name=&quot;MathJax-Element-19-Frame&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Math-italic'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;V&lt;/span&gt;&lt;a name=&quot;MathJax-Span-184&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff; vertical-align:sub;&quot;&gt;0&lt;/span&gt;&lt;a name=&quot;MathJax-Span-185&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;(&lt;/span&gt;&lt;a name=&quot;MathJax-Span-186&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Math-italic'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;E&lt;/span&gt;&lt;a name=&quot;MathJax-Span-187&quot;/&gt;&lt;span style=&quot; font-family:'MathJax_Main'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;)&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>Energy Dependant</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Constant</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkVMadl">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;Flag for whether the Madelung potential is used. &lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;&gt;If unchecked, it corresponds to current LEED, whereas checking this option generates the Madelung (electrostatic) potential at a particular atom from the infinite collection of neighboring atoms.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;The literature on electrostatic potentials is incomplete for LEED investigations; required is a theory for semi-crystals z &amp;gt; 0 and for various distributions of top-layer charges.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Madelung potential</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_22">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_21">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Muffin-Tin radius calculation</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboMTrad">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;DEopt:&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt; Differential Evolution method determines MT spheres from three conditions: that non-overlapping MT spheres are as large as possible; that MT potentials are continuous to a flat inner potential; and that all MT potentials are energy-shifted by the same amount.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333; background-color:#ffffff;&quot;&gt;Old-fashioned selections&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;/&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;'&lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;MidptNNdist&lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;'&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;&gt; and &lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;'&lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;IntersecNNpot&lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;'&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;&gt; are at user's discretion: &lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;MidptNNdist&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;&gt; sizes MT spheres approximately to halve next-neighbour distance, and &lt;/span&gt;&lt;span style=&quot; font-family:'Consolas,Menlo,Liberation Mono,Courier,monospace'; font-size:12px; color:#333333; background-color:#f5f5f5;&quot;&gt;IntersecNNpot&lt;/span&gt;&lt;span style=&quot; font-family:'Arial,sans-serif'; font-size:14px; color:#333333;&quot;&gt; searches points on atom-to-atom lines where the next-neighbour potentials intersect.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>DEopt</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>MidptNNdist</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>IntersecNNpot</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_21">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_18">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Coulomb potential</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="comboVCoul">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Specifies method for calculating coulomb potential, V&lt;span style=&quot; vertical-align:sub;&quot;&gt;Coul&lt;/span&gt;&lt;/p&gt;&lt;p&gt;With the free atom superposition, atomic electron density and Coulmob potentials are generated by superposition of free-atom charge densities. WIEN2k simply extracts the charge densities from a WIEN2k calculation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <item>
+           <property name="text">
+            <string>Superposition (Free Atom)</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>WIEN2k</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_18">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
@@ -778,6 +996,7 @@
   <zorder>groupDebug</zorder>
   <zorder>groupMuffPot</zorder>
   <zorder>groupBox</zorder>
+  <zorder>groupEEASiSSS</zorder>
  </widget>
  <resources>
   <include location="res/res.qrc"/>
