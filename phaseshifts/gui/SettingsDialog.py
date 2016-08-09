@@ -150,7 +150,7 @@ class SettingsDialog(QDialog):
                 phsh_method=self.phaseMethod,
                 phsh_format=str(self.ui.comboFormat.currentText()),
                 logfile=str(self.ui.lineLogFile.text()),
-                logging=self.ui.checkLog.isChecked())
+                logging=self.ui.checkLog.isChecked(),)
 
     def getLogPath(self):
         '''use file dialog to set path to log file'''
@@ -205,6 +205,9 @@ class SettingsDialog(QDialog):
             return
         
         general_dict = {
+                'method': ('self.ui.radioEEASiSSS.setChecked(True) '
+                           'if "%s" == self.ui.radioEEASiSSS.text() '  
+                           'else self.ui.radioVHT.setChecked(True)'),
                 'write_files': 'self.ui.checkWriteFiles.setChecked(bool(%s))',
                 'delete_files': 'self.ui.checkDelete.setChecked(bool(%s))',
                 'path': 'self.ui.lineWritePath.setText(\"%s\")',
@@ -228,6 +231,16 @@ class SettingsDialog(QDialog):
                      'nh': 'self.ui.spinMuffinTinZero.setValue(int(%s))',
                      'phase_format': 'self.updateFormat(formatting=\"%s\")'
                      }
+        
+        set_index = lambda x, y: x.setCurrentIndex([str(x.itemText(i)).startswith(y) 
+                                                    for i in range(len(x))][0] or 0)
+        
+        eeasisss_dict = {
+                         'coulomb_potential': 'set_index(self.ui.comboVCoul, "%s")',
+                         'madelung_potential': 'self.ui.checkVMadl.setChecked("%s" in ("yes", "1", "true", "True"))',
+                         'exchange_correlation_potential': 'set_index(self.ui.comboVxc, "%s")',
+                         'muffin_tin_radius': 'set_index(self.ui.comboMTrad, "%s")'
+                         }
         
         for option in general_dict:  # load each setting from general section
             try:
@@ -259,6 +272,16 @@ class SettingsDialog(QDialog):
                                     % (option, e))
                 sys.stderr.flush()
                 
+        for option in eeasisss_dict:
+            try:
+                value = config.get('EEASISSS', option)
+                line = eeasisss_dict.get(option)
+                eval(line % value)
+            except Exception as e:
+                sys.stderr.write("Error loading %s in config file - %s\n" 
+                                    % (option, e))
+                sys.stderr.flush()
+                
     def saveConfig(self):
         config = configparser.ConfigParser()
         default = os.path.join(str(QDesktopServices.storageLocation(
@@ -283,6 +306,7 @@ class SettingsDialog(QDialog):
         config.add_section('GENERAL')
         config.add_section('ATORB')
         config.add_section('PHASESHIFTS')
+        config.add_section('EEASISSS')
         config.add_section('HISTORY')
         
         atorb_dict = {
@@ -297,11 +321,14 @@ class SettingsDialog(QDialog):
             }
         
         general_dict = {
+                'method': (self.ui.radioVHT.text() 
+                           if self.ui.radioVHT.isChecked() 
+                           else self.ui.radioEEASiSSS.text()),
                 'write_files': self.ui.checkWriteFiles.isChecked(),
                 'delete_files': self.ui.checkDelete.isChecked(),
-                'path': self.ui.lineWritePath.text(),
+                'path': str(self.ui.lineWritePath.text()).replace('\\', '\\\\'),
                 'logging': self.ui.checkLog.isChecked(),
-                'logfile': self.ui.lineLogFile.text()
+                'logfile': str(self.ui.lineLogFile.text()).replace('\\', '\\\\')
                 }
         
         phsh_dict = {
@@ -310,6 +337,16 @@ class SettingsDialog(QDialog):
                      'nh': self.ui.spinMuffinTinZero.value(),
                      'phase_format': self.ui.comboFormat.currentText()
                      }
+        
+        # get option as first character in uppercase from selected index
+        get_combo_option = lambda x: str(x.currentText()).upper()[0] 
+        
+        eeasisss_dict = {
+                         'coulomb_potential': get_combo_option(self.ui.comboVCoul),
+                         'madelung_potential': 'yes' if self.ui.checkVMadl.isChecked() else 'no',
+                         'exchange_correlation_potential': get_combo_option(self.ui.comboVxc),
+                         'muffin_tin_radius': get_combo_option(self.ui.comboMTrad)
+                         }
         
         for option in atorb_dict:
             value = atorb_dict.get(option)
@@ -322,7 +359,11 @@ class SettingsDialog(QDialog):
         for option in phsh_dict:
             value = phsh_dict.get(option)
             config.set('PHASESHIFTS', option, str(value))
-            
+        
+        for option in eeasisss_dict:
+            value = eeasisss_dict.get(option)
+            config.set('EEASISSS', option, str(value))
+        
         try:
             with open(filepath, 'w') as configfile:    # save
                 config.write(configfile)
