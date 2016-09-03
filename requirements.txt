@@ -9,8 +9,8 @@ periodictable
 
 # extra-requires
 pycifrw
-spglib
-pymatgen
+#spglib
+#pymatgen
 qtsix
 PyQt4
-pygtk  # for ase GUI only => not really needed
+#pygtk  # for ase GUI only => not really needed
