@@ -1,0 +1,16 @@
+# This is an implicit value, here for clarity
+--index-url https://pypi.python.org/simple/
+
+# install-requires
+numpy >= 1.3
+scipy >= 0.7
+ase >= 3.12.0b1
+periodictable
+
+# extra-requires
+pycifrw
+spglib
+pymatgen
+qtsix
+PyQt4
+pygtk  # for ase GUI only => not really needed
