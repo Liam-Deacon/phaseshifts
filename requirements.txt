@@ -11,6 +11,6 @@ periodictable
 pycifrw
 #spglib
 #pymatgen
-qtsix
-PyQt4
+#qtsix
+#PyQt4
 #pygtk  # for ase GUI only => not really needed
