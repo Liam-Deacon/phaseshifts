@@ -153,7 +153,7 @@ class AtomsTable(QTableWidget):
             self.setVerticalHeaderItem(i, item)
         self.setHorizontalHeaderLabels(list(self.column_headers.keys()))
         
-        self.horizontalHeader().sectionDoubleClicked.connect(lambda x: sys.stdout.write('Sort column {}\n'.format(x)))
+        self.horizontalHeader().sectionDoubleClicked.connect(self.sortColumn)
         self.verticalHeader().sectionDoubleClicked.connect(self.selectElement)
         self.doubleClicked.connect(lambda x: sys.stdout.write('hello {}\n'.format(x)))
         
