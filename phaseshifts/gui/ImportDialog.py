@@ -7,31 +7,34 @@ Created on 10 Feb 2014
 
 @copyright: Copyright 2014-2016 Liam Deacon
 
-@license: MIT License 
+@license: MIT License
 
-Permission is hereby granted, free of charge, to any person obtaining a copy 
-of this software and associated documentation files (the "Software"), to deal 
-in the Software without restriction, including without limitation the rights to 
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-of the Software, and to permit persons to whom the Software is furnished to 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to
 do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all 
+The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
-from __future__ import (absolute_import, division, 
+from __future__ import (absolute_import, division,
                         print_function, with_statement, unicode_literals)
+
+import os
+
 from qtsix import uic
 from qtsix.QtWidgets import (QAbstractButton, QDialog)
-import os
+
 
 try:
     from . import res_rc
@@ -41,36 +44,37 @@ except ValueError:
         sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
         import res_rc
     except ImportError:
-        import phaseshifts.gui.res_rc as res_rc   
+        import phaseshifts.gui.res_rc as res_rc
 
 
 class ImportDialog(QDialog):
     '''
-    Dialog class for updating sequences 
+    Dialog class for updating sequences
     '''
+
     def __init__(self, parent=None, model=None):
         super(ImportDialog, self).__init__(parent)
-        
+
         # set dictionary
         self.action = None
-        
+
         # dynamically load ui
-        path = os.path.abspath(os.path.join(os.path.dirname(__file__), 
+        path = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             "ImportDialog.ui"))
         self.ui = uic.loadUi(path, self)
         self.initUi()
-        
+
         if isinstance(model, str):
             model = model.lower()
             if model == 'slab':
                 self.ui.radioSlab.setChecked(True)
-        
+
         self.ui.show()
-            
+
     def initUi(self):
         # Setup slots and signals
         self.ui.buttonBox.clicked[QAbstractButton].connect(self.buttonPress)
-    
+
     def buttonPress(self, button):
         '''Deal with user interaction of button group'''
         action = str(button.text()).lower()
@@ -78,9 +82,9 @@ class ImportDialog(QDialog):
             # do not apply settings & close dialog
             self.action = action
             self.ui.close()
-        
+
         elif action == 'ok':
-            self.action = action 
+            self.action = action
             self.ui.close()
 
 if __name__ == '__main__':

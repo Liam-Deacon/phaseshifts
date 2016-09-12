@@ -12,9 +12,10 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys
-import os
 import datetime
+import os
+import sys
+
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -22,11 +23,11 @@ import datetime
 try:
     from phaseshifts import __version__
 except ImportError:
-    pkg_root = os.path.abspath(os.path.join(os.path.pardir, os.path.pardir, 
+    pkg_root = os.path.abspath(os.path.join(os.path.pardir, os.path.pardir,
                                             os.path.dirname(__file__)))
     sys.path.insert(0, pkg_root)
     sys.path.insert(0, os.path.join(os.path.pardir, os.path.curdir))
-    sys.path.insert(0, os.path.join(os.path.pardir, os.path.pardir, 
+    sys.path.insert(0, os.path.join(os.path.pardir, os.path.pardir,
                                     os.path.curdir))
     from phaseshifts import __version__
     sys.path.pop(0)
@@ -143,7 +144,8 @@ html_theme = 'sphinxdoc'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = 'phaseshifts_logo_small.png' if os.path.exists('phaseshifts_logo_small.png') else None
+html_logo = 'phaseshifts_logo_small.png' if os.path.exists(
+    'phaseshifts_logo_small.png') else None
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -208,28 +210,29 @@ htmlhelp_basename = '{}doc'.format(project)
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-# The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+    # The paper size ('letterpaper' or 'a4paper').
+    #'papersize': 'letterpaper',
 
-# The font size ('10pt', '11pt' or '12pt').
-#'pointsize': '10pt',
+    # The font size ('10pt', '11pt' or '12pt').
+    #'pointsize': '10pt',
 
-# Additional stuff for the LaTeX preamble.
-#'preamble': '',
+    # Additional stuff for the LaTeX preamble.
+    #'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', '%s_%s.tex' % (project, release), 
-    u'%s Documentation' % project,
-    u'%s' % author, 'manual'),
+    ('index', '%s_%s.tex' % (project, release),
+     u'%s Documentation' % project,
+     u'%s' % author, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = 'phaseshifts_logo_text.svg' if os.path.exists('phaseshifts_logo_text.svg') else None
+latex_logo = 'phaseshifts_logo_text.svg' if os.path.exists(
+    'phaseshifts_logo_text.svg') else None
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
@@ -267,9 +270,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', project, u'{} Documentation'.format(project),
-   u'{}'.format(author), project, 'Easily generate atomic phase shifts',
-   'Miscellaneous'),
+    ('index', project, u'{} Documentation'.format(project),
+     u'{}'.format(author), project, 'Easily generate atomic phase shifts',
+     'Miscellaneous'),
 ]
 
 # Documents to append as an appendix to all manuals.

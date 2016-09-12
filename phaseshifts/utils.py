@@ -29,22 +29,22 @@
 #                                                                            #
 ##############################################################################
 """
-**utils.py** 
+**utils.py**
 
 Provides utility functions and classes for performing common low-level tasks.
 """
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
+from __future__ import print_function, unicode_literals
 
-import sys
-import os
 from shutil import copy
+import os
+import sys
 
 
 def expand_filepath(path):
     """
     Expands `path` for environment and user variables
-    
+
     Examples
     --------
     >>> from phaseshifts.utils import expand_filepath
@@ -52,21 +52,21 @@ def expand_filepath(path):
      'C:\\Users\\Liam'
     >>> expand_filepath(r'parent\dir/file.ext')
      'parent\\dir\\file.ext'
-     
+
     """
     return os.path.normpath(
-                os.path.expanduser(
-                    os.path.expandvars(
-                        os.path.expanduser(path)))) 
+        os.path.expanduser(
+            os.path.expandvars(
+                os.path.expanduser(path))))
 
 
 def fix_path(file_path, fill_char=''):
     """
-    Fixes escaped characters in `file_path`. Implicitly calls 
+    Fixes escaped characters in `file_path`. Implicitly calls
     :py:meth:`expand_filepath`
-    
+
     .. note:: Offending path characters will be substituted with `fill_char`.
-    
+
     Examples
     --------
     >>> from phaseshifts.utils import fix_path
@@ -82,26 +82,26 @@ def fix_path(file_path, fill_char=''):
                     '\v': '\\v', '\\\\': '\\'}
         for fix in fix_list:
             file_path = file_path.replace(fix, fix_list[fix])
-        
+
         for fix in fix_list:
             file_path = file_path.replace(fix, fix_list[fix])
 
     fill_char = '' if not isinstance(fill_char, str) else fill_char
 
-    return "".join(x if x.isalnum() or x in list(':\\/-_.') 
+    return "".join(x if x.isalnum() or x in list(':\\/-_.')
                    else fill_char for x in file_path)
 
 
 def stringify(arg):
     """
-    Returns string of `arg` or fancy string of items if `arg` is a 
+    Returns string of `arg` or fancy string of items if `arg` is a
     :py:obj:`dict`, :py:obj:`list` or :py:obj:`tuple`.
-    
+
     Raises
     ------
     TypeError
         If `arg` is unicode and cannot be coerced into a formatted string.
-        
+
     Examples
     --------
     >>> from phaseshifts.utils import stringify
@@ -111,13 +111,14 @@ def stringify(arg):
      u"'1', 'two', or 'None'"
     >>> stringify({3: 'three', 'four': 4, False: None})
      u"'3', 'four', or 'False'"
-    
+
     """
     try:
-        if (isinstance(arg, list) or 
-                isinstance(arg, tuple) or 
+        if (isinstance(arg, list) or
+                isinstance(arg, tuple) or
                 isinstance(arg, dict)):
-            arr = ("'" + "', '".join(["{}".format(item) for item in arg]) + "'")
+            arr = ("'" + "', '".join(["{}".format(item)
+                                      for item in arg]) + "'")
             var = arr.split()
             var.insert(len(arg) - 1, 'or')
             return " ".join(var)
@@ -138,7 +139,7 @@ class FileUtils(object):
         Constructor
         """
         pass
-    
+
     @staticmethod
     def copy_files(files, dst, verbose=False):
         """copy list of files into destination directory"""
