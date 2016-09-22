@@ -186,6 +186,7 @@ class Conphas(object):
         self._data = data or []
 
     # Load phase shift data from file
+    @staticmethod
     def load_data(self, filename):
         """
         Loads (discontinuous) phase shift data from file

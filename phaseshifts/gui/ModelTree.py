@@ -365,7 +365,8 @@ class ProjectTreeWidget(QTreeWidget):
         except any as e:
             self.logger.error(e.msg)
 
-    def getChildItemHandle(self, obj, name=str):
+    @staticmethod
+    def getChildItemHandle(obj, name=str):
         if isinstance(obj, QTreeWidget):
             root = obj.invisibleRootItem()
         elif isinstance(obj, QTreeWidgetItem):
@@ -621,7 +622,8 @@ class AtomItem(BaseItem):
     def atomChanged(self, atom):
         pass
 
-    def newAtom(self, element='C', **kwargs):
+    @staticmethod
+    def newAtom(element='C', **kwargs):
         return Atom(element, **kwargs)
 
     def refresh(self):

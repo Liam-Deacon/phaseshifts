@@ -97,7 +97,8 @@ class CLEED_validator(object):
         else:
             return True
 
-    def validate(self, filename, aoi=False):
+    @staticmethod
+    def validate(filename, aoi=False):
         """
         Checks CLEED input file for errors
 
