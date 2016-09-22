@@ -151,7 +151,7 @@ class PhaseShiftWrapper(object):
                 else:
                     exec('self.{property} = "{value}"'.format(property=key,
                                                               value=val))
-            except:
+            except KeyError:
                 pass
 
     def __init__(self, slab,
@@ -481,9 +481,9 @@ class PhaseShiftWrapper(object):
         Parses a Fortran formatted string containing (multiple) decimal numbers
         and returns a Python-friendly line string to be processed further.
         """
-        regex = '[-+0-9]{1,5}\.\d{1,6}'  # basic decimal number
+        regex = r'[-+0-9]{1,5}\.\d{1,6}'  # basic decimal number
         decimal = compile('({})'.format(regex))
-        decimal_and_exponent = compile('({}[eED][+-\d]\d{0,6})'.format(regex))
+        decimal_and_exponent = compile(r'({}[eED][+-\d]\d{0,6})'.format(regex))
 
         output = decimal.findall(line)
         output = output if output != [] else decimal_and_exponent.findall(line)
@@ -671,13 +671,12 @@ class BVHWrapper(PhaseShiftWrapper):
             with open(mufftin_file, 'w') as f:
                 f.write("".join([str(line) for line in lines]))
 
-        except any:
+        except (IOError, IndexError):
             sys.stderr.write('Unable to change phase shift energy '
                              'range - using Barbieri/Van Hove '
                              'default of 20-300eV in 5eV steps\n')
             sys.stderr.flush()
-        finally:
-            return (ei, ef, de)
+        return (ei, ef, de)
 
     def _get_lmax_dict(self, atoms, default_lmax=10):
         lmax_dict = {}
@@ -724,7 +723,7 @@ class BVHWrapper(PhaseShiftWrapper):
 
     def _phsh_wil(self, filepath, mufftin_filepath, phasout_filepath,
                   dataph_filepath, phasout_files, energy_range,
-                  fmt=None, phaseshifts=[],
+                  fmt=None, phaseshifts=(),
                   **kwargs):
         """
         Perform William's phase shift calculation
@@ -745,7 +744,7 @@ class BVHWrapper(PhaseShiftWrapper):
                   phasout_files,
                   energy_range,
                   fmt=None,
-                  phaseshifts=[],
+                  phaseshifts=(),
                   lmax_dict={},
                   tmp_dir=gettempdir(),
                   **kwargs):
@@ -781,7 +780,7 @@ class BVHWrapper(PhaseShiftWrapper):
 
         return phsh_files or []
 
-    def autogen_atorbs(self, elements=[], output_dir='.'):
+    def autogen_atorbs(self, elements=(), output_dir='.'):
         """
         Generates atomic orbital input files for a set of elements and
         calculates their atomic charge densities according to the Barbieri /
@@ -1040,7 +1039,7 @@ class BVHWrapper(PhaseShiftWrapper):
         ------
         ValueError
             If `nform` is not one of: {nform_dict}
-        """.format(stringify(nform_dict=MTZModel.nforms))
+        """.format(nform_dict=stringify(MTZModel.nforms))
         nform = str(nform)[:3]
         if MTZModel.nforms[nform] == MTZModel.cav:
             return self._phsh_cav

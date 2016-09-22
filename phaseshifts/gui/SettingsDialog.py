@@ -386,8 +386,8 @@ class SettingsDialog(QDialog):
             if not os.path.exists(path):
                 reply = QMessageBox.warning(self, 'Warning!',
                                             "'%s' directory does not exist! "
-                                            "Do you wish to create it?" % os.pardir(
-                                                path),
+                                            "Do you wish to create it?" %
+                                            os.path.dirname(path),
                                             QMessageBox.Yes, QMessageBox.No)
                 if reply == QMessageBox.Yes:
                     try:

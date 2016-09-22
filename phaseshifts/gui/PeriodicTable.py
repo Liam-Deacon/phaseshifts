@@ -46,11 +46,8 @@ PeridoicTable.py
 from __future__ import absolute_import, unicode_literals
 
 from collections import OrderedDict
-import logging
-import ntpath
 import os
 import platform
-import re
 import re
 import sys
 

@@ -140,7 +140,15 @@ class AtomsTable(QTableWidget):
                                    'tooltip': 'Valency of specie e.g. -2'}),
                                   ('r', {'tooltip': 'Muffin-Tin radius'})))
 
-    def __init__(self, parent=None, atoms=[]):
+    def __init__(self, parent=None, atoms=()):
+        """
+        Initialises AtomsTable with given parent and list of atoms
+
+        Args
+        ----
+            parent (QWidget): parent widget
+            atoms (Iterable): initial list of atoms to display and edit
+        """
         super(self.__class__, self).__init__(parent)
         self.setObjectName("AtomsTable")
 
@@ -451,10 +459,11 @@ class BulkCrystalDialog(QWidget):
             ref = ase.data.reference_states[z]
             lattice = ref['symmetry']
             index = 0
-            while index < len(crystal_definitions) and crystal_definitions[index][0] != lattice:
+            while (index < len(crystal_definitions) and
+                   crystal_definitions[index][0] != lattice):
                 index += 1
             if index == len(crystal_definitions) or not self.legal_element:
-                QInputDialog.error(_("Can't find lattice definition!"))
+                QInputDialog.error("Can't find lattice definition!")
                 return False
             self.structinfo.set_active(index)
             self.lattice_lbuts[0].set_value(ref['a'])
@@ -467,7 +476,8 @@ class BulkCrystalDialog(QWidget):
                 self.elements[0][3].set_text('0')
         elif self.ui.pymatgenRadiu.isChecked():
             print('use pymatgen here')
-            compound, ok = QInputDialog.getText(self, "Search Materials Project",
+            compound, ok = QInputDialog.getText(self,
+                                                "Search Materials Project",
                                                 "Enter element or compound:")
             if not ok:
                 return
@@ -476,15 +486,14 @@ class BulkCrystalDialog(QWidget):
             search_text += space_group
             with MPRester("USER_API_KEY") as m:
 
-                # Get the formulas and energies of materials with materials_id mp-1234
-                # or with formula FeO.
+                # Get the formulas and energies of materials with
+                # materials_id mp-1234 or with formula FeO.
                 results = m.query(space_group, ['structure'])
                 print(results)
 
 
 if __name__ == '__main__':
     from qtsix.Qt import QApplication
-    import sys
     app = QApplication(sys.argv)
 
     widget = BulkCrystalDialog()

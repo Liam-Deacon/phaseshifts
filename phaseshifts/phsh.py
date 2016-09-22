@@ -82,11 +82,12 @@ except ImportError:
 
 __all__ = []
 __date__ = '2013-11-15'
-__updated__ = '2016-09-12'
+__updated__ = '2016-09-18'
 
 DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
+VERBOSE = 0
 
 PHASESHIFT_FORMATS = ['cleed', 'curve', 'none']
 
@@ -226,11 +227,8 @@ def main(argv=None):
         args, unknown = parser.parse_known_args()
 
         verbose = False
-        try:
-            verbose = args.verbose
-            VERBOSE = verbose
-        except:
-            pass
+        verbose = args.verbose
+        VERBOSE = verbose
 
         if verbose > 0 and len(unknown) > 0:
             for arg in unknown:
@@ -328,8 +326,9 @@ def main(argv=None):
         Popen(leed_cmd)
 
 
-def gui_main(argv=sys.argv):
+def gui_main(argv=None):
     """ Simple GUI wrapper function """
+    argv = argv or sys.argv
     if '--gui' not in argv:
         argv.insert(0, '--gui')
     import subprocess

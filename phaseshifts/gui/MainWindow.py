@@ -31,10 +31,8 @@ SOFTWARE.
 # Python version compatibility
 from __future__ import print_function, with_statement
 
-from collections import OrderedDict
 from datetime import datetime
 import logging
-import ntpath
 import os
 import platform
 import sys
@@ -73,8 +71,7 @@ __APP_VERSION__ = '0.1-alpha'
 __APP_WEBSITE__ = 'http://pythonhosted.org/phaseshifts/'
 __PYTHON__ = "{0}.{1}.{2}".format(sys.version_info.major,
                                   sys.version_info.minor,
-                                  sys.version_info.micro,
-                                  sys.version_info.releaselevel)
+                                  sys.version_info.micro)
 __UPDATE_URL__ = ""
 
 
@@ -201,6 +198,7 @@ class MainWindow(QMainWindow):
                                                            QtCore.QT_VERSION_STR)
 
         msg = QMessageBox.about(self, self.ui.windowTitle(), text)
+        return msg
 
     # Display about dialog
     def aboutQt(self):

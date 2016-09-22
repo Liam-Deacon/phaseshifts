@@ -56,7 +56,6 @@ from math import pi
 from time import gmtime, strftime
 import ntpath
 import os
-import platform
 import re
 import sys
 
@@ -124,7 +123,7 @@ class Conphas(object):
 
     HARTREE = 27.21  # 139 eV in Van Hove LEED program
 
-    def __init__(self, input_files=[], output_file=[], formatting=None,
+    def __init__(self, input_files=(), output_file=None, formatting=None,
                  lmax=10, **kwargs):
         """
         Parameters
@@ -165,11 +164,13 @@ class Conphas(object):
         elif not ntpath.isfile(filename):
             return
 
+        def _format_line(line):
+            return line.replace('-', ' -').replace('\n', '')
+
         try:
             with open(filename) as f:
-                format_line = lambda x: x.replace('-', ' -').replace('\n', '')
                 data = []
-                data = [data.append(format_line(line).split()) for line in f]
+                data = [data.append(_format_line(line).split()) for line in f]
                 data = "".join(line.replace('-', ' -').rstrip() for line in f)
                 data = "".join(line.rstrip() for line in f)
         except IOError:
@@ -273,8 +274,8 @@ class Conphas(object):
         for i_phsh in range(1, len(phsh_list)):
             try:
                 with open(phsh_filenames[i_phsh - 1], 'w') as phsh_file:
-                    [phsh_file.write(lines[i]) for i in range(
-                        phsh_list[i_phsh - 1], phsh_list[i_phsh])]
+                    for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh]):
+                        phsh_file.write(lines[i])
             except IOError:
                 raise
 

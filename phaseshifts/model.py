@@ -73,7 +73,7 @@ class Atom(AseAtom):
     Conversion factor of Bohr radii to Angstroms (1 Bohr = 0.529Ã…).
     """
 
-    def __init__(self, element, coordinates=[0., 0., 0.], valence=0.,
+    def __init__(self, element, coordinates=(0., 0., 0.), valence=0.,
                  tag=None, radius=None, occupancy=None, **kwargs):
         """
         Constructor for :py:class:`Atom` class.
@@ -105,7 +105,7 @@ class Atom(AseAtom):
                             else elements.ELEMENTS[element]
                             if isinstance(element, int)
                             else elements.ELEMENTS[element.title()])
-        except:
+        except (TypeError, AttributeError, KeyError):
             # attempt to guess element from tag as backup
             self.tag = str(tag)
             self.element = elements.ELEMENTS[self.tag_info('element')]
@@ -116,7 +116,7 @@ class Atom(AseAtom):
         # now initialize ase Atom base class
         AseAtom.__init__(self,
                          symbol=self.element.symbol,
-                         position=kwargs.pop('position', coordinates),
+                         position=kwargs.pop('position', list(coordinates)),
                          tag=tag,
                          momentum=kwargs.pop('momentum', None),
                          mass=kwargs.pop('mass', self.element.mass),
@@ -276,15 +276,12 @@ class Atom(AseAtom):
     @occupancy.setter
     def occupancy(self, fraction):
         """ Sets the fractional occupancy of the atom """
-        try:
-            fraction = float(fraction)
-            if fraction >= 0. and fraction <= 1.:
-                self.data['occupancy'] = fraction
-            else:
-                raise ValueError('fractional occupancy must be '
-                                 'between 0. and 1.')
-        except any as error:
-            raise error
+        fraction = float(fraction)
+        if fraction >= 0. and fraction <= 1.:
+            self.data['occupancy'] = fraction
+        else:
+            raise ValueError('fractional occupancy must be '
+                             'between 0. and 1.')
 
     valence = atomproperty('valence', 'Valency of atom')
     radius = atomproperty('radius', 'Muffin-Tin radius of atom in Angstroms')
@@ -901,7 +898,7 @@ class MTZModel(Model):
     nforms = {'cav': cav, 'wil': wil, 'rel': rel,
               '0': cav, '1': wil, '2': rel}
 
-    def __init__(self, unitcell=None, atoms=[],
+    def __init__(self, unitcell=None, atoms=():,
                  nh=10, exchange=0.72, nform='rel', **kwargs):
         """
         Constructor for Model class.
@@ -1066,7 +1063,7 @@ class MTZModel(Model):
                     n, Z, val, rad = [t(s) for (t, s) in
                                       zip((int, float, float, float), _vars)]
 
-                    for i in range(0, n):
+                    for _ in range(0, n):
                         _vars = f.readline().split('#')[0].split()[:3]
                         position = [t(s) for (t, s) in
                                     zip((float, float, float), _vars)]

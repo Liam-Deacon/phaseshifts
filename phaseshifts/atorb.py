@@ -55,12 +55,12 @@ shift calculation package.
 from collections import OrderedDict
 from ctypes import cdll, create_string_buffer
 from ctypes.util import find_library
-from sys import platform, version_info, exit
+from sys import platform, version_info
 from tempfile import gettempdir
 import os
 import re
 
-from .elements import Element, ELEMENTS, SERIES
+from .elements import Element, ELEMENTS
 from .lib.libphsh import hartfock as vht_hartfock
 from .utils import expand_filepath, stringify
 
@@ -692,13 +692,13 @@ class Atorb(object):
             self.update_config(self.get_conf_parameters(conf_file))
 
         Atorb.gen_input(element,
-                        ngrid=self.ngrid(),
-                        rel=self.rel(),
-                        exchange_method=self.exchange(),
-                        relic=self.relic(),
-                        mixing_scf=self.mixing_scf(),
-                        tolerance=self.tolerance(),
-                        xnum=self.xnum(),
+                        ngrid=self.ngrid,
+                        rel=self.rel,
+                        exchange_method=self.exchange,
+                        relic=self.relic,
+                        mixing_scf=self.mixing_scf,
+                        tolerance=self.tolerance,
+                        xnum=self.xnum,
                         atorb_file=(self.__dict__.get('atorb_file', None)),
                         output=(self.__dict__.get('output', None)),
                         header=(self.__dict__.get('header', None)),
