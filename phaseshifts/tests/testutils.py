@@ -32,27 +32,28 @@
 '''
 Tests for phaseshifts.utils module
 '''
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
+from __future__ import print_function, unicode_literals
 
-import unittest
 import os
 import sys
+import unittest
 
 from phaseshifts.tests.tests import TestCase
 
 
 class TestUtilsModule(TestCase):
+
     def test_fix_path(self):
         ''' Test fix_path() '''
         self.msg(self.shortDescription())
         from phaseshifts.utils import fix_path
-        self.assertEqual(fix_path("C:\test\newfile.txt"), 
+        self.assertEqual(fix_path("C:\test\newfile.txt"),
                          "C:\\test\\newfile.txt")
-        self.assertNotEqual(fix_path("C:\test\newfile.txt"), 
+        self.assertNotEqual(fix_path("C:\test\newfile.txt"),
                             "C:\test\newfile.txt")
         sys.stderr.write("SUCCESS")
-        
+
     def test_expand_filepath(self):
         ''' Test expand_filepath() '''
         self.msg(self.shortDescription())
@@ -67,9 +68,9 @@ class TestUtilsModule(TestCase):
         self.msg(self.shortDescription())
         from phaseshifts.utils import stringify
         self.assertEqual(stringify(None), 'None')
-        self.assertEqual(stringify([1, 'two', None]), 
+        self.assertEqual(stringify([1, 'two', None]),
                          u"'1', 'two', or 'None'")
-        # note dictionaries seems to order keys in alphabetical-numeric 
+        # note dictionaries seems to order keys in alphabetical-numeric
         # order for list comprehension
         self.assertEqual(stringify({3: 'three', 'four': 4, False: None}),
                          u"'four', 'False', or '3'")

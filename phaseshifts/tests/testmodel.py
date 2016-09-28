@@ -32,17 +32,17 @@
 '''
 Unit tests for :py:mod:`phaseshifts.model` module
 '''
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
-
-import unittest
+from __future__ import print_function, unicode_literals
 
 from unittest import TestSuite
+import unittest
+
 from phaseshifts.tests.tests import TestCase
 
 
 class TestAtomClass(TestCase):
-    
+
     def test_instance(self):
         ''' Test Atom constructor '''
         from phaseshifts.model import Atom
@@ -50,11 +50,11 @@ class TestAtomClass(TestCase):
         self.assertIsInstance(atom, Atom)
         with self.assertRaises(TypeError):
             atom = Atom()  # cannot determine element for atom
-    
+
     def test_coordinates(self):
         from phaseshifts.model import Atom, CoordinatesError
         atom = Atom('H')
-        
+
         # test coordinate assignment and retrieval for different types
         self.assertTrue(atom.coordinates, [0., 0., 0.])
         atom.coordinates = [1., 2., 3.]
@@ -69,7 +69,7 @@ class TestAtomClass(TestCase):
             pass
         atom.coordinates = (0, '1.', '2')
         self.assertTrue(atom.coordinates, [0., 1., 2.])
-        
+
         # test raising of errors
         with self.assertRaises(CoordinatesError):
             atom.coordinates = [0.]
@@ -79,13 +79,13 @@ class TestAtomClass(TestCase):
             atom.coordinates = '1 2 3'
         with self.assertRaises(ValueError):
             atom.coordinates = (3., 2., 'one')
-            
+
     def test_bohr_coordinates(self):
         from phaseshifts.model import Atom
         atom = Atom('H', coordinates=[0., 1., 2.])
-        self.assertTrue(atom.bohr_coordinates == 
+        self.assertTrue(atom.bohr_coordinates ==
                         [0., 1. / Atom.bohr, 2. / Atom.bohr])
-    
+
     def test_valence(self):
         from phaseshifts.model import Atom
         atom = Atom('H', valence=2.)
@@ -94,17 +94,17 @@ class TestAtomClass(TestCase):
         self.assertTrue(atom.valence == -2)
         with self.assertRaises(ValueError):
             atom.valence = 'NaN'
-        
+
     def test_tag(self):
         from phaseshifts.model import Atom
         atom = Atom('H')
         self.assertTrue(atom.tag == 'H')
-    
+
     def test_radius(self):
         from phaseshifts.model import Atom
         atom = Atom('H', radius=(10. * Atom.bohr))
         self.assertTrue(atom.bohr_radius == 10.)
-            
+
     def test_bohr_radius(self):
         from phaseshifts.model import Atom
         atom = Atom('H', radius=10.)
@@ -113,7 +113,7 @@ class TestAtomClass(TestCase):
         self.assertTrue(atom.radius == 20.)
         with self.assertRaises(TypeError):
             atom.radius = 'tiny'
-    
+
     def test_occupancy(self):
         from phaseshifts.model import Atom
         atom = Atom('H', occupancy=1.)
@@ -124,7 +124,7 @@ class TestAtomClass(TestCase):
             atom.occupancy = 2.
         with self.assertRaises(ValueError):
             atom.occupancy = -0.5
-    
+
     def test_element(self):
         from phaseshifts.model import Atom
         from phaseshifts.elements import ELEMENTS
@@ -136,8 +136,8 @@ class TestAtomClass(TestCase):
         with self.assertRaises(KeyError):
             Atom(-1)
         with self.assertRaises(KeyError):
-            Atom(9001)  # its over nine thousand!  
-    
+            Atom(9001)  # its over nine thousand!
+
     def test_Z(self):
         from phaseshifts.model import Atom
         atom = Atom('H')
@@ -146,7 +146,7 @@ class TestAtomClass(TestCase):
         atom.element = Atom('Ar')
         self.assertFalse(atom.Z == 1)
         self.assertTrue(atom.Z == atom.element.protons)
-        
+
     def test_uniqueness(self):
         from phaseshifts.model import Atom
         atoms = [Atom('H'), Atom('H', valence=1), Atom('H'),
@@ -155,7 +155,7 @@ class TestAtomClass(TestCase):
 
 
 class TestUnitcellClass(TestCase):
-    
+
     def test_instance(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell()
@@ -177,14 +177,14 @@ class TestUnitcellClass(TestCase):
         self.assertTrue(uc.b == uc.a and uc.b == 10.)
         uc.b = 20.
         self.assertTrue(uc.b == 20.)
-        
+
     def test_c(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell(a=10, c=5.)
         self.assertTrue(uc.b == uc.a and uc.a == 10. and uc.c == 5.)
         uc.c = 20.
         self.assertTrue(uc.b == uc.a and uc.a == 10. and uc.c == 20.)
-        
+
     def test_alpha(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell()
@@ -193,21 +193,21 @@ class TestUnitcellClass(TestCase):
         self.assertTrue(uc.alpha == 45.)
         uc.alpha = -45.
         self.assertTrue(uc.alpha == 315.)
-        
+
     def test_beta(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell()
         self.assertTrue(uc.beta == 90.)
         uc.beta = 45.
         self.assertTrue(uc.beta == 45.)
-        
+
     def test_gamma(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell()
         self.assertTrue(uc.gamma == 90.)
         uc.gamma = 45.
         self.assertTrue(uc.gamma == 45.)
-        
+
     def test_basis(self):
         from phaseshifts.model import Unitcell
         uc = Unitcell()
@@ -224,28 +224,28 @@ class TestUnitcellClass(TestCase):
 
 
 class TestModelClass(TestCase):
-    
+
     def test_instance(self):
         from phaseshifts.model import Model, Unitcell
         model = Model()
         self.assertIsInstance(model, Model)
-        
+
         # check defaults
         self.assertTrue(model.unitcell == Unitcell)
         self.assertTrue(model.atoms == [])
-    
+
     def test_add_atom(self):
         from phaseshifts.model import Atom, Model
         model = Model(atoms=[Atom('H')])
         model.add_atom('C', [0., 0., 0.])
-        
+
     def test_atoms(self):
         from phaseshifts.model import Atom, Model
         model = Model(atoms=(Atom('C'), Atom('H'), Atom('O')))
         self.assertTrue(model.atoms == list(Atom('C'), Atom('H'), Atom('O')))
         with self.assertRaises(TypeError):
             Model(atoms=Atom('H'))
-    
+
     def test_name(self):
         from phaseshifts.model import Model
         model = Model(name='The Standard Model')  # Pun intended
@@ -254,53 +254,53 @@ class TestModelClass(TestCase):
         self.assertTrue(model.name == model.formula)
         model.name = 'The Greenhouse Effect'
         self.assertTrue(model.name == 'The Greenhouse Effect')
-        
+
     def test_formula(self):
         from phaseshifts.model import Model
         model = Model(atoms=['C', 'O', 'O'])
         self.assertTrue(model.formula == 'CO2')
-    
+
     def test_unitcell(self):
         from phaseshifts.model import Model, Unitcell
         model = Model()
         self.assertEqual(model.unitcell, Unitcell())
-        model.unitcell = Unitcell(a=1., b=2., c=3., 
+        model.unitcell = Unitcell(a=1., b=2., c=3.,
                                   alpha=120., beta=60., gamma=90.)
-        self.assertEqual(model.unitcell, 
-                         Unitcell(a=1., b=2., c=3., 
+        self.assertEqual(model.unitcell,
+                         Unitcell(a=1., b=2., c=3.,
                                   alpha=120., beta=60., gamma=90.))
         with self.assertRaises(TypeError):
             model.unitcell = None
-      
+
     def test_uniqueness(self):
         pass
-        
+
     def test_check_coordinates(self):
         from phaseshifts.model import Atom, Model, CoordinatesError
-        CoZnO = [Atom('Zn', coordinates=[0., 0., 0.], occupancy=0.5), 
-                 Atom('Co', coordinates=[0., 0., 0.], occupancy=0.5), 
+        CoZnO = [Atom('Zn', coordinates=[0., 0., 0.], occupancy=0.5),
+                 Atom('Co', coordinates=[0., 0., 0.], occupancy=0.5),
                  Atom('O', coordinates=[1., 0., 0.], occupancy=1.0)]
         model = Model(atoms=CoZnO)
         self.assertIsInstance(model.check_coordinates(), dict)
         with self.assertRaises(CoordinatesError):
-            CoZnO[1].occupancy = 0.999  
-            # occupancy for site [0., 0., 0.] is now > 1. 
+            CoZnO[1].occupancy = 0.999
+            # occupancy for site [0., 0., 0.] is now > 1.
             model.check_coordinates()
 
 
 class TestMTZModelClass(TestCase):
-    
+
     @classmethod
     def setUpClass(cls):
         from phaseshifts.model import MTZModel
         super(TestMTZModelClass, cls).setUpClass()
         cls._model = MTZModel()
-    
+
     def test_nh(self):
         self.assertTrue(self._model.nh == 10)
         self._model.nh = 12
-        self.assertTrue(self._model.nh == 12)    
-    
+        self.assertTrue(self._model.nh == 12)
+
     def test_nform(self):
         from phaseshifts.model import MTZModel
         self.assertTrue(self._model.nform == MTZModel.rel)
@@ -313,13 +313,13 @@ class TestMTZModelClass(TestCase):
         self._model.nform = 'wil'
         self.assertTrue(self._model.nform == MTZModel.wil)
         self._model.nform = 'cav'
-        self.assertTrue(self._model.nform == MTZModel.cav)        
+        self.assertTrue(self._model.nform == MTZModel.cav)
         with self.assertRaises(ValueError):
             self._model.nform = None
-        
+
     def test_exchange(self):
         pass
-        
+
 
 class TestModelModule(TestSuite):
 

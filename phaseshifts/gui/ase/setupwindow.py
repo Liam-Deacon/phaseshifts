@@ -2,10 +2,12 @@
 """setupwindow.py - Window base class for setup modules.
 """
 
-from qtsix.QWtWidgets import (QLabel, QWidget)
 from gettext import gettext as _
+
 from ase.gui.widgets import pack
+from qtsix.QtWidgets import (QLabel, QWidget)
 import ase
+
 
 def pack(vbox, widgets, end=False, bottom=False, expand=False, padding=0):
     if not isinstance(widgets, list):
@@ -22,14 +24,14 @@ def pack(vbox, widgets, end=False, bottom=False, expand=False, padding=0):
     else:
         vbox.pack_start(hbox, expand, expand, padding)
     for widget in widgets:
-        if type(widget) is gtk.Entry: # isinstance does not work here
+        if type(widget) is gtk.Entry:  # isinstance does not work here
             widget.set_size_request(widget.get_max_length() * 9, 24)
         widget.show()
         if end and widget is widgets[-1]:
             hbox.pack_end(widget, expand, expand, padding)
         else:
             hbox.pack_start(widget, expand, expand, padding)
-    
+
     return widgets
 
 
@@ -79,22 +81,22 @@ class SetupWindow(gtk.Window):
             struct = ref['symmetry']
             if struct == 'fcc' or struct == 'bcc':
                 struct = "%s (a=%.3f �)" % (struct, ref['a'])
-        
+
         txt = "  %s: %s, Z=%i, %s" % (name, symb, z, struct)
         self.elementinfo.set_text(txt)
         self.legal_element = symb
         return True
-        
+
     def invalid_element(self, txt=_("  ERROR: Invalid element!")):
         self.legal_element = False
         self.elementinfo.set_text(txt)
-        
+
 if __name__ == "__main__":
     from qtsix.Qt import QApplication
     import sys
     app = QApplication(sys.argv)
-    
+
     window = SetupWindow()
     window.show()
-    
+
     sys.exit(app.exec_())

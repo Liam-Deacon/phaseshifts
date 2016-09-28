@@ -46,17 +46,19 @@ Requirements
 
 from __future__ import division, print_function
 
-import sys
-import math
 import io
+import math
+import sys
 import webbrowser
 
-import wxversion
-wxversion.ensureMinimal('2.8')
-import wx
 from wx.lib import fancytext, buttons, rcsizer
+import wx
+import wxversion
 
 from phaseshifts.elements import ELEMENTS, SERIES
+
+
+wxversion.ensureMinimal('2.8')
 
 
 class MainApp(wx.App):
@@ -86,7 +88,7 @@ class MainFrame(wx.Frame):
     """Main application window."""
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = (wx.DEFAULT_DIALOG_STYLE|wx.MINIMIZE_BOX|
+        kwds["style"] = (wx.DEFAULT_DIALOG_STYLE | wx.MINIMIZE_BOX |
                          wx.TAB_TRAVERSAL)
         wx.Frame.__init__(self, *args, **kwds)
         self.selected = -1
@@ -107,16 +109,16 @@ class MainFrame(wx.Frame):
         self.menu.Append(menu, "File")
         menu = wx.Menu()
         menu.Append(wx.ID_COPY,
-            "Copy\tCtrl+C", "Copy selected element to the clipboard",
-            wx.ITEM_NORMAL)
+                    "Copy\tCtrl+C", "Copy selected element to the clipboard",
+                    wx.ITEM_NORMAL)
         self.menu.Append(menu, "Edit")
         menu = wx.Menu()
         menu.Append(wx.ID_VIEW_DETAILS, "Details", "Show or hide details",
-            wx.ITEM_CHECK)
+                    wx.ITEM_CHECK)
         self.menu.Append(menu, "View")
         menu = wx.Menu()
         menu.Append(wx.ID_ABOUT, "About...",
-            "Display information about the program", wx.ITEM_NORMAL)
+                    "Display information about the program", wx.ITEM_NORMAL)
         self.menu.Append(menu, "Help")
 
         # create panels and controls
@@ -140,12 +142,16 @@ class MainFrame(wx.Frame):
 
         # create sizers
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.sizer.Add(self.table, 1, (wx.LEFT|wx.TOP|wx.RIGHT|wx.EXPAND|
-            wx.ALIGN_CENTER_HORIZONTAL| wx.EXPAND|wx.ADJUST_MINSIZE), BORDER-5)
+        self.sizer.Add(self.table, 1, (wx.LEFT | wx.TOP | wx.RIGHT |
+                                       wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL |
+                                       wx.EXPAND | wx.ADJUST_MINSIZE),
+                       BORDER - 5)
         self.sizer.Add((BORDER, BORDER))
-        self.sizer.Add(self.notebook, 0, (wx.LEFT|wx.RIGHT|wx.BOTTOM|
-            wx.EXPAND|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|
-            wx.ADJUST_MINSIZE), BORDER)
+        self.sizer.Add(self.notebook, 0, (wx.LEFT | wx.RIGHT | wx.BOTTOM |
+                                          wx.EXPAND |
+                                          wx.ALIGN_CENTER_HORIZONTAL |
+                                          wx.ALIGN_CENTER_VERTICAL |
+                                          wx.ADJUST_MINSIZE), BORDER)
 
         self.notebook.SetSelection(1)
         self.SetAutoLayout(True)
@@ -253,22 +259,24 @@ class PeriodicPanel(wx.Panel):
                     self.sizer.Add((SPACER, SPACER))
                 elif col[0] in '123456789*':
                     static = wx.StaticText(self, -1, col,
-                        style=wx.ALIGN_CENTER|wx.ALIGN_BOTTOM)
+                                           style=wx.ALIGN_CENTER |
+                                           wx.ALIGN_BOTTOM)
                     self.sizer.Add(static, 0,
-                        (wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|
-                         wx.ALIGN_CENTER_VERTICAL|wx.FIXED_MINSIZE), SPACER//2)
+                                   (wx.ALL | wx.ALIGN_CENTER_HORIZONTAL |
+                                    wx.ALIGN_CENTER_VERTICAL |
+                                    wx.FIXED_MINSIZE), SPACER // 2)
                 else:
                     ele = ELEMENTS[col]
-                    button = ElementButton(self, ele.number+100, ele.symbol,
+                    button = ElementButton(self, ele.number + 100, ele.symbol,
                                            size=(buttonsize, buttonsize))
                     self.buttons[ele.number - 1] = button
                     button.SetBezelWidth(1)
                     button.SetToolTipString(ele.name)
                     col = COLORS[ele.series]
                     button.SetButtonColour(wx.Colour(col[0], col[1], col[2]))
-                    self.sizer.Add(button, 0, (wx.LEFT|wx.BOTTOM|
-                        wx.FIXED_MINSIZE|wx.ALIGN_CENTER_HORIZONTAL|
-                        wx.ALIGN_CENTER_VERTICAL), 0)
+                    self.sizer.Add(button, 0, (wx.LEFT | wx.BOTTOM |
+                                               wx.FIXED_MINSIZE | wx.ALIGN_CENTER_HORIZONTAL |
+                                               wx.ALIGN_CENTER_VERTICAL), 0)
                     self.Bind(wx.EVT_BUTTON, self.OnSelect, button)
 
         self.SetAutoLayout(True)
@@ -279,13 +287,13 @@ class PeriodicPanel(wx.Panel):
         # position element info panel
         cw = self.sizer.GetColWidths()
         rh = self.sizer.GetRowHeights()
-        self.info.Move((sum(cw[:3])+cw[3]//2, (rh[0]-SPACER)//2-1))
+        self.info.Move((sum(cw[:3]) + cw[3] // 2, (rh[0] - SPACER) // 2 - 1))
 
         # legend of chemical series
-        self.legendpos = (sum(cw[:13]), (rh[0]-SPACER)//2-1)
-        self.legendsize = (sum(cw[13:17]) + cw[17]//2, -1)
+        self.legendpos = (sum(cw[:13]), (rh[0] - SPACER) // 2 - 1)
+        self.legendsize = (sum(cw[13:17]) + cw[17] // 2, -1)
         self.legend = wx.StaticText(self, -1, " Alkaline earth metals ",
-            style=wx.ALIGN_CENTER, pos=self.legendpos, size=self.legendsize)
+                                    style=wx.ALIGN_CENTER, pos=self.legendpos, size=self.legendsize)
         self.legend.SetToolTipString("Chemical series")
 
         # blinking element button
@@ -296,8 +304,8 @@ class PeriodicPanel(wx.Panel):
 
     def AddCtrl(self, ctrl, pos=200):
         self.sizer.Remove(pos)
-        self.sizer.Insert(pos, ctrl, 0, (wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|
-                                         wx.ALIGN_BOTTOM|wx.FIXED_MINSIZE), 0)
+        self.sizer.Insert(pos, ctrl, 0, (wx.ALL | wx.ALIGN_CENTER_HORIZONTAL |
+                                         wx.ALIGN_BOTTOM | wx.FIXED_MINSIZE), 0)
         self.Layout()
 
     def OnTimer(self, evt):
@@ -335,32 +343,32 @@ class ElementPanel(wx.Panel):
 
         # create controls
         self.number = wx.StaticText(self, -1, "808",
-            style=wx.ALIGN_RIGHT)
+                                    style=wx.ALIGN_RIGHT)
         self.position = wx.StaticText(self, -1, "6, 88, 9",
-            style=wx.ALIGN_LEFT)
+                                      style=wx.ALIGN_LEFT)
         self.symbol = wx.StaticText(self, -1, "Mm",
-            style=wx.ALIGN_CENTER_HORIZONTAL)
+                                    style=wx.ALIGN_CENTER_HORIZONTAL)
         self.name = wx.StaticText(self, -1, "Praseodymium ",
-            style=wx.ALIGN_CENTER_HORIZONTAL)
+                                  style=wx.ALIGN_CENTER_HORIZONTAL)
         self.mass = wx.StaticText(self, -1, "123.4567890 ",
-            style=wx.ALIGN_CENTER_HORIZONTAL)
+                                  style=wx.ALIGN_CENTER_HORIZONTAL)
         self.massnumber = wx.StaticText(self, -1, "123 A ",
-            style=wx.ALIGN_RIGHT)
+                                        style=wx.ALIGN_RIGHT)
         self.protons = wx.StaticText(self, -1, "123 P ",
-            style=wx.ALIGN_RIGHT)
+                                     style=wx.ALIGN_RIGHT)
         self.neutrons = wx.StaticText(self, -1, "123 N ",
-            style=wx.ALIGN_RIGHT)
+                                      style=wx.ALIGN_RIGHT)
         self.electrons = wx.StaticText(self, -1, "123 e ",
-            style=wx.ALIGN_RIGHT)
+                                       style=wx.ALIGN_RIGHT)
         self.eleshell = wx.StaticText(self, -1, "2, 8, 18, 32, 32, 15, 2",
-            style=wx.ALIGN_LEFT)
+                                      style=wx.ALIGN_LEFT)
         self.eleconfig = StaticFancyText(self, -1,
-            "[Xe] 4f<sup>14</sup> 5d<sup>10</sup>"
-            " 6s<sup>2</sup> 6p<sup>6</sup> ",
-            style=wx.ALIGN_LEFT)
+                                         "[Xe] 4f<sup>14</sup> 5d<sup>10</sup>"
+                                         " 6s<sup>2</sup> 6p<sup>6</sup> ",
+                                         style=wx.ALIGN_LEFT)
         self.oxistates = wx.StaticText(self, -1, "1*, 2, 3, 4, 5, 6, -7 ")
         self.atmrad = wx.StaticText(self, -1, "1.234 A ",
-            style=wx.ALIGN_RIGHT)
+                                    style=wx.ALIGN_RIGHT)
         self.ionpot = wx.StaticText(self, -1, "123.4567890 eV ")
         self.eleneg = wx.StaticText(self, -1, "123.45678 ")
 
@@ -393,26 +401,26 @@ class ElementPanel(wx.Panel):
         sizer.col_w = SPACER
         sizer.row_h = SPACER
         sizer.Add(self.number, row=0, col=0,
-            flag=wx.ALIGN_CENTER_HORIZONTAL|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_CENTER_HORIZONTAL | wx.FIXED_MINSIZE)
         sizer.Add(self.position, row=0, col=1,
-            flag=wx.ALIGN_LEFT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_LEFT | wx.FIXED_MINSIZE)
         sizer.Add(self.symbol, row=1, col=0, rowspan=2, colspan=2,
-            flag=(wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|
-                  wx.FIXED_MINSIZE))
+                  flag=(wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL |
+                        wx.FIXED_MINSIZE))
         sizer.Add(self.name, row=3, col=0, colspan=2,
-            flag=wx.ALIGN_CENTER_HORIZONTAL|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_CENTER_HORIZONTAL | wx.FIXED_MINSIZE)
         sizer.Add(self.mass, row=4, col=0, colspan=2,
-            flag=wx.ALIGN_CENTER_HORIZONTAL|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_CENTER_HORIZONTAL | wx.FIXED_MINSIZE)
         sizer.Add(self.massnumber, row=0, col=2,
-            flag=wx.ALIGN_RIGHT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_RIGHT | wx.FIXED_MINSIZE)
         sizer.Add(self.protons, row=1, col=2,
-            flag=wx.ALIGN_RIGHT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_RIGHT | wx.FIXED_MINSIZE)
         sizer.Add(self.neutrons, row=2, col=2,
-            flag=wx.ALIGN_RIGHT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_RIGHT | wx.FIXED_MINSIZE)
         sizer.Add(self.electrons, row=3, col=2,
-            flag=wx.ALIGN_RIGHT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_RIGHT | wx.FIXED_MINSIZE)
         sizer.Add(self.atmrad, row=4, col=2,
-            flag=wx.ALIGN_RIGHT|wx.FIXED_MINSIZE)
+                  flag=wx.ALIGN_RIGHT | wx.FIXED_MINSIZE)
         sizer.Add(self.eleconfig, row=0, col=4, flag=wx.ADJUST_MINSIZE)
         sizer.Add(self.eleshell, row=1, col=4, flag=wx.ADJUST_MINSIZE)
         sizer.Add(self.oxistates, row=2, col=4, flag=wx.ADJUST_MINSIZE)
@@ -467,52 +475,60 @@ class DetailsPanel(wx.Panel):
     """Element details panel."""
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = wx.NO_BORDER|wx.TAB_TRAVERSAL
+        kwds["style"] = wx.NO_BORDER | wx.TAB_TRAVERSAL
         wx.Panel.__init__(self, *args, **kwds)
         self.selected = -1
 
         # create controls
         self.names = LabeledCtrl(self, wx.ComboBox, "Element Name",
-            choices=[p.name for p in ELEMENTS],
-            style=wx.CB_READONLY|wx.CB_SORT, size=(1, -1))
+                                 choices=[p.name for p in ELEMENTS],
+                                 style=wx.CB_READONLY | wx.CB_SORT,
+                                 size=(1, -1))
         self.symbols = LabeledCtrl(self, wx.ComboBox, "Symbol", '',
-            choices=[p.symbol for p in ELEMENTS],
-            style=wx.CB_READONLY|wx.CB_SORT, size=(1, -1))
+                                   choices=[p.symbol for p in ELEMENTS],
+                                   style=wx.CB_READONLY | wx.CB_SORT,
+                                   size=(1, -1))
         self.numbers = LabeledCtrl(self, wx.ComboBox, "Number",
-            choices=["%s" % p.number for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                   choices=["%s" % p.number for p in ELEMENTS],
+                                   style=wx.CB_READONLY, size=(1, -1))
         self.mass = LabeledCtrl(self, wx.ComboBox, "Relative Atomic Mass",
-            choices=["%-.10g" % p.mass for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                choices=["%-.10g" % p.mass for p in ELEMENTS],
+                                style=wx.CB_READONLY, size=(1, -1))
         self.atmrad = LabeledCtrl(self, wx.ComboBox,
                                   _u("Atomic Radius (\xc5)"),
-            choices=["%-.10g" % p.atmrad for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                  choices=["%-.10g" %
+                                           p.atmrad for p in ELEMENTS],
+                                  style=wx.CB_READONLY, size=(1, -1))
         self.covrad = LabeledCtrl(self, wx.ComboBox,
                                   _u("Covalent Radius (\xc5)"),
-            choices=["%-.10g" % p.covrad for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                  choices=["%-.10g" %
+                                           p.covrad for p in ELEMENTS],
+                                  style=wx.CB_READONLY, size=(1, -1))
         self.vdwrad = LabeledCtrl(self, wx.ComboBox,
                                   _u("V.d.Waals Radius (\xc5)"),
-            choices=["%-.10g" % p.vdwrad for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                  choices=["%-.10g" %
+                                           p.vdwrad for p in ELEMENTS],
+                                  style=wx.CB_READONLY, size=(1, -1))
         self.eleneg = LabeledCtrl(self, wx.ComboBox, "Electronegativity",
-            choices=["%-.10g" % p.eleneg for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                  choices=["%-.10g" %
+                                           p.eleneg for p in ELEMENTS],
+                                  style=wx.CB_READONLY, size=(1, -1))
         self.eleconfig = LabeledCtrl(self, wx.ComboBox, "e- Config",
-            choices=[p.eleconfig for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                     choices=[p.eleconfig for p in ELEMENTS],
+                                     style=wx.CB_READONLY, size=(1, -1))
         self.eleshells = LabeledCtrl(self, wx.ComboBox, "Electrons per Shell",
-            choices=[', '.join("%i" % i for i in p.eleshells)
-                     for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                     choices=[', '.join("%i" % i for i
+                                                        in p.eleshells)
+                                              for p in ELEMENTS],
+                                     style=wx.CB_READONLY, size=(1, -1))
         self.oxistates = LabeledCtrl(self, wx.ComboBox, "Oxidation States",
-            choices=[p.oxistates for p in ELEMENTS],
-            style=wx.CB_READONLY, size=(1, -1))
+                                     choices=[p.oxistates for p in ELEMENTS],
+                                     style=wx.CB_READONLY, size=(1, -1))
         self.ionpot = LabeledCtrl(self, wx.Choice,
-            "Ionization Potentials (eV)", choices=[], size=(1, -1))
+                                  "Ionization Potentials (eV)", choices=[],
+                                  size=(1, -1))
         self.isotopes = LabeledCtrl(self, wx.Choice, "Isotopes",
-            choices=[], size=(1, -1))
+                                    choices=[], size=(1, -1))
 
         # layout
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -520,15 +536,15 @@ class DetailsPanel(wx.Panel):
         sizer_left = wx.BoxSizer(wx.VERTICAL)
         sizer_right = wx.BoxSizer(wx.VERTICAL)
         sizer_num = wx.BoxSizer(wx.HORIZONTAL)
-        style = wx.RIGHT|wx.BOTTOM|wx.EXPAND|wx.ADJUST_MINSIZE
+        style = wx.RIGHT | wx.BOTTOM | wx.EXPAND | wx.ADJUST_MINSIZE
         sizer_left.Add(self.names, 0, style, SPACER)
         sizer_left.Add(self.mass, 0, style, SPACER)
         sizer_left.Add(self.atmrad, 0, style, SPACER)
         sizer_left.Add(self.covrad, 0, style, SPACER)
         sizer_left.Add(self.vdwrad, 0, style, SPACER)
         sizer_left.Add(self.eleneg, 0, style, SPACER)
-        sizer_top.Add(sizer_left, 1, wx.LEFT|wx.RIGHT, 0)
-        style = wx.BOTTOM|wx.EXPAND|wx.ADJUST_MINSIZE
+        sizer_top.Add(sizer_left, 1, wx.LEFT | wx.RIGHT, 0)
+        style = wx.BOTTOM | wx.EXPAND | wx.ADJUST_MINSIZE
         sizer_num.Add(self.symbols, 1, style, 0)
         sizer_num.Add((SPACER, 5), 0, 0, 0)
         sizer_num.Add(self.numbers, 1, style, 0)
@@ -538,9 +554,9 @@ class DetailsPanel(wx.Panel):
         sizer_right.Add(self.oxistates, 0, style, SPACER)
         sizer_right.Add(self.ionpot, 0, style, SPACER)
         sizer_right.Add(self.isotopes, 0, style, SPACER)
-        sizer_top.Add(sizer_right, 1, wx.TOP|wx.RIGHT, 0)
+        sizer_top.Add(sizer_right, 1, wx.TOP | wx.RIGHT, 0)
         sizer.Add(sizer_top, 1,
-            wx.LEFT|wx.RIGHT|wx.TOP|wx.EXPAND|wx.ADJUST_MINSIZE, SPACER)
+                  wx.LEFT | wx.RIGHT | wx.TOP | wx.EXPAND | wx.ADJUST_MINSIZE, SPACER)
         self.SetAutoLayout(True)
         self.SetSizerAndFit(sizer, True)
         sizer.SetSizeHints(self)
@@ -564,7 +580,7 @@ class DetailsPanel(wx.Panel):
         if self.selected == select:
             return
         self.selected = select
-        ele = ELEMENTS[select+1]
+        ele = ELEMENTS[select + 1]
 
         self.names.ctrl.SetStringSelection(ele.name)
         self.symbols.ctrl.SetStringSelection(ele.symbol)
@@ -582,7 +598,7 @@ class DetailsPanel(wx.Panel):
         for index, massnum in enumerate(sorted(ele.isotopes)):
             iso = ele.isotopes[massnum]
             self.isotopes.ctrl.Append("%3i:  %8.4f , %8.4f%%" % (
-                massnum, iso.mass, iso.abundance*100.0))
+                massnum, iso.mass, iso.abundance * 100.0))
             if massnum == ele.nominalmass:
                 self.isotopes.ctrl.SetSelection(index)
 
@@ -614,19 +630,20 @@ class DecriptionPanel(wx.Panel):
     """Element description panel."""
 
     def __init__(self, *args, **kwds):
-        kwds["style"] = wx.NO_BORDER|wx.TAB_TRAVERSAL
+        kwds["style"] = wx.NO_BORDER | wx.TAB_TRAVERSAL
         wx.Panel.__init__(self, *args, **kwds)
         self.selected = -1
 
         self.description = wx.TextCtrl(self, -1, " \n \n",
-            style=wx.TE_MULTILINE|wx.TE_READONLY)
+                                       style=wx.TE_MULTILINE | wx.TE_READONLY)
         font = self.description.GetFont()
         font.SetPointSize((font.GetPointSize() + 1))
         self.description.SetFont(font)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.description, 1,
-            wx.TOP|wx.LEFT|wx.RIGHT|wx.BOTTOM|wx.EXPAND|wx.FIXED_MINSIZE,
-            SPACER)
+                  wx.TOP | wx.LEFT | wx.RIGHT | wx.BOTTOM | wx.EXPAND |
+                  wx.FIXED_MINSIZE,
+                  SPACER)
 
         self.SetAutoLayout(True)
         self.SetSizerAndFit(sizer, True)
@@ -688,15 +705,16 @@ class ElementButton(buttons.GenToggleButton):
         label = self.GetLabel()
         txtwidth, txtheight = dc.GetTextExtent(label)
         xpos = (width - txtwidth) // 2
-        ypos = (height*0.75 - txtheight) // 2 - 1
+        ypos = (height * 0.75 - txtheight) // 2 - 1
         dc.DrawText(label, xpos, ypos)
 
         font.SetWeight(wx.FONTWEIGHT_LIGHT)
-        font.SetPointSize((font.GetPointSize()*6) // 8)
+        font.SetPointSize((font.GetPointSize() * 6) // 8)
         dc.SetFont(font)
         label = "%i" % (self.GetId() - 100)
         txtwidth, txtheight = dc.GetTextExtent(label)
-        dc.DrawText(label, (width-txtwidth)//2, 4+ypos+(height-txtheight)//2)
+        dc.DrawText(
+            label, (width - txtwidth) // 2, 4 + ypos + (height - txtheight) // 2)
 
 
 class LabeledCtrl(wx.BoxSizer):
@@ -707,13 +725,14 @@ class LabeledCtrl(wx.BoxSizer):
         wx.BoxSizer.__init__(self, wx.HORIZONTAL)
         self.label = wx.StaticText(parent, -1, label + space)
         self.ctrl = control(parent, -1, *args, **kwds)
-        self.Add(self.label, 0, wx.ALIGN_CENTER_VERTICAL|wx.FIXED_MINSIZE)
-        self.Add(self.ctrl, 1, (wx.LEFT|wx.EXPAND|wx.ALIGN_CENTER_VERTICAL|
-                                wx.ALIGN_RIGHT|wx.ADJUST_MINSIZE), 0)
+        self.Add(self.label, 0, wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE)
+        self.Add(self.ctrl, 1, (wx.LEFT | wx.EXPAND |
+                                wx.ALIGN_CENTER_VERTICAL |
+                                wx.ALIGN_RIGHT | wx.ADJUST_MINSIZE), 0)
         if unit:
             self.unit = wx.StaticText(parent, -1, unit)
             self.Add(self.unit, 0,
-                wx.RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.FIXED_MINSIZE, 0)
+                     wx.RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE, 0)
         else:
             self.unit = None
 
@@ -760,7 +779,7 @@ class DisclosureCtrl(buttons.GenBitmapTextToggleButton):
             b'\x07\x13\x12\x18B\x17\x9fx\xa0\x00\x00\x00\x00IEND\xaeB`\x82')
 
     def __init__(self, parent, winid, label, *args, **kwds):
-        kwds["style"] = wx.BORDER_NONE|wx.BU_EXACTFIT
+        kwds["style"] = wx.BORDER_NONE | wx.BU_EXACTFIT
         buttons.GenBitmapTextToggleButton.__init__(self, parent, winid, None,
                                                    label, *args, **kwds)
         if isinstance(self.bmp0, type(b'')):
@@ -788,7 +807,7 @@ class DisclosureCtrl(buttons.GenBitmapTextToggleButton):
         self.SetToolTipString("%s" % ('Show' if self.up else 'Hide'))
 
     def DoGetBestSize(self):
-        width, height, usemin = self._GetLabelSize()
+        width, height = self._GetLabelSize()[:2]
         return width + 5, height + 4
 
     def OnPaint(self, event):
@@ -880,4 +899,3 @@ _u = (lambda x: x.decode('latin-1')) if sys.version[0] == '2' else str
 
 if __name__ == "__main__":
     MainApp(0).MainLoop()
-

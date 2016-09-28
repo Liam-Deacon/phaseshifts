@@ -32,13 +32,13 @@
 """
 **conphas.py**
 
-Provides a native python version of the ``conphas`` (``phsh3``) Fortran program 
-by W. Moritz, which is distributed as part of the SATLEED code 
+Provides a native python version of the ``conphas`` (``phsh3``) Fortran program
+by W. Moritz, which is distributed as part of the SATLEED code
 (see "Barbieri/Van Hove phase shift calculation package" section) and can
-be found at: `www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html`_ 
+be found at: `www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html`_
 
-The :py:class:`Conphas()` class also provides a number of convenience 
-functions (see docstrings below). 
+The :py:class:`Conphas()` class also provides a number of convenience
+functions (see docstrings below).
 
 Examples
 --------
@@ -50,24 +50,22 @@ Examples
 
 """
 
+from copy import copy, deepcopy
+from getpass import getuser
+from math import pi
+from time import gmtime, strftime
 import ntpath
 import os
-import sys
-import platform
 import re
-from math import pi
-from getpass import getuser
-from time import gmtime, strftime
-from copy import copy, deepcopy
+import sys
 
-#from phaseshifts.wrappers import PhaseShiftWrapper
 from .utils import fix_path, stringify
 
 try:
     from numpy import loadtxt
     NUMPY_SUPPORT = True
 except ImportError:
-    NUMPY_SUPPORT = False    
+    NUMPY_SUPPORT = False
 
 if sys.version_info[0] < 3:
     try:
@@ -83,23 +81,24 @@ VERBOSE = 1
 
 class Conphas(object):
     """
-    Generates continuous phase shifts (as a function of energy) 
-    from phases with discontinuities (jumps by :math:`U_M \pm \pi`). It reformats 
-    scattered phases and energies to use as input datasets for LEED programs. 
-    
+    Generates continuous phase shifts (as a function of energy)
+    from phases with discontinuities (jumps by :math:`U_M \pm \pi`).
+    It reformats scattered phases and energies to use as input datasets for
+    LEED programs.
+
     Attributes
     ----------
     input_files : list of str
         List of the input files.
     output_file : str
-        Output filepath - this file will have all :math:`^\pi/_2` jumps 
+        Output filepath - this file will have all :math:`^\pi/_2` jumps
         removed to form continuous phase shifts.
     lmax : int
-        Maximum angular momentum (azimuthal) quantum number to calculate and 
+        Maximum angular momentum (azimuthal) quantum number to calculate and
         must be in the range :math:`0 \leq l \leq 18`.
     format : str
         Output style - use: {formats}
-    
+
     Methods
     -------
     calculate
@@ -107,16 +106,16 @@ class Conphas(object):
     load_data
         Loads (discontinuous) phase shift data from file.
     read_datafile
-        Reads in discontinuous phase shift file into data attribute of 
+        Reads in discontinuous phase shift file into data attribute of
         :py:class:`Conphas` instance.
     split_phasout
         Splits phasout input file into separate files.
-    
+
     Notes
     -----
-    This work is based on the original conphas (phsh3) FORTRAN program by 
-    W. Moritz, which is distributed as part of the SATLEED code (see 
-    "Barbieri/Van Hove phase shift calculation package" section) and can be 
+    This work is based on the original conphas (phsh3) FORTRAN program by
+    W. Moritz, which is distributed as part of the SATLEED code (see
+    "Barbieri/Van Hove phase shift calculation package" section) and can be
     found at: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/
     leed/leedpack.html
 
@@ -124,7 +123,7 @@ class Conphas(object):
 
     HARTREE = 27.21  # 139 eV in Van Hove LEED program
 
-    def __init__(self, input_files=[], output_file=[], formatting=None, 
+    def __init__(self, input_files=(), output_file=None, formatting=None,
                  lmax=10, **kwargs):
         """
         Parameters
@@ -132,27 +131,27 @@ class Conphas(object):
         input_files : list of str
             a list of the input files (default None)
         output_file : str
-            output filepath - this file will have all pi/2 jumps 
+            output filepath - this file will have all pi/2 jumps
             removed to form continuous phase shifts
         lmax : int, optional
-            Maximum angular momentum quantum number to calculate and 
+            Maximum angular momentum quantum number to calculate and
             must be in the range 0 <= lmax <= 18 . (default: 10)
-        formatting : str, optional 
+        formatting : str, optional
             output style - use either 'CLEED' or None (default: None)
 
         """
-        self.input_files = [filename for filename in input_files 
+        self.input_files = [filename for filename in input_files
                             if os.path.isfile(filename)]
         self.output_file = ntpath.abspath(str(output_file))
         self.lmax = lmax
         self.format = formatting
         self.__dict__.update(kwargs)
-    
+
     def read_datafile(self, filename):
         """
-        Reads in discontinuous phase shift file into data attribute of 
+        Reads in discontinuous phase shift file into data attribute of
         :py:class:`Conphas` instance.
-        
+
         Parameters
         ----------
         filename : str
@@ -164,41 +163,44 @@ class Conphas(object):
             return
         elif not ntpath.isfile(filename):
             return
-        
+
+        def _format_line(line):
+            return line.replace('-', ' -').replace('\n', '')
+
         try:
             with open(filename) as f:
                 data = []
-                data = [data.append(line.replace('-', ' -').replace('\n', 
-                                                    '').split()) for line in f]
+                data = [data.append(_format_line(line).split()) for line in f]
                 data = "".join(line.replace('-', ' -').rstrip() for line in f)
                 data = "".join(line.rstrip() for line in f)
         except IOError:
-            assert IOError
-            
+            raise
+
     @property
     def data(self):
         """ Internal data for :py:meth:`Conphas.calculate` """
         return self._data
-    
+
     @data.setter
     def data(self, data):
         self._data = data or []
-    
+
     # Load phase shift data from file
+    @staticmethod
     def load_data(self, filename):
         """
         Loads (discontinuous) phase shift data from file
-        
+
         Parameters
         ----------
         file : str
            Path to phase shift file.
-            
+
         Returns
         -------
         tuple: (double, double, int, int, ndarray)
            (initial_energy, energy_step, n_phases, lmf, data)
-            
+
         Notes
         -----
         + `initial_energy` is the starting energy of the phase shifts.
@@ -209,9 +211,9 @@ class Conphas(object):
 
         """
         with open(filename, 'r') as f:
-            title = f.readline()  # skip first line
+            _title = f.readline()  # skip first line
             (initial_energy, energy_step, n_phases, lmf) = (
-                [t(s) for (t, s) 
+                [t(s) for (t, s)
                  in zip((float, float, int, int),
                         f.readline().replace('-', ' -').split())])
             # get parameters
@@ -219,38 +221,38 @@ class Conphas(object):
                           for line in f.readlines()]
             data = [float(number) for number in "".join(data_lines).split()]
         return (initial_energy, energy_step, n_phases, lmf, data)
-    
+
     @staticmethod
     def split_phasout(filename, output_filenames=[]):
         """
         Splits phasout input file into separate files
-        
+
         Parameters
         ----------
         filename : str
             Filename of phasout file to split.
         output_filenames : list of str
-            List of files to create. Will guess filenames from original 
+            List of files to create. Will guess filenames from original
             phasout `filename` if none given.
-    
+
         """
         try:
             with open(filename, 'r') as phasout:
                 lines = phasout.readlines()
-        
+
         except IOError:
             assert IOError("Cannot open file '%s'" % filename)
-        
+
         # get list of phase shifts in phasout
         phsh_list = []
-        [phsh_list.append(i) for (i, line) in enumerate(lines)
-         if re.match("^[A-Za-z]", line.replace(' ', ''))]
-        
+        _ = [phsh_list.append(i) for (i, line) in enumerate(lines)
+             if re.match("^[A-Za-z]", line.replace(' ', ''))]
+
         # try to guess filenames from header lines in file
         guessed_filenames = [lines[i].split('#')[0].split(' ')[-1].replace(
-                                '\n', '').replace('\r', '') + '.ph' 
-                             for i in phsh_list]
-        
+            '\n', '').replace('\r', '') + '.ph'
+            for i in phsh_list]
+
         # determine list of output filenames
         phsh_filenames = []
         if isinstance(output_filenames, list):
@@ -262,94 +264,95 @@ class Conphas(object):
         elif isinstance(output_filenames, str):
             # generate list of filenames from trunk filename
             output_filenames = os.path.splitext(output_filenames)[0]
-            phsh_filenames = [output_filenames + '_%i.ph' % i 
+            phsh_filenames = [output_filenames + '_%i.ph' % i
                               for i, name in enumerate(phsh_filenames)]
         else:
             # try to guess from header lines in file
             phsh_filenames = guessed_filenames
-            
+
         # write separate files for each phase shift
         phsh_list.append(len(lines))
         for i_phsh in range(1, len(phsh_list)):
             try:
                 with open(phsh_filenames[i_phsh - 1], 'w') as phsh_file:
-                    [phsh_file.write(lines[i]) for i in range(
-                        phsh_list[i_phsh - 1], phsh_list[i_phsh])]
+                    for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh]):
+                        phsh_file.write(lines[i])
             except IOError:
-                raise IOError
-        
+                raise
+
         return phsh_filenames[:len(phsh_list) - 1]  # return written files
-         
+
     @property
     def input_files(self):
         """ List of input files for :py:meth:`Conphas.calculate()` """
         return self._input_files or []
-       
-    @input_files.setter 
-    def input_files(self, input_files=[]):
+
+    @input_files.setter
+    def input_files(self, input_files=None):
         """
         Sets list of input filenames
         """
         if input_files:
-            input_files = [fix_path(filename) for filename in input_files]
-            temp_input_files = [filename for filename 
+            input_files = [fix_path(filename)
+                           for filename in input_files or []]
+            temp_input_files = [filename for filename
                                 in input_files if ntpath.isfile(file)]
             if temp_input_files is not None and temp_input_files != []:
                 self._input_files = temp_input_files
-        
+
     @property
     def output_file(self):
-        """ 
-        Output file name 
+        """
+        Output file name
         """
         return self._output_file
-        
+
     @output_file.setter
     def output_file(self, output_file):
         """
         Sets output filename
         """
         self._output_file = output_file
-                    
+
     # Set max orbital angular momentum
     @property
     def lmax(self):
         """
-        Returns the maximum angular momentum (azimuthal) quantum number to 
+        Returns the maximum angular momentum (azimuthal) quantum number to
         be used in the phase shift calculations.
         """
         return self._lmax
-    
+
     @lmax.setter
     def lmax(self, lmax):
         """
         Sets max orbital angular momentum (azimuthal quantum number)
-        
+
         Parameters
         ----------
         lmax : int
             Maximum azimuthal quantum number to be considered in calculations.
-            
+
         """
         self._lmax = lmax if lmax > 0 and lmax < 19 else 10
-             
+
     @property
     def format(self):
         """
-        Returns the format for any generated phase shift files. 
+        Returns the format for any generated phase shift files.
         """
         return self._format
-    
+
     @format.setter
     def format(self, formatting):
         """
         Set appropriate format from available options
-        
+
         Parameters
         ----------
         formatting : str, optional
             The format identifier for different packages; can be 'cleed'
-            or None. 
+            or None.
 
         """
         formatting = formatting or ''
@@ -357,12 +360,12 @@ class Conphas(object):
             self._format = str(formatting).lower()
         else:
             self._format = None
-    
+
     # process to create continuous phase shifts
     def calculate(self):
-        """
+        r"""
         Calculates continuous phase shifts from input file(s).
-            
+
         Examples
         --------
         >>> con = Conphas(output_file=r'testing\leedph_py.d', lmax=10)
@@ -388,17 +391,17 @@ class Conphas(object):
 
         """
         neng = n_phases = 0
-        
+
         energy = []
         phas = []
         conpha = []
-        
+
         # read phase scattering
         for i, input_file in enumerate(self.input_files):
-            
-            (initial_energy, energy_step, 
+
+            (initial_energy, energy_step,
                 n_phases, lmf, data) = self.load_data(input_file)
-            
+
             if n_phases > 250:
                 n_phases = 250
             if i == 0:
@@ -406,10 +409,10 @@ class Conphas(object):
                 energy_step0 = copy(energy_step)
                 n_phases0 = copy(n_phases)
                 lmf0 = copy(lmf)
-            
+
             # increase dimensions of array for input
             phas.append([])
-    
+
             # populate data arrays
             index = 0
             try:
@@ -421,37 +424,37 @@ class Conphas(object):
                         for l in range(lmf + 1):
                             phas[i][ie].append(data[index])
                             index += 1
-                            
+
             except IndexError:
                 raise IndexError("Malformatted or incomplete input")
-            
+
             neng += n_phases
             conpha = deepcopy(phas)
-            
+
             # produce continuous scattering phases
             for l in range(0, self.lmax + 1):
                 if l > 18:
                     break
                 ifak = 0
-    
+
                 conpha[i][0][l] = phas[i][0][l]
-                
-                if VERBOSE: 
+
+                if VERBOSE:
                     print("L = {0}".format(l))
                 for ie in range(1, n_phases):
                     dif = phas[i][ie][l] - phas[i][ie - 1][l]
                     if dif >= pi / 2.:
                         ifak -= 1
-                        if VERBOSE: 
+                        if VERBOSE:
                             print("jump between {} eV and {} eV; IFAK = {}"
                                   .format(energy[ie - 1], energy[ie], ifak))
                     elif dif <= -pi / 2.:
                         ifak += 1
-                        if VERBOSE: 
+                        if VERBOSE:
                             print("jump between {} eV and {} eV; IFAK = {}"
                                   .format(energy[ie - 1], energy[ie], ifak))
                     conpha[i][ie][l] = phas[i][ie][l] + (pi * ifak)
-            
+
             # get root name of output
             if ntpath.exists(self.input_files[i]):
                 root = ntpath.dirname(self.input_files[i])
@@ -463,15 +466,15 @@ class Conphas(object):
                 name = ntpath.splitext(ntpath.basename(self.output_file))[0]
                 dataph = ntpath.join(root, 'dataph_{0}_{1}.d'.format(name, i))
                 leedph = ntpath.join(root, 'leedph_{0}_{1}.d'.format(name, i))
-                
+
             # write datafile 'dataph.d'
             try:
                 with open(dataph, 'w') as f:
                     for kk in range(0, self.lmax + 1):
                         f.write("\"L = {0}\n".format(kk))
                         for ii in range(0, n_phases):
-                            f.write("%9.7f\t%9.7f\n" 
-                                    % (energy[ii] / self.HARTREE, 
+                            f.write("%9.7f\t%9.7f\n"
+                                    % (energy[ii] / self.HARTREE,
                                        conpha[i][ii][kk]))
                         f.write("\n")
             except IOError:
@@ -481,17 +484,17 @@ class Conphas(object):
                     for kk in range(self.lmax + 1):
                         f.write("\"L = {0}\n".format(kk))
                         for ii in range(0, n_phases):
-                            f.write("%9.7f\t%9.7f\n" 
-                                    % (energy[ii] / self.HARTREE, 
+                            f.write("%9.7f\t%9.7f\n"
+                                    % (energy[ii] / self.HARTREE,
                                        conpha[i][ii][kk]))
                         f.write("\n")
-    
+
         # write final output
         with open(self.output_file, 'w') as f:
-            if str(self.format).lower() == 'cleed': 
+            if str(self.format).lower() == 'cleed':
                 # add formatted header for Held CLEED package
                 f.write("{0} {1} neng lmax (calculated by {2} on {3})\n"
-                        "".format(neng, self.lmax, getuser(), 
+                        "".format(neng, self.lmax, getuser(),
                                   strftime("%Y-%m-%d at %H:%M:%S", gmtime()))
                         )
             if str(self.format).lower() != 'curve':
@@ -505,13 +508,13 @@ class Conphas(object):
                     f.write("\n")
             else:  # write output in "x y y ..." format
                 # write header
-                f.write('# phase shift curve: %s\n' % 
+                f.write('# phase shift curve: %s\n' %
                         os.path.basename(self.output_file))
                 f.write('#energy ')
                 for l in range(self.lmax + 1):
                     f.write('l=%i ' % l)
                 f.write('\n')
-                
+
                 # write data
                 for ie in range(n_phases):
                     f.write("%7.4f " % (energy[ie] / self.HARTREE))

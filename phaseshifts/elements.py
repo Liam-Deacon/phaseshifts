@@ -156,6 +156,7 @@ class Element(object):
         values: Isotope(relative atomic mass, abundance)
 
     """
+
     def __init__(self, number, symbol, name, **kwargs):
         self.number = number
         self.symbol = symbol
@@ -163,10 +164,10 @@ class Element(object):
         self.electrons = number
         self.protons = number
         self.__dict__.update(kwargs)
-    
+
     def __int__(self):
         return self.number
-     
+
     def __str__(self):
         return self.name
 
@@ -281,6 +282,7 @@ class Element(object):
             raise ValueError(
                 "%s - sum of isotope abundances != 1.0" % self.symbol)
 
+
 class Isotope(object):
     """Isotope massnumber, relative atomic mass, and abundance."""
     __slots__ = ['massnumber', 'mass', 'abundance']
@@ -301,6 +303,7 @@ class Isotope(object):
 
 class ElementsDict(object):
     """Ordered dict of Elements with lookup by number, symbol, and name."""
+
     def __init__(self, *elements):
         self._list = []
         self._dict = {}

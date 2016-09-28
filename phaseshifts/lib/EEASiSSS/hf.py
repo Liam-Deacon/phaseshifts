@@ -36,35 +36,35 @@
 
 Description
 -----------
-hf.py is a command line script which calculates atomic charge densities 
-for a given element or elements using a modified version of Eric Shirley's 
+hf.py is a command line script which calculates atomic charge densities
+for a given element or elements using a modified version of Eric Shirley's
 ``hartfock()`` subroutine.
 
 Examples
 --------
-The following calculates the the atomic charge density file(s) specified in 
-the input file (e.g. 'inputA') and places them into the directory given by 
+The following calculates the the atomic charge density file(s) specified in
+the input file (e.g. 'inputA') and places them into the directory given by
 the '-a' option, which is  '~/atlib/' in this example.
- 
-.. code:: bash
-   
-    hf.py -i inputA -a ~/atlib/ 
-
-The above command will print the results to ``stdout`` i.e. to the terminal, 
-however the log can be saved to a file (e.g. 'ilogA') by using:  
 
 .. code:: bash
-   
-    hf.py -i inputA -a ~/atlib/ -l ilogA 
 
-The following does the same, but uses file redirection for the calculation log. 
+    hf.py -i inputA -a ~/atlib/
+
+The above command will print the results to ``stdout`` i.e. to the terminal,
+however the log can be saved to a file (e.g. 'ilogA') by using:
+
+.. code:: bash
+
+    hf.py -i inputA -a ~/atlib/ -l ilogA
+
+The following does the same, but uses file redirection for the calculation log.
 Note the subtle difference in command line usage.
 
 .. code:: bash
 
     hf.py -i inputA -a ~/atlib/ > ilogA
-    
-On Linux there is also the possibility to use the 'tee' command pipe to print 
+
+On Linux there is also the possibility to use the 'tee' command pipe to print
 the log to both the terminal screen and to a file.
 
 .. code:: bash
@@ -72,18 +72,21 @@ the log to both the terminal screen and to a file.
     hf.py -i inputA -a ~/atlib/ | tee ilogA
 
 '''
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
+from __future__ import print_function, unicode_literals
 
-import sys
 import os
-import argparse
+import sys
 
-from phaseshifts.utils import expand_filepath
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
+
 from phaseshifts.lib.libhartfock import hartfock
+from phaseshifts.utils import expand_filepath
+
 
 __date__ = '2015-04-26'
-__updated__ = '2015-04-26'
+__updated__ = '2016-09-18'
+__author__ = 'Liam Deacon'
 __contact__ = 'liam.m.deacon@gmail.com'
 
 DEBUG = 0
@@ -101,74 +104,70 @@ def main(argv=None):
     # display help if no arguments
     if len(argv) == 1:
         argv.append('--help')
-    
+
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % __date__
     program_build_date = str(__updated__)
-    program_version_message = '%%(prog)s %s (%s)' % (program_version, 
+    program_version_message = '%%(prog)s %s (%s)' % (program_version,
                                                      program_build_date)
     program_shortdesc = __import__('__main__').__doc__.split("\n")[1]
     program_license = '''%s
 
       Please contact Eric Shirley <eric.shirley@nist.gov> for queries
-      and comments.
+      and comments relating to the FORTRAN calculations or %s <%s> relating
+      to the Python package.
 
     usage:-
-    ''' % (program_shortdesc, str(__date__), __contact__)
+    ''' % (program_shortdesc, __author__, __contact__)
 
     try:
         # Setup argument parser
-        parser = argparse.ArgumentParser
-        parser = parser(description=program_license, 
-                        formatter_class=argparse.RawDescriptionHelpFormatter)
-        parser.add_argument('-i', '--input', dest='input', metavar='<inputA>', 
+        parser = ArgumentParser(description=program_license,
+                                formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument('-i', '--input', dest='input', metavar='<inputA>',
                             help="path to the atomic orbital input file which "
                             "is an appended list of Barbieri/Van Hove atorb "
                             "files (with some modifications).",
                             required=True)
-        parser.add_argument('-l', '--log', dest='log', metavar='<log_file>', 
+        parser.add_argument('-l', '--log', dest='log', metavar='<log_file>',
                             default=None, help="Optionally redirects the "
-                            "hartfock() calculation log to the file specified " 
+                            "hartfock() calculation log to the file specified "
                             "by <log_file>. The default is to print to stdout "
                             " if the argument is None. [default: %(default)s]")
-        parser.add_argument('-a', '--atom_dir', dest='chgden_dir', 
-                            metavar='<chgden_dir>', 
-                            default=(os.path.expandvars('ATLIB') 
+        parser.add_argument('-a', '--atom_dir', dest='chgden_dir',
+                            metavar='<chgden_dir>',
+                            default=(os.path.expandvars('ATLIB')
                                      if os.path.expandvars('ATLIB') != ''
                                      else os.path.expanduser('~/atlib')),
                             help="Specifies the output directory to place "
                             "the calculated atomic charge density files into. "
-                            "If no argument is given, the 'ATLIB' environment " 
+                            "If no argument is given, the 'ATLIB' environment "
                             "variable is used as the output directory, else "
                             "'~/atlib' is used. Use '.' to place the output "
-                            "files into the current working directory. " 
+                            "files into the current working directory. "
                             "[default: %(default)s]")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count",
                             help="Set verbosity level. [default: %(default)s]")
-        parser.add_argument('-V', '--version', action='version', 
+        parser.add_argument('-V', '--version', action='version',
                             version=program_version_message)
 
         # Process arguments
         args, unknown = parser.parse_known_args()
 
-        verbose = False
-        try:
-            verbose = args.verbose
-        except:
-            pass
+        verbose = args.verbose
 
         if verbose > 0 and len(unknown) > 0:
             for arg in unknown:
                 sys.stderr.write("hf - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
-        
+
         args.log = '' if args.log is None else args.log
-        
+
         if not os.path.isfile(args.input):
-            sys.stderr.write("hf - error: input file '%s' not found\n" 
+            sys.stderr.write("hf - error: input file '%s' not found\n"
                              % args.input)
             sys.stderr.flush()
-        
+
         args.chgden_dir = expand_filepath(args.chgden_dir)
         if not os.path.isdir(args.chgden_dir):
             if verbose:
@@ -176,7 +175,7 @@ def main(argv=None):
                                  "Creating directory..." % args.chgden_dir)
                 sys.stderr.flush()
             os.makedirs(args.chgden_dir)
-        
+
     except KeyboardInterrupt:
         # handle keyboard interrupt #
         return 0

@@ -1,5 +1,12 @@
-from pkg_resources import get_distribution, DistributionNotFound
 import os
+
+from pkg_resources import get_distribution, DistributionNotFound
+
+import atorb
+import conphas
+import lib
+import phsh
+
 
 __author__ = 'Liam Deacon'
 __author_email__ = 'liam.m.deacon@gmail.com'
@@ -12,7 +19,7 @@ try:
         __license__ = f.readlines()[0].strip('\n')
     del(filename)
     del(f)
-except:
+except (TypeError, IOError):
     __license__ = 'unknown'
 
 try:
@@ -27,7 +34,7 @@ except DistributionNotFound:
     VERSION = __project__ + '-' + '(local)'
 else:
     VERSION = __project__ + '-' + __version__
-finally:  
+finally:
     # clean up
     try:
         del(dist)
@@ -39,12 +46,8 @@ finally:
 
 del(os)
 
-import atorb
-import conphas
-import lib
-import phsh
 
-__all__ = ['atorb', 'conphas', 'elements', 'factories', 
-           'leed', 'model', 'phaseshifts', 'phsh', 'utils', 'wrappers']
+__all__ = ['atorb', 'conphas', 'elements', 'factories',
+           'leed', 'model', 'phsh', 'utils', 'wrappers']
 
 __all__.extend(['gui', 'lib', 'plugins', 'tests', 'tools'])

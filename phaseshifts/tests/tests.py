@@ -32,39 +32,40 @@
 '''
 Master testing module for phaseshifts package.
 '''
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
+from __future__ import print_function, unicode_literals
 
-import unittest
-import sys
 import glob
+import importlib
+import sys
+import unittest
 
 
 class TestCase(unittest.TestCase):
 
-    def msg(self, text, newline=True):
+    @staticmethod
+    def msg(text, newline=True):
         ch = '\n' if newline else ''
         sys.stderr.write(ch + str(text) + '...')
         sys.stderr.flush()
 
 
 class TestSuite(unittest.TestSuite):
-    
+
     test_dict = {'atorb': ['test.testatorb.TestAtorbModule'],
                  'conphas': ['test.testconphas.TestConphasModule'],
                  'elements': ['test.testelements.TestElementsModule'],
                  'utils': ['test.testutils.TestUtilsModule']
                  }
-    
-    def test_all(self, modules=[], test_imports=True):
-        for module in modules:
-            try:
-                self.msg('Testing {} module'.format(module), newline=True)
-                exec('import {}'.format(self.test_dict[module]))
-            except any as e:
-                raise e
+
+    def test_all(self, modules=None, test_imports=True):
+        """ Test all module imports """
+        for module in modules or []:
+            TestCase.msg('Testing %s module' % module, newline=True)
+            importlib.import_module(self.test_dict[module])
 
     def __init__(self):
+        super(self.__class__, self).__init__()
         import phaseshifts.tests as tests
         self.addTests([tests.testimports.TestImports('Test '
                                                      'phaseshifts imports'),
@@ -76,6 +77,6 @@ class TestSuite(unittest.TestSuite):
 
 if __name__ == "__main__":
     testSuite = unittest.TestSuite()
-    module_strings = [test_unit[0:len(test_unit) - 3] 
+    module_strings = [test_unit[0:len(test_unit) - 3]
                       for test_unit in glob.glob('test_*.py')]
     unittest.main()

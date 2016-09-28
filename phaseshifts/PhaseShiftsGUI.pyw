@@ -34,9 +34,11 @@ Wrapper module for launching main window of GUI
 """
 import sys
 
+
 def main(argv=sys.argv):
     from phaseshifts.gui import MainWindow
     MainWindow.main(argv)
+
 
 if __name__ == '__main__':
     main()

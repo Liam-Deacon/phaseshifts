@@ -1,4 +1,4 @@
-# PyQt4 runtime hook included for PyInstaller 
+# PyQt4 runtime hook included for PyInstaller
 import sip
 
 sip.setapi(u'QDate', 2)
