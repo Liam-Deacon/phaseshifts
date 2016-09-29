@@ -56,5 +56,8 @@ build:
         name: collect codacy coverage
         code: |
           export CODACY_PROJECT_TOKEN=721355d1f5e5403fb60bf36ebb797a13
+          ls
+          pwd
+          coverage xml *.py
           python-codacy-coverage -r coverage.xml
           
