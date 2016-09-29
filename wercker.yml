@@ -36,7 +36,7 @@ build:
     #     python_location: /usr/bin/python3.2
 
     # A step that executes `pip install` command.
-    - pip-install
+    - pip-install:
         requirements_file: ""
         packages_list: "mock coverage python-coveralls codacy-coverage radon pylint hacking flake8 mastool"
 
