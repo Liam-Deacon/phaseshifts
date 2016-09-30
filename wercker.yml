@@ -6,7 +6,7 @@
 # If you want Google's container you would reference google/python
 # Read more about containers on our dev center
 # http://devcenter.wercker.com/docs/containers/index.html
-box: python:2.7
+box: python:3.5
 # You can also use services such as databases. Read more on our dev center:
 # http://devcenter.wercker.com/docs/services/index.html
 # services:
@@ -38,7 +38,7 @@ build:
     # A step that executes `pip install` command.
     - pip-install:
         requirements_file: ""
-        packages_list: "mock coverage python-coveralls codacy-coverage radon pylint hacking flake8 mastool"
+        packages_list: "mock coverage pytest pytest-cov python-coveralls codacy-coverage radon pylint hacking flake8 mastool"
 
     # # This pip-install clears the local wheel cache
     # - pip-install:
@@ -49,9 +49,18 @@ build:
     - script:
         name: echo python information
         code: |
-          echo "python version $(python --version) running"
-          echo "pip version $(pip --version) running"
+          python setup.py build
 
+# perform test pipeline
+test:
+  steps:
+    - script:
+       name: perform coveralls coverage analysis
+       code: |
+          export COVERALLS_REPO_TOKEN=
+          py.test coveralls/tests.py --doctest-modules --pep8 coveralls -v --cov coveralls --cov-report term-missing
+          coveralls
+  
     - script:
         name: collect codacy coverage
         code: |
@@ -60,4 +69,20 @@ build:
           pwd
           coverage xml *.py
           python-codacy-coverage -r coverage.xml
-          
+
+# perform deployment pipeline
+deploy:
+  steps:
+      - script:
+         name: deploy phaseshifts
+         code: |
+            python setup.py install
+
+# create documentation
+doc:
+   steps:
+      - script:
+         name: create documentation
+         code: |
+            cd phaseshifts/doc
+            make
