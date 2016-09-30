@@ -37,7 +37,7 @@ build:
 
     # A step that executes `pip install` command.
     - pip-install:
-        requirements_file: ""
+        requirements_file: "requirements.txt"
         packages_list: "mock coverage pytest pytest-cov python-coveralls codacy-coverage radon pylint hacking flake8 mastool"
 
     # # This pip-install clears the local wheel cache
@@ -47,7 +47,7 @@ build:
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
     - script:
-        name: echo python information
+        name: build phaseshifts
         code: |
           python setup.py build
 
