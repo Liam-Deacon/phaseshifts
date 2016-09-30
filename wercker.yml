@@ -36,7 +36,9 @@ build:
     #     python_location: /usr/bin/python3.2
 
     # A step that executes `pip install` command.
-    - pip-install
+    - pip-install:
+        requirements_file: ""
+        packages_list: "mock coverage python-coveralls codacy-coverage radon pylint hacking flake8 mastool"
 
     # # This pip-install clears the local wheel cache
     # - pip-install:
@@ -49,3 +51,13 @@ build:
         code: |
           echo "python version $(python --version) running"
           echo "pip version $(pip --version) running"
+
+    - script:
+        name: collect codacy coverage
+        code: |
+          export CODACY_PROJECT_TOKEN=721355d1f5e5403fb60bf36ebb797a13
+          ls
+          pwd
+          coverage xml *.py
+          python-codacy-coverage -r coverage.xml
+          

@@ -898,7 +898,7 @@ class MTZModel(Model):
     nforms = {'cav': cav, 'wil': wil, 'rel': rel,
               '0': cav, '1': wil, '2': rel}
 
-    def __init__(self, unitcell=None, atoms=():,
+    def __init__(self, unitcell=None, atoms=(),
                  nh=10, exchange=0.72, nform='rel', **kwargs):
         """
         Constructor for Model class.
