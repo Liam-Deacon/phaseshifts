@@ -3,8 +3,10 @@
 [![Language](https://img.shields.io/badge/language-python_2.7/3.5-ff69b4.svg "Python programming language")](https://wiki.python.org/moin/Python2orPython3)
 [![License](http://img.shields.io/badge/license-gpl3-blue.svg "GNU Public License v3.0")](http://www.gnu.org/licenses/gpl-3.0.html)
 [![Implementation](http://img.shields.io/badge/implementation-cpython-blue.svg "Requires CPython")](https://www.python.org/downloads/)
-[![Issues](https://img.shields.io/badge/issues-2_open-yellow.svg "Issues")](https://bitbucket.org/Liam_Deacon/phaseshifts/issues?status=new&status=open)
+[![Issues](https://img.shields.io/badge/issues-open-yellow.svg "Issues")](https://bitbucket.org/api/1.0/repositories/Liam_Deacon/phaseshifts/issues/?limit=0&status=new&status=open)
 ![TestCoverage](https://img.shields.io/badge/test_coverage-to_do-lightgray.svg)
+[![Dependency Status](https://gemnasium.com/badges/bitbucket.org/Liam_Deacon/phaseshifts.svg)](https://gemnasium.com/bitbucket.org/Liam_Deacon/phaseshifts)
+[![Requirements Status](https://requires.io/bitbucket/Liam_Deacon/phaseshifts/requirements.svg?branch=develop)](https://requires.io/bitbucket/Liam_Deacon/phaseshifts/requirements/?branch=develop)
 
 # PHASESHIFTS #
 
