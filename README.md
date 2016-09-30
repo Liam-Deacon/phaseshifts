@@ -1,4 +1,5 @@
-[![wercker status](https://app.wercker.com/status/8133085cc3734ba0441339368093e484/s/master "wercker status")](https://app.wercker.com/project/byKey/8133085cc3734ba0441339368093e484)
+[![wercker status](https://app.wercker.com/status/8133085cc3734ba0441339368093e484/s/ "wercker status")](https://app.wercker.com/project/byKey/8133085cc3734ba0441339368093e484)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/29aea857bb044eafbf5286e50e3a47e5)](https://www.codacy.com/app/Liam_Deacon/phaseshifts?utm_source=Liam_Deacon@bitbucket.org&amp;utm_medium=referral&amp;utm_content=Liam_Deacon/phaseshifts&amp;utm_campaign=Badge_Grade)
 [![Language](https://img.shields.io/badge/language-python_2.7/3.5-ff69b4.svg "Python programming language")](https://wiki.python.org/moin/Python2orPython3)
 [![License](http://img.shields.io/badge/license-gpl3-blue.svg "GNU Public License v3.0")](http://www.gnu.org/licenses/gpl-3.0.html)
 [![Implementation](http://img.shields.io/badge/implementation-cpython-blue.svg "Requires CPython")](https://www.python.org/downloads/)
