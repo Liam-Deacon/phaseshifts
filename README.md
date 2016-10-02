@@ -8,6 +8,7 @@
 [![Coverage Status](https://coveralls.io/repos/bitbucket/Liam_Deacon/phaseshifts/badge.svg?branch=master)](https://coveralls.io/bitbucket/Liam_Deacon/phaseshifts?branch=master)
 [![Dependency Status](https://gemnasium.com/badges/bitbucket.org/Liam_Deacon/phaseshifts.svg)](https://gemnasium.com/bitbucket.org/Liam_Deacon/phaseshifts)
 [![Requirements Status](https://requires.io/bitbucket/Liam_Deacon/phaseshifts/requirements.svg?branch=develop)](https://requires.io/bitbucket/Liam_Deacon/phaseshifts/requirements/?branch=develop)
+[![PyPI version](https://badge.fury.io/py/phaseshifts.svg)](https://badge.fury.io/py/phaseshifts)
 
 # PHASESHIFTS #
 
