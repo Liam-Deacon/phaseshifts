@@ -80,6 +80,9 @@ doc_files = []
 if os.path.exists(os.path.join(os.path.dirname(__file__), pdf_manual)):
     doc_files.append(pdf_manual)
 
+eeasisss_file = "EEASiSSS.py"
+if sys.platform.startswith('win'):
+    eeasisss_file = eeasisss_file.lower() 
 
 ### --- WINDOWS TWEAKS --- ###
 if sys.platform.startswith('win32'):
@@ -395,8 +398,8 @@ dist = setup(name='phaseshifts',
              scripts=[os.path.join("phaseshifts", "PhaseShiftsGUI.pyw"),
                       os.path.join("phaseshifts", "phsh.py"),
                       os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.py"),
-                      os.path.join("phaseshifts", "lib", "EEASiSSS",
-                                   "eeasisss.py")
+                      os.path.join("phaseshifts", "lib", "EEASiSSS", 
+                                   eeasisss_file)
                       ],
              # data_files = cython_exts,
              install_requires=['scipy >= 0.7',
