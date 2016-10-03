@@ -61,6 +61,7 @@ build:
     - script:
         name: build phaseshifts
         code: |
+          export LC_CTYPE="en_US.UTF-8"  # hack for unicode issue
           python setup.py build bdist bdist_wheel
 
 # perform test pipeline
