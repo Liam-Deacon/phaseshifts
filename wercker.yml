@@ -35,7 +35,7 @@ build:
             sudo add-apt-repository ppa:fkrull/deadsnakes -y
             sudo apt-get update -y
             sudo apt-get install gfortran python-dev build-essential cython cython3 -y
-            sudo apt-get install python2.7 python3.5 -y
+            sudo apt-get install python-scipy virtualenv python2.7 python3.5 -y
   
     # A step that sets up the python virtual environment
     - virtualenv:
