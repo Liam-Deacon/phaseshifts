@@ -304,9 +304,9 @@ if 'install' in sys.argv or 'build' in sys.argv or 'build_ext' in sys.argv:
     compile_args = []
     if isinstance(default_fcompiler, GnuFCompiler):
         compile_args = ['-O2', '-msse4.1', '-march=native',
-                        '-finline-functions', '-fbacktrace', '-fopenmp']
+                        '-finline-functions', '-fbacktrace', '-fopenmp', '-fPIC']
     elif isinstance(default_fcompiler, BaseIntelFCompiler):
-        compile_args = ['-O2', '-xSSE4.1', '-finline-functions', '-traceback']
+        compile_args = ['-O2', '-xSSE4.1', '-finline-functions', '-traceback', '-fPIC']
 
     builder = FortranBuilder(name='EEASiSSS',
                              sources=[os.path.join(phsh_lib, 'EEASiSSS',
