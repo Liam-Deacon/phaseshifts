@@ -115,6 +115,7 @@ install:
   # pip will build them from source using the MSVC compiler matching the
   # target Python version and architecture
   - "%CMD_IN_ENV% pip install -r dev-requirements.txt"
+  - "%CMD_IN_ENV% pip install -i https://pypi.anaconda.org/carlkl/simple mingwpy"
 
 build_script:
   # Build the compiled extension
