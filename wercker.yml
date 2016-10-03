@@ -6,7 +6,7 @@
 # If you want Google's container you would reference google/python
 # Read more about containers on our dev center
 # http://devcenter.wercker.com/docs/containers/index.html
-box: python:2.7
+box: ubuntu
 # You can also use services such as databases. Read more on our dev center:
 # http://devcenter.wercker.com/docs/services/index.html
 # services:
@@ -25,6 +25,15 @@ build:
   # Read more about steps on our dev center:
   # http://devcenter.wercker.com/docs/steps/index.html
   steps:
+  # A step that installs dependencies
+    - script: 
+        name: install dependencies
+        code: |
+            sudo add-apt-repository ppa:fkrull/deadsnakes
+            sudo apt-get update -y
+            sudo apt-get install gfortran python-dev build-essential cython cython3
+            sudo apt-get install python2.7 python3.5
+  
     # A step that sets up the python virtual environment
     - virtualenv:
         name: setup virtual environment
@@ -44,17 +53,12 @@ build:
     # - pip-install:
     #     clean_wheel_dir: true
 
-    - script:
-      name: install tools
-      code: |
-         sudo apt-get install gfortran -y
-
     # A custom script step, name value is used in the UI
     # and the code value contains the command that get executed
     - script:
         name: build phaseshifts
         code: |
-          python setup.py build
+          python setup.py build bdist bdist_wheel
 
 # perform test pipeline
 test:
