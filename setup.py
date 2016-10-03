@@ -47,8 +47,10 @@ from numpy.distutils.core import Extension, setup
 from numpy.distutils.fcompiler.gnu import GnuFCompiler
 from numpy.distutils.fcompiler.intel import BaseIntelFCompiler
 
-from phaseshifts import __version__
-
+try:
+    from phaseshifts import __version__
+except:
+    __version__ = "0.1.6-dev"
 
 try:
     from Cython.Build import BuildExecutable, cythonize, Cythonize

@@ -2,16 +2,18 @@ import os
 
 from pkg_resources import get_distribution, DistributionNotFound
 
-import atorb
-import conphas
-import lib
-import phsh
-
-
 __author__ = 'Liam Deacon'
 __author_email__ = 'liam.m.deacon@gmail.com'
 __project__ = 'phaseshifts'
 __version__ = '0.1.6'  # required for initial installation
+
+try:
+    import atorb
+    import conphas
+    import lib
+    import phsh
+except ImportError as err:
+    raise ImportWarning(err.message + " (please check that phaseshifts is installed correctly)")
 
 try:
     filename = os.path.join(os.path.dirname(__file__), 'LICENSE.txt')
