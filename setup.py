@@ -28,6 +28,7 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
+from __future__ import (print_function, unicode_literals)
 
 try:
     from setuptools import find_packages
@@ -65,6 +66,12 @@ except ImportError:
 
 if len(sys.argv) == 1:
     sys.argv.append('install')
+    
+# force mingw compiler on windows
+if sys.platform.startswith('win'):
+    print("Forcing C compiler to mingw32...\n", file=sys.stderr)
+    with open('setup.cfg', 'w') as f:
+        f.write("[build]\ncompiler = mingw32\n")
 
 phsh_lib = os.path.join('phaseshifts', 'lib')
 
