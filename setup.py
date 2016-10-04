@@ -30,6 +30,14 @@
 ##############################################################################
 from __future__ import (print_function, unicode_literals)
 
+import sys
+
+# force mingw compiler on windows
+if sys.platform.startswith('win'):
+    print("Forcing C compiler to mingw32...\n", file=sys.stderr)
+    with open('setup.cfg', 'w') as f:
+        f.write("[build]\ncompiler = mingw32\n")
+
 try:
     from setuptools import find_packages
 except ImportError:
@@ -40,7 +48,6 @@ from glob import glob
 from tempfile import gettempdir
 import os
 import platform
-import sys
 
 from numpy.distutils import ccompiler
 from numpy.distutils import fcompiler
@@ -66,12 +73,6 @@ except ImportError:
 
 if len(sys.argv) == 1:
     sys.argv.append('install')
-    
-# force mingw compiler on windows
-if sys.platform.startswith('win'):
-    print("Forcing C compiler to mingw32...\n", file=sys.stderr)
-    with open('setup.cfg', 'w') as f:
-        f.write("[build]\ncompiler = mingw32\n")
 
 phsh_lib = os.path.join('phaseshifts', 'lib')
 
