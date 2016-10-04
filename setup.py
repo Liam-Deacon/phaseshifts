@@ -28,15 +28,7 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-from __future__ import (print_function, unicode_literals)
-
-import sys
-
-# force mingw compiler on windows
-if sys.platform.startswith('win'):
-    print("Forcing C compiler to mingw32...\n", file=sys.stderr)
-    with open('setup.cfg', 'w') as f:
-        f.write("[build]\ncompiler = mingw32\n")
+from __future__ import print_function
 
 try:
     from setuptools import find_packages
@@ -47,6 +39,7 @@ from abc import abstractmethod, ABCMeta
 from glob import glob
 from tempfile import gettempdir
 import os
+import sys
 import platform
 
 from numpy.distutils import ccompiler
@@ -58,13 +51,13 @@ from numpy.distutils.fcompiler.intel import BaseIntelFCompiler
 try:
     from phaseshifts import __version__
 except:
-    __version__ = "0.1.6-dev"
+    from datetime import datetime
+    __version__ = "0.1.6.dev{}".format(str(datetime.now().date()).replace('-', ''))
 
 try:
     from Cython.Build import BuildExecutable, cythonize, Cythonize
 except ImportError:
     pass
-
 
 try:
     import py2exe
@@ -73,6 +66,12 @@ except ImportError:
 
 if len(sys.argv) == 1:
     sys.argv.append('install')
+
+# force mingw compiler on windows
+if sys.platform.startswith('win'):
+    print("Forcing C compiler to mingw32...\n", file=sys.stderr)
+    with open('setup.cfg', 'w') as f:
+        f.write("[build]\ncompiler = mingw32\n")
 
 phsh_lib = os.path.join('phaseshifts', 'lib')
 
