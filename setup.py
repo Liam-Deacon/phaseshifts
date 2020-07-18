@@ -32,16 +32,14 @@ dist = setup(
         name = 'phaseshifts',
 		#packages=['phaseshifts', 'phaseshifts.gui', 'phaseshifts.lib', 'phaseshifts.contrib'],
         packages = find_packages(),
-        version='0.1.5-dev',
+        version='0.1.6-dev',
         author='Liam Deacon',
-        author_email='liam.deacon@diamond.ac.uk',
+        author_email='liam.deacon@lightbytestechnology.co.uk',
         license='MIT License',
         url='https://pypi.python.org/pypi/phaseshifts',
         description='Python-based version of the Barbieri/Van Hove phase '
         'shift calculation package for LEED/XPD modelling',
-        long_description=open(os.path.join('phaseshifts','README.rst')
-            ).read() if os.path.exists(os.path.join(
-            'phaseshifts','README.rst')) else None,
+        long_description=None if not os.path.exists('README.rst') else open('README.rst').read(),
         classifiers=[
             'Development Status :: 4 - Beta',
             'Environment :: Console',
