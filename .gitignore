@@ -3,3 +3,12 @@ dist/
 phaseshifts.egg-info/
 libphsh.f.bak
 MANIFEST
+
+# built binary objects
+*.so
+*.exe
+*.DLL
+*.pyd
+
+# log files
+*.log
