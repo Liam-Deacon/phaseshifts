@@ -82,6 +82,8 @@ steps below.
          installed is highly recommended.
 
 
+.. note:: On unix systems, setup the virtualenv on Python 3.10 or lower, activate it and run `make`.
+
 About the code
 ==============
 
