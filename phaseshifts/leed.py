@@ -231,13 +231,6 @@ class Converter:
     Convert different input into phaseshift compatible input
 
     """
-
-    def __init__(self):
-        """
-        Constructor
-        """
-        pass
-
     @staticmethod
     def import_CLEED(filename, **kwargs):
         """
