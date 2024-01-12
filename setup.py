@@ -16,7 +16,7 @@ except ModuleNotFoundError as err:
     if tuple(sys.version_info[:2]) >= (3, 11):
         raise NotImplementedError(
             "numpy.distutils has been removed for python {}".format(
-                ".".join(sys.version_info[:2])
+                ".".join(map(str, sys.version_info[:2]))
             )
         )
     raise
