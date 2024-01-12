@@ -12,7 +12,7 @@ except ImportError:
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
 try:
     from numpy.distutils.core import Extension, setup
-except ModuleNotFoundError as err:
+except ModuleNotFoundError:
     if tuple(sys.version_info[:2]) >= (3, 11):
         raise NotImplementedError(
             "numpy.distutils has been removed for python {}".format(
@@ -20,8 +20,6 @@ except ModuleNotFoundError as err:
             )
         )
     raise
-
-import sys, os
 
 try:
     import py2exe
