@@ -9,3 +9,6 @@ recursive-include phaseshifts/lib *.f *.c *.cpp *.h *.for *.py *.pyx
 recursive-exclude phaseshifts/build *
 recursive-exclude phaseshifts/dist *
 recursive-include phaseshifts/res *
+
+# TODO: Remove shared libraries from source distribution includes once numpy.distutils migration is stable 
+recursive-include phaseshifts/lib  *.so *.pyd
