@@ -13,7 +13,7 @@
 !
 !  there are nr grid points, and distances are in bohr radii...
 !
-!  r(i)=rmin*(rmax/rmin)**(dfloat(i)/dfloat(nr)) , i=1,2,3,...nr-1,nr
+!  r(i)=rmin*(rmax/rmin)**(dble(i)/dble(nr)) , i=1,2,3,...nr-1,nr
 !
 !
 !
@@ -384,8 +384,8 @@
      +                 nr,r,r2,dl,q0,xm1,xm2,njrc,vi)
 
            xkappa=-1.d0
-           if (abs(xnj(i)) .gt. dfloat(nl(i))+0.25d0) xkappa=-nl(i)-1
-           if (abs(xnj(i)) .lt. dfloat(nl(i))-0.25d0) xkappa= nl(i)
+           if (abs(xnj(i)) .gt. dble(nl(i))+0.25d0) xkappa=-nl(i)-1
+           if (abs(xnj(i)) .lt. dble(nl(i))-0.25d0) xkappa= nl(i)
 
            call elsolve(i,occ(i),no(i),nl(i),xkappa,xnj(i),zorig,zeff,
      +                  evi,phe(1,i),v,q0,xm1,xm2,nr,r,dr,r2,dl,rel)
@@ -398,7 +398,7 @@
 
            do j=nr,1,-1
              dq=phe(j,i)*phe(j,i)
-             ekk=ekk+(evi-orb(j,i))*dr(j)*dq*dfloat(ll)/3.d0
+             ekk=ekk+(evi-orb(j,i))*dr(j)*dq*dble(ll)/3.d0
              ll=6-ll
            end do
 
@@ -479,7 +479,7 @@
 
            do la=lmx,0,-2
              lap=la+1
-             coeff=dfloat((li+li+1)*(lj+lj+1))/dfloat((la+la+1))**2.d0*
+             coeff=dble((li+li+1)*(lj+lj+1))/dble((la+la+1))**2.d0*
      +             cg(li,li,la,mi,-mi)*cg(lj,lj,la,mj,-mj)*
      +             cg(li,li,la,0 , 0 )*cg(lj,lj,la,0 , 0 )
              if (mi+mj .ne. 2*((mi+mj)/2)) coeff=-coeff
@@ -561,7 +561,7 @@
            do la=lmx,lmin,-2
              lap=la+1
 
-             coeff=dfloat((li+li+1)*(lj+lj+1))/dfloat((la+la+1))**2.d0*
+             coeff=dble((li+li+1)*(lj+lj+1))/dble((la+la+1))**2.d0*
      +             (cg(li,lj,la,-mi,mj)*cg(li,lj,la,0,0))**2.d0
              if ((occ(i) .gt. 1.d0) .or. (occ(j) .gt. 1.d0) .or.
      +           (xnj(i) .lt. 0.d0) .or. (xnj(j) .lt. 0.d0))
@@ -728,7 +728,7 @@
        dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
 
-       el=-zorig*zorig/dfloat(n*n)
+       el=-zorig*zorig/dble(n*n)
        eh=0.d0
        etol=0.0000000001d0
  155   e=(el+eh)/2.d0
@@ -749,7 +749,7 @@
 
        if (ief .ne. -1) eh=e
        if (eh-el .gt. etol) goto 155
-       if (abs(abs(xj)-abs(dfloat(l))) .gt. 0.25d0)
+       if (abs(abs(xj)-abs(dble(l))) .gt. 0.25d0)
      +    call augment(e,l,xj,phi,v,nr,r,dl)
        aa=0.d0
 
@@ -782,8 +782,8 @@
        c2=cc+cc
        xkappa=-1
 
-       if (abs(xj).gt.dfloat(l)+0.25d0) xkappa=-l-1
-       if (abs(xj).lt.dfloat(l)-0.25d0) xkappa= l
+       if (abs(xj).gt.dble(l)+0.25d0) xkappa=-l-1
+       if (abs(xj).lt.dble(l)-0.25d0) xkappa= l
 
        do j=4,nr-3
          if (phi(j).ne.0.d0) then
@@ -887,7 +887,7 @@
 
        ! figure the (Desclaux-Numerov) effective potential.
 
-       xlb=(dfloat(l)+0.5d0)**2.d0/2.d0
+       xlb=(dble(l)+0.5d0)**2.d0/2.d0
 
        do j=1,nr
          vj=v(j)
@@ -937,12 +937,12 @@
        dimension r(nrmax),dr(nrmax),r2(nrmax)
 
        ratio=rmax/rmin
-       dl=log(ratio)/dfloat(nr)
+       dl=log(ratio)/dble(nr)
        xratio=exp(dl)
        xr1=sqrt(xratio)-sqrt(1.d0/xratio)
 
        do i=1,nr
-         r(i)=rmin*xratio**dfloat(i)
+         r(i)=rmin*xratio**dble(i)
          dr(i)=r(i)*xr1
          r2(i)=r(i)*r(i)
        end do
@@ -1152,7 +1152,7 @@
 
        do i=1,32
          si(i)=-si(i-1)
-         fa(i)=dfloat(i)*fa(i-1)
+         fa(i)=dble(i)*fa(i-1)
        end do
 
        do l1=0,lmx
@@ -1167,7 +1167,7 @@
                if (lmin.lt.iabs(m3)) lmin=iabs(m3)
 
                do l3=lmin,l1+l2
-                 prefactor=dfloat(2*l3+1)
+                 prefactor=dble(2*l3+1)
                  prefactor=prefactor*fa(l3+l1-l2)/fa(l1+l2+l3+1)
                  prefactor=prefactor*fa(l3-l1+l2)/fa(l1-m1)
                  prefactor=prefactor*fa(l1+l2-l3)/fa(l1+m1)
@@ -1221,7 +1221,8 @@
        dimension njrc(4),njrcdummy(4),vi(nrmax,7),phe(nrmax,iorbs)
        dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
        dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
-       dimension rpower(nrmax,0:7),orb(nrmax,iorbs)
+       ! FIXME: changed rpower dimension range from 0:7 -> 0:15 to be consistent and compile via meson
+       dimension rpower(nrmax,0:15),orb(nrmax,iorbs)
        dimension vctab(nrmax,0:3)
 
        do i=1,nel
@@ -1410,7 +1411,10 @@
        dimension njrc(4),orb(nrmax,iorbs)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension phi(nrmax),v(nrmax)
-       !dimension dummy(nrmax,7)
+       ! need this as an array not an implicit scalar
+       dimension dummy(nrmax,7)
+
+       dummy = 0.  ! explicitly initialise all values in the array to zero
 
        vl=-1000000.d0
        vh=+1000000.d0
@@ -1420,7 +1424,8 @@
          ns=1
          xkappa=-1.d0
 
-         call setqmm(i,orb,l,ns,idoflag,v,zeff,dummy,rel,
+        ! setqmm zorig needs array to be standards compliant fortran & compile
+         call setqmm(i,orb,l,ns,idoflag,v,zeff,dummy(1,7),rel,
      +               nr,r,r2,dl,q0,xm1,xm2,njrc,dummy)
 
          call integ(e,l,xkappa,n,nn,jrt,ief,xactual,phi,zeff,v,
@@ -1504,10 +1509,10 @@
          rcut=r(k)+xnodefrac*(r(j)-r(k))
        endif
 
-       jrc=1.d0+dfloat(nr-1)*log(rcut /rmin)/log(rmax/rmin)
+       jrc=1.d0+dble(nr-1)*log(rcut /rmin)/log(rmax/rmin)
        rcut=r(jrc)
        rtest=2.d0*rcut
-       jrt=1.d0+dfloat(nr-1)*log(rtest/rmin)/log(rmax/rmin)
+       jrt=1.d0+dble(nr-1)*log(rtest/rmin)/log(rmax/rmin)
        njrc(lp)=jrt
        rtest=r(jrt)
        switch=phi(jrt)/abs(phi(jrt))
@@ -1706,7 +1711,7 @@
          open (unit=20+l,status='unknown')
 
          do ii=1,200
-           q=dfloat(ii)/10.d0
+           q=dble(ii)/10.d0
            vq=0.d0
 
            do i=3,nr-2
@@ -1734,7 +1739,7 @@
        SI(0)=1.D0
 
        do I=1,32
-         FA(I)=Dfloat(I)*FA(I-1)
+         FA(I)=dble(I)*FA(I-1)
          SI(I)=-SI(I-1)
        end do
 
@@ -1744,7 +1749,7 @@
 
            do N=M+L,0,-2
              XI=0.D0
-             XF=2.D0/2.D0**Dfloat(N+L+M)
+             XF=2.D0/2.D0**dble(N+L+M)
              NN=(N+1)/2
              MM=(M+1)/2
              LL=(L+1)/2
@@ -1757,7 +1762,7 @@
 
                  do IC=MM,M
                    XCF=SI(IC)*FA(IC+IC)/FA(IC)/FA(M-IC)/FA(IC+IC-M)
-                   XI=XI+XF*AF*BF*XCF/Dfloat(IA*2+IB*2+IC*2-N-L-M+1)
+                   XI=XI+XF*AF*BF*XCF/dble(IA*2+IB*2+IC*2-N-L-M+1)
                  end do
 
                end do
@@ -1819,7 +1824,7 @@
 
        ! define the logarithmic grid
        do i=1,nr
-          r(i)=rmin*(rmax/rmin)**(dfloat(i)/dfloat(nr))
+          r(i)=rmin*(rmax/rmin)**(dble(i)/dble(nr))
        end do
 
        ! obtain the charge density on the logarithmic grid
@@ -3372,7 +3377,7 @@
 !    RMAX= maximum radial coordinate defining the logarithmic mesh used
 !          in relativistic calculation
 !    NR  = number of points in the mesh
-! the mesh is defined as r(i)=rmin*(rmax/rmin)**(dfloat(i)/dfloat(nr))
+! the mesh is defined as r(i)=rmin*(rmax/rmin)**(dble(i)/dble(nr))
 ! FOR EACH ATOMIC STATE I?
       subroutine RELA(RHO,RX,NX,NGRID)
 
@@ -3386,7 +3391,7 @@
 
        ! initialization of logarithmic grid
        do i=1,nr
-         rr(i)=rmin*(rmax/rmin)**(dfloat(i)/dfloat(nr))
+         rr(i)=rmin*(rmax/rmin)**(dble(i)/dble(nr))
        end do
 
        NS=nr
@@ -3607,7 +3612,7 @@
 !  SUBROUTINE TO CALCULATE NL PHASE SHIFTS (L=0,NL-1) FOR AN
 !  ATOMIC POTENTIAL TABULATED ON THE LOUCKS RADIAL GRID.
 !     V?  ATOMIC POTENTIAL (RYDBERGS)
-!     RX?  LOUCKS' EXPONENTIAL GRID  RX(I)=EXP(-8.8+0.05(I-1))
+!     RX?  LOUCKS` EXPONENTIAL GRID  RX(I)=EXP(-8.8+0.05(I-1))
 !     NGRID?  NUMBER OF TABULATED POINTS
 !     RAD?  LIMIT OF INTEGRATION OF SCHRODINGER EQUATION (A.U.)
 !     E?  ENERGY (RYDBERGS)
@@ -3963,7 +3968,8 @@
 
        return
 
-12     format(1P8E14.7, /, 14X, 1P7E14.7, /)
+       ! previous "format(1P8E14.7, /, 14X, 1P7E14.7, /)" does not compile
+12     format('( 1P8 E14.7 )', /, 14X, '( 1P7 E14.7 )', /)
 71     format(1F7.4)
 72     format(10F7.4)
 
@@ -4433,8 +4439,9 @@
        do I = 1, N
          J = T * (Y(I) - Y1) + 1.5
          P(J) = C
+         ! NOTE: format needed to be defined before use for some ansii compilers
+4        format(1X, '(1P2 E16.6)', 2X, 97A1)
          write(6, 4) X(I), Y(I), P
-4        format(1X, 1P2E16.6, 2X, 97A1)
          P(J) = B
          P(J0) = D
        end do
