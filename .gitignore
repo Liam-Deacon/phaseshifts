@@ -4,6 +4,10 @@ phaseshifts.egg-info/
 libphsh.f.bak
 MANIFEST
 
+# cache
+*.pyc
+**/__pycache__
+
 # built binary objects
 *.so
 *.exe
