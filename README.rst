@@ -25,8 +25,23 @@ To quote the original authors' site:
 
    http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
 
-The `phsh.py` script aims to simplify these steps with a single command. For more 
-information please read the documentation at `<http://pythonhosted.org//phaseshifts/>`_
+Running
+=======
+
+The `phsh.py` script (available after installing the package) aims to simplify these
+steps with a single command. For more information please read the documentation
+at `<http://pythonhosted.org//phaseshifts/>`_
+
+The simplest and most reliable cross-platform way to run `phsh.py` is through docker::
+
+  docker run lightbytes/phaseshifts:latest  # will display usage
+
+  # or more generally (adjust as needed)
+  docker run lightbytes/phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
+
+
+.. tip:: Development docker images can be built locally, e.g. :code:`docker build . -t lightbytes/phaseshifts:dev`
+
 
 Install
 =======

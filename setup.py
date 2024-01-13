@@ -174,7 +174,7 @@ dist = setup(
         }
     ),
     scripts=["phaseshifts/phsh.py"],
-    install_requires=["scipy >= 0.7", "numpy >= 1.3", "periodictable"],
+    install_requires=["scipy >= 0.7", "numpy >= 1.3", "periodictable", "typing_extensions"],
     ext_modules=f2py_exts,
     console=[os.path.join("phaseshifts", "phsh.py")],
     **(

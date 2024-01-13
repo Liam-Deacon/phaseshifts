@@ -272,9 +272,9 @@ class Conphas:
         if input_files:
             input_files = [self.__fix_path(filename) for filename in input_files]
             temp_input_files = [
-                filename for filename in input_files if ntpath.isfile(file)
+                filename for filename in input_files if ntpath.isfile(filename)
             ]
-            if temp_input_files != None and temp_input_files != []:
+            if temp_input_files is not None and temp_input_files != []:
                 self.input_files = temp_input_files
 
     def set_output_file(self, output_file):
@@ -294,7 +294,7 @@ class Conphas:
         """
         try:
             self.lmax = int(lmax)
-        except:
+        except TypeError:
             pass
 
     # set appropriate format from available options

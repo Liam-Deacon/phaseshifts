@@ -38,3 +38,7 @@ clean:
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
+
+#: Build docker image
+docker:
+	docker build . -t "phaseshifts:$${DOCKER_TAG:-$$($(PYTHON) -c 'import phaseshifts; print(phaseshifts.__version__)')}"

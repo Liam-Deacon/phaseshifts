@@ -1,0 +1,19 @@
+# general
+build/
+builddir/
+dist/
+doc/
+tests/
+
+# compiled objects
+*.so
+*.pyd
+*.whl
+
+# cache
+*.pyc
+**/__pycache__
+_skbuild/
+
+# other
+Dockerfile
