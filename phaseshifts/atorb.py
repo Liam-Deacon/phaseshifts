@@ -54,9 +54,28 @@ shift calculation package.
 """
 
 import os
-import elements
-from lib.libphsh import hartfock
 from collections import OrderedDict
+from typing import Optional
+
+from typing_extensions import Literal
+
+try:
+    import periodictable
+except ImportError:
+    periodictable = None
+
+try:
+    import elementy
+except ImportError:
+    elementy = None
+
+try:
+    import mendeleev
+except ImportError:
+    mendeleev = None  # Need to install mendeleev
+
+from phaseshifts import elements
+from phaseshifts.lib.libphsh import hartfock
 
 elements_dict = OrderedDict([
 ('H', 'Hydrogen'), 
@@ -179,9 +198,45 @@ elements_dict = OrderedDict([
 ('Uuo', 'Ununoctium'), 
 ])
 
+ElementBackendType = Literal["mendeleev", "elementy", "periodictable"]
+
+
+def get_element(element: str, backend: Optional[ElementBackendType] = None):
+    """Obtain an element object for querying information using `backend`."""
+    ele_obj = elements.ELEMENTS.get(element)
+    if mendeleev and not ele_obj and backend in ("mandeleev", None):
+        elements_data = mendeleev.get_all_elements()
+        elements_data = {
+            **{e.protons: e for e in elements_data},
+            **{e.symbol: e for e in elements_data},
+            **{e.name: e for e in elements_data}
+        } 
+        ele_obj = elements_data.get(element)        
+    if elementy and not ele_obj and backend in ("elementy", None):
+        periodic_table = elementy.PeriodicTable()
+        elements_data = {e.protons: e for e in periodic_table.elements}
+        elements_data.update({e.symbol: e for e in periodic_table.elements})
+        elements_data.update({e.name: e for e in periodic_table.elements})
+        ele_obj = elements_data.get(element)
+    if periodictable and not ele_obj and backend in ("periodtable", None):
+        ele_obj = getattr(periodictable, element, None) or getattr(periodictable, str(element).lower())
+    if ele_obj is None:
+        raise LookupError(f"Unable to match element {element}")
+    return ele_obj
+
+
+def get_electron_config(element_obj):
+    """Obtain the electronic orbital configuration for the given `element_obj`."""
+    electron_config = None
+    if hasattr(element_obj, "orbitals"):
+        electron_config = " ".join([f'{x["orbital"]}{x["electrons"]}' for x in element_obj.orbitals])
+    else:
+        electron_config = getattr(element_obj, "eleconfig", None) or getattr(element_obj, "econf", None)
+    return electron_config
+
 
 class Atorb(object):
-    '''
+    r'''
     Description
     -----------
      A python wrapper for the atorb program by Eric Shirley for use in
@@ -397,11 +452,15 @@ class Atorb(object):
 
         """
         
-        ele = elements.ELEMENTS[element]
+        try:
+            ele = get_element(element, backend=None)
+        except AttributeError:
+            raise LookupError(f"Unable to find element {element!r}")
         Z = ele.protons
         
         # get full electronic configuration
-        config = Atorb.replace_core_config(ele.eleconfig)
+        electron_config = get_electron_config(ele)
+        config = Atorb.replace_core_config(electron_config)
 
         # get quantum numbers & occupancy for each electronic obrital in atom
         electrons = []
@@ -582,10 +641,10 @@ class Atorb(object):
                 os.chdir(output_dir)
             else:
                 try:
-                    os.makedirs(output_dir)
+                    os.makedirs(output_dir, exist_ok=True)
                     os.chdir(output_dir)
-                except:
-                    raise IOError
+                except (OSError, IOError) as err:
+                    raise IOError("Unable to create output directory") from err
                 
         hartfock(inp)  # calculates atomic orbital charge densities for atom
         
@@ -610,4 +669,4 @@ class Atorb(object):
         os.chdir(current_dir)  # return to original directory
         
         return (os.path.join(output_dir, output_filename) 
-                    if output_dir != None else output_filename)
+                    if output_dir is not None else output_filename)

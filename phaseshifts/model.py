@@ -41,14 +41,14 @@ shift calculation package.
 from __future__ import print_function
 from __future__ import division
 
-import elements
-import atorb
 import os
 from copy import deepcopy
 from shutil import move
 from glob import glob
 
-from lib import libphsh 
+import phaseshifts.atorb as atorb
+import phaseshifts.elements as elements
+from phaseshifts.lib import libphsh 
 
 
 class Atom(object):

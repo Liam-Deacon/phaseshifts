@@ -71,6 +71,8 @@ Examples
 
 from __future__ import division, print_function
 
+from collections.abc import Mapping
+
 __version__ = '2013.03.18'
 __docformat__ = 'restructuredtext en'
 __all__ = ['ELEMENTS']
@@ -297,7 +299,7 @@ class Isotope(object):
             repr(self.mass), repr(self.abundance), repr(self.massnumber))
 
 
-class ElementsDict(object):
+class ElementsDict(Mapping):
     """Ordered dict of Elements with lookup by number, symbol, and name."""
     def __init__(self, *elements):
         self._list = []
@@ -334,6 +336,7 @@ class ElementsDict(object):
                 return self._list[slice(start - 1, stop - 1, step)]
             except:
                 raise KeyError
+
 
 
 ELEMENTS = ElementsDict(

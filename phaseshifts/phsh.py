@@ -46,11 +46,13 @@ Examples
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
+import argparse
 import json
+import subprocess
 import sys
 import os
+import platform
 import tempfile
-
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from glob import glob
@@ -58,11 +60,9 @@ from shutil import copy
 
 from phaseshifts import model, atorb
 from phaseshifts.leed import Converter, CLEED_validator, CSearch
-from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav
+from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
 from phaseshifts.conphas import Conphas
 
-from subprocess import Popen
-import platform
 
 __all__ = []
 __version__ = "0.1.5-dev"
@@ -74,8 +74,6 @@ DEBUG = bool(json.loads((os.environ.get("PHASESHIFTS_DEBUG") or "0").lower()))
 TESTRUN = bool(json.loads((os.environ.get("PHASESHIFTS_TESTRUN") or "0").lower()))
 PROFILE = bool(json.loads((os.environ.get("PHASESHIFTS_PROFILE") or "0").lower()))
 
-import argparse
-
 
 def required_length(nmin, nmax):
     """custom action to check range"""
@@ -83,8 +81,7 @@ def required_length(nmin, nmax):
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not nmin <= len(values) <= nmax:
-                msg = 'argument "{f}" requires between '
-                "{nmin} and {nmax} arguments".format(f=self.dest, nmin=nmin, nmax=nmax)
+                msg = f'argument "{self.dest}" requires between {nmin} and {nmax} arguments'
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
 
@@ -620,7 +617,7 @@ def main(argv=None):
         try:
             verbose = args.verbose
             VERBOSE = verbose
-        except:
+        except AttributeError:
             pass
 
         if verbose > 0 and len(unknown) > 0:
@@ -628,10 +625,10 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        if args.bulk == None:
+        if args.bulk is None:
             args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
-        if args.store == False:
+        if args.store is False:
             args.store = "."
 
         if args.lmax < 1 or args.lmax > 18:
@@ -643,12 +640,12 @@ def main(argv=None):
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
-    except Exception:
+    except Exception as err:
         if DEBUG or TESTRUN:
             raise
         indent = len(program_name) * " "
-        sys.stderr.write(program_name + ": " + repr(e) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
+        sys.stderr.write(f"{program_name}: '{err}'\n")
+        sys.stderr.write(f"{indent} for help use --help")
         return 2
 
     # create phase shifts (warning: black magic within - needs testing)
@@ -701,10 +698,10 @@ def main(argv=None):
             leed_cmd.append(arg)
 
         if verbose:
-            print("phsh - starting subprocess: '%s'..." % " ".join(leed_cmd))
+            print(f"phsh - starting subprocess: '{' '.join(leed_cmd)}'...")
 
         # execute subprocess
-        Popen(leed_cmd)
+        subprocess.check_call(leed_cmd)
 
 
 if __name__ == "__main__":
