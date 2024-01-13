@@ -3,12 +3,15 @@ import os
 import sys
 import sysconfig
 
+sys.path.append(os.path.dirname(__file__))
+
 try:
     import phaseshifts
 except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
 try:
+    import setuptools
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
     from distutils.core import find_packages  # type: ignore [attr-defined]
@@ -33,9 +36,8 @@ except ModuleNotFoundError as npy_err:
         # TODO: Need to use migrate to a new f2py build backend, but have issues with pyproject.toml PEP-517 install
         # FIXME: Currently skbuild with CMakeLists.txt does not work, check with `make libphsh.cmake`
         try:
-            # from skbuild import setup
-            pass
-            # BUILD_BACKEND = "skbuild"
+            from skbuild import setup
+            BUILD_BACKEND = "skbuild"
         except ImportError:
             raise NotImplementedError(
                 "TODO: Generate binary wheels correctly using pyproject.toml, scikit-build and cmake"
@@ -48,6 +50,8 @@ except ModuleNotFoundError as npy_err:
 
         import numpy.f2py
 
+        setup = setuptools.setup
+
         BUILD_BACKEND = "numpy.f2py"
         if not any(x in sys.argv for x in ("sdist", "wheel")):
             subprocess.check_call(
@@ -59,6 +63,7 @@ except ModuleNotFoundError as npy_err:
                     "-m",
                     "libphsh",
                     "-c",
+                    "-f77flags='-frecursive'",
                 ],
                 cwd="./phaseshifts/lib",
             )
@@ -121,10 +126,12 @@ f2py_exts = (
     ]
 )
 
+print(f"BUILD_BACKEND: {BUILD_BACKEND}")
+
 dist = setup(
     name="phaseshifts",
     packages=find_packages(),
-    version=getattr("phaseshifts", "__version__", None),
+    version=getattr(phaseshifts, "__version__", "0.1.7-dev"),
     author="Liam Deacon",
     author_email="liam.m.deacon@gmail.com",
     license="MIT License",
@@ -147,8 +154,8 @@ dist = setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         "Topic :: Scientific/Engineering :: Physics",
     ],
-    extra_requires={
-        "atorb": ["mandeleev", "elementy"],
+    extras_require={
+        "atorb": ["mendeleev", "elementy"],
         "gui": [],
         "dev": ["numpy", "wheel", "scikit-build; python_version > '3.11'", "ruff", "black"],
         "test": ["pytest", "pytest-cov"],
