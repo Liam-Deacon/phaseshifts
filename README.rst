@@ -31,8 +31,20 @@ information please read the documentation at `<http://pythonhosted.org//phaseshi
 Install
 =======
 
+TDLR;
+-----
+
+For python 3.11 or older::
+
+  pip install wheel numpy setuptools
+  pip install -e .
+  phsh --help
+
+Details
+-------
+
 The `phaseshifts <http://https://pypi.python.org/pypi/phaseshifts/>`_ package 
-requires CPython 2.6 or later and also uses the `numpy 
+requires CPython 2.7 or later and also uses the `numpy 
 <http://www.scipy.org/scipylib/download.html>`_, `scipy 
 <http://www.scipy.org/scipylib/download.html>`_ and `periodictable 
 <http://https://pypi.python.org/pypi/periodictable>`_ packages. 
