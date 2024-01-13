@@ -19,22 +19,28 @@ INCLUDE_DIRS = []
 # The project will therefore need to be migrated to use a different build backend, see
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
 try:
+    import skbuild
+except ImportError:
+    skbuild = None
+
+BUILD_BACKEND = None
+try:
     from numpy.distutils.core import Extension, setup
 
     BUILD_BACKEND = "numpy.distutils"
 except ModuleNotFoundError as npy_err:
-    if tuple(sys.version_info[:2]) >= (3, 11) and "bdist_wheel" in sys.argv:
+    if skbuild and tuple(sys.version_info[:2]) >= (3, 11) and "bdist_wheel" in sys.argv:
         # TODO: Need to use migrate to a new f2py build backend, but have issues with pyproject.toml PEP-517 install
         # FIXME: Currently skbuild with CMakeLists.txt does not work, check with `make libphsh.cmake`
         try:
-            from skbuild import setup
-
-            BUILD_BACKEND = "skbuild"
+            # from skbuild import setup
+            pass
+            # BUILD_BACKEND = "skbuild"
         except ImportError:
             raise NotImplementedError(
                 "TODO: Generate binary wheels correctly using pyproject.toml, scikit-build and cmake"
             ) 
-    elif tuple(sys.version_info[:2]) >= (3, 11):
+    if tuple(sys.version_info[:2]) >= (3, 11):
         # We can invoke f2py and compile manually
         # HACK: Workaround missing distutils by invoking f2py directly
         # FIXME: Generated wheels unaware of native extension & deemed universal; *.so must be included in MANIFEST.in
@@ -98,8 +104,8 @@ f2py_exts_sources = {
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh.f" + (".f" if BUILD_BACKEND == "numpy.distutils" else "module.c"),
-        )
+            "libphsh" + (".f" if BUILD_BACKEND == "numpy.distutils" else "module.c"),
+        ),
     ]
 }
 f2py_exts = (
@@ -141,8 +147,14 @@ dist = setup(
         "Topic :: Scientific/Engineering :: Chemistry",
         "Topic :: Scientific/Engineering :: Physics",
     ],
+    extra_requires={
+        "atorb": ["mandeleev", "elementy"],
+        "gui": [],
+        "dev": ["numpy", "wheel", "scikit-build; python_version > '3.11'", "ruff", "black"],
+        "test": ["pytest", "pytest-cov"],
+    },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
-    # include_package_data=True,
+    include_package_data=True,
     package_data=(
         {}
         if BUILD_BACKEND == "skbuild"
