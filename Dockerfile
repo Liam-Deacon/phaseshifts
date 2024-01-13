@@ -25,6 +25,8 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels .
 ARG PHASESHIFTS_EXTRAS=""
 FROM base as runtime
 
+WORKDIR /data
+
 COPY --from=builder /build/wheels /wheels
 
 RUN pip install --no-cache-dir /wheels/*
