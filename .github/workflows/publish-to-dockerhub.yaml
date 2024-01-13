@@ -12,7 +12,7 @@ name: Publish Docker Image(s)
 on:
   release:
     types: [published]
-  workflow-dispatch:
+  workflow_dispatch:
     inputs:
       tag:
         description: Docker tag to use
