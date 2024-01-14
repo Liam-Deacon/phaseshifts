@@ -159,6 +159,7 @@ dist = setup(
         "gui": [],
         "dev": ["numpy", "wheel", "scikit-build; python_version > '3.11'", "ruff", "black"],
         "test": ["pytest", "pytest-cov"],
+        "doc": ["sphinx>=7,<8", "numpydoc"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
