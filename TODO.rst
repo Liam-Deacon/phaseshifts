@@ -19,8 +19,6 @@ be included as this package matures, which include:
 
     - Additional functionality not originally envisaged can be added to the
       ``plugins/`` directory.
-      
-    .. important:: *NOT YET ASSIGNED* - any takers?
 
  2. Documentation - the manual has not yet been started and so is a high priority
     after #1. Let the docstrings be a guide, but this should also include greater 
@@ -39,18 +37,24 @@ be included as this package matures, which include:
     written in Python 2.7.5 and so checks should also be made to ensure that the CPython
     version is >=2.6 (Python 3 may be supported later using *e.g.* 2to3).
 	
-    .. important:: *NOT YET ASSIGNED* - any takers?
+    .. important:: See https://github.com/Liam-Deacon/phaseshifts/issues/16 for current status.
 
  4. GUI frontend (Qt ui files are provided in the ``gui/`` directory for anyone 
     wishing to undertake this challenge). Other frontends are welcome (I use Qt due
     to familiarity). [NOT YET ASSIGNED - any takers?].
-	
-    .. important:: *NOT YET ASSIGNED* - any takers?
 
- 5. Miscellanea - address limitations of libphsh.f. In particular:
+    .. important:: See https://github.com/Liam-Deacon/phaseshifts/issues/29 for current status
+
+ 5. REST API to allow some sort of web stack usage, see https://github.com/Liam-Deacon/phaseshifts/issues/9
+
+ 6. Miscellanea - address limitations of libphsh.f. In particular:
       + Allow dynamic allocation of key arrays for input files with any number of atoms
       + Address truncation of phase shift labels over 9 characters in length
       + Improve readability (it would be nice to eliminate *goto* statements)
-      + Possibly form into a FORTRAN module to allow optional arguments to 
+      + Possibly form into a FORTRAN 90 module to allow optional arguments to 
         functions and subroutines.
+      + Pure-Python implementation of functionality, which would be particularly useful for users
+        with restricted environments and/or to avoid specific compiler quirks
+        (needs rigorous regression testing to ensure faithfulness of port)
+
       

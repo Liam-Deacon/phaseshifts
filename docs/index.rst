@@ -15,6 +15,7 @@ Contents:
    
    introduction
    installing_phaseshifts
+   running
    contact
    acknowledgements
    scripts

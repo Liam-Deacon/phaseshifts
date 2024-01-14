@@ -5,7 +5,8 @@ Contact
 *******
 
 This package is developed/maintained in my spare time so any bug reports, patches, 
-or other feedback are very welcome and should be sent to: liam.deacon@diamond.ac.uk
+or other feedback are very welcome!
 
 The project is in the early developmental stages and so anyone who wishes to get 
-involved are most welcome (simply contact me using the email above).
+involved are most welcome, go to https://github.com/Liam-Deacon/phaseshifts/issues
+to get started.
