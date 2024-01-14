@@ -17,3 +17,6 @@ _skbuild/
 
 # log files
 *.log
+
+# docs
+doc/_build/
