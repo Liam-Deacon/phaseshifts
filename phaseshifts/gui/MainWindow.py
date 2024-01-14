@@ -49,19 +49,20 @@ __QT_TYPE__ = "PyQt4"
 # other modules
 from settings import Settings
 from ImportDialog import ImportDialog
+import phaseshifts
 from phaseshifts.model import MTZ_model, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = "Liam Deacon"
 __APP_COPYRIGHT__ = "\xa9" + "2013 {0}".format(__APP_AUTHOR__)
 __APP_DESCRIPTION__ = (
-    "A simple Python-based program \n " "for generation of phase shifts"
+    "A simple Python-based program\nfor generation of phase shifts"
 )
-__APP_DISTRIBUTION__ = "phaseshifts"
-__APP_EMAIL__ = "liam.m.deacon@diamond.ac.uk"
+__APP_DISTRIBUTION__ = phaseshifts.__package__
+__APP_CONTACT__ = phaseshifts.__contact__
 __APP_LICENSE__ = "MIT License"
 __APP_NAME__ = "Phase Shifts"
-__APP_VERSION__ = "0.1-alpha"
+__APP_VERSION__ = phaseshifts.VERSION
 __PYTHON__ = "{0}.{1}.{2}".format(
     sys.version_info.major,
     sys.version_info.minor,
@@ -180,7 +181,7 @@ class MainWindow(QtGui.QMainWindow):
     def about(self):
         """Display 'About' dialog"""
         text = __APP_DESCRIPTION__
-        text += "\n\nAuthor: {0} \nEmail: {1}".format(__APP_AUTHOR__, __APP_EMAIL__)
+        text += "\n\nAuthor: {0} \nContact: {1}".format(__APP_AUTHOR__, __APP_CONTACT__)
         text += "\n\nApp version: {0}".format(__APP_VERSION__)
         text += "\n{0}".format(__APP_COPYRIGHT__)
         text += "\n" + __APP_LICENSE__

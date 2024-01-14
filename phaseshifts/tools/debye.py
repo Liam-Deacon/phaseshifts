@@ -19,22 +19,16 @@ import os
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-__version__ = 0.1
+import phaseshifts
+
+__version__ = phaseshifts.__version__
 __date__ = "2014-02-23"
 __updated__ = "2014-02-23"
-__contact__ = "liam.deacon@diamond.ac.uk"
+__contact__ = phaseshifts.__contact__
 
 
 class Debye_Waller(object):
-    """
-    Debye_Waller is a class for calculating Debye-Waller factors
-    """
-
-    def __init__(self):
-        """
-        Constructor
-        """
-        pass
+    """Debye_Waller is a class for calculating Debye-Waller factors."""
 
     def debye_waller_factor(self):
         """
