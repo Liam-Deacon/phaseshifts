@@ -5,5 +5,5 @@ periodictable>=1.6.1
 # (and then again when we drop python 3.8 or earlier)
 # set most recent typing_extensions version for python version (broad strokes)
 typing_extensions>=3.10.0; python_version >= "3.5" and python_version < "3.7"  
-typing_extensions>=4.7.1; python_version >= "3.7" and python_version < "3.9"
-typing_extensions>=4.9.1; python_version >= "3.9"
+typing_extensions>=4.2.0; python_version >= "3.7" and python_version < "3.9"
+typing_extensions>=4.6.0; python_version >= "3.9"
