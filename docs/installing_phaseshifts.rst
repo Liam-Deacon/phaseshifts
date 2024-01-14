@@ -5,7 +5,7 @@ Installing the phaseshifts package
 **********************************
 
 The `phaseshifts <http://https://pypi.python.org/pypi/phaseshifts/>`_ package 
-requires CPython 2.6 or later and also uses the `numpy 
+requires CPython 2.7 or later and also uses the `numpy 
 <http://www.scipy.org/scipylib/download.html>`_, `scipy 
 <http://www.scipy.org/scipylib/download.html>`_ and `periodictable 
 <http://https://pypi.python.org/pypi/periodictable>`_ packages. 
@@ -23,11 +23,11 @@ steps below.
          
       easy_install install numpy scipy periodictable
 
-    Older versions of numpy & scipy did not allow simultaneous installation -
+    Older versions of ``numpy`` & ``scipy`` did not allow simultaneous installation -
     if you experience problems then try first installing numpy before 
     attempting to install scipy. 
 	
-    The periodictable package allows lookup of the most common crystal 
+    The ``periodictable`` package allows lookup of the most common crystal 
     structure for a given element and is instrumental in many of the 
     convenience functions contained in the model module.
     
@@ -36,7 +36,16 @@ steps below.
 
  2. To install the phaseshifts package::
          
-      python setup.py install  
+      pip install phaseshifts  
+
+    .. note:: Until a ``pyproject.toml`` with a working PEP-517 build backend
+              is implemented then the user will first need to run
+              :code:`pip install numpy setuptools wheel` in order to have the necessary
+              python pre-requisites available (along with a fortran compiler) in order
+              to compile the FORTRAN source and wrap it to be available via python.
+
+    .. tip:: Running ``make check`` with run a test suite designed to catch issues with
+             the installation (however the ``pytest`` package is required).
 
     With any luck the package has been installed successfully. A set of test scripts
     are provided, however a simple check may suffice using an interactive session of 
@@ -51,6 +60,14 @@ steps below.
 
 .. tip:: On Windows systems it may be easier to install a scientific python distibution 
          rather than install the dependencies from source - `Python(x,y) 
-         <http://code.google.com/p/pythonxy>`_ with mingw (gcc & gfortran) 
-         installed is highly recommended.
+         <http://code.google.com/p/pythonxy>`_ or
+         `Anaconda <https://www.anaconda.com/download>`_ with mingw (gcc & gfortran) 
+         installed is highly recommended. Mac OS X users can simply do ``brew install gfortran``
+         and Debian/Ubuntu users can do ``sudo apt-get install -y gfortran``.
 
+.. note:: On unix systems, setup the virtualenv on Python 3.10 or lower, activate it and run `make`.
+
+.. warning:: Python 3.12 compatibility is a work in progress due to the removal of ``numpy.distuils``
+             build backend for ``f2py`` preventing simple installation via ``pip install``,
+             `this github issue <https://github.com/Liam-Deacon/phaseshifts/issues/8>`_
+             tracks progress on fixing this known issue.

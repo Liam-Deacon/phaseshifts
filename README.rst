@@ -40,8 +40,14 @@ The simplest and most reliable cross-platform way to run `phsh.py` is through do
   docker run lightbytes/phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
 
 
-.. tip:: Development docker images can be built locally, e.g. :code:`docker build . -t lightbytes/phaseshifts:dev`
+.. tip:: Development docker images can be built locally, e.g.
+         :code:`docker build . -t ghcr.io/Liam-Deacon/phaseshifts:dev`
 
+.. warning:: There is a `known possible bug <https://github.com/Liam-Deacon/phaseshifts/issues/6>`_
+             where the compiled ``libphsh.f`` is not thread-safe (as ascertained by the fortran compiler),
+             as such if you anticipate using this library in concurrent environments then it is advised to
+             run ``phsh.py`` via :code:`docker run ghcr.io/Liam-Deacon/phaseshifts:latest` as this works around
+             this limitation due to the emphereal nature of container instances created using ``docker run``.   
 
 Install
 =======
@@ -105,11 +111,18 @@ steps below.
 
 .. tip:: On Windows systems it may be easier to install a scientific python distibution 
          rather than install the dependencies from source - `Python(x,y) 
-         <http://code.google.com/p/pythonxy>`_ with mingw (gcc & gfortran) 
-         installed is highly recommended.
-
+         <http://code.google.com/p/pythonxy>`_ or
+         `Anaconda <https://www.anaconda.com/download>`_ with mingw (gcc & gfortran) 
+         installed is highly recommended. Mac OS X users can simply do ``brew install gfortran``
+         and Debian/Ubuntu users can do ``sudo apt-get install -y gfortran``.
 
 .. note:: On unix systems, setup the virtualenv on Python 3.10 or lower, activate it and run `make`.
+
+.. warning:: Python 3.12 compatibility is a work in progress due to the removal of ``numpy.distuils``
+             build backend for ``f2py`` preventing simple installation via ``pip install``,
+             `this github issue <https://github.com/Liam-Deacon/phaseshifts/issues/8>`_
+             tracks progress on fixing this known issue.
+
 
 About the code
 ==============
