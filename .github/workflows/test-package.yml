@@ -17,18 +17,25 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          # - macos-latest
         python-version:
+          # NOTE: 2.7 through to 3.6 inclusive will be removed in a future release to remove development overhead 
+          - "2.7"
+          - "3.5"
+          - "3.6"
           - "3.7"
           # - "3.8"  # This version has issues with the build, but is not officially supported anyway
           - "3.9"
           - "3.10"
           - "3.11"
           # - "3.12"  # TODO: Support python 3.12, f2py backend broken and needs to be fixed, see issue #8
+    runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -39,9 +46,10 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -r requirements.txt
     - name: Build binaries
       run: make
+      shell: bash
     - name: Lint with flake8
       continue-on-error: true
       run: |
@@ -51,9 +59,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        if [ -d tests/ ]; then
-            pytest tests/  # test only when ready
-        fi
+        pytest tests/
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
