@@ -4,6 +4,10 @@ import re
 
 import pytest
 
+import phaseshifts
+    
+PHASESHIFTS_ROOT_DIR = os.path.dirname(phaseshifts.__file__)
+PHASESHIFTS_LIB_DIR = os.path.join(PHASESHIFTS_ROOT_DIR, "lib")
 
 def test_libphsh_exists():
     """
@@ -11,12 +15,8 @@ def test_libphsh_exists():
     WHEN searching phaseshifts/lib directory
     THEN there should be a compiled shared object for libphsh (.pyd|.dll on Windows, .so otherwise)
     """
-    import phaseshifts
-
-    root_dir = os.path.dirname(phaseshifts.__file__)
-    lib_dir = os.path.join(root_dir, "lib")
-    assert os.path.exists(lib_dir)
-    for directory, _, files in os.walk(lib_dir):
+    assert os.path.exists(PHASESHIFTS_LIB_DIR)
+    for directory, _, files in os.walk(PHASESHIFTS_LIB_DIR):
         if "__pycache__" in directory:
             continue
 
@@ -45,6 +45,11 @@ def test_import_libphsh():
     except ModuleNotFoundError:
         pytest.fail("libphsh*{} has not been compiled".format(ext))
     except ImportError as err:
+        if sys.platform == "win32":
+            assert os.system("dumpbin /dependents {}{}libphsh.pyd".format(PHASESHIFTS_LIB_DIR, os.path.sep)) == 0
+        if sys.version[:2] >= (3, 8):
+            os.add_dll_directory(PHASESHIFTS_LIB_DIR)
+            import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
         err_message = "{}: ".format(ext).join(str(err).split("{}: ".format(ext))[1:])
         pytest.fail(
             "Unable to import compiled libphsh due to: '{}'".format(err_message)
