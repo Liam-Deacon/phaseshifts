@@ -11,7 +11,7 @@ except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
 try:
-    import setuptools
+    import setuptools  # type: ignore [import-untyped]
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
     from distutils.core import find_packages  # type: ignore [attr-defined]
@@ -24,7 +24,7 @@ INCLUDE_DIRS = []
 try:
     import skbuild
 except ImportError:
-    skbuild = None
+    skbuild = None  # type: ignore [assignment]
 
 BUILD_BACKEND = None
 try:
@@ -69,14 +69,13 @@ except ModuleNotFoundError as npy_err:
                 cwd="./phaseshifts/lib",
             )
         INCLUDE_DIRS += [
-            f"-I{numpy.get_include()}",
-            f"-I{numpy.f2py.get_include()}",
+            "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
         ]
     else:
         raise npy_err from None
 
 try:
-    import py2exe  # noqa
+    import py2exe  # type: ignore [import-not-found] # noqa
 except ImportError:
     py2exe = None
 
@@ -88,8 +87,8 @@ CMAKE_ARGS = {}
 if BUILD_BACKEND == "skbuild":
     CMAKE_ARGS = {
         "cmake_args": [
-            f"-DPYTHON_INCLUDE_DIR=\"{sysconfig.get_path('include')}\""
-            f"-DPYTHON_LIBRARY=\"{sysconfig.get_config_var('LIBDIR')}\""
+            '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
+            '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
         ]
     }
 
@@ -127,7 +126,7 @@ f2py_exts = (
     ]
 )
 
-print(f"BUILD_BACKEND: {BUILD_BACKEND}")
+print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
 
 dist = setup(
     name="phaseshifts",
