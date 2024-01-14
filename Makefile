@@ -10,7 +10,7 @@ wheel: install-deps
 
 #: Install dependencies
 install-deps:
-	$(PYTHON) -m pip install wheel numpy setuptools meson ninja pytest scikit-build
+	$(PYTHON) -m pip install wheel numpy setuptools 'meson; python_version >= "3.5"' ninja pytest scikit-build
 
 #: Install library into current virtualenv
 install:

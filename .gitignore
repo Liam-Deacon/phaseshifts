@@ -1,3 +1,5 @@
+*venv*/
+*.eggs/
 build/
 dist/
 phaseshifts.egg-info/

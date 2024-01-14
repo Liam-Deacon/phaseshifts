@@ -72,7 +72,7 @@ except ModuleNotFoundError as npy_err:
             "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
         ]
     else:
-        raise npy_err from None
+        raise npy_err
 
 try:
     import py2exe  # type: ignore [import-not-found] # noqa
@@ -127,6 +127,23 @@ f2py_exts = (
 )
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
+
+kwargs = {}
+if py2exe:
+    kwargs.update(
+        {
+            "options": {
+                "py2exe": {
+                    "skip_archive": 1,
+                    "compressed": 0,
+                    "bundle_files": 2,
+                    "dist_dir": os.path.join("dist", "py2exe"),
+                    "excludes": ["tcl", "bz2"],
+                    "dll_excludes": ["w9xpopen.exe", "tk85.dll", "tcl85.dll"],
+                }
+            }
+        }
+    )
 
 dist = setup(
     name="phaseshifts",
@@ -189,20 +206,5 @@ dist = setup(
     ],
     ext_modules=f2py_exts,
     console=[os.path.join("phaseshifts", "phsh.py")],
-    **(
-        {
-            "options": {
-                "py2exe": {
-                    "skip_archive": 1,
-                    "compressed": 0,
-                    "bundle_files": 2,
-                    "dist_dir": os.path.join("dist", "py2exe"),
-                    "excludes": ["tcl", "bz2"],
-                    "dll_excludes": ["w9xpopen.exe", "tk85.dll", "tcl85.dll"],
-                }
-            }
-        }
-        if py2exe
-        else {}
-    ),
+    **kwargs,
 )
