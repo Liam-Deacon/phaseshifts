@@ -47,7 +47,7 @@ def test_import_libphsh():
     except ImportError as err:
         if sys.platform == "win32":
             os.system("dumpbin /dependents {}{}libphsh.pyd".format(PHASESHIFTS_LIB_DIR, os.path.sep)) == 0
-            if tuple(map(int, sys.version[:2])) >= (3, 8):
+            if sys.version_info[:2] >= (3, 8):
                 os.add_dll_directory(PHASESHIFTS_LIB_DIR)
                 import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
                 return  # success after adding DLL directory to path
