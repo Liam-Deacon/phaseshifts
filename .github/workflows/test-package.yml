@@ -22,7 +22,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest
+          # - windows-latest  # TODO: Needs #32 to be resolved
           # - macos-latest
         python-version:
           # NOTE: 2.7 through to 3.6 inclusive are not provided in the ubuntu-latest runner
@@ -44,7 +44,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
         pip install -r requirements.txt
-    # NOTE: There are some limitations with Windows builds needing  
+    # NOTE: There are some limitations with Windows builds needing to be visited in #32
     - name: Install Microsoft Visual C++ Redistributables
       if: matrix.os == 'windows-latest'
       run: |

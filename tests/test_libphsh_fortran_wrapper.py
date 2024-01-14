@@ -10,7 +10,6 @@ PHASESHIFTS_ROOT_DIR = os.path.dirname(phaseshifts.__file__)
 PHASESHIFTS_LIB_DIR = os.path.join(PHASESHIFTS_ROOT_DIR, "lib")
 
 
-@pytest.mark.skipif(sys.platform == "win32", reason="TODO: Correctly locate libphsh shared object")
 def test_libphsh_exists():
     """
     GIVEN a package build including binaries of libphsh.f has been previously executed
