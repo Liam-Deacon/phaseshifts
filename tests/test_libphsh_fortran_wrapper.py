@@ -2,6 +2,7 @@ import sys
 
 import pytest
 
+
 def test_import_libphsh():
     """
     GIVEN a compiled libphsh.f shared object
