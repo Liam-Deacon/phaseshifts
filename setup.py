@@ -37,11 +37,12 @@ except ModuleNotFoundError as npy_err:
         # FIXME: Currently skbuild with CMakeLists.txt does not work, check with `make libphsh.cmake`
         try:
             from skbuild import setup
+
             BUILD_BACKEND = "skbuild"
         except ImportError:
             raise NotImplementedError(
                 "TODO: Generate binary wheels correctly using pyproject.toml, scikit-build and cmake"
-            ) 
+            )
     if tuple(sys.version_info[:2]) >= (3, 11):
         # We can invoke f2py and compile manually
         # HACK: Workaround missing distutils by invoking f2py directly
@@ -157,7 +158,13 @@ dist = setup(
     extras_require={
         "atorb": ["mendeleev", "elementy"],
         "gui": [],
-        "dev": ["numpy", "wheel", "scikit-build; python_version > '3.11'", "ruff", "black"],
+        "dev": [
+            "numpy",
+            "wheel",
+            "scikit-build; python_version > '3.11'",
+            "ruff",
+            "black",
+        ],
         "test": ["pytest", "pytest-cov"],
         "doc": ["sphinx>=7,<8", "numpydoc"],
     },
@@ -175,7 +182,12 @@ dist = setup(
         }
     ),
     scripts=["phaseshifts/phsh.py"],
-    install_requires=["scipy >= 0.7", "numpy >= 1.3", "periodictable", "typing_extensions"],
+    install_requires=[
+        "scipy >= 0.7",
+        "numpy >= 1.3",
+        "periodictable",
+        "typing_extensions",
+    ],
     ext_modules=f2py_exts,
     console=[os.path.join("phaseshifts", "phsh.py")],
     **(

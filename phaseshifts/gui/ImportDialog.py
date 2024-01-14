@@ -1,4 +1,4 @@
-'''
+"""
 Created on 10 Feb 2014
 
 @author: Liam Deacon
@@ -26,45 +26,45 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 SOFTWARE.
-'''
+"""
 from PyQt4 import QtGui, uic
 import res_rc
 
 
 class ImportDialog(QtGui.QDialog):
-    '''
-    Dialog class for updating sequences 
-    '''
+    """
+    Dialog class for updating sequences
+    """
+
     def __init__(self, parent=None, model=None):
         super(ImportDialog, self).__init__(parent)
-        
+
         # set dictionary
         self.action = None
-        
+
         # dynamically load ui
         self.ui = uic.loadUi("gui/ImportDialog.ui", self)
         self.initUi()
-        
+
         if isinstance(model, str):
             model = model.lower()
-            if model == 'slab':
+            if model == "slab":
                 self.ui.radioSlab.setChecked(True)
-        
+
         self.ui.show()
-            
+
     def initUi(self):
         # Setup slots and signals
-        self.ui.buttonBox.clicked[
-                        QtGui.QAbstractButton].connect(self.buttonPress)
-    
+        self.ui.buttonBox.clicked[QtGui.QAbstractButton].connect(self.buttonPress)
+
     def buttonPress(self, button):
-        '''Deal with user interaction of button group'''
+        """Deal with user interaction of button group"""
         action = str(button.text()).lower()
-        if action == 'cancel':
+        if action == "cancel":
             # do not apply settings & close dialog
             self.action = action
             self.ui.close()
-        
-        elif action == 'ok':
-            self.action = action 
+
+        elif action == "ok":
+            self.action = action
             self.ui.close()
