@@ -29,7 +29,7 @@ libphsh:
 
 #: Perform checks
 check: libphsh
-	$(PYTHON) -m pytest tests/
+	$(PYTHON) -m pytest tests/ --verbose
 
 test: check
 
