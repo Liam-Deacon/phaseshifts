@@ -40,7 +40,10 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
-        run: python3 -m pip install -e .[doc]
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install numpy setuptools wheel  # NOTE: needed for non PEP-517 enabled projects 
+          python3 -m pip install -e .[doc]
 
       - name: Build HTML Docs
         run: make html
