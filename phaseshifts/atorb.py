@@ -55,27 +55,34 @@ shift calculation package.
 
 import os
 from collections import OrderedDict
-from typing import Optional
 
-from typing_extensions import Literal
+# TODO: Clean this up when the project officially drops support for Python 2.7
+try:
+    from typing import Optional  # noqa: F401
+    from typing_extensions import Literal
+
+    ElementBackendType = Literal["mendeleev", "elementy", "periodictable"]
+except ModuleNotFoundError:
+    # we are likely on an old version of python
+    ElementBackendType = str  # type: ignore
 
 try:
-    import periodictable
+    import periodictable  # type: ignore [import-untyped]
 except ImportError:
     periodictable = None
 
 try:
-    import elementy
+    import elementy  # type: ignore [import-not-found]
 except ImportError:
     elementy = None
 
 try:
-    import mendeleev
+    import mendeleev  # type: ignore [import-not-found]
 except ImportError:
     mendeleev = None  # Need to install mendeleev
 
 from phaseshifts import elements
-from phaseshifts.lib.libphsh import hartfock
+from phaseshifts.lib.libphsh import hartfock  # type: ignore [import-untyped]
 
 elements_dict = OrderedDict([
 ('H', 'Hydrogen'), 
@@ -198,10 +205,8 @@ elements_dict = OrderedDict([
 ('Uuo', 'Ununoctium'), 
 ])
 
-ElementBackendType = Literal["mendeleev", "elementy", "periodictable"]
 
-
-def get_element(element: str, backend: Optional[ElementBackendType] = None):
+def get_element(element, backend=None):  # type: (str, Optional[ElementBackendType]) -> object
     """Obtain an element object for querying information using `backend`."""
     ele_obj = elements.ELEMENTS.get(element)
     if mendeleev and not ele_obj and backend in ("mandeleev", None):
@@ -287,7 +292,7 @@ class Atorb(object):
         self.__dict__.update(kwargs)
         
     @staticmethod
-    def get_quantum_info(shell):
+    def get_quantum_info(shell):  # (str) -> Tuple[int|float|List[int|float], ...]
         r"""
         Description
         -----------
@@ -295,7 +300,7 @@ class Atorb(object):
         or 'f' from a given subshell string.
         
         Returns
-        =======
+        -------
         tuple : (int, int, list[float, float], list[float, float])
             (n, l, j=[l-s, l+s], occ=[:math:`n^-_r`, :math:`n^+_r`])
             
@@ -325,11 +330,12 @@ class Atorb(object):
             nelectrons = 1
             
         s = 0.5
+        shell_info = None
         if subshell == 's':
             l = 0
             occ = [nelectrons / 1.0]
             j = [l + s]
-            return (n, l, j, occ)
+            shell_info = (n, l, j, occ)
         elif subshell == 'p':
             # 3 subshells
             l = 1
@@ -337,7 +343,7 @@ class Atorb(object):
             occ = []
             for j in [l - s, l + s]:
                 occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
+            shell_info = (n, l, [l - s, l + s], occ)
         elif subshell == 'd':
             # 5 subshells
             l = 2
@@ -345,7 +351,7 @@ class Atorb(object):
             occ = []
             for j in [l - s, l + s]:
                 occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
+            shell_info = (n, l, [l - s, l + s], occ)
         elif subshell == 'f':
             # 7 subshells!
             l = 3
@@ -353,7 +359,10 @@ class Atorb(object):
             occ = []
             for j in [l - s, l + s]:
                 occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
-            return(n, l, [l - s, l + s], occ)
+            shell_info = (n, l, [l - s, l + s], occ)
+        else:
+            raise NotImplementedError("Exotic subshells beyond f-block have not been implemented")
+        return shell_info
 
     @staticmethod
     def replace_core_config(electron_config):
@@ -391,9 +400,10 @@ class Atorb(object):
         core = electron_config.split()[0]
 
         if core in cores:
-            return electron_config.replace(core, cores.get(core))
+            config = electron_config.replace(core, cores.get(core))
         else:
-            return electron_config
+            config = electron_config
+        return config
 
     @staticmethod
     def gen_input(element, **kwargs):
@@ -451,11 +461,7 @@ class Atorb(object):
          
 
         """
-        
-        try:
-            ele = get_element(element, backend=None)
-        except AttributeError:
-            raise LookupError(f"Unable to find element {element!r}")
+        ele = get_element(element, backend=None)
         Z = ele.protons
         
         # get full electronic configuration
