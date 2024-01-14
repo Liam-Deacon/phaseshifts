@@ -40,10 +40,10 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
-        run: python3 -m pip install -r ./requirements.txt
+        run: python3 -m pip install -e .[doc]
 
       - name: Build HTML Docs
-        run: make html && find -name index.html
+        run: make html
         working-directory: docs
 
       - name: Deploy
@@ -51,4 +51,4 @@ jobs:
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs/build/html
+          publish_dir: ./docs/_build/html
