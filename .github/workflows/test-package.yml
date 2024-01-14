@@ -44,8 +44,12 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
         pip install -r requirements.txt
-    - uses: ilammy/msvc-dev-cmd@v1
+    # NOTE: There are some limitations with Windows builds needing  
+    - name: Install Microsoft Visual C++ Redistributables
       if: matrix.os == 'windows-latest'
+      run: |
+        Install-Module -Name "VcRedist" -Force
+      shell: pwsh
     - name: Build binaries
       run: make
       shell: bash
