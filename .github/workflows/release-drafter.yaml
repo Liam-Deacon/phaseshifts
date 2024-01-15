@@ -18,17 +18,16 @@ permissions:
 
 jobs:
 
-  # TODO: Automatically determine version for release-drafter
-  # tag-new-versions:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #       with:
-  #         fetch-depth: 2
-  #     - uses: salsify/action-detect-and-tag-new-version@v2
-  #       with:
-  #         version-command: |
-  #           python3 -c "import phaseshifts; print(phaseshifts.__version__)"
+  tag-new-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          version-command: |
+            python3 -c "import phaseshifts; print(phaseshifts.__version__)"
 
   update_release_draft:
     permissions:
@@ -42,7 +41,8 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - uses: release-drafter/release-drafter@v5
         # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
-        with:
-          version: {{ jobs.tag-new-versions.outputs. }}
+        # TODO: Automatically determine version for release-drafter
+        # with:
+        #   version: {{ jobs.tag-new-versions.outputs. }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
