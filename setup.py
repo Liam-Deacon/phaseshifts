@@ -160,7 +160,7 @@ dist = setup(
             "black",
         ],
         "test": ["pytest", "pytest-cov"],
-        "doc": ["sphinx>=7,<8", "numpydoc"],
+        "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
