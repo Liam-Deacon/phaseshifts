@@ -241,13 +241,15 @@ class Converter:
           * the basis vectors :math:`a_1`, :math:`a_2`, & :math:`a_3` are
             :math:`x`,:math:`y`,:math:`z` cartezian coordinates
           * if no :math:`a_3` is found, the maximum :math:`z` distance between
-          atoms multiplied by four is given.
+            atoms multiplied by four is given.
           * the unitcell is converted from cartezian to fractional coordinates
           * atom sites are converted from Angstrom to Bohr units
           * additional info from the phase shift filename is provided by
             splitting the '_' chars:
-              1. First string segment is element or symbol, e.g. Ni
-              2. Second string segment is the oxidation (valence), e.g. +2
+
+            1. First string segment is element or symbol, e.g. Ni
+            2. Second string segment is the oxidation (valence), e.g. +2
+
           * lines with :code:`rm:` provide the radii dictionary of the
             individual phase shifts, whereas lines starting with
             :code:`lmax:` provide the lmax dictionary for individual phase
@@ -266,6 +268,7 @@ class Converter:
         Additional information can, however, be provided using 'phs:' at the
         start of a line within the input file and may have the following
         formats:
+
           1. "**phs:** c *<float>* nh *<int>* nform *<int>* exchange *<float>*"
           2. "**phs:** *<phase_shift>* valence *<float>* radius *<float>*"
 
