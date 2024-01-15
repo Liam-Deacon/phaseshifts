@@ -8,6 +8,12 @@
 !
 !=======================================================================
 
+! NOTE: To view a rough comparison to (almost) the original source, run:
+!
+!       cat phaseshifts/lib/.phsh.orig/*.f > phsh.f
+!       code --diff phsh.f phaseshifts/lib/libphsh.f
+!
+
 !-----------------------------------------------------------------------
 ! hartfock subroutine:
 !
