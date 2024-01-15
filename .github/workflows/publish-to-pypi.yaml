@@ -2,10 +2,6 @@ name: Publish Package
 
 on: [release]
 
-environment:
-  name: pypi
-  url: https://pypi.org/p/phaseshifts
-
 permissions:
   contents: read
   id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
@@ -17,6 +13,9 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest"]  # .tar.gz on linux, .zip on windows
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,6 +49,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["2.7", "3.5", "3.6"]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -79,6 +81,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -108,6 +113,9 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -133,10 +141,13 @@ jobs:
 
   publish_mac_wheels:
     name: Publish for Mac OS X
+    runs-on: macos-latest
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]  # limited as macos runner minutes are 10x expensive compared to ubuntu
-    runs-on: macos-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
       - name: Build wheels
