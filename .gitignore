@@ -22,3 +22,8 @@ _skbuild/
 
 # docs
 doc/_build/
+
+# read-only
+**/phsh0.f
+**/phsh1.f
+**/phsh2.f

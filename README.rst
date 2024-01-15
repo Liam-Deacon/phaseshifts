@@ -25,6 +25,8 @@ To quote the original authors' site:
 
    http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
 
+   A local copy of the source files can be found under ``phaseshifts/lib/.phsh.orig/phsh[0-2].f``.
+
 Running
 =======
 

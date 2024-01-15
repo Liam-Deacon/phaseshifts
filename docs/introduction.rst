@@ -29,6 +29,8 @@ To quote the original authors site:
 
    http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
 
+ A local copy of the source files can be found under ``phaseshifts/lib/.phsh.orig/phsh[0-2].f``.
+
 The aim of this package is to both automate and simplify the generation of 
 phase shift files in a manner that is easy for the computational hitch-hiker, 
 but powerful for those that wish to extend the package for particular needs.

@@ -18,7 +18,7 @@ def test_libphsh_exists():
     """
     assert os.path.exists(PHASESHIFTS_LIB_DIR)
     for directory, _, files in os.walk(PHASESHIFTS_LIB_DIR):
-        if "__pycache__" in directory:
+        if "__pycache__" in directory or not directory.endswith("/lib"):
             continue
 
         if sys.platform == "win32":
