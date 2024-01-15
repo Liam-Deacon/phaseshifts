@@ -13,7 +13,25 @@ categories:
       - 'bugfix'
       - 'bug'
   - title: '🧰 Maintenance'
-    label: 'chore'
+    labels:
+      - chore
+      - refactor
+  - title: ':boom: Breaking Changes'
+    label: 'breaking'
+  - title: ':package: Build System'
+    label: 'build'
+  - title: ':construction_worker: Continuous Integration'
+    label: 'ci'
+  - title: ':books: Documentation'
+    label: 'documentation'
+  - title: ':racehorse: Performance'
+    label: 'performance'
+  - title: ':fire: Removals and Deprecations'
+    label: 'removal'
+  - title: ':lipstick: Style'
+    label: 'style'
+  - title: '🧪 Testing'
+    label: 'testing'
 change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
 change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
 version-resolver:
@@ -31,3 +49,41 @@ template: |
   ## Changes
 
   $CHANGES
+
+autolabeler:
+  - label: 'documentation'
+    files:
+      - '*.rst'
+    branch:
+      - '/docs{0,1}\/.+/'
+  - label: 'bug'
+    branch:
+      - '/fix\/.+/'
+      - '/bugfix\/.+/'
+    title:
+      - '/^fix/i'
+  - label: 'enhancement'
+    branch:
+      - '/feature\/.+/'
+      - '/^feat\/.+/'
+    title:
+      - '/feat/i'
+  - label: 'refactor'
+    branch:
+      - '/refactor\/.+/'
+    title:
+      - '/^refactor/i'
+  - label: 'chore'
+    branch:
+      - '/chore\/.+/'
+    title:
+      - '/^chore/i'
+  - label: 'performance'
+    branch:
+      - '/performance\/.+/'
+    title:
+      - '/^performance/i'
+
+replacers:
+  - search: '/(bugfix|ci|chore|doc[s]?|feat|fix|refactor|performance)\:/g'
+    replace: ''

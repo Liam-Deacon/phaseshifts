@@ -10,13 +10,25 @@ on:
     # Only following types are handled by the action, but one can default to all as well
     types: [opened, reopened, synchronize]
   # pull_request_target event is required for autolabeler to support PRs from forks
-  # pull_request_target:
-  #   types: [opened, reopened, synchronize]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
 
 jobs:
+
+  tag-new-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+      - uses: salsify/action-detect-and-tag-new-version@v2
+        with:
+          version-command: |
+            python3 -c "import phaseshifts; print(phaseshifts.__version__)"
+
   update_release_draft:
     permissions:
       # write permission is required to create a github release
@@ -29,8 +41,7 @@ jobs:
       # Drafts your next Release notes as Pull Requests are merged into "master"
       - uses: release-drafter/release-drafter@v5
         # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
-        # with:
-        #   config-name: my-config.yml
-        #   disable-autolabeler: true
+        with:
+          version: {{ jobs.tag-new-versions.outputs. }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
