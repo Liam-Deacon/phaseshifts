@@ -21,7 +21,7 @@ _skbuild/
 *.log
 
 # docs
-doc/_build/
+docs/_build/
 
 # read-only
 **/phsh0.f
