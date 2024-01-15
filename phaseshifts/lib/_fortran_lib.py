@@ -11,29 +11,25 @@ import importlib
 import os
 import subprocess
 import sys
-from typing import Optional
 
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 FORTRAN_LIBS = {
-    LIBPHSH_MODULE: {"source": "libphsh.f", "module_name": LIBPHSH_MODULE},
+    LIBPHSH_MODULE: {"source": "libphsh.f", "module_name": LIBPHSH_MODULE.split(".")[-1]},
 }
 
 
-def is_module_importable(module: str) -> bool:
+def is_module_importable(module):  # (str) -> bool
     """Determine whether `module` is importable."""
     try:
         is_importable = bool(importlib.import_module(module))
-    except ModuleNotFoundError:
+    except ImportError:
         is_importable = False
     return is_importable
 
 
-def compile_f2py_shared_library(
-    source: str,
-    module_name: Optional[str] = None,
-    **f2py_kwargs,
-) -> int:
+def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwargs):
+    # type: (str, str|None, str|None, str) -> int
     """Compile `source` into f2py wrapped shared library given by `module_name`.
 
     Examples
@@ -44,16 +40,17 @@ def compile_f2py_shared_library(
     --------
     numpy.f2py
     """
+    args = [
+        sys.executable,
+        "-m",
+        "numpy.f2py",
+        source,
+        "-m",
+        module_name or os.path.basename(source),
+        "-c",
+    ]
+    args += ["--{}={!r}".format(key, val) for key, val in f2py_kwargs.items()]
     return subprocess.check_call(
-        [
-            sys.executable,
-            "-m",
-            "numpy.f2py",
-            source,
-            "-m",
-            module_name or os.path.basename(source),
-            "-c",
-            *[f"--{key}={val!r}" for key, val in f2py_kwargs.items()],
-        ],
-        cwd=os.path.dirname(__file__),
+        args,
+        cwd=cwd or os.path.dirname(__file__),
     )
