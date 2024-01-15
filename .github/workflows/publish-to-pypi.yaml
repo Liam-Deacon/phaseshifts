@@ -1,0 +1,159 @@
+name: Publish Package
+
+on: [release]
+
+environment:
+  name: pypi
+  url: https://pypi.org/p/phaseshifts
+
+permissions:
+  contents: read
+  id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+
+jobs:
+  publish_sdist:
+    name: Publish sdists
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]  # .tar.gz on linux, .zip on windows
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build sdist
+        run: |
+          make install_deps && \
+          pip install build && \
+          python -m build --sdist --no-isolation
+        shell: bash
+      - name: Upload sdist
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/*
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+      - name: Publish sdist to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          print-hash: true
+          verbose: true
+
+  # TODO: Remove when we drop support for old python versions
+  publish_legacy_linux_wheels:
+    name: Publish for Linux (Legacy Python) 
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: ["2.7", "3.5", "3.6"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build wheel
+        run: make wheel
+        shell: bash
+      - name: Upload wheels
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/*.whl
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          print-hash: true
+          verbose: true
+
+  publish_linux_wheels:
+    name: Publish for Linux 
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build wheel
+        run: make wheel
+        shell: bash
+      - name: Upload wheels
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/*.whl
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          print-hash: true
+          verbose: true
+
+  publish_windows_binaries:
+    name: Publish for Windows 
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Build wheel
+        run: make wheel
+        shell: bash
+      - name: Upload wheels
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./dist/*.whl
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          print-hash: true
+          verbose: true
+
+  publish_mac_wheels:
+    name: Publish for Mac OS X
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]  # limited as macos runner minutes are 10x expensive compared to ubuntu
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        env:
+          CIBW_ARCHS_MACOS: x86_64 arm64
+      - name: Upload Mac wheels
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./wheelhouse/*.whl
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+      - name: Publish wheels to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: wheelhouse/
+          print-hash: true
+          verbose: true
