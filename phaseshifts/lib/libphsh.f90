@@ -1,5 +1,7 @@
 !=======================================================================
-! libphsh.f
+! libphsh.f90
+! 
+!!! WARNING: This is an experimental port of libphsh.f to FORTRAN 90 !!! 
 !
 ! Modified code from the Barbieri/Van Hove phase shift (phshift)
 ! package available at:
