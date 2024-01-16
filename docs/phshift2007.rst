@@ -1,4 +1,4 @@
-.. Van_Hove_Phase_Shift_Package_Guide:
+.. _Van_Hove_Phase_Shift_Package_Guide:
 
 **********************************************************************
 APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide
@@ -25,6 +25,7 @@ Contact
 
 M.A. Van Hove:  vanhove@cityu.edu.hk
 
+.. _Van_Hove_Phase_Shift_Package_Guide_Overview:
 
 Contents
 ========
