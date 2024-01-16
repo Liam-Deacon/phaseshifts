@@ -42,6 +42,7 @@ distribution. If any are missing please contact Michel Van Hove
 The files listed below contain FORTRAN programs that correspond to the basic 
 steps necessary to obtain the phase shifts needed in a LEED structural 
 determination.
+
  - ``PhSh0.for``    - calculation of the atomic orbital charge densities.
  - ``PhSh1.for``    - calculation of the muffin tin potential (bulk & slab).
  - ``PhSh2*.for``   - calculation of phase shifts.
@@ -51,6 +52,7 @@ determination.
 
 Contains samples of the input and output files for the case of bulk 
 Rh and a :math:`\text{Rh} (111)-(2 \times 2)- \text{C} _2 \text{H} _3` (H neglected) structure.
+
  - `atorbC`     : input of PhSh0 for C
  - `atorbRh`    : input of PhSh0 for Rh
  - `atC.i`      : output of PhSh0 for C
@@ -63,6 +65,7 @@ Rh and a :math:`\text{Rh} (111)-(2 \times 2)- \text{C} _2 \text{H} _3` (H neglec
 
  
 Not included are two output files:
+
   - `mufftin.d`  : output of PhSh1 for :math:`\text{C} _2 \text{H} _3` (MTZ=-1.74)
   - `phasout`    : output of PhSh2rel for :math:`\text{C} _2 \text{H} _3` on Rh(111)
 
