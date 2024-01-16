@@ -21,9 +21,10 @@ To quote the original authors' site:
 
 4. Elimination of pi-jumps in the energy dependence of the phase shifts."
 
-.. note:: You can get the original Fortran source (& learn more about the *phshift* programs) from:
+.. note:: You can get the original Fortran source (& learn more about the *phshift* programs)
+   from Michel Van Hove's LEED Calculation Home Page:
 
-   http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+   https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html
 
    A local copy of the source files can be found under ``phaseshifts/lib/.phsh.orig/phsh[0-2].f``.
 
@@ -32,14 +33,19 @@ Running
 
 The `phsh.py` script (available after installing the package) aims to simplify these
 steps with a single command. For more information please read the documentation
-at `<http://pythonhosted.org//phaseshifts/>`_
+at `<http://pythonhosted.org//phaseshifts/>`_ (latest PyPI release) or
+`GitHub Pages <https://liam-deacon.github.io/phaseshifts/>`_ (latest master)
 
 The simplest and most reliable cross-platform way to run `phsh.py` is through docker::
 
-  docker run lightbytes/phaseshifts:latest  # will display usage
+  # obtain the image
+  docker pull ghcr.io/Liam-Deacon/phaseshifts:latest  # should only need to do this once
+
+  # run phsh.py via the docker image
+  docker run ghcr.io/Liam-Deacon/phaseshifts:latest  # will display usage
 
   # or more generally (adjust as needed)
-  docker run lightbytes/phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
+  docker run ghcr.io/Liam-Deacon//phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
 
 
 .. tip:: Development docker images can be built locally, e.g.
@@ -170,13 +176,34 @@ produce. For more detailed documentation and function use refer to the pdf manua
             
             phsh.py --help
          
-.. note:: The `leed.py` module provides a conversion class for CLEED .inp and 
-          .bul files. This is included as part of the `phsh.py` module, 
-          however the file extension is important (needs .inp, .pmin, .bul, or .bmin) 
-          and error checking is limited. There are also plans to include a 
+.. note:: The `phaseshifts.leed` module provides a conversion class for CLEED ``.inp`` and 
+          ``.bul`` files. This is included as part of the `phsh.py` module, 
+          however the file extension is important (needs ``.inp``, ``.pmin``, ``.bul``,
+          or ``.bmin``) and error checking is limited. There are also plans to include a 
           validator to check the files for malformatted input at some point in the 
           future.
-         
+
+Alternatives
+------------
+
+A number of alternatives are available, notably the following:
+
+1. `AQuaLEED <https://physics.mff.cuni.cz/kfpp/povrchy/software>`_ (with a useful
+   `poster overview of phaseshifts calculations <https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf>`_).
+   This is an officially mentioned piece of software on Michel Van Hove's
+   `LEEDPACK webpage <https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html>`_,
+   however when tested as of January 2024 the link appears to be dead (with a ``500 INTERNAL_SERVER_ERROR``).
+   Furthermore, although the poster mentions that the software is written in python,
+   this software is not (currently) distributed on https://PyPI.org and therefore harder to
+   intergrate with other python LEED-related projects such as `CLEED <https://github.com/Liam-Deacon/CLEED>`_
+   and `cleedpy <https://github.com/empa-scientific-it/cleedpy>`_.
+
+.. note:: Should you know of alternatives, please either
+          `open an issue <https://Liam-Deacon/phaseshifts/issues>`_ or
+          (better yet) create a PR with changes to this documentation
+          to keep this list up to date.
+
+
 Acknowledgements
 ================
 
@@ -215,7 +242,7 @@ or other feedback are very welcome and should be sent to: liam.deacon@diamond.ac
 The project is in the early developmental stages and so anyone who wishes to get 
 involved are most welcome (simply contact me using the email above).
 
-To do
+To Do
 =====
 
  1. Documentation - the manual has been started, but is not complete and thus is a 
@@ -235,7 +262,8 @@ To do
 
 See ``TODO.rst`` for more information.
 
-Author list
-===========
+Contacts
+========
 
-  - `Liam Deacon <liam.deacon@diamond.ac.uk>`_ - *current maintainer*
+  - `Liam Deacon <mailto://liam.m.deacon@gmail.com>`_ - *current maintainer*
+  - `Michel Van Hove <mailto://vanhove@cityu.edu.hk>`_ - Contact for original LEEDPACK ``phsh[0-3].f`` programs

@@ -5,15 +5,18 @@ Running
 *******
 
 The `phsh.py` script (available after installing the package) aims to simplify these
-steps with a single command. For more information please read the documentation
-at `<http://pythonhosted.org//phaseshifts/>`_
+steps with a single command.
 
 The simplest and most reliable cross-platform way to run `phsh.py` is through docker::
 
-  docker run lightbytes/phaseshifts:latest  # will display usage
+  # obtain the image
+  docker pull ghcr.io/Liam-Deacon/phaseshifts:latest  # should only need to do this once
+
+  # run phsh.py via the docker image
+  docker run ghcr.io/Liam-Deacon/phaseshifts:latest  # will display usage
 
   # or more generally (adjust as needed)
-  docker run lightbytes/phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
+  docker run ghcr.io/Liam-Deacon//phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
 
 
 .. tip:: Development docker images can be built locally, e.g.

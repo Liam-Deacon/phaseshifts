@@ -4,6 +4,26 @@
 Installing the phaseshifts package
 **********************************
 
+TDLR;
+-----
+
+For python 3.11 or older::
+
+  pip install wheel numpy setuptools
+  
+  # latest pypi release
+  pip install phaseshifts
+  
+  # or local version with essential packages for development
+  git clone https://github.com/Liam-Deacon/phaseshifts
+  cd phaseshifts
+  pip install -e .[dev,test]  # !! best do this in a virtualenv
+
+  phsh --help
+
+Details
+-------
+
 The `phaseshifts <http://https://pypi.python.org/pypi/phaseshifts/>`_ package 
 requires CPython 2.7 or later and also uses the `numpy 
 <http://www.scipy.org/scipylib/download.html>`_, `scipy 
