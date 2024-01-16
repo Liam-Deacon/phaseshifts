@@ -19,10 +19,7 @@ sphinx:
 
 python:
   install:
-    - method: pip
-      path: wheel
-    - method: pip
-      path: numpy
+    - requirements: requirements.txt
     - method: pip
       path: .
       extra_requirements:
