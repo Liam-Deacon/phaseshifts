@@ -8,7 +8,7 @@ This package is a Python-based implementation of the Barbieri/Van Hove
 phase shift (*phsh*) calculation package needed to produce phase shifts for 
 various LEED packages (including CLEED), as well as for certain XPD packages. 
 
-To quote the original authors site: 
+To quote the original authors' site: 
 
 "The phase shift calculation is performed in several steps:
 
@@ -34,3 +34,7 @@ To quote the original authors site:
 The aim of this package is to both automate and simplify the generation of 
 phase shift files in a manner that is easy for the computational hitch-hiker, 
 but powerful for those that wish to extend the package for particular needs.
+
+.. include:: included/about_the_code.rst
+
+.. include:: included/alternatives.rst
