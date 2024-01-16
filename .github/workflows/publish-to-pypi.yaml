@@ -1,6 +1,16 @@
 name: Publish Package
 
-on: [release]
+on:
+  release:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version upload to pypi'
+        default: master
+      pypi_repo:
+        description: 'Repo to upload to (testpypi or pypi)'
+        default: 'testpypi'
+        required: true
 
 permissions:
   contents: read
@@ -13,11 +23,13 @@ jobs:
     strategy:
       matrix:
         os: ["ubuntu-latest", "windows-latest"]  # .tar.gz on linux, .zip on windows
-    environment:
-      name: pypi
-      url: https://pypi.org/p/phaseshifts
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -35,8 +47,14 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.5
+        if: ${{ github.event.inputs.pypi_repo == 'testpypi' }}
+        with:
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish sdist to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
         with:
           packages-dir: dist/
           print-hash: true
@@ -44,16 +62,19 @@ jobs:
 
   # TODO: Remove when we drop support for old python versions
   publish_legacy_linux_wheels:
-    name: Publish for Linux (Legacy Python) 
+    name: Publish for Linux (Legacy Python)
     runs-on: ubuntu-20.04
+    needs: publish_sdist
     strategy:
       matrix:
         python-version: ["2.7", "3.5", "3.6"]
-    environment:
-      name: pypi
-      url: https://pypi.org/p/phaseshifts
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -68,24 +89,33 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.5
+        if: ${{ github.event.inputs.pypi_repo == 'testpypi' }}
+        with:
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
         with:
           packages-dir: dist/
           print-hash: true
           verbose: true
 
   publish_linux_wheels:
-    name: Publish for Linux 
+    name: Publish for Linux
     runs-on: ubuntu-latest
+    needs: publish_sdist
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-    environment:
-      name: pypi
-      url: https://pypi.org/p/phaseshifts
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -100,24 +130,33 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.5
+        if: ${{ github.event.inputs.pypi_repo == 'testpypi' }}
+        with:
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
         with:
           packages-dir: dist/
           print-hash: true
           verbose: true
 
   publish_windows_binaries:
-    name: Publish for Windows 
+    name: Publish for Windows
     runs-on: windows-latest
+    needs: [publish_sdist, publish_linux_wheels, publish_legacy_linux_wheels]
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-    environment:
-      name: pypi
-      url: https://pypi.org/p/phaseshifts
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -132,8 +171,14 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.5
+        if: ${{ github.event.inputs.pypi_repo == 'testpypi' }}
+        with:
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
         with:
           packages-dir: dist/
           print-hash: true
@@ -142,14 +187,22 @@ jobs:
   publish_mac_wheels:
     name: Publish for Mac OS X
     runs-on: macos-latest
+    needs:
+      # restrict to running macos when everything else is successful as running as it is 10x more expensive than ubuntu
+      - publish_sdist
+      - publish_linux_wheels
+      - publish_legacy_linux_wheels
+      - publish_windows_binaries
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]  # limited as macos runner minutes are 10x expensive compared to ubuntu
-    environment:
-      name: pypi
-      url: https://pypi.org/p/phaseshifts
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/phaseshifts
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version || github.ref }}
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         env:
@@ -162,8 +215,14 @@ jobs:
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.8.5
+        if: ${{ github.event.inputs.pypi_repo == 'testpypi' }}
+        with:
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish wheels to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
         with:
           packages-dir: wheelhouse/
           print-hash: true
