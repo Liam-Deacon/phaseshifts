@@ -41,6 +41,7 @@ jobs:
         shell: bash
       - name: Upload sdist
         uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/*
@@ -83,6 +84,7 @@ jobs:
         shell: bash
       - name: Upload wheels
         uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/*.whl
@@ -124,6 +126,7 @@ jobs:
         shell: bash
       - name: Upload wheels
         uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/*.whl
@@ -165,6 +168,7 @@ jobs:
         shell: bash
       - name: Upload wheels
         uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./dist/*.whl
@@ -209,6 +213,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
       - name: Upload Mac wheels
         uses: svenstaro/upload-release-action@v2
+        if: ${{ github.event_name == 'release' }}
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./wheelhouse/*.whl
