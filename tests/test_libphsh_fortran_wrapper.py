@@ -50,11 +50,14 @@ def test_import_libphsh():
         pytest.fail("libphsh*{} has not been compiled".format(ext))
     except ImportError as err:
         if sys.platform == "win32":
-            _ = os.system(
-                "dumpbin /dependents {}{}libphsh.pyd".format(
-                    PHASESHIFTS_LIB_DIR, os.path.sep
+            _ = (
+                os.system(
+                    "dumpbin /dependents {}{}libphsh.pyd".format(
+                        PHASESHIFTS_LIB_DIR, os.path.sep
+                    )
                 )
-            ) == 0
+                == 0
+            )
             if sys.version_info[:2] >= (3, 8):
                 os.add_dll_directory(PHASESHIFTS_LIB_DIR)
                 import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
