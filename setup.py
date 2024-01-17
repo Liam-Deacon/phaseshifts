@@ -117,7 +117,7 @@ f2py_exts = (
         #       See https://stackoverflow.com/a/53463910/22567758
         Extension(
             name="phaseshifts.lib._native_build",
-            sources=[os.path.join("phaseshifts", "lib", "__native_build.c")],
+            sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
         )
     ]
     if BUILD_BACKEND != "numpy.distutils"
