@@ -38,7 +38,7 @@ suitable for input into LEED-IV programs such as SATLEED and CLEED.
 Examples
 --------
 .. code:: bash
-   
+
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
 
 

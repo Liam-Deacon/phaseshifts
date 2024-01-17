@@ -32,23 +32,23 @@
 """
 **atorb.py**
 
-Provides convenience functions for generating input and calculating 
-atomic charge densities for use with the Barbieri/Van Hove phase 
+Provides convenience functions for generating input and calculating
+atomic charge densities for use with the Barbieri/Van Hove phase
 shift calculation package.
 
 :See: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/
 
-:Requires: f2py (for libphsh fortran wrapper generation) 
+:Requires: f2py (for libphsh fortran wrapper generation)
 
 .. note::
    To generate libphsh fortran wrappers (libphsh.pyd) for your platform
-   then use 'python setup.py' in the lib directory of this package to 
+   then use 'python setup.py' in the lib directory of this package to
    install into your python distribution. Alternatively, use::
-           
+
      f2py -c -m libphsh libphsh.f
-             
+
    Windows users may have to add appropriate compiler switches, e.g. ::
-           
+
     f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f
 
 """

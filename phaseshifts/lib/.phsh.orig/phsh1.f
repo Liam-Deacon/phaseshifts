@@ -2,7 +2,7 @@ C---------------------------------------------------------------------
 C  program PHSH1.FOR
 C---------------------------------------------------------------------
 C
-C  adapted from CAVPOT 
+C  adapted from CAVPOT
 C
       PROGRAM PHSH1
 C  PHASE SHIFT PROGRAM FROM CAVLEED PACKAGE (PENDRY-TITTERINGTON).
@@ -17,15 +17,15 @@ C  INEQUIVALENT TYPES (BUT NIEQ<14)
 c	modified by Liam Deacon
       CHARACTER(LEN=255) :: ATOMIC, CLUSTER, ARG, OUTPUT, STRING(3), MTZ
       INTEGER 			:: BULK, IBUFFER, I
-	
+
       ATOMIC = 'atomic.i'
       CLUSTER = 'cluster.i'
       OUTPUT = 'bmtz.txt'
       BULK = 0
       I = 1
       MTZ = "0"
-	
-      DO 
+
+      DO
         CALL GETARG(I, ARG)
         IF ((ARG.EQ.'-a').OR.(ARG.EQ.'--atomic')) THEN
           I = I+1
@@ -59,15 +59,15 @@ c	modified by Liam Deacon
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))
 		  WRITE(*,*) ''
           WRITE(*,*) 'where:-'
-          STRING(1) = '-a or --atomic <file>' 
+          STRING(1) = '-a or --atomic <file>'
           STRING(2) = ' specifies atomic file path'
           STRING(3) = ' (default: "atomic.i")'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
-          STRING(1) = '-b or --bulk <flag>' 
+          STRING(1) = '-b or --bulk <flag>'
           STRING(2) = ' perform bulk calculation if flag=0'
           STRING(3) = ' or slab calculation if flag=1'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
-          STRING(1) = '-c or --cluster <file>' 
+          STRING(1) = '-c or --cluster <file>'
           STRING(2) = ' specifies cluster file path'
 		  STRING(3) = ' (default: "cluster.i")'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
@@ -89,13 +89,13 @@ c	modified by Liam Deacon
 
       CALL CAVPOT(MTZ, BULK, ATOMIC, CLUSTER, OUTPUT)
       STOP
-	  
+
 999   WRITE(*,*) 'Bad input.'
       STOP
-		
+
       END
-C---------------------------------------------------------------------	
-      SUBROUTINE CAVPOT(MTZ_STRING, SLAB_FLAG, ATOMIC_FILE, 
+C---------------------------------------------------------------------
+      SUBROUTINE CAVPOT(MTZ_STRING, SLAB_FLAG, ATOMIC_FILE,
      1   CLUSTER_FILE, OUTPUT_FILE)
       CHARACTER(LEN=*), INTENT(IN) :: ATOMIC_FILE
       CHARACTER(LEN=*), INTENT(IN) :: CLUSTER_FILE, OUTPUT_FILE
@@ -120,7 +120,7 @@ C      CHARACTER*4 WFN,WFN0,WFN1,WFN2,WFN3
 
 C
 C First input channels
-C      
+C
       OPEN (UNIT=4,FILE=ATOMIC_FILE,STATUS='OLD')
       OPEN (UNIT=7,FILE=CLUSTER_FILE,STATUS='OLD')
 C
@@ -296,13 +296,13 @@ C  CALCULATE THE MUFFIN-TIN ZERO
       IF(NH.NE.0)CALL MTZ(SIG,RHO,RX,NGRID,RMT,NRR,NX,NR,RC,RK,N,
      + VHAR,VEX,ALPHA,AV,NH)
       write(*,*) 'Slab or Bulk calculation?'
-      write(*,*) 'input 1 for Slab or 0 for Bulk' 
+      write(*,*) 'input 1 for Slab or 0 for Bulk'
 c	modified by Liam Deacon
       if((SLAB_FLAG.eq.1).or.(SLAB_FLAG.eq.0)) then
 	     read(SLAB_FLAG,*) nbulk
 	     write(*,*) nbulk
       else
-	     read(*,*) nbulk 
+	     read(*,*) nbulk
       endif
       if (nbulk.eq.1) then
         write(*,*) 'Input the MTZ value from the substrate calculation'
@@ -353,8 +353,8 @@ C     WRITE(9,219)NGRID,(RX(IX),IX=1,NGRID)
 C write output in a format to be read by WILLIAMS phase shift program (NFORM=1)
 C by CAVLEED phase shift program (NFORM=0), or by the relativistic phase
 C shift program (NFORM=2)
-C      
-C Also prepare to shift the potential by an amount of the order 
+C
+C Also prepare to shift the potential by an amount of the order
 C of the bulk muffintin zero.
 C This is needed only if the cluster.i file correspond to a surface adsorbate
 C      esh=SIG(JRX,IR)
@@ -383,7 +383,7 @@ c
 	WRITE(9,217)(NAME(I,IR),I=1,4)
 	WRITE(9,218)Z(IR),RMT(IR),VINT
       elseif(nform.eq.1)then
-	WRITE(9,221)Z(IR),RMT(IR) 
+	WRITE(9,221)Z(IR),RMT(IR)
       else
 c
 c es=Emin for phase shift calculation (ev)
@@ -489,7 +489,7 @@ C  NOTE THAT NY IS RESET IN CHGRID
 3     NY=IY-1
       RETURN
       END
-C---------------------------------------------------------------------	  
+C---------------------------------------------------------------------
       SUBROUTINE CLEMIN(RHO,RX,NX,NGRID)
       DIMENSION RHO(NGRID),RX(NGRID)
       REAL NAME(4),SUM
@@ -508,7 +508,7 @@ C    WFC(IX,I) = WAVEFUNCTION X RADIUS AT GRID POINT IX
       READ(4,100)NAME
       READ(4,101)IPRINT
       READ(4,101)NC
- 
+
       DO 1 IC=1,NC
       DO 1 IG=1,NGRID
 1     WFC(IG,IC)=0.0
@@ -1122,7 +1122,7 @@ C---------------------------------------------------------------------
       REAL NAME(4),SUM
       COMMON /WK/ RR(2000),RS(2000)
 C  ROUTINE FOR INPUT OF CHARGE DENSITY FROM RELATIVISTIC ORBITALS
-C  (ERIC SHIRLEY PROGRAM), AND CALCULATION OF CHARGE DENSITY ON 
+C  (ERIC SHIRLEY PROGRAM), AND CALCULATION OF CHARGE DENSITY ON
 C  THE RADIAL MESH RX
 C    RHO = 4*PI*SUM OVER STATES OF (MODULUS(WAVE FN)**2) *
 C          RADIUS**2

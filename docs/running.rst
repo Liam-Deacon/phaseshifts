@@ -26,4 +26,4 @@ The simplest and most reliable cross-platform way to run `phsh.py` is through do
              where the compiled ``libphsh.f`` is not thread-safe (as ascertained by the fortran compiler),
              as such if you anticipate using this library in concurrent environments then it is advised to
              run ``phsh.py`` via :code:`docker run ghcr.io/Liam-Deacon/phaseshifts:latest` as this works around
-             this limitation due to the emphereal nature of container instances created using ``docker run``.   
+             this limitation due to the emphereal nature of container instances created using ``docker run``.

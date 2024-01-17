@@ -31,9 +31,9 @@
 """
 Provides CLEED validator and Converter classes.
 
-The CLEED_validator() class provides a method for checking 
+The CLEED_validator() class provides a method for checking
 the input files for errors, whereas the Converter.import_CLEED()
-method allows importing CLEED input files as a MTZ_model class 
+method allows importing CLEED input files as a MTZ_model class
 
 """
 

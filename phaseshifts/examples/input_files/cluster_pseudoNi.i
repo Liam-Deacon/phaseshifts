@@ -1,4 +1,4 @@
-PSEUDOMORPPHIC NICKEL ON W(110) AAB..BULK+SURF,RELA 
+PSEUDOMORPPHIC NICKEL ON W(110) AAB..BULK+SURF,RELA
   5.1612                       SPA=Rh-Rh distance (a.u.)
   0.8165  0.5774  0.0000       Coordinates of unit cell(SPA units)
  -0.8165  0.5774  0.0000

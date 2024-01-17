@@ -1,7 +1,7 @@
 !=======================================================================
 ! libphsh.f90
-! 
-!!! WARNING: This is an experimental port of libphsh.f to FORTRAN 90 !!! 
+!
+!!! WARNING: This is an experimental port of libphsh.f to FORTRAN 90 !!!
 !
 ! Modified code from the Barbieri/Van Hove phase shift (phshift)
 ! package available at:
@@ -52,94 +52,94 @@
 ! author: Eric Shirley
 !
 !-----------------------------------------------------------------------
-!***********************************************************************     
+!***********************************************************************
 module WK
-      
+
        real, dimension(3)    :: ra, ga, x, rb, rj
        real, dimension(5)    :: vmm, fr
        real, dimension(20)   :: ex, fac, fnt, nt
        real, dimension(250)  :: wk1, wk2
-       real, dimension(3,3)  :: g  
+       real, dimension(3,3)  :: g
        real, dimension(2000) :: rr, rs
-       
+
        save
-       
+
       end module WK
-      
-!***********************************************************************      
+
+!***********************************************************************
       module WF
-       
+
        real, dimension(14)      :: wc, lc
        real, dimension(250, 14) :: wfc, wf2
-       
+
        save
-       
+
       end module WF
-      
+
 !***********************************************************************
       module CM16
-       
+
        integer NE, ix, neuo
        real e1, e2
-       
+
        save
-       
+
      end module CM16
 
-!***********************************************************************     
+!***********************************************************************
      module CMRV
-       
+
        real, dimension(201)     :: r
        real, dimension(201, 15) :: v
        real Z
        integer nr, nl
-        
+
        save
-       
+
      end module CMRV
-     
+
 !***********************************************************************
      module CM5
-     
+
       integer ilst, ip1
-      real, dimension(30,4) :: y, f 
+      real, dimension(30,4) :: y, f
 
       save
-      
+
      end module CM5
-     
+
 !***********************************************************************
 
     module ZZZZ
-    
+
        real, dimension(340) :: zp
        real vs, pot, vcz
        integer ipt, jri
-    
+
      save
-     
+
     end module ZZZZ
-    
+
 !***********************************************************************
     module Z
-    
+
      real rmaxi, T
-    
+
      save
-     
+
     end module Z
 
-!***********************************************************************    
+!***********************************************************************
     module RADFUN
-    
+
      real U, W
-    
-     save 
-    
+
+     save
+
     end module RADFUN
-  
+
       subroutine hartfock(input_file)
-       
+
        implicit double precision (a-h,o-z)
        character(len=255), intent(in) :: input_file
        integer iorbs, iside, io2, ijive
@@ -165,7 +165,7 @@ module WK
        character(len=11) jive
        character(len=60) jive2
        character(len=70) jive3
-    
+
        open(unit=5, file=trim(input_file), status='old')
        rel = 0.d0
 
@@ -370,7 +370,7 @@ module WK
       subroutine abinitio(etot,nst,rel,alfa,nr,r,dr,r2,dl,                &
      &    phe,njrc,vi,zorig,xntot,nel,no,nl,xnj,                          &
      &    ev,occ,is,ek,orb,iuflag)
-     
+
        implicit double precision (a-h,o-z)
        double precision dl, zorig, xntot
        integer nst, nel, iuflag
@@ -389,7 +389,7 @@ module WK
        double precision, dimension(nrmax,iorbs) :: phe, orb
        double precision, dimension(nrmax, 7) :: vi
        double precision, dimension(nrmax,0:15) :: rpower
-       
+
        ! note: this will be good for going up to and including l=3...
 
        do i=0,7
@@ -429,7 +429,7 @@ module WK
        ! ratio is the mixture of old and new field mixing.
  110   call atsolve(etot,nst,rel,alfa,eerror,nfc,nr,r,dr,r2,dl,phe,       &
      &              njrc,vi,zorig,xntot,nel,no,nl,nm,xnj,ev,occ,is,ek,    &
-     &              ratio,orb,rpower,xnum,etot2,iuflag)                   
+     &              ratio,orb,rpower,xnum,etot2,iuflag)
 
        eerror = eerror * (1.d0 - ratio) / ratio
 
@@ -460,7 +460,7 @@ module WK
       subroutine atsolve(etot,nst,rel,alfa,eerror,nfc,nr,r,dr,r2,dl,      &
      &    phe,njrc,vi,zorig,xntot,nel,no,nl,nm,xnj,ev,occ,is,ek,          &
      &    ratio,orb,rpower,xnum,etot2,iuflag)
-     
+
        implicit double precision (a-h,o-z)
        double precision etot, rel, alfa, eerror, dl, zorig, xntot
        double precision ratio, xnum, etot2
@@ -470,7 +470,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: r, dr, r2, v
        integer, dimension(iorbs)          :: no, nl, nm, is
        double precision, dimension(iorbs) :: ek, ev, occ, xnj
@@ -478,7 +478,7 @@ module WK
        integer, dimension(4) :: njrc
        double precision, dimension(nrmax, 7) :: vi
        double precision, dimension(nrmax) :: q0, xm1, xm2
-       double precision, dimension(nrmax,0:15) :: rpower 
+       double precision, dimension(nrmax,0:15) :: rpower
 
        ! initialize eerror, the biggest change in an eigenvalue, and etot.
 
@@ -738,7 +738,7 @@ module WK
              end do  ! k
 
            end do  ! la
- 
+
          end do
 
 2990   end do
@@ -842,7 +842,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: phi,phi2,v,q0,xm1,xm2,r,dr,r2
 
        el = -zorig * zorig / dble(n * n)
@@ -895,7 +895,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: phi,phi2,v,r
 
        c = 137.038d0
@@ -946,7 +946,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: v, r, r2, q0, xm1, xm2
        double precision, dimension(nrmax,iorbs) :: orb
        double precision, dimension(nrmax,7), intent(inout) :: vi
@@ -1035,7 +1035,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: r, dr, r2
        integer, dimension(4) :: njrc
 
@@ -1067,7 +1067,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: r,dr,r2
 
        ratio = rmax / rmin
@@ -1097,7 +1097,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: phi, v
        double precision, dimension(nrmax) :: q0, xm1, xm2, r, dr, r2
 
@@ -1123,7 +1123,7 @@ module WK
          if (rtest < 0.d0) then
            write (6,*) 'Z>137 IS TOO BIG.'
            return
-         endif  
+         endif
 
          ss = sqrt(rtest)
        endif
@@ -1278,7 +1278,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        integer, dimension(iorbs) :: nl
        double precision, dimension(0:6,0:6,0:12,-6:6,-6:6) :: cg
        double precision, dimension(0:32) :: si,fa
@@ -1319,13 +1319,13 @@ module WK
                  prefactor = sqrt(prefactor)
                  sum = 0.d0
                  numax = l3 - l1 + l2
-                
+
                  if ((l3+m3) < numax) then
                    numax = l3+m3
                  endif
-                
+
                  numin = 0
-                
+
                  if (l1-l2-m3 < numin) then
                    numin = -(l1 - l2 - m3)
                  endif
@@ -1368,7 +1368,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: r, dr, r2, q0, xm1, xm2, phi, v
        double precision, dimension(nrmax,7) :: vi
        double precision, dimension(nrmax,iorbs) :: phe
@@ -1573,7 +1573,7 @@ module WK
        parameter (iorbs=33, iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4, ihmax=20, nrmax=4000, ntmax=10, npmax=60) 
+       parameter (lmax=4, ihmax=20, nrmax=4000, ntmax=10, npmax=60)
        double precision, dimension(nrmax) :: r, dr, r2
        integer, dimension(4), intent(in) :: njrc
        double precision, dimension(nrmax,iorbs) :: orb
@@ -1637,13 +1637,13 @@ module WK
        implicit double precision (a-h,o-z)
        integer, intent(inout) :: i, l, n, nr
        double precision, intent(inout) :: ev, xj, rel, dl
-       double precision, intent(inout) :: rmax, rmin, zeff 
+       double precision, intent(inout) :: rmax, rmin, zeff
        integer iorbs, iside, io2, ijive
        integer lmax, ihmax, nrmax, ntmax, npmax
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        integer, dimension(4), intent(inout) :: njrc
        double precision, dimension(3) :: rf, vf
        double precision, dimension(nrmax) :: r, dr, r2, phi, v
@@ -1805,7 +1805,7 @@ module WK
          end do
 
          call parabreg(psi, psip, psipp, rf, vf)
-         v(ii) = vraw(ii)+(1.d0-phi0(ii)/phi(ii))*(2.d0*psip/psi*fp/f+fpp/f)/2.d0    
+         v(ii) = vraw(ii)+(1.d0-phi0(ii)/phi(ii))*(2.d0*psip/psi*fp/f+fpp/f)/2.d0
        end do
 
        call fitx0(i,orb,rcut,njrc,ev,l,xj,lp,jrt,x00,phi,zeff,v,          &
@@ -1859,7 +1859,7 @@ module WK
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        double precision, dimension(nrmax) :: r, dr, r2, a, v1, v2
        double precision, dimension(nrmax,7) :: vi
 
@@ -1972,7 +1972,7 @@ module WK
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       integer, dimension(4)     :: njrc 
+       integer, dimension(4)     :: njrc
        integer, dimension(iorbs) :: no, is, nl
        double precision, dimension(iorbs)   :: xnj, ev, ek, occ
        double precision, dimension(nrmax)   :: rho, r
@@ -2065,7 +2065,7 @@ module WK
          ec = 0.d0
          ux1 = 0.d0
          ux2 = 0.d0
-         uc1 = 0.d0      
+         uc1 = 0.d0
          uc2 = 0.d0
 
        else
@@ -2668,7 +2668,7 @@ module WK
 !     AITKEN'S DIVIDED DIFFERENCE SCHEME.   NX,NY ARE ARRAY dimensions
 !     NOTE THAT NY IS RESET IN CHGRID
       subroutine chgrid(fx,x,nx,fy,y,ny)
-      
+
        integer, intent(in) :: nx
        integer, intent(inout) :: ny
        double precision, dimension(nx), intent(in)    :: fx, x
@@ -2676,7 +2676,7 @@ module WK
        double precision, dimension(ny), intent(inout) :: fy
        integer ix, iy
        double precision yy, a1, a2, a3, a12, a13
-       
+
        iy=1
 
        do 2 ix=3,nx
@@ -2727,7 +2727,7 @@ module WK
        read(4,100) name
        read(4,101) iprint
        read(4,101) nc
- 
+
        do ic=1,nc
          do ig=1,ngrid
            wfc(ig,ic) = 0.0
@@ -2869,11 +2869,11 @@ module WK
          read(4,101) lc(ic), n, frac
          ns = max0(ns,n)
          WC(ic) = 2.0 * float(2 * lc(ic) + 1) * frac
-         
+
          do ix=1,n
            read(4,102) wfc(ix,ic)
          end do
-         
+
        end do
 
        ! CALCULATION OF CHARGE DENSITY
@@ -2934,11 +2934,11 @@ module WK
 !  VMM(IR) = THE INTEGRAL OF THE POTENTIAL ABOUT A TYPE-IR ATOM
 !  OUT TO THE MUFFIN-TIN RADIUS
       subroutine mad(vmad,rx,ngrid,rmt,nrr,nx,nr,rc,rk,zm,n,av)
-    
+
        use WK
-       integer, intent(in) :: ngrid, nr, n 
+       integer, intent(in) :: ngrid, nr, n
        double precision av
-       double precision, dimension(ngrid)     :: rx 
+       double precision, dimension(ngrid)     :: rx
        double precision, dimension(ngrid, nr) :: vmad
        double precision, dimension(3,3)       :: rc
        double precision, dimension(3,n)       :: rk
@@ -2998,13 +2998,13 @@ module WK
        fac1 = 4.0 * pi * al * al / (av * gmin ** 4)
        itg = 1 + ifix(exp(log(fac1 / TEST) / 4.0))
        limg = itg + itg + 1
-       
+
        do i=1,3
          do j=1,3
            write(11,200) g(i,j)
          end do
        end do
-       
+
        write(11,201) rcmin, gmin, rkmax, TEST, al
 
        ! REAL SPACE SUMMATION
@@ -3159,7 +3159,7 @@ module WK
 !  SPHERES IN THE UNIT CELL
       subroutine mtz(sig, rho, rx, ngrid, rmt, nrr, nx, nr,               &
      &               rc, rk, n, vhar, vex, alpha, av, nh)
-       
+
        use WK
        integer, intent(inout) :: ngrid, nr, n, nh
        real, dimension(ngrid) :: rx
@@ -3494,7 +3494,7 @@ module WK
                jnr = nrr(JR)
 
                do 10 jjr=1,jnr
-                 J = J + 1 
+                 J = J + 1
                  K = 1
 
                  do KR=1,nr
@@ -3548,7 +3548,7 @@ module WK
 !---------------------------------------------------------------------
 ! TAKEN FROM LOUCKS' BOOK, APPENDIX 1
       subroutine poisson(psq, z, j, w)
-    
+
        integer, intent(in) :: j
        real, intent(in)    :: z
        real, dimension(j)  :: psq, w
@@ -4441,7 +4441,7 @@ module WK
        real, intent(in) :: e
        integer tlp1, i, j, k
        real a(10), b(10), tr(4)
-       
+
 
        ni = 2 * nl
        tz = 2. * z
@@ -4671,7 +4671,7 @@ module WK
        real y1, y2
        integer i
        data B, C, O, D / " ", "*", "0", "I" /
-       
+
        Y1 = 0
        Y2 = 0
 

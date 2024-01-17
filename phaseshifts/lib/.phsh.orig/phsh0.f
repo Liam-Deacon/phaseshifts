@@ -17,28 +17,28 @@ c
 c  look at the atomic files after printing this out to see everything...
 c
 c  suffice it to say, that the charge density at radius r(i)
-c  in units of electrons per cubic bohr radius is given by 
+c  in units of electrons per cubic bohr radius is given by
 c
-c  sum of j=1...nel, 
-c  occ(j)*phe(i,j)*phe(i,j)/(4.d0*3.14159265....*r(i)*r(i))... 
+c  sum of j=1...nel,
+c  occ(j)*phe(i,j)*phe(i,j)/(4.d0*3.14159265....*r(i)*r(i))...
 c
 c  think of the phe functions as plotting the radial wave-functions
 c  as a function of radius...on our logarithmic mesh...
 c
-c  final note:  
+c  final note:
 c
 c  the Dirac equation is solved for the orbitals, whereas their density
 c  is treated by setting phe to the square root of Dirac's F*F+G*G
 c  times the sign of G...
-c  
-c  so we are doing Dirac-Fock, except that we are not treating exchange 
-c  exactly, in terms of working with major and minor components of the 
+c
+c  so we are doing Dirac-Fock, except that we are not treating exchange
+c  exactly, in terms of working with major and minor components of the
 c  orbitals, and the phe's give the CORRECT CHARGE DENSITY...
 c
 c  the above approximation ought to be very small for valence states,
 c  so you need not worry about it...
 c
-c  the Breit interaction has been neglected altogether...it should not 
+c  the Breit interaction has been neglected altogether...it should not
 c  have a huge effect on the charge density you are concerned with...
 C
 C author: Eric Shirley
@@ -50,7 +50,7 @@ C  modified: 26/01/2011 LD - added $1 argument instead of atorb
       parameter (iorbs=33,iside=600)
       parameter (io2=iorbs*(iorbs+1)/2)
       parameter (ijive=io2*(io2+1)/2)
-      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
       dimension r(nrmax),dr(nrmax),r2(nrmax)
       dimension no(iorbs),nl(iorbs),xnj(iorbs)
       dimension ev(iorbs),occ(iorbs),is(iorbs)
@@ -59,19 +59,19 @@ C  modified: 26/01/2011 LD - added $1 argument instead of atorb
       dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
       dimension w(33,33),wi(33,33),rhs(33),co(33)
       dimension xint(0:12),vav(11),rint(0:12)
-      dimension pin(0:11),sig(0:11),vctab(nrmax,0:3) 
+      dimension pin(0:11),sig(0:11),vctab(nrmax,0:3)
       character*1 ichar
       character*11 jive
       character*60 jive2
       character*70 jive3
       integer I
-       
+
 c       modified by Liam Deacon
       CHARACTER(len=255)     ::      ARG, input, STRING(3)
       input = "atorb"
 
       I = 1
-      DO 
+      DO
         CALL GETARG(I, ARG)
         IF ((ARG.EQ.'-i').OR.(ARG.EQ.'--input')) THEN
           I = I+1
@@ -96,11 +96,11 @@ c       modified by Liam Deacon
         ENDIF
         I = I+1
       END DO
-       
+
       call hartfock(input)
-       
+
       end
-       
+
 c-----------------------------------------------------------------------
       subroutine hartfock(input_file)
       implicit real*8 (a-h,o-z)
@@ -108,7 +108,7 @@ c-----------------------------------------------------------------------
       parameter (iorbs=33,iside=600)
       parameter (io2=iorbs*(iorbs+1)/2)
       parameter (ijive=io2*(io2+1)/2)
-      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
       dimension r(nrmax),dr(nrmax),r2(nrmax)
       dimension no(iorbs),nl(iorbs),xnj(iorbs)
       dimension ev(iorbs),occ(iorbs),is(iorbs)
@@ -117,13 +117,13 @@ c-----------------------------------------------------------------------
       dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
       dimension w(33,33),wi(33,33),rhs(33),co(33)
       dimension xint(0:12),vav(11),rint(0:12)
-      dimension pin(0:11),sig(0:11),vctab(nrmax,0:3) 
+      dimension pin(0:11),sig(0:11),vctab(nrmax,0:3)
       character*1 ichar
       character*11 jive
       character*60 jive2
       character*70 jive3
        !implicit real*8 (a-h,o-z)
-    
+
        open(unit=5, file=input_file, status='old')
        rel=0.d0
  10     read (5,20) ichar
@@ -264,7 +264,7 @@ c         endif
        endif
        if (ichar.eq.'V') call fourier(nr,r,dr,r2,vi)
        goto 10
-       return 
+       return
        end
 c-----------------------------------------------------------------------
       subroutine abinitio(etot,nst,rel,alfa,nr,r,dr,r2,dl,
@@ -274,7 +274,7 @@ c-----------------------------------------------------------------------
       parameter (iorbs=33,iside=600)
       parameter (io2=iorbs*(iorbs+1)/2)
       parameter (ijive=io2*(io2+1)/2)
-      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
       dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
       dimension ev(iorbs),occ(iorbs),is(iorbs),ek(iorbs)
@@ -285,7 +285,7 @@ c  this will be good for going up to and including l=3...
        xi=i
        do 10 k=1,nr
        rpower(k,i)=r(k)**xi
- 10     continue        
+ 10     continue
 
 c  read in nfc, nel.  refer to the documentation for their meanings.
 
@@ -345,7 +345,7 @@ c-----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
        dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
        dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
@@ -386,7 +386,7 @@ c  run through all the orbitals.  calculate those not in the core.
  100      continue
          ek(i)=ekk
 
-       endif   
+       endif
 
 c  add the kinetic to total, including the frozen core kinetic energy.
 
@@ -405,7 +405,7 @@ c----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension dr(nrmax),r(nrmax),r2(nrmax)
        dimension phe(nrmax,iorbs),occ(iorbs)
        dimension is(iorbs),orb(nrmax,iorbs),nl(iorbs)
@@ -447,8 +447,8 @@ c  direct coulomb
        lmx=2*li
        if (li.gt.lj) lmx=2*lj
 
-c  l=0 is monopole or spherical term for direct coulomb.  Therefore, 
-c  when we have occ(i) or occ(j) greater than one, set lmx=0.   
+c  l=0 is monopole or spherical term for direct coulomb.  Therefore,
+c  when we have occ(i) or occ(j) greater than one, set lmx=0.
 
        if ((occ(i).gt.1.d0).or.(occ(j).gt.1.d0).or.
      1      (xnj(i).lt.0.d0).or.(xnj(j).lt.0.d0)) lmx=0
@@ -575,7 +575,7 @@ c  exchange interaction
  2610   continue
 
  2980   continue
- 
+
  2990   continue
 c
 c  here we compute the charge density, if needed, for treating
@@ -590,7 +590,7 @@ c
            fc=0.0d0
          endif
 c
-c  note: we don't deal with spin-polarization in local exchange 
+c  note: we don't deal with spin-polarization in local exchange
 c  picture, since local exchange is totally wrong for such
 c  effects, anyway.  local exchange pretends charge density
 c  is paramagnetic.  also, local exchange treats everything
@@ -624,7 +624,7 @@ c
          if ((no(jj).eq.no(ii+1)).and.(nl(jj).eq.nl(ii+1))
      1      .and.(iuflag.eq.2)) icond=1
          if ((no(jj).eq.no(ii+1)).and.(nl(jj).eq.nl(ii+1))
-     1      .and.(is(jj).eq.is(ii+1)).and.(iuflag.eq.1)) icond=1 
+     1      .and.(is(jj).eq.is(ii+1)).and.(iuflag.eq.1)) icond=1
          if (icond.eq.1) then
            ii=ii+1
            goto 8965
@@ -656,7 +656,7 @@ c-----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),phi2(nrmax)
        dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
@@ -695,7 +695,7 @@ c--------------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),phi2(nrmax),v(nrmax),r(nrmax)
        c=137.038d0
        cc=c*c
@@ -732,7 +732,7 @@ c-----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension v(nrmax),r(nrmax),r2(nrmax),orb(nrmax,iorbs)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax),njrc(4),vi(nrmax,7)
 
@@ -806,7 +806,7 @@ c----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),njrc(4)
        write (6,*) 'ENTER Z, NR'
        read (5,*) zorig,nr
@@ -826,7 +826,7 @@ c---------------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        ratio=rmax/rmin
        dl=dlog(ratio)/dfloat(nr)
@@ -846,7 +846,7 @@ c-----------------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),v(nrmax)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
@@ -871,7 +871,7 @@ c  adjust for Desclaux's implementation of Numerov.
          if (rtest.lt.0.d0) then
            write (6,*) 'Z>137 IS TOO BIG.'
            stop
-         endif  
+         endif
          ss=dsqrt(rtest)
        endif
        ss2=ss-0.5d0
@@ -992,11 +992,11 @@ c  integrate out.  count nodes, and stop along the way if there are too many.
        return
        end
 c-------------------------------------------------------------------------
-c  routine to generate Clebsch-Gordan coefficients, in the form of 
-c  cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's 
+c  routine to generate Clebsch-Gordan coefficients, in the form of
+c  cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's
 c  'Elementary Theory of Angular Momentum', p. 39, Wigner's formula.
 c  those coefficients listed are only those for which l1.ge.l2.
-c  coefficients known to be zero because of either the L or M 
+c  coefficients known to be zero because of either the L or M
 c  selection rules are not computed, and should not be sought.
 
        subroutine clebschgordan(nel,nl,cg)
@@ -1005,7 +1005,7 @@ c  selection rules are not computed, and should not be sought.
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension nl(iorbs)
        dimension cg(0:6,0:6,0:12,-6:6,-6:6),si(0:32),fa(0:32)
 
@@ -1061,7 +1061,7 @@ c  selection rules are not computed, and should not be sought.
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax),phi(nrmax),v(nrmax)
        dimension njrc(4),njrcdummy(4),vi(nrmax,7),phe(nrmax,iorbs)
@@ -1208,7 +1208,7 @@ c----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension njrc(4),orb(nrmax,iorbs)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
@@ -1254,7 +1254,7 @@ c----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension phi(nrmax),v(nrmax),rf(3),vf(3)
        dimension phi0(nrmax),yl(nrmax),vraw(nrmax)
@@ -1422,7 +1422,7 @@ c----------------------------------------------------------------------
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),vi(nrmax,7)
        dimension a(nrmax),v1(nrmax),v2(nrmax)
        do 350 l=0,2
@@ -1494,7 +1494,7 @@ c       all=(-(a(i+2)+a(i-2))+16.d0*(a(i+1)+a(i-1))-30.d0*a(i))/dl2
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension no(iorbs),nl(iorbs),xnj(iorbs),is(iorbs)
        dimension ev(iorbs),ek(iorbs),occ(iorbs),r(nrmax)
        dimension phe(nrmax,iorbs),orb(nrmax,iorbs)
@@ -1579,7 +1579,7 @@ c  effect cutoff, to avoid overflow
          ec=0.d0
          ux1=0.d0
          ux2=0.d0
-         uc1=0.d0      
+         uc1=0.d0
          uc2=0.d0
 
        else
@@ -1678,7 +1678,7 @@ c  interpolate the correlation energies.
          dfdz=ft/denom*((1.d0+zeta)**trd-(1.d0-zeta)**trd)
          ec=ecu+f*(ecp-ecu)
          uc1=ucu+f*(ucp-ucu)+(ecp-ecu)*(1.d0-zeta)*dfdz
-         uc2=ucu+f*(ucp-ucu)+(ecp-ecu)*(-1.d0-zeta)*dfdz         
+         uc2=ucu+f*(ucp-ucu)+(ecp-ecu)*(-1.d0-zeta)*dfdz
 
 c  get the final functional and potential.
 

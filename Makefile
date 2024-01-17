@@ -23,7 +23,7 @@ libphsh.cmake:
 	FFLAGS="-fallow-argument-mismatch -std=f95" \
 		cmake --build build
 
-#: Build the f2py wrapped libphsh shared library within source tree  
+#: Build the f2py wrapped libphsh shared library within source tree
 libphsh:
 	$(PYTHON) setup.py build_ext --inplace
 

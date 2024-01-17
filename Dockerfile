@@ -13,13 +13,13 @@ FROM base as builder
 
 WORKDIR /build
 
-# TODO: Remove the manual install_requires step when migrating to pyproject.toml PEP-517 builds (see #8) 
+# TODO: Remove the manual install_requires step when migrating to pyproject.toml PEP-517 builds (see #8)
 RUN pip install --no-cache-dir meson scikit-build
 
 COPY . /build/
 
 # Download dependencies and build phaseshifts wheel
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels . 
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels .
 
 # Extras for phaseshifts must be provided in list syntax, e.g. "[atorb,dev,test]"
 ARG PHASESHIFTS_EXTRAS=""

@@ -41,7 +41,7 @@
       stop: 0.5 #eee,
       stop: 1 #999);
    }
- 
+
 
 QPushButton:pressed {
    border-color: black;
@@ -72,7 +72,7 @@ QToolTip {
    border-radius: 3px;
    opacity: 200;
    font-size: 11px;
-   white-space: nowrap; 
+   white-space: nowrap;
 	min-width: 120px;
 }</string>
   </property>

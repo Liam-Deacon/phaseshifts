@@ -68,7 +68,9 @@ except ModuleNotFoundError as npy_err:
                 ],
                 cwd="./phaseshifts/lib",
             )
-        INCLUDE_DIRS += ["-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())]
+        INCLUDE_DIRS += [
+            "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
+        ]
     else:
         raise npy_err
 
@@ -132,7 +134,9 @@ dist = setup(
     description=(
         "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
     ),
-    long_description=(None if not os.path.exists("README.rst") else open("README.rst").read()),
+    long_description=(
+        None if not os.path.exists("README.rst") else open("README.rst").read()
+    ),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",

@@ -14,5 +14,5 @@ a
 2 1 1 -0.5 1 0.666666666667   ! n, l, l, -j, <1>, occupation
 2 1 1 -1.5 1 1.33333333333    ! n, l, l, -j, <1>, occupation
 w
-<open file '<tmpfile>', mode 'w+b' at 0x027BB4F0>! name of output file 
+<open file '<tmpfile>', mode 'w+b' at 0x027BB4F0>! name of output file
 q
