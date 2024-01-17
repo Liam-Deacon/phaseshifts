@@ -41,7 +41,7 @@ jobs:
           path: dist/
 
   build_linux_wheels:
-    name: Publish for Linux
+    name: Linux Build
     runs-on: ubuntu-latest
     needs: build_sdist
     strategy:
@@ -69,7 +69,7 @@ jobs:
           path: dist/
 
   build_windows_binaries:
-    name: Build wheels for Windows
+    name: Windows Build
     runs-on: windows-latest
     needs: [build_sdist, build_linux_wheels]
     strategy:
@@ -91,7 +91,7 @@ jobs:
           path: dist/
 
   build_mac_wheels:
-    name: Build wheels for Mac OS X
+    name: Mac Build
     runs-on: macos-latest
     needs:
       # restrict to running macos when everything else is successful as running as it is 10x more expensive than ubuntu
@@ -108,6 +108,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: make install-deps
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
