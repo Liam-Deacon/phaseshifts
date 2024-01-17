@@ -50,7 +50,7 @@ def test_import_libphsh():
         pytest.fail("libphsh*{} has not been compiled".format(ext))
     except ImportError as err:
         if sys.platform == "win32":
-            os.system(
+            _ = os.system(
                 "dumpbin /dependents {}{}libphsh.pyd".format(
                     PHASESHIFTS_LIB_DIR, os.path.sep
                 )
