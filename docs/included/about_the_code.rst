@@ -28,7 +28,7 @@ file for helpful comments regarding each line of input.
 
 Those of you who are eager to generate phase shifts - first look at the example
 cluster files for a bulk and slab calculation, noting that the atoms in the model
-are in fractional units of the *a* basis vector for the unitcell (SPA units). Next,
+are in fractional units of the *a* basis vector for the unit cell (SPA units). Next,
 after creating a bulk and slab model in the ``cluster.i`` format, simply use
 the following python code:
 
@@ -51,5 +51,5 @@ produce. For more detailed documentation and function use refer to the pdf manua
           ``.bul`` files. This is included as part of the `phsh.py` module,
           however the file extension is important (needs ``.inp``, ``.pmin``, ``.bul``,
           or ``.bmin``) and error checking is limited. There are also plans to include a
-          validator to check the files for malformatted input at some point in the
+          validator to check the files for mal-formatted input at some point in the
           future.

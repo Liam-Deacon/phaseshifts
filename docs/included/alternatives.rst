@@ -12,6 +12,9 @@ A number of alternatives are available, notably the following:
    this software is not (currently) distributed on https://PyPI.org and therefore harder to
    intergrate with other python LEED-related projects such as `CLEED <https://github.com/Liam-Deacon/CLEED>`_
    and `cleedpy <https://github.com/empa-scientific-it/cleedpy>`_.
+2. A fortran program is described in "`McGreevy, E., & Stewart, A.L. (- Apr 1978). <https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501>`_
+   A program for calculating elastic scattering phase shifts for an electron colliding with a one-electron target using perturbation theory.
+   Computer Physics Communications, 14(1-2), 99-107.", however this code is not publicly available online (pay-walled by journal).
 
 .. note:: Should you know of alternatives, please either
           `open an issue <https://Liam-Deacon/phaseshifts/issues>`_ or
