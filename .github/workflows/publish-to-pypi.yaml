@@ -113,7 +113,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_BEFORE_ALL: pip install numpy
+          CIBW_BEFORE_BUILD: pip install numpy
           CIBW_ARCHS_MACOS: x86_64 arm64
       - uses: actions/upload-artifact@v4
         with:
