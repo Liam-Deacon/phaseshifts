@@ -94,7 +94,6 @@ steps below.
     Older versions of numpy & scipy did not allow simultaneous installation -
     if you experience problems then try first installing numpy before
     attempting to install scipy.
-
     The periodictable package allows lookup of the most common crystal
     structure for a given element and is instrumental in many of the
     convenience functions contained in the model module.
