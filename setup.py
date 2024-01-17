@@ -49,8 +49,6 @@ except ModuleNotFoundError as npy_err:
         # FIXME: Generated wheels unaware of native extension & deemed universal; *.so must be included in MANIFEST.in
         import subprocess
 
-        import numpy.f2py
-
         setup = setuptools.setup
 
         BUILD_BACKEND = "numpy.f2py"
@@ -68,9 +66,14 @@ except ModuleNotFoundError as npy_err:
                 ],
                 cwd="./phaseshifts/lib",
             )
-        INCLUDE_DIRS += [
-            "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
-        ]
+        try:
+            import numpy.f2py
+
+            INCLUDE_DIRS += [
+                "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
+            ]
+        except ImportError:
+            print("WARNING: Unable to import numpy.f2py module for build", file=sys.stderr)
     else:
         raise npy_err
 
@@ -109,7 +112,14 @@ f2py_exts_sources = {
     ]
 }
 f2py_exts = (
-    []
+    [
+        # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
+        #       See https://stackoverflow.com/a/53463910/22567758
+        Extension(
+            name="phaseshifts.lib.__native_build",
+            sources=[],
+        )
+    ]
     if BUILD_BACKEND != "numpy.distutils"
     else [
         Extension(
