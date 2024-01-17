@@ -1,3 +1,4 @@
+---
 name: phaseshifts
 channels:
   - conda-forge
