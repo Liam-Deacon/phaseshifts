@@ -6,16 +6,16 @@ C---------------------------------------------------------------------
       CHARACTER(LEN=255)	:: INPUT, ARG, DATAFILE, OUTPUT
       CHARACTER(LEN=255)    :: STRING(3)
       INTEGER 				:: I, IPHSH
-	  
-C  SPECIFY DEFAULTS	  
+
+C  SPECIFY DEFAULTS
       IPHSH = 0 !Rel=0, Cav=1, Wil=2
       DATAFILE = "dataph.d"
       INPUT = "mufftin.d"
-      OUTPUT = "phasout"	  
+      OUTPUT = "phasout"
 
 C  GET PROGRAM ARGUMENTS
       I = 1
-      DO 
+      DO
         CALL GETARG(I, ARG)
         IF ((ARG.EQ.'-i').OR.(ARG.EQ.'--input')) THEN
           I = I+1
@@ -46,18 +46,18 @@ C  GET PROGRAM ARGUMENTS
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))
 		  WRITE(*,*) ''
           WRITE(*,*) 'where:-'
-          STRING(1) = '-i or --input <file>' 
+          STRING(1) = '-i or --input <file>'
           STRING(2) = ' specifies mufftin file path'
           STRING(3) = ' (default: "mufftin.d")'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
-          STRING(1) = '-d or --datafile <file>' 
+          STRING(1) = '-d or --datafile <file>'
           STRING(2) = ' specifies output data file dump'
           STRING(3) = ' (default: "dataph.d")'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
           STRING(1) = '-o or --output <output> specifies the phase '
           STRING(2) = ' shift output file path (default: "phasout")'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))
-          STRING(1) = '-c or --cav' 
+          STRING(1) = '-c or --cav'
           STRING(2) = ' use CAVLEED phase shift calculations'
           WRITE(*,*) TRIM(STRING(1))//TRIM(STRING(2))//TRIM(STRING(3))
           STRING(1) = '-r or --rel use relativistic phase shift'
@@ -75,15 +75,15 @@ C  GET PROGRAM ARGUMENTS
         I = I+1
       END DO
 
-C  CALL DESIRED PHASE SHIFT CALCULATION PROGRAM	  
+C  CALL DESIRED PHASE SHIFT CALCULATION PROGRAM
       IF (IPHSH.EQ.0) THEN
         CALL PHSH_REL(INPUT, OUTPUT, DATAFILE)
       ELSE IF (IPHSH.EQ.1) THEN
         CALL PHSH_CAV(INPUT, OUTPUT, DATAFILE)
       ELSE IF (IPHSH.EQ.2) THEN
         CALL PHSH_WIL(INPUT, OUTPUT, DATAFILE)
-      ENDIF		
-      
+      ENDIF
+
       STOP
       END
 
@@ -95,7 +95,7 @@ C
 C  POTENTIAL-TO-PHASE-SHIFT CALCULATION(CAVLEED PACKAGE)
 C
 C  USES LOUCKS GRID (E.G. AS SUPPLIED BY THE MUFFIN-TIN POTENTIAL
-C  PROGRAM).  ENERGIES INPUT IN HARTREES.	  
+C  PROGRAM).  ENERGIES INPUT IN HARTREES.
       SUBROUTINE PHSH_CAV(MUFFTIN_FILE, PHASOUT_FILE, DATAPH_FILE)
       CHARACTER(LEN=*), INTENT(IN)	:: MUFFTIN_FILE
       CHARACTER(LEN=*), INTENT(IN)	:: PHASOUT_FILE, DATAPH_FILE
@@ -161,7 +161,7 @@ C  write phase shifts as function of energy for plotting
 101   FORMAT(3F8.4)
 102   FORMAT(I4/(5E14.5))
 103   FORMAT(I4)
-107   format(3H"L=,i2)  
+107   format(3H"L=,i2)
 110   format (11HTitleText: ,8HDELTA(E))
 200   FORMAT(18H1PHASE SHIFTS FOR ,2A8,2X,15HATOMIC NUMBER?,,F6.1/
      + 19H0MUFFIN-TIN RADIUS?,F8.4,6X,
@@ -343,7 +343,7 @@ C   NRR= number of inequivalent atoms for which we want phase shifts
       READ(5, NL2)
       WRITE(6, NL2)
       write(8,110)
-110   format (11HTitleText: ,8HDELTA(E)) 
+110   format (11HTitleText: ,8HDELTA(E))
 C  INPUT
       DO 2  KKK=1,NRR
       CALL S16
@@ -406,13 +406,13 @@ C  store phase shifts
       DELL(J) = ALOG10(DEL(J))
 14    CONTINUE
 10    CONTINUE
-C  write phase shifts as function of energy for plotting 
+C  write phase shifts as function of energy for plotting
       do 145 kk=1,nl
-         write(8,100) kk-1 
+         write(8,100) kk-1
          do 146 ii=1,NE
 146           write(8,*) E(II),delstore(kkk,II,kk)
 145        write(8,*)
-100      format(3H"L=,i2)   
+100      format(3H"L=,i2)
 15    CONTINUE
 2     CONTINUE
 C      IF(IP .LT. 2) GO TO 2
@@ -793,7 +793,7 @@ C
 10    READ(5,217,END=999,ERR=999) (NAME(I),I=1,4)
 217   FORMAT(4A4)
 c      READ(5,1)ES,DE,UE,OPT,OPT1,LSM                                    C
-      READ(5,1)ES,DE,UE,LSM,VC 
+      READ(5,1)ES,DE,UE,LSM,VC
 c nl is the number of plotted phase shifts
       nl=8
       WRITE (4,11) ES,DE,UE,OPT,OPT1,LSM
@@ -825,7 +825,7 @@ c      WRITE (4,75) BDATA,ANAME,AN,VC,OPTS
       UE=ONE
   20  N=(UE-ES)/DE+HALF
       N=N+1
-      WRITE(07,181)(NAME(I),I=1,4) 
+      WRITE(07,181)(NAME(I),I=1,4)
 C     WRITE(15,181) AN
   181 FORMAT('RELATIVISTIC PHASE SHIFTS FOR ',4A4)
       WRITE(07,18) ES,DE,N,LSM
@@ -898,7 +898,7 @@ C     WRITE(15,8) (JF(I,L),L=1,LSM1)
          do 146 ii=1,N
 146           write(8,*) ENERG(II),JF(II,kk)
 145        write(8,*)
-100      format(3H"L=,i2)  
+100      format(3H"L=,i2)
       ES=ES*13.6
       DE=DE*13.6
       UE=UE*13.6

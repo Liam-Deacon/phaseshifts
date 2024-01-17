@@ -132,8 +132,7 @@ dist = setup(
     license="MIT License",
     url="https://github.com/Liam-Deacon/phaseshifts",
     description=(
-        "Python-based version of the Barbieri/Van Hove phase "
-        "shift calculation package for LEED/XPD modelling"
+        "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
     ),
     long_description=(
         None if not os.path.exists("README.rst") else open("README.rst").read()
@@ -153,11 +152,13 @@ dist = setup(
         "atorb": ["mendeleev", "elementy"],
         "gui": [],
         "dev": [
-            "numpy",
-            "wheel",
-            "scikit-build; python_version > '3.11'",
-            "ruff",
             "black",
+            "isort",
+            "numpy",
+            "pre-commit",
+            "ruff",
+            "scikit-build; python_version > '3.11'",
+            "wheel",
         ],
         "test": ["pytest", "pytest-cov"],
         "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc"],
@@ -183,5 +184,5 @@ dist = setup(
         "typing_extensions",
     ],
     ext_modules=f2py_exts,
-    console=[os.path.join("phaseshifts", "phsh.py")]
+    console=[os.path.join("phaseshifts", "phsh.py")],
 )

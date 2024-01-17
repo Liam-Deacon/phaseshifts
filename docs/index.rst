@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 3
    :numbered:
    :glob:
-   
+
    introduction
    installing_phaseshifts
    running

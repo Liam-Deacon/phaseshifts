@@ -5,7 +5,7 @@ import re
 import pytest
 
 import phaseshifts
-    
+
 PHASESHIFTS_ROOT_DIR = os.path.dirname(phaseshifts.__file__)
 PHASESHIFTS_LIB_DIR = os.path.join(PHASESHIFTS_ROOT_DIR, "lib")
 
@@ -30,7 +30,10 @@ def test_libphsh_exists():
             ), "Expected to find a file matching regex 'phaseshifts/lib/libphsh.*\.(dll|pyd)' (case insensitive)"
         else:
             assert any(
-                [filename.startswith("libphsh") and filename.endswith(".so") for filename in files]
+                [
+                    filename.startswith("libphsh") and filename.endswith(".so")
+                    for filename in files
+                ]
             ), "Expected to find file matching 'phaseshifts/lib/libphsh*.so' glob pattern"
 
 
@@ -47,10 +50,18 @@ def test_import_libphsh():
         pytest.fail("libphsh*{} has not been compiled".format(ext))
     except ImportError as err:
         if sys.platform == "win32":
-            os.system("dumpbin /dependents {}{}libphsh.pyd".format(PHASESHIFTS_LIB_DIR, os.path.sep)) == 0
+            _ = (
+                os.system(
+                    "dumpbin /dependents {}{}libphsh.pyd".format(
+                        PHASESHIFTS_LIB_DIR, os.path.sep
+                    )
+                )
+                == 0
+            )
             if sys.version_info[:2] >= (3, 8):
                 os.add_dll_directory(PHASESHIFTS_LIB_DIR)
                 import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
+
                 return  # success after adding DLL directory to path
         err_message = "{}: ".format(ext).join(str(err).split("{}: ".format(ext))[1:])
         pytest.fail(

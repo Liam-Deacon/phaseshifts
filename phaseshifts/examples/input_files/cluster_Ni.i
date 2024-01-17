@@ -1,4 +1,4 @@
-Ni FOR Ni(111) ABC...BULK+SURF,RELA 
+Ni FOR Ni(111) ABC...BULK+SURF,RELA
   4.7035                       SPA=Rh-Rh distance (a.u.)
   0.5000  0.8660  0.0000       Coordinates of unit cell(SPA units)
  -0.5000  0.8660  0.0000

@@ -10,12 +10,12 @@ phsh.py
 Command line usage
 ------------------
 
-The *phsh.py* script is placed into the system ``PATH`` during installation of the 
-phaseshifts package. It can then be used from the command line, e.g. ``phsh.py --help`` 
+The *phsh.py* script is placed into the system ``PATH`` during installation of the
+phaseshifts package. It can then be used from the command line, e.g. ``phsh.py --help``
 will produce a list of command line options::
 
   usage: phsh.py [-h] -b <bulk_file> -i <slab_file> [-t <temp_dir>] [-l <lmax>]
-               [-r <start_energy> <final_energy> <step>] [-f <format>] 
+               [-r <start_energy> <final_energy> <step>] [-f <format>]
                [-S <subdir>] [-v] [-V]
 
 
@@ -42,14 +42,14 @@ will produce a list of command line options::
     -l <lmax>, --lmax <lmax>
                           Maximum angular momentum quantum number. [default: 10]
     -f <format>, --format <format>
-                          Use specific phase shift format i.e. 'cleed', 'curve' 
-                          or 'none'. Choose 'curve' if you wish to produce  
-                          XYY... data for easy plotting. <format> is case 
+                          Use specific phase shift format i.e. 'cleed', 'curve'
+                          or 'none'. Choose 'curve' if you wish to produce
+                          XYY... data for easy plotting. <format> is case
                           in-sensitive. [default: 'cleed']
     -r <energy> [<energy> ...], --range <energy> [<energy> ...]
-                          Energy range in eV with the format: 
-                          '<start> <stop> [<step>]', where the <step> value is 
-                          optional.  Valid for relativistic calculations 
+                          Energy range in eV with the format:
+                          '<start> <stop> [<step>]', where the <step> value is
+                          optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
@@ -58,49 +58,49 @@ will produce a list of command line options::
 
 CLEED compatibility
 -------------------
-It is possible to use this script to generate phase shift files iteratively 
-during a geometry search for the CLEED package. In this manner phase shifts 
+It is possible to use this script to generate phase shift files iteratively
+during a geometry search for the CLEED package. In this manner phase shifts
 will be generated at the beginning of each cycle of the search.
 
-For this to work, the environment variable :envvar:`CSEARCH_LEED` must point to the 
+For this to work, the environment variable :envvar:`CSEARCH_LEED` must point to the
 :code:`phsh.py` script, which will invoke the LEED program in :envvar:`PHASESHIFT_LEED`
 after execution. When operating in this mode, the following assumptions are made:
 
- 1. `-b <bulk_file>` option is not needed and the filename is assumed by 
+ 1. `-b <bulk_file>` option is not needed and the filename is assumed by
     changing the file extension of `<slab_file>` to '.bul'
  2. `-f CLEED` format is implied.
- 3. The generated phase shifts are stored in the directory set by the 
-    :envvar:`CLEED_PHASE` environment variable, however a named copy with the 
-    iteration number (read from the matching '.log' file) will be placed in the 
+ 3. The generated phase shifts are stored in the directory set by the
+    :envvar:`CLEED_PHASE` environment variable, however a named copy with the
+    iteration number (read from the matching '.log' file) will be placed in the
     same directory as the <slab_file>.
- 4. `<lmax>` is equal to 10, unless additional parameter syntax is given in the CLEED 
+ 4. `<lmax>` is equal to 10, unless additional parameter syntax is given in the CLEED
     `\*.inp` file. To use phase shift specific lmax values, then add a new line with::
-    
+
         lmax:  <phase_shift> <lmax>
-        
+
     for each phase shift you wish to have a different lmax to that of the default.
- 5. The element and oxidation of each atom in a model is guessed by reading the phase 
+ 5. The element and oxidation of each atom in a model is guessed by reading the phase
     shift tag from the CLEED input file. For example::
-    
+
         po:  O_2-_COOH ...
-    
+
     will be interpreted as a Oxygen with a -2 oxidation state and with a unique name
-    tag of "O_2-_COOH" to show it is in a carboxylic group. Note the '-' may be at 
-    the beginning or the end of the oxidation sub-string. If no oxidation state is 
+    tag of "O_2-_COOH" to show it is in a carboxylic group. Note the '-' may be at
+    the beginning or the end of the oxidation sub-string. If no oxidation state is
     given then the atom is assumed to have zero charge.
  6. The muffin-tin radius of the phase shift species is guessed from lines with::
 
         rm:  <phase_shift> <radius>
- 
-    However, if no value is found the radius is guessed from the 
-    ELEMENTS dictionary within :py:mod:`phaseshifts.elements` depending on the 
+
+    However, if no value is found the radius is guessed from the
+    ELEMENTS dictionary within :py:mod:`phaseshifts.elements` depending on the
     valency of the given phase shift element.
-  
-A full list of additional syntax to customise the generation of the phase shifts 
-when using CLEED input files can be found in 
+
+A full list of additional syntax to customise the generation of the phase shifts
+when using CLEED input files can be found in
 :py:meth:`phaseshifts.leed.Converter.import_CLEED`.
 
 .. note::
-  If the :envvar:`PHASESHIFT_LEED` environment variable is not found, but 
-  :envvar:`CLEED_PHASE` is, however, found then the program will place the generated 
+  If the :envvar:`PHASESHIFT_LEED` environment variable is not found, but
+  :envvar:`CLEED_PHASE` is, however, found then the program will place the generated
   files in this directory unless a specific :code:`-S <subdir>` is provided.

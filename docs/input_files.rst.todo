@@ -7,6 +7,6 @@ Input Files
 atorb
 =====
 
-The atorb file describes the electron configuration, or atomic orbitals 
-for a given element. The input is always for a neutral atom, as the 
-Fortran library function libphsh. 
+The atorb file describes the electron configuration, or atomic orbitals
+for a given element. The input is always for a neutral atom, as the
+Fortran library function libphsh.
