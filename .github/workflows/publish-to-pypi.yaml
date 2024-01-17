@@ -18,10 +18,7 @@ permissions:
 jobs:
   build_sdist:
     name: Build sdists
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest"]  # .tar.gz on linux, .zip on windows
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,6 +26,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      # TODO: Figure out how to create a sdist zip for Windows 
       - name: Build sdist
         run: |
           make install-deps && \
@@ -37,28 +35,31 @@ jobs:
         shell: bash
       - uses: actions/upload-artifact@v4
         with:
-          name: source-${{ matrix.os }}
+          name: sdist
           path: dist/
 
-  build_linux_wheels:
-    name: Linux Build
-    runs-on: ubuntu-latest
+  build_wheels:
+    name: Build wheels
+    runs-on: ${{ matrix.os }}
     needs: build_sdist
     strategy:
-      matrix:  # TODO: Remove 2.7, 3.5 and 3.6 when we drop support for old python versions
-        python-version: ["2.7", "3.5", "3.6", "3.9", "3.10", "3.11"]
+      matrix:
+        os: ["ubuntu-latest", "windows-latest"]
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.version || github.ref }}
-      - uses: actions/setup-python@v5
-        continue-on-error: true
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
         with:
-          python-version: ${{ matrix.python-version }}
-      - if: failure()
-        uses: gabrielfalcao/pyenv-action@v18
+          output-dir: dist/
+        env:
+          CIBW_BEFORE_BUILD: pip install numpy
+          CIBW_ARCHS_MACOS: x86_64 arm64
+      # TODO: Remove 2.7 when we drop support for older python versions
+      - uses: gabrielfalcao/pyenv-action@v18
         with:
-          default: "${{ matrix.python-version }}"
+          default: "2.7"
           command: pip install -U pip  # upgrade pip after installing python          
       - name: Build wheel
         run: make wheel
@@ -68,46 +69,17 @@ jobs:
           name: linux-${{ matrix.python-version }}
           path: dist/
 
-  build_windows_binaries:
-    name: Windows Build
-    runs-on: windows-latest
-    needs: [build_sdist, build_linux_wheels]
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.version || github.ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Build wheel
-        run: make wheel
-        shell: bash
-      - uses: actions/upload-artifact@v4
-        with:
-          name: windows-${{ matrix.python-version }}
-          path: dist/
-
   build_mac_wheels:
     name: Mac Build
     runs-on: macos-latest
     needs:
       # restrict to running macos when everything else is successful as running as it is 10x more expensive than ubuntu
       - build_sdist
-      - build_linux_wheels
-      - build_windows_binaries
-    strategy:
-      matrix:
-        python-version: ["3.9", "3.10", "3.11"]  # limited as macos runner minutes are 10x expensive compared to ubuntu
+      - build_wheels
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.version || github.ref }}
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
@@ -117,7 +89,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64 arm64
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ matrix.python-version }}
+          name: macos
           path: dist/
 
   publish_to_testpypi:
@@ -128,8 +100,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
-      - build_linux_wheels
-      - build_windows_binaries
+      - build_wheels
       - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4
@@ -149,8 +120,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
-      - build_linux_wheels
-      - build_windows_binaries
+      - build_wheels
       - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4
@@ -172,8 +142,7 @@ jobs:
       contents: write
     needs:
       - build_sdist
-      - build_linux_wheels
-      - build_windows_binaries
+      - build_wheels
       - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4

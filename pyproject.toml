@@ -1,0 +1,17 @@
+[tool.cibuildwheel]
+build = [
+    # "cp35-*",
+    # "cp36-*",
+    # "cp37-*",
+    # FIXME: CPython 3.8 builds fail, skip for now 
+    # "cp38-*",
+    "cp39-*",
+    "cp310-*",
+    "cp311-*",
+    # FIXME: CPython 3.12 builds fail due to missing distutils for f2py, see #8
+    "cp312-*"
+]
+
+[build-system]
+requires = ['setuptools', 'numpy', 'wheel']
+build-backend = 'setuptools.build_meta'
