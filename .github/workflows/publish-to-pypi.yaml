@@ -172,7 +172,6 @@ jobs:
     needs:
       - build_sdist
       - build_linux_wheels
-      - build_legacy_linux_wheels
       - build_windows_binaries
       - build_mac_wheels
     steps:
