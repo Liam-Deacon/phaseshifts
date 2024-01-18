@@ -93,13 +93,18 @@ jobs:
           sudo mkdir /usr/local/gfortran
           sudo ln -s /usr/local/Cellar/gcc@12/*/lib/gcc/12 /usr/local/gfortran/lib
           gfortran --version
-      - name: Build wheels
+      - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_MACOS: x86_64 universal2
-          CIBW_SKIP: cp36-* cp37-* cp38-*  # Cannot support older python versions on Apple Silicon
+          CIBW_ARCHS_MACOS: x86_64
+      - name: Build arm64 wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: dist/
+        env:
+          CIBW_ARCHS_MACOS: x86_64
       - uses: actions/upload-artifact@v4
         with:
           name: macos
