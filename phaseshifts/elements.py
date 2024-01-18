@@ -71,7 +71,10 @@ Examples
 
 from __future__ import division, print_function
 
-from collections.abc import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:  # python 2 location is different
+    from collections import Mapping  # noqa
 
 __version__ = "2013.03.18"
 __docformat__ = "restructuredtext en"
