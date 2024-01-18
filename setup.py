@@ -187,6 +187,8 @@ dist = setup(
         {}
         if BUILD_BACKEND == "skbuild"
         else {
+            # If any package contains *.f or *.pyd files, include them:
+            "": ["*.f", "*.pyd", "*.so", "*.dll"],
             # If any package contains *.txt or *.rst files, include them:
             ".": ["*.txt", "*.rst", "*.pyw", "ChangeLog"],
             "lib": ["lib/*.f", "lib/*.c", "lib/*.h"] + ["*.so", "*.pyd"],

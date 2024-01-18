@@ -119,17 +119,22 @@ jobs:
       - uses: actions/checkout@v4
 
       # TODO: Remove when we drop support for older python versions
-      - uses: gabrielfalcao/pyenv-action@v18
+      - name: Setup Python 2.7
+        uses: gabrielfalcao/pyenv-action@v18
         with:
           default: "2.7"
-          command: pip install -U pip && make wheel # upgrade pip after installing python
+          command: pip install -U pip  # upgrade pip after installing python
         continue-on-error: true
-      # TODO: Remove 2.7 when we drop support for older python versions
-      - uses: gabrielfalcao/pyenv-action@v18
+      - run: make wheel
+        if: success()
+      - name: Setup Python 3.5
+        uses: gabrielfalcao/pyenv-action@v18
         with:
           default: "3.5"
-          command: pip install -U pip && make wheel # upgrade pip after installing python
+          command: pip install -U pip  # upgrade pip after installing python
         continue-on-error: true
+      - run: make wheel
+        if: success()
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
