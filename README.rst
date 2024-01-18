@@ -3,7 +3,8 @@ PHASESHIFTS PACKAGE
 ===================
 
 This package is a Python-based implementation of the Barbieri/Van Hove
-phase shift (a.k.a. *phshift*) calculation package needed to produce phase shifts for
+phase shift (a.k.a. *phshift*) calculation package needed to produce elastic electron
+atom scattering (EEAS) phase shifts for modelling within
 various LEED packages (including CLEED), as well as for certain XPD packages.
 To quote the original authors' site:
 
@@ -94,7 +95,6 @@ steps below.
     Older versions of numpy & scipy did not allow simultaneous installation -
     if you experience problems then try first installing numpy before
     attempting to install scipy.
-
     The periodictable package allows lookup of the most common crystal
     structure for a given element and is instrumental in many of the
     convenience functions contained in the model module.
@@ -197,6 +197,9 @@ A number of alternatives are available, notably the following:
    this software is not (currently) distributed on https://PyPI.org and therefore harder to
    intergrate with other python LEED-related projects such as `CLEED <https://github.com/Liam-Deacon/CLEED>`_
    and `cleedpy <https://github.com/empa-scientific-it/cleedpy>`_.
+2. A fortran program is described in "`McGreevy, E., & Stewart, A.L. (- Apr 1978). <https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501>`_
+   A program for calculating elastic scattering phase shifts for an electron colliding with a one-electron target using perturbation theory.
+   Computer Physics Communications, 14(1-2), 99-107.", however this code is not publicly available online (pay-walled by journal).
 
 .. note:: Should you know of alternatives, please either
           `open an issue <https://Liam-Deacon/phaseshifts/issues>`_ or
