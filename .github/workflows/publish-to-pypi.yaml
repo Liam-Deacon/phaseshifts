@@ -113,7 +113,8 @@ jobs:
       # Package the DLL dependencies in the wheel for windows (done by default for the other platforms).
       CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel numpy
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |-  # delvewheel cannot mangle the libraries, stripping does not work.
-        delvewheel show {wheel} && delvewheel repair -w {dest_dir} {wheel} --no-mangle-all
+        delvewheel show {wheel} -vv &&
+        delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel
     steps:
       - uses: actions/checkout@v4
 
