@@ -208,18 +208,14 @@ elements_dict = OrderedDict(
 )
 
 
-def get_element(
-    element, backend=None
-):  # type: (str, Optional[ElementBackendType]) -> object
+def get_element(element, backend=None):  # type: (str, Optional[ElementBackendType]) -> object
     """Obtain an element object for querying information using `backend`."""
     ele_obj = elements.ELEMENTS.get(element)
     if mendeleev and not ele_obj and backend in ("mandeleev", None):
         elements_data = mendeleev.get_all_elements()
-        elements_data = {
-            **{e.protons: e for e in elements_data},
-            **{e.symbol: e for e in elements_data},
-            **{e.name: e for e in elements_data},
-        }
+        elements_data = {e.protons: e for e in elements_data}
+        elements_data.update({e.symbol: e for e in elements_data})
+        elements_data.update({e.name: e for e in elements_data})
         ele_obj = elements_data.get(element)
     if elementy and not ele_obj and backend in ("elementy", None):
         periodic_table = elementy.PeriodicTable()
@@ -228,11 +224,9 @@ def get_element(
         elements_data.update({e.name: e for e in periodic_table.elements})
         ele_obj = elements_data.get(element)
     if periodictable and not ele_obj and backend in ("periodtable", None):
-        ele_obj = getattr(periodictable, element, None) or getattr(
-            periodictable, str(element).lower()
-        )
+        ele_obj = getattr(periodictable, element, None) or getattr(periodictable, str(element).lower())
     if ele_obj is None:
-        raise LookupError(f"Unable to match element {element}")
+        raise LookupError("Unable to match element {}".format(element))
     return ele_obj
 
 
@@ -240,13 +234,9 @@ def get_electron_config(element_obj):
     """Obtain the electronic orbital configuration for the given `element_obj`."""
     electron_config = None
     if hasattr(element_obj, "orbitals"):
-        electron_config = " ".join(
-            [f'{x["orbital"]}{x["electrons"]}' for x in element_obj.orbitals]
-        )
+        electron_config = " ".join(["{orbital}{electrons}".format(**x) for x in element_obj.orbitals])
     else:
-        electron_config = getattr(element_obj, "eleconfig", None) or getattr(
-            element_obj, "econf", None
-        )
+        electron_config = getattr(element_obj, "eleconfig", None) or getattr(element_obj, "econf", None)
     return electron_config
 
 
@@ -333,9 +323,7 @@ class Atorb(object):
 
         subshell = "".join([s for s in shell if s.isalpha()])
         try:
-            (n, nelectrons) = [
-                t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())
-            ]
+            (n, nelectrons) = [t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())]
         except ValueError:  # assume 1 electron in shell
             n = int(shell.replace(subshell, " ").split()[0])
             nelectrons = 1
@@ -372,9 +360,7 @@ class Atorb(object):
                 occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
             shell_info = (n, l, [l - s, l + s], occ)
         else:
-            raise NotImplementedError(
-                "Exotic subshells beyond f-block have not been implemented"
-            )
+            raise NotImplementedError("Exotic subshells beyond f-block have not been implemented")
         return shell_info
 
     @staticmethod
@@ -554,29 +540,18 @@ class Atorb(object):
             f.write("C" + str(header) + "\n")
             f.write("C".ljust(70, "*") + "\n")
             f.write("i\n")
-            f.write(
-                "{0} {1}".format(Z, NR).ljust(30, " ")
-                + "! Z NR (number of points in radial grid)\n"
-            )
+            f.write("{0} {1}".format(Z, NR).ljust(30, " ") + "! Z NR (number of points in radial grid)\n")
             f.write("d\n")
             f.write("{0}".format(rel).ljust(30) + "! 1=rel, 0=n.r.\n")
             f.write("x\n")
-            f.write(
-                "{0}".format(method).ljust(30)
-                + "! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...\n"
-            )
+            f.write("{0}".format(method).ljust(30) + "! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...\n")
             f.write("a\n")
             f.write(
-                "{0} {1} {2} {3} {4}".format(
-                    relic, nlevels, mixing_SCF, eigen_tol, ech
-                ).ljust(30)
+                "{0} {1} {2} {3} {4}".format(relic, nlevels, mixing_SCF, eigen_tol, ech).ljust(30)
                 + "! relic,levels,mixing SCF, eigen. tol,for ech.\n"
             )
             for i in range(0, nlevels):
-                f.write(
-                    "{0} {1} {2} {3} {4} {5}".format(*electrons[i]).ljust(30)
-                    + "! n, l, l, -j, <1>, occupation\n"
-                )
+                f.write("{0} {1} {2} {3} {4} {5}".format(*electrons[i]).ljust(30) + "! n, l, l, -j, <1>, occupation\n")
             f.write("w\n")
             f.write("{0}\n".format(output))
             f.write("q\n")
@@ -660,9 +635,7 @@ class Atorb(object):
             inp = os.path.abspath(kwargs.pop("input"))
 
         if "element" in kwargs:
-            inp = os.path.abspath(
-                Atorb.gen_input(element=kwargs.pop("element"), **kwargs)
-            )
+            inp = os.path.abspath(Atorb.gen_input(element=kwargs.pop("element"), **kwargs))
 
         current_dir = os.path.curdir
         if "output_dir" in kwargs:
@@ -689,12 +662,7 @@ class Atorb(object):
             raise IOError
 
         lines = [
-            line.replace("\n", "")
-            .replace("\r", "")
-            .lstrip(" ")
-            .split("!")[0]
-            .split("#")[0]
-            .rstrip(" ")
+            line.replace("\n", "").replace("\r", "").lstrip(" ").split("!")[0].split("#")[0].rstrip(" ")
             for line in lines
         ]
 
@@ -705,8 +673,4 @@ class Atorb(object):
 
         os.chdir(current_dir)  # return to original directory
 
-        return (
-            os.path.join(output_dir, output_filename)
-            if output_dir is not None
-            else output_filename
-        )
+        return os.path.join(output_dir, output_filename) if output_dir is not None else output_filename
