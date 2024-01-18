@@ -113,6 +113,15 @@ f2py_exts_sources = {
         ),
     ]
 }
+f2py_platform_extra_args = {
+    "darwin": {"extra_link_args": [], "extra_compile_args": []},
+    "win32": {"extra_link_args": [], "extra_compile_args": []},
+    "linux": {
+        "extra_link_args": ["-lgomp"],
+        "extra_compile_args": ["-fopenmp"],
+    },
+}[sys.platform]
+
 f2py_exts = (
     [
         # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
@@ -126,8 +135,8 @@ f2py_exts = (
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
-            extra_compile_args=["-fopenmp"],
-            extra_link_args=["-lgomp"],
+            extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
+            extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
         )
     ]
