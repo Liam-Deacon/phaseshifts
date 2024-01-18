@@ -15,7 +15,10 @@ import sys
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 FORTRAN_LIBS = {
-    LIBPHSH_MODULE: {"source": "libphsh.f", "module_name": LIBPHSH_MODULE.split(".")[-1]},
+    LIBPHSH_MODULE: {
+        "source": "libphsh.f",
+        "module_name": LIBPHSH_MODULE.split(".")[-1],
+    },
 }
 
 

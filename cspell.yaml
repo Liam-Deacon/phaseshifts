@@ -1,3 +1,4 @@
+---
 language: en
 dictionaries:
   - python
@@ -6,3 +7,17 @@ words:
   - phaseshifts
   - libphsh
   - phsh
+  - phshift
+  # people
+  - Barbieri
+  # acronyms
+  - CLEED
+  - EEAS
+  - LEED
+  - LEEDPACK
+  - SATLEED
+  # file exts
+  - .bmin
+  - .pmin
+  # other terms
+  - autogen

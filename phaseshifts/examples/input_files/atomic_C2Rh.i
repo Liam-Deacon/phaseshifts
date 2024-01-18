@@ -1,4 +1,4 @@
-C  file PSPROG.AB2 
+C  file PSPROG.AB2
 C  containing only file ATOMIC.I for Rh(111)-(2x2)-C2H3
 C---------------------------------------------------------------------
 RELA

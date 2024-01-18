@@ -32,14 +32,14 @@
 """
 **conphas.py**
 
-Provides a native python version of the conphas (phsh3) FORTRAN program 
-by W. Moritz, which is distributed as part of the SATLEED code 
+Provides a native python version of the conphas (phsh3) FORTRAN program
+by W. Moritz, which is distributed as part of the SATLEED code
 (see "Barbieri/Van Hove phase shift calculation package" section) and can
 be found at: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/
 leed/leedpack.html
 
-The Conphas() class also provides a number of convenience functions (see 
-docstrings below). 
+The Conphas() class also provides a number of convenience functions (see
+docstrings below).
 
 Examples
 --------

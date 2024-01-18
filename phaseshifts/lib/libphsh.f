@@ -76,7 +76,7 @@
        character(len=11) jive
        character(len=60) jive2
        character(len=70) jive3
-    
+
        open(unit=5, file=trim(input_file), status='old')
        rel=0.d0
 
@@ -366,7 +366,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
        dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
        dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
@@ -433,7 +433,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension dr(nrmax),r(nrmax),r2(nrmax)
        dimension phe(nrmax,iorbs),occ(iorbs)
        dimension is(iorbs),orb(nrmax,iorbs),nl(iorbs)
@@ -627,7 +627,7 @@
              end do  ! k
 
            end do  ! la
- 
+
          end do
 
 2990   end do
@@ -729,7 +729,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),phi2(nrmax)
        dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
@@ -780,7 +780,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),phi2(nrmax),v(nrmax),r(nrmax)
 
        c=137.038d0
@@ -827,7 +827,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension v(nrmax),r(nrmax),r2(nrmax),orb(nrmax,iorbs)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax),njrc(4),vi(nrmax,7)
 
@@ -912,7 +912,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),njrc(4)
 
        ! enter Z, NR
@@ -939,7 +939,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
 
        ratio=rmax/rmin
@@ -965,7 +965,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension phi(nrmax),v(nrmax)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
@@ -992,7 +992,7 @@
          if (rtest.lt.0.d0) then
            write (6,*) 'Z>137 IS TOO BIG.'
            return
-         endif  
+         endif
 
          ss=sqrt(rtest)
        endif
@@ -1144,7 +1144,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension nl(iorbs)
        dimension cg(0:6,0:6,0:12,-6:6,-6:6),si(0:32),fa(0:32)
 
@@ -1221,7 +1221,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax),phi(nrmax),v(nrmax)
        dimension njrc(4),njrcdummy(4),vi(nrmax,7),phe(nrmax,iorbs)
@@ -1412,7 +1412,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension njrc(4),orb(nrmax,iorbs)
        dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
@@ -1479,7 +1479,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax)
        dimension phi(nrmax),v(nrmax),rf(3),vf(3)
        dimension phi0(nrmax),yl(nrmax),vraw(nrmax)
@@ -1693,7 +1693,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension r(nrmax),dr(nrmax),r2(nrmax),vi(nrmax,7)
        dimension a(nrmax),v1(nrmax),v2(nrmax)
 
@@ -1796,7 +1796,7 @@
        parameter (iorbs=33,iside=600)
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60) 
+       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
        dimension no(iorbs),nl(iorbs),xnj(iorbs),is(iorbs)
        dimension ev(iorbs),ek(iorbs),occ(iorbs),r(nrmax)
        dimension phe(nrmax,iorbs),orb(nrmax,iorbs)
@@ -1894,7 +1894,7 @@
          ec=0.d0
          ux1=0.d0
          ux2=0.d0
-         uc1=0.d0      
+         uc1=0.d0
          uc2=0.d0
 
        else
@@ -1991,7 +1991,7 @@
          dfdz=ft/denom*((1.d0+zeta)**trd-(1.d0-zeta)**trd)
          ec=ecu+f*(ecp-ecu)
          uc1=ucu+f*(ucp-ucu)+(ecp-ecu)*(1.d0-zeta)*dfdz
-         uc2=ucu+f*(ucp-ucu)+(ecp-ecu)*(-1.d0-zeta)*dfdz         
+         uc2=ucu+f*(ucp-ucu)+(ecp-ecu)*(-1.d0-zeta)*dfdz
 
          ! get the final functional and potential
          ex=(xn1*fe1*ex1+xn2*fe2*ex2)/xn
@@ -2548,7 +2548,7 @@
        read(4,100)NAME
        read(4,101)IPRINT
        read(4,101)NC
- 
+
        do IC=1,NC
          do IG=1,NGRID
            WFC(IG,IC)=0.0

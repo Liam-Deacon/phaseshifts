@@ -1,4 +1,4 @@
-W FOR W(110) AB..BULK+SURF,RELA 
+W FOR W(110) AB..BULK+SURF,RELA
   5.1612                       SPA=Rh-Rh distance (a.u.)
   0.8165  0.5774  0.0000       Coordinates of unit cell(SPA units)
   0.8165 -0.5774  0.0000

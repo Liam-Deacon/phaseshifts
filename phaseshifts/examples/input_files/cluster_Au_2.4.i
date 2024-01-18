@@ -1,4 +1,4 @@
-Rh FOR Au(111) ABC...BULK+SURF,RELA 
+Rh FOR Au(111) ABC...BULK+SURF,RELA
   5.4519                       SPA=Rh-Rh distance (a.u.)
   0.5000  0.8660  0.0000       Coordinates of unit cell(SPA units)
  -0.5000  0.8660  0.0000

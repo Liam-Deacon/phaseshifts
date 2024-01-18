@@ -246,7 +246,7 @@ class PeriodicTableDialog(QtGui.QFrame):
                     T<sub>melt</sub>={tmelt}&nbsp;K<br/>
                     T<sub>boil</sub>={tboil}&nbsp;K<br/>
                     &#961;={density}&nbsp;g/L<br/>
-                    &#967;={eleneg}                   
+                    &#967;={eleneg}
                 </html>""".format(
                 protons=element.protons,
                 name=element.name,
@@ -272,7 +272,7 @@ class PeriodicTableDialog(QtGui.QFrame):
             """<html><sup>%s</sup></html>""" % self.selectedElement.protons
         )
         self.ui.labelElement.setText(
-            """<html><head/><body><p><span style=" 
+            """<html><head/><body><p><span style="
                                         font-size:12pt;">%s</span></p></body>
                                         </html>"""
             % self.selectedElement.symbol

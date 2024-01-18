@@ -1,7 +1,7 @@
 !    -*- f90 -*-
 ! Note: the context of this file is case sensitive.
 
-python module libphsh ! in 
+python module libphsh ! in
     interface  ! in :libphsh
         subroutine hartfock(input_file) ! in :libphsh:libphsh.f
             character*255 intent(in) :: input_file
@@ -622,7 +622,7 @@ python module libphsh ! in
             double precision :: r
             real :: jfs
         end subroutine sbfit
-    end interface 
+    end interface
 end python module libphsh
 
 ! This file was auto-generated with f2py (version:2).

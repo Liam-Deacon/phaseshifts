@@ -32,10 +32,10 @@
 """
 **model.py**
 
-Provides convenience functions for generating input and calculating 
-atomic charge densities for use with the Barbieri/Van Hove phase 
+Provides convenience functions for generating input and calculating
+atomic charge densities for use with the Barbieri/Van Hove phase
 shift calculation package.
-   
+
 """
 
 from __future__ import print_function
