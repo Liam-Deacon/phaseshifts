@@ -13,7 +13,7 @@ on:
         required: true
 
 env:
-  CIBW_ARCHS_LINUX: x86_64 i686 aarch64 ppc64le
+  CIBW_ARCHS_LINUX: x86_64 i686 aarch64
   CIBW_BEFORE_BUILD: pip install numpy
   CIBW_BEFORE_BUILD_MACOS: brew install gcc@11 && export FC=gcc && pip install numpy
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
@@ -56,7 +56,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_LINUX: x86_64 i686
           CIBW_BUILD: "cp27-* cp35-*"
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
@@ -76,24 +76,13 @@ jobs:
     needs: build_sdist
     steps:
       - uses: actions/checkout@v4
-      # TODO: Remove when we drop support for older python versions
-      - name: Build legacy wheels
-        uses: pypa/cibuildwheel@v1.12.0
-        with:
-          output-dir: dist/
-        env:
-          CIBW_ARCHS_MACOS: x86_64
-          CIBW_BUILD: "cp27-* cp35-*"
-        # NOTE: Mac OS 11 does not support python < 3.6
-        continue-on-error: true
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_SKIP_LINUX: "cp38-*"  # Known issue with linux CPython 3.8, see #67
-          CIBW_SKIP_MACOS: "cp37-*"
+          CIBW_SKIP_MACOS: "cp36-* cp37-* cp38-*"
       - uses: actions/upload-artifact@v4
         with:
           name: macos
@@ -105,13 +94,20 @@ jobs:
     needs: build_sdist
     steps:
       - uses: actions/checkout@v4
+
       # TODO: Remove when we drop support for older python versions
-      - name: Build legacy wheels
-        uses: pypa/cibuildwheel@v1.12.0
+      - uses: gabrielfalcao/pyenv-action@v18
         with:
-          output-dir: dist/
-        env:
-          CIBW_BUILD: "cp27-* cp35-*"
+          default: "2.7"
+          command: pip install -U pip && make wheel # upgrade pip after installing python
+        continue-on-error: true
+      # TODO: Remove 2.7 when we drop support for older python versions
+      - uses: gabrielfalcao/pyenv-action@v18
+        with:
+          default: "3.5"
+          command: pip install -U pip && make wheel # upgrade pip after installing python
+        continue-on-error: true
+
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
