@@ -20,7 +20,6 @@ on:
 env:
   CIBW_ARCHS_LINUX: x86_64 i686 aarch64  # aarch64 is included as useful for rpi4+
   CIBW_BEFORE_BUILD: pip install numpy
-  CIBW_BEFORE_BUILD_MACOS: brew install gcc && pip install numpy
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh"  # most simple, yet effective sanity check
   CIBW_TEST_EXTRAS: ''
