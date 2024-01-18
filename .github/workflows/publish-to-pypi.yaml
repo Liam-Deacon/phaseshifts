@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   build_sdist:
-    name: Build sdists
+    name: Build Source Dist
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
