@@ -32,23 +32,23 @@
 """
 **atorb.py**
 
-Provides convenience functions for generating input and calculating 
-atomic charge densities for use with the Barbieri/Van Hove phase 
+Provides convenience functions for generating input and calculating
+atomic charge densities for use with the Barbieri/Van Hove phase
 shift calculation package.
 
 :See: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/
 
-:Requires: f2py (for libphsh fortran wrapper generation) 
+:Requires: f2py (for libphsh fortran wrapper generation)
 
 .. note::
    To generate libphsh fortran wrappers (libphsh.pyd) for your platform
-   then use 'python setup.py' in the lib directory of this package to 
+   then use 'python setup.py' in the lib directory of this package to
    install into your python distribution. Alternatively, use::
-           
+
      f2py -c -m libphsh libphsh.f
-             
+
    Windows users may have to add appropriate compiler switches, e.g. ::
-           
+
     f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f
 
 """
@@ -244,7 +244,7 @@ class Atorb(object):
     r"""
     Description
     -----------
-     A python wrapper for the atorb program by Eric Shirley for use in
+     A python wrapper for the `atorb` program by Eric Shirley for use in
      calculating atomic scattering for different elements
 
     Notes
@@ -469,7 +469,7 @@ class Atorb(object):
         electron_config = get_electron_config(ele)
         config = Atorb.replace_core_config(electron_config)
 
-        # get quantum numbers & occupancy for each electronic obrital in atom
+        # get quantum numbers & occupancy for each electronic orbital in atom
         electrons = []
         nlevels = 0
         for shell in config.split():
@@ -647,7 +647,7 @@ class Atorb(object):
                     os.makedirs(output_dir, exist_ok=True)
                     os.chdir(output_dir)
                 except (OSError, IOError) as err:
-                    raise IOError("Unable to create output directory") from err
+                    raise IOError("Unable to create output directory due to {!r}".format(err))  # noqa
 
         hartfock(inp)  # calculates atomic orbital charge densities for atom
 
