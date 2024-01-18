@@ -12,6 +12,12 @@ on:
         default: 'testpypi'
         required: true
 
+env:
+  CIBW_ARCHS_LINUX: x86_64 i686 aarch64 ppc64le
+  CIBW_BEFORE_BUILD: pip install numpy
+  CIBW_BEFORE_BUILD_MACOS: brew install gcc@11 && export FC=gcc && pip install numpy
+  PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+
 permissions:
   contents: read
 
@@ -38,18 +44,36 @@ jobs:
           name: sdist
           path: dist/
 
-  build_wheels:
-    name: Build wheels
-    runs-on: ${{ matrix.os }}
+  build_wheels_linux:
+    name: Build Linux Wheels
+    runs-on: ubuntu-latest
     needs: build_sdist
-    strategy:
-      matrix:
-        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-    env:
-      CIBW_ARCHS_LINUX: x86_64 i686 aarch64 ppc64le
-      CIBW_BEFORE_BUILD: pip install numpy
-      CIBW_BEFORE_BUILD_MACOS: brew install gcc@11 && export FC=gcc && pip install numpy
-      PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: Remove when we drop support for older python versions
+      - name: Build legacy wheels
+        uses: pypa/cibuildwheel@v1.12.0
+        with:
+          output-dir: dist/
+        env:
+          CIBW_ARCHS_MACOS: x86_64
+          CIBW_BUILD: "cp27-* cp35-*"
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: dist/
+        env:
+          CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_SKIP_LINUX: "cp38-*"  # Known issue with linux CPython 3.8, see #67
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: dist/
+
+  build_wheels_macos:
+    name: Build Mac Wheels
+    runs-on: macos-latest
+    needs: build_sdist
     steps:
       - uses: actions/checkout@v4
       # TODO: Remove when we drop support for older python versions
@@ -61,7 +85,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64
           CIBW_BUILD: "cp27-* cp35-*"
         # NOTE: Mac OS 11 does not support python < 3.6
-        if: ${{ matrix.os != 'macos-latest' }}
+        continue-on-error: true
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
@@ -72,7 +96,29 @@ jobs:
           CIBW_SKIP_MACOS: "cp37-*"
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}
+          name: macos
+          path: dist/
+
+  build_wheels_windows:
+    name: Build Windows Wheels
+    runs-on: windows-latest
+    needs: build_sdist
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: Remove when we drop support for older python versions
+      - name: Build legacy wheels
+        uses: pypa/cibuildwheel@v1.12.0
+        with:
+          output-dir: dist/
+        env:
+          CIBW_BUILD: "cp27-* cp35-*"
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
           path: dist/
 
   publish_to_testpypi:
@@ -83,7 +129,9 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
-      - build_wheels
+      - build_wheels_linux
+      - build_wheels_macos
+      - build_wheels_windows
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -102,7 +150,9 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
-      - build_wheels
+      - build_wheels_linux
+      - build_wheels_macos
+      - build_wheels_windows
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -123,7 +173,9 @@ jobs:
       contents: write
     needs:
       - build_sdist
-      - build_wheels
+      - build_wheels_linux
+      - build_wheels_macos
+      - build_wheels_windows
     steps:
       - uses: actions/download-artifact@v4
         with:
