@@ -116,10 +116,8 @@ f2py_exts_sources = {
 f2py_platform_extra_args = {
     "darwin": {"extra_link_args": [], "extra_compile_args": []},
     "win32": {"extra_link_args": [], "extra_compile_args": []},
-    "linux": {
-        "extra_link_args": ["-lgomp"],
-        "extra_compile_args": ["-fopenmp"],
-    },
+    "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+    "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
 }[sys.platform]
 
 f2py_exts = (
