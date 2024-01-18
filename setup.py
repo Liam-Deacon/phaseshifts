@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function  # noqa
+
 import os
 import sys
 import sysconfig
