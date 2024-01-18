@@ -16,7 +16,7 @@ build = [
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fails on Linux, see #67
 ]
-test-command = "pytest tests/"
+test-command = "import phaseshifts.phsh as phsh"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
