@@ -29,7 +29,10 @@ skip = [
 environment = {CFLAGS="-std=c99 -fno-strict-aliasing", CC="clang", FC="gfortran", CXX="clang++"}
 
 [tool.cibuildwheel.windows]
-before-build = ["pip install numpy delvewheel"]
+before-build = [
+    "pip install numpy delvewheel",
+    "build_linphsh.bat"
+]
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     # "delvewheel show {wheel} -vv",
