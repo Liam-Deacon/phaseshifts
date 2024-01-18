@@ -26,7 +26,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      # TODO: Figure out how to create a sdist zip for Windows 
+      # TODO: Figure out how to create a sdist zip for Windows
       - name: Build sdist
         run: |
           make install-deps && \
@@ -44,7 +44,7 @@ jobs:
     needs: build_sdist
     strategy:
       matrix:
-        os: ["ubuntu-latest", "windows-latest"]
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -56,40 +56,18 @@ jobs:
         env:
           CIBW_BEFORE_BUILD: pip install numpy
           CIBW_ARCHS_MACOS: x86_64 arm64
+          CIBW_ARCHS_LINUX: x86_64 aarch64 ppc64le
       # TODO: Remove 2.7 when we drop support for older python versions
       - uses: gabrielfalcao/pyenv-action@v18
         with:
           default: "2.7"
-          command: pip install -U pip  # upgrade pip after installing python          
+          command: pip install -U pip  # upgrade pip after installing python
       - name: Build wheel
         run: make wheel
         shell: bash
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-${{ matrix.python-version }}
-          path: dist/
-
-  build_mac_wheels:
-    name: Mac Build
-    runs-on: macos-latest
-    needs:
-      # restrict to running macos when everything else is successful as running as it is 10x more expensive than ubuntu
-      - build_sdist
-      - build_wheels
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.version || github.ref }}
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-        with:
-          output-dir: dist/
-        env:
-          CIBW_BEFORE_BUILD: pip install numpy
-          CIBW_ARCHS_MACOS: x86_64 arm64
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos
+          name: ${{ matrix.os }}
           path: dist/
 
   publish_to_testpypi:
@@ -101,17 +79,16 @@ jobs:
     needs:
       - build_sdist
       - build_wheels
-      - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: path/to/artifacts
           merge-multiple: true
       - name: Publish package artifacts to TestPyPI
-        uses: pypa/gh-action-pypi-publish@v1.8.5          
+        uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           repository-url: https://test.pypi.org/legacy/
-  
+
   publish_to_pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
@@ -121,7 +98,6 @@ jobs:
     needs:
       - build_sdist
       - build_wheels
-      - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -143,7 +119,6 @@ jobs:
     needs:
       - build_sdist
       - build_wheels
-      - build_mac_wheels
     steps:
       - uses: actions/download-artifact@v4
         with:
