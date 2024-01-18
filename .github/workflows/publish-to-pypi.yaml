@@ -104,7 +104,8 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_MACOS: arm64
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
       - uses: actions/upload-artifact@v4
         with:
           name: macos
@@ -118,8 +119,7 @@ jobs:
       # Package the DLL dependencies in the wheel for windows (done by default for the other platforms).
       CIBW_BEFORE_BUILD_WINDOWS: pip install delvewheel numpy
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: |-  # delvewheel cannot mangle the libraries, stripping does not work.
-        delvewheel show {wheel} -vv &&
-        delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel
+        delvewheel show {wheel} -vv && delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel
     steps:
       - uses: actions/checkout@v4
 
