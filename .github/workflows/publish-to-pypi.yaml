@@ -140,6 +140,8 @@ jobs:
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
+        env:
+          CIBW_BEFORE_BUILD: pip install delvewheel numpy; build_libphsh.bat
       - uses: actions/upload-artifact@v4
         with:
           name: windows
