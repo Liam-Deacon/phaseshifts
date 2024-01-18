@@ -38,7 +38,7 @@ suitable for input into LEED-IV programs such as SATLEED and CLEED.
 Examples
 --------
 .. code:: bash
-   
+
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
 
 
@@ -644,8 +644,8 @@ def main(argv=None):
         if DEBUG or TESTRUN:
             raise
         indent = len(program_name) * " "
-        sys.stderr.write(f"{program_name}: '{err}'\n")
-        sys.stderr.write(f"{indent} for help use --help")
+        sys.stderr.write("{}: '{}'\n".format(program_name, err))
+        sys.stderr.write("{} for help use --help".format(indent))
         return 2
 
     # create phase shifts (warning: black magic within - needs testing)
