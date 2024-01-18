@@ -13,10 +13,12 @@ build = [
     # FIXME: CPython 3.12 builds fail due to missing distutils for f2py, see #8
     "cp312-*"
 ]
-[tool.cibuildwheel.linux]
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fails on Linux, see #67
 ]
+test-command = "pytest tests/"
+test-extras = ["test"]
+test-requires = ["pytest"]
 
 [tool.ruff]
 target-version = "py27"
