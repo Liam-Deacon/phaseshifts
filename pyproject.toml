@@ -6,7 +6,7 @@ build-backend = 'setuptools.build_meta'
 build = [
     # NOTE: Python 3.7 is the minimum supported version for cibuildwheel v2
     "cp37-*",
-    "cp38-*",
+    # "cp38-*",  # FIXME: Python 3.8 build fails on both Linux and Windows, see #67
     "cp39-*",
     "cp310-*",
     "cp311-*",

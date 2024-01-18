@@ -13,9 +13,9 @@ on:
         required: true
 
 env:
-  CIBW_ARCHS_LINUX: x86_64 i686 aarch64
+  CIBW_ARCHS_LINUX: x86_64 i686 aarch64  # aarch64 is included as useful for rpi4+
   CIBW_BEFORE_BUILD: pip install numpy
-  CIBW_BEFORE_BUILD_MACOS: brew install gcc@11 && export FC=gcc && pip install numpy
+  CIBW_BEFORE_BUILD_MACOS: brew install gcc && pip install numpy
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
@@ -56,15 +56,14 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: x86_64 i686
+          CIBW_ARCHS: x86_64 i686
           CIBW_BUILD: "cp27-* cp35-*"
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_SKIP_LINUX: "cp38-*"  # Known issue with linux CPython 3.8, see #67
+          CIBW_SKIP: "cp38-*"  # Known issue with linux CPython 3.8, see #67
       - uses: actions/upload-artifact@v4
         with:
           name: linux
@@ -82,7 +81,7 @@ jobs:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: x86_64 arm64
-          CIBW_SKIP_MACOS: "cp36-* cp37-* cp38-*"
+          CIBW_SKIP: "cp36-* cp37-* cp38-*"  # Cannot support older python versions on Apple Silicon
       - uses: actions/upload-artifact@v4
         with:
           name: macos
