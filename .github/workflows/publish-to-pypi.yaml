@@ -64,7 +64,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS: x86_64 i686
+          CIBW_ARCHS: x86_64
           CIBW_BUILD: cp27-* cp35-*
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
@@ -115,33 +115,16 @@ jobs:
     name: Build Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
+    env:
+      CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
+      CIBW_TEST_COMMAND: ""  # FIXME: This is a workaround for an issue with DLL loading on Windows
     steps:
       - uses: actions/checkout@v4
-
-      # TODO: Remove when we drop support for older python versions
-      - name: Setup Python 2.7
-        uses: gabrielfalcao/pyenv-action@v18
-        with:
-          default: "2.7"
-          command: pip install -U pip  # upgrade pip after installing python
-        continue-on-error: true
-      - run: make wheel
-        if: success()
-      - name: Setup Python 3.5
-        uses: gabrielfalcao/pyenv-action@v18
-        with:
-          default: "3.5"
-          command: pip install -U pip  # upgrade pip after installing python
-        continue-on-error: true
-      - run: make wheel
-        if: success()
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
-        env:
-          CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
       - uses: actions/upload-artifact@v4
         with:
           name: windows
