@@ -63,7 +63,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_LINUX: x86_64 i686
           CIBW_BUILD: cp27-* cp35-*
       - uses: actions/upload-artifact@v4
         with:
