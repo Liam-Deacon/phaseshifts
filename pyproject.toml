@@ -34,7 +34,7 @@ before-build = [
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     "delvewheel show {wheel} -vv",
-    "delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel"
+    # "delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel"
 ]
 
 [tool.flake8]
