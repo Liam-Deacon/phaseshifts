@@ -63,6 +63,7 @@ import phaseshifts.settings
 from phaseshifts import model, atorb
 from phaseshifts.conphas import Conphas
 from phaseshifts.leed import Converter, CLEED_validator, CSearch
+
 try:
     from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
 except ImportError:
@@ -74,7 +75,6 @@ except ImportError:
     phsh_rel = phsh_wil = phsh_cav = function_not_implemented  # type: ignore
 
 __all__ = []
-
 
 
 def required_length(nmin, nmax):

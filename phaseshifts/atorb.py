@@ -682,7 +682,9 @@ class Atorb(object):
         # do lazy loading due to documentation not needing compiled code
         import phaseshifts.lib.libphsh  # noqa
 
-        phaseshifts.lib.libphsh.hartfock(inp)  # calculates atomic orbital charge densities for atom
+        phaseshifts.lib.libphsh.hartfock(
+            inp
+        )  # calculates atomic orbital charge densities for atom
 
         # get output filename
         lines = []

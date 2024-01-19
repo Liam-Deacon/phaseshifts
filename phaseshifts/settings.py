@@ -36,7 +36,9 @@ def load_bool_env_var(var_name, default="0"):  # type: (str, str) -> bool
 _READTHEDOCS = load_bool_env_var("READTHEDOCS")
 
 #: Whether to compile missing libraries on first import
-COMPILE_MISSING = load_bool_env_var("PHASESHIFTS_COMPILE_MISSING", str(not _READTHEDOCS))
+COMPILE_MISSING = load_bool_env_var(
+    "PHASESHIFTS_COMPILE_MISSING", str(not _READTHEDOCS)
+)
 
 #: Whether to show debug messages
 DEBUG = load_bool_env_var("PHASESHIFTS_DEBUG")
