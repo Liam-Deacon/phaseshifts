@@ -700,7 +700,7 @@ def main(argv=None):
             leed_cmd.append(arg)
 
         if verbose:
-            print("phsh - starting subprocess: '{}'...".format(' '.join(leed_cmd)))
+            print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))
 
         # execute subprocess
         subprocess.check_call(leed_cmd)

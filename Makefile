@@ -11,7 +11,7 @@ wheel: install-deps
 
 #: Meta target, will attempt to build all it can
 build: sdist
-	if command -v docker 1>/dev/null; then $(MAKE) cibuildwheel; else $(MAKE) wheel; fi 
+	if command -v docker 1>/dev/null; then $(MAKE) cibuildwheel; else $(MAKE) wheel; fi
 
 #: Build a matrix of wheels for different OSs and CPU archs
 cibuildwheel: build-deps $(DOCKER)
