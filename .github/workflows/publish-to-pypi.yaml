@@ -16,6 +16,26 @@ on:
           - testpypi
         default: testpypi
         required: true
+      build_legacy:
+        description: Build legacy wheels
+        default: true
+        type: boolean
+      build_manylinux:
+        description: Build manylinux wheels
+        default: true
+        type: boolean
+      build_musllinux:
+        description: Build musllinux wheels
+        default: false
+        type: boolean
+      build_aarch64:
+        description: Build aarch64 wheels
+        default: true
+        type: boolean
+      build_i686:
+        description: Build i686 wheels
+        default: true
+        type: boolean
 
 env:
   CIBW_BEFORE_BUILD: pip install numpy
@@ -55,6 +75,7 @@ jobs:
     name: Build Legacy Linux Wheels
     runs-on: ubuntu-latest
     needs: build_sdist
+    if: ${{ github.event.inputs.build_legacy || github.event_name != 'release' }}
     steps:
       - uses: actions/checkout@v4
       # TODO: Remove when we drop support for older python versions
@@ -63,7 +84,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: x86_64 i686
+          CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
           CIBW_BUILD: cp27-* cp35-*
       - uses: actions/upload-artifact@v4
         with:
@@ -72,24 +93,6 @@ jobs:
 
   build_wheels_linux_x86_64:
     name: Build Linux x86_64 Wheels
-    runs-on: ubuntu-latest
-    needs: build_sdist
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-        with:
-          output-dir: dist/
-        env:
-          CIBW_ARCHS_LINUX: x86_64
-          CIBW_SKIP: cp38-* cp*musl*  # Known issue with linux CPython 3.8, see #67
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-x86_64
-          path: dist/
-
-  build_wheels_linux_aarch64:
-    name: Build Linux aarch64 Wheels
     runs-on: ubuntu-latest
     needs: build_sdist
     steps:
@@ -104,8 +107,33 @@ jobs:
         with:
           output-dir: dist/
         env:
+          CIBW_ARCHS_LINUX: x86_64
+          # Known issue with linux CPython 3.8, see #67
+          CIBW_SKIP: cp38-* cp*musl*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-x86_64
+          path: dist/
+
+  build_wheels_linux_aarch64:
+    name: Build Linux aarch64 Wheels
+    runs-on: ubuntu-latest
+    needs: build_sdist
+    if: ${{ github.event.inputs.build_aarch64 || github.event_name == 'release' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: all
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.16.2
+        with:
+          output-dir: dist/
+        env:
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_SKIP: cp38-*  # Known issue with linux CPython 3.8, see #67
+          CIBW_SKIP: cp38-* cp*musl* cp37-musllinux_aarch64
       - uses: actions/upload-artifact@v4
         with:
           name: linux-aarch64
