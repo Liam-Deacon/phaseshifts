@@ -175,7 +175,6 @@ jobs:
 
   build_legacy_wheels_windows:
     name: Build Legacy Windows Wheels
-    if: false
     runs-on: windows-latest
     needs: build_sdist
     env:
@@ -194,6 +193,7 @@ jobs:
           output-dir: dist/
         env:
           CIBW_BUILD: cp27-* cp35-*
+        continue-on-error: true
 
       - uses: actions/upload-artifact@v4
         with:
