@@ -59,6 +59,8 @@ jobs:
       - name: Build HTML Docs
         run: |  # NOTE: .nojekyll is important to maintain sphinx rendering
           make html && touch _build/html/.nojekyll
+        env:
+          PHASESHIFTS_COMPILE: "false"
         working-directory: docs
 
       - name: Upload HTML site artifact

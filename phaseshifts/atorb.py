@@ -49,7 +49,11 @@ shift calculation package.
 
    Windows users may have to add appropriate compiler switches, e.g. ::
 
+    # 32-bit
     f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f
+
+    # 64-bit
+    f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-64 libphsh.f
 
 """
 
@@ -82,7 +86,6 @@ except ImportError:
     mendeleev = None  # Need to install mendeleev
 
 from phaseshifts import elements
-from phaseshifts.lib.libphsh import hartfock  # type: ignore [import-untyped]
 
 elements_dict = OrderedDict(
     [
@@ -371,7 +374,7 @@ class Atorb(object):
             shell_info = (n, l, [l - s, l + s], occ)
         else:
             raise NotImplementedError(
-                "Exotic subshells beyond f-block have not been implemented"
+                "Exotic sub-shells beyond f-block have not been implemented"
             )
         return shell_info
 
@@ -676,7 +679,10 @@ class Atorb(object):
                         "Unable to create output directory due to {!r}".format(err)
                     )  # noqa
 
-        hartfock(inp)  # calculates atomic orbital charge densities for atom
+        # do lazy loading due to documentation not needing compiled code
+        import phaseshifts.lib.libphsh  # noqa
+
+        phaseshifts.lib.libphsh.hartfock(inp)  # calculates atomic orbital charge densities for atom
 
         # get output filename
         lines = []
