@@ -123,6 +123,8 @@ f2py_exts = (
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
 
+README = "README.md"
+
 dist = setup(
     name="phaseshifts",
     packages=find_packages(),
@@ -135,12 +137,12 @@ dist = setup(
         "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
     ),
     long_description=(
-        None if not os.path.exists("README.rst") else open("README.rst").read()
+        None if not os.path.exists(README) else open(README).read()
     ),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
-        "Environment :: X11 Applications :: Qt",  # The end goal is lsto have Qt or other GUI frontend
+        "Environment :: X11 Applications :: Qt",  # The end goal is is to have Qt or other GUI frontend
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

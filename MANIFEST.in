@@ -1,4 +1,4 @@
-include *.txt *.py *.rst
+include *.txt *.py *.rst *.md
 recursive-include phaseshifts *.py *.txt *.rst *.pyw *.pyx
 recursive-include phaseshifts/gui *.ui *.py *.bat *.sh *.svg *.png *.qrc
 recursive-include phaseshifts/cython *
