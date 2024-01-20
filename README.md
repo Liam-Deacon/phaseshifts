@@ -1,5 +1,37 @@
 # PHASESHIFTS PACKAGE
 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Liam-Deacon/phaseshifts/HEAD?labpath=tutorial.ipynb)
+![PyPI - Version](https://img.shields.io/pypi/v/phaseshifts?logo=pypi&logoColor=white)
+![Python](https://img.shields.io/badge/python-2.7%20%7C%203.5%20--%203.11-blue?logo=python&logoColor=white)
+![PyPI - Status](https://img.shields.io/pypi/status/phaseshifts?logo=pypi&logoColor=white)
+![GitHub License](https://img.shields.io/github/license/Liam-Deacon/phaseshifts?logo=github)
+[![Read the Docs](https://img.shields.io/readthedocs/phaseshifts?logo=readthedocs&logoColor=white)](https://phaseshifts.readthedocs.io/en/latest/)
+![GitHub Release](https://img.shields.io/github/v/release/Liam-Deacon/phaseshifts?logo=github)
+![GitHub (Pre-)Release Date](https://img.shields.io/github/release-date-pre/Liam-Deacon/phaseshifts?logo=github)
+[![GitHub issues](https://img.shields.io/github/issues/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues)
+![Codacy grade](https://img.shields.io/codacy/grade/ed204d9cc22f4b37b0ad6612b42e8b1e?logo=codacy)
+![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/Liam-Deacon/phaseshifts?logo=codeclimate)
+![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/Liam-Deacon/phaseshifts?logo=codeclimate)
+![Code Climate issues](https://img.shields.io/codeclimate/issues/Liam-Deacon/phaseshifts?logo=codeclimate)
+![Codecov](https://img.shields.io/codecov/c/github/Liam-Deacon/phaseshifts?logo=codecov&logoColor=white)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Liam-Deacon/phaseshifts/total?logo=github)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/phaseshifts?logo=pypi&logoColor=white)](https://pypi.org/project/phaseshifts/)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
+<!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
+<!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
+<!-- ![Coveralls branch](https://img.shields.io/coverallsCoverage/github/Liam-Deacon/phaseshifts) -->
+
+[![Test Package](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/test-package.yml/badge.svg)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/test-package.yml)
+[![GitHub Pages](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-docs-to-github-pages.yaml/badge.svg)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-docs-to-github-pages.yaml)
+[![Publish Package](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-to-pypi.yaml/badge.svg)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-to-pypi.yaml)
+[![Publish Docker Image(s)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-to-dockerhub.yaml/badge.svg)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-to-dockerhub.yaml)
+
+[![Star on GitHub](https://img.shields.io/github/stars/Liam-Deacon/phaseshifts.svg?style=social)](https://github.com/Liam-Deacon/phaseshifts/stargazers)
+[![Watch on GitHub](https://img.shields.io/github/watchers/Liam-Deacon/phaseshifts.svg?style=social)](https://github.com/Liam-Deacon/phaseshifts/watchers)
+
+
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+
 This package is a Python-based implementation of the Barbieri/Van Hove
 phase shift (a.k.a. *phshift*) calculation package needed to produce
 elastic electron atom scattering (EEAS) phase shifts for modelling
@@ -33,7 +65,7 @@ XPD packages. To quote the original authors' site:
 The <span class="title-ref">phsh.py</span> script (available after
 installing the package) aims to simplify these steps with a single
 command. For more information please read the documentation at
-<http://pythonhosted.org//phaseshifts/> (latest PyPI release) or [GitHub
+<http://pythonhosted.org/phaseshifts/> (latest PyPI release) or [GitHub
 Pages](https://liam-deacon.github.io/phaseshifts/) (latest master)
 
 The simplest and most reliable cross-platform way to run
@@ -171,11 +203,13 @@ file for helpful comments regarding each line of input.
 Those of you who are eager to generate phase shifts - first look at the
 example cluster files for a bulk and slab calculation, noting that the
 atoms in the model are in fractional units of the *a* basis vector for
-the unitcell (SPA units). Next, after creating a bulk and slab model in
+the unit cell (SPA units). Next, after creating a bulk and slab model in
 the `cluster.i` format, simply use the following python code:
 
-> \>\>\> from phaseshifts.phsh import Wrapper as phsh \>\>\>
-> phsh.autogen_from_inputs(bulk_file, slab_file)
+```python
+>>> from phaseshifts.phsh import Wrapper as phsh
+>>> phsh.autogen_from_inputs(bulk_file, slab_file)
+```
 
 This will hopefully produce the desired phase shift output files (at
 least for simple models) and works by assessing the two models to
@@ -204,17 +238,15 @@ function use refer to the pdf manual.
 
 A number of alternatives are available, notably the following:
 
-1.  [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/software) (with
+1.  [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/files/) (with
     a useful [poster overview of phaseshifts
     calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
     This is an officially mentioned piece of software on Michel Van
     Hove's [LEEDPACK
-    webpage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html),
-    however when tested as of January 2024 the link appears to be dead
-    (with a `500 INTERNAL_SERVER_ERROR`). Furthermore, although the
+    webpage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
     poster mentions that the software is written in python, this
     software is not (currently) distributed on <https://PyPI.org> and
-    therefore harder to intergrate with other python LEED-related
+    therefore harder to integrate with other python LEED-related
     projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
     [cleedpy](https://github.com/empa-scientific-it/cleedpy).
 2.  A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-
@@ -236,19 +268,19 @@ As with all scientific progress, we stand on the shoulders of giants. If
 this package is of use to you in publishing papers then please
 acknowledge the following people who have made this package a reality:
 
-> - **A. Barbieri** and **M.A. Van Hove** - who developed most of the
->   original fortran code. Use *A. Barbieri and M.A. Van Hove, private
->   communication.* (see `doc/phsh2007.txt` for further details).
-> - **E.L. Shirley** - who developed part of the fortran code during
->   work towards his PhD thesis (refer to the thesis: *E.L. Shirley,
->   "Quasiparticle calculations in atoms and many-body core-valence
->   partitioning", University of Illinois, Urbana, 1991*).
-> - **Christoph Gohlke** - who developed the elements.py module used
->   extensively throughout for the modelling convenience functions (see
->   'elements.py' for license details).
->
-> I would also be grateful if you acknowledge this python package
-> (*phaseshifts*) as: *L.M. Deacon, private communication.*
+- **A. Barbieri** and **M.A. Van Hove** - who developed most of the
+  original fortran code. Use *A. Barbieri and M.A. Van Hove, private
+  communication.* (see `doc/phsh2007.txt` for further details).
+- **E.L. Shirley** - who developed part of the fortran code during
+  work towards his PhD thesis (refer to the thesis: *E.L. Shirley,
+  "Quasiparticle calculations in atoms and many-body core-valence
+  partitioning", University of Illinois, Urbana, 1991*).
+- **Christoph Gohlke** - who developed the elements.py module used
+  extensively throughout for the modelling convenience functions (see
+  'elements.py' for license details).
+
+I would also be grateful if you acknowledge this python package
+(*phaseshifts*) as: *L.M. Deacon, private communication.*
 
 ### Thanks
 
@@ -260,12 +292,15 @@ package.
 ## Contact
 
 This package is developed/maintained in my spare time so any bug
-reports, patches, or other feedback are very welcome and should be sent
-to: <liam.deacon@diamond.ac.uk>
+reports, patches, or other feedback are very welcome.
 
-The project is in the early developmental stages and so anyone who
-wishes to get involved are most welcome (simply contact me using the
-email above).
+The project is (still) in the early developmental stages and so anyone who
+wishes to get involved are most welcome.  Please either
+[create an issue](https://github.com/Liam-Deacon/phaseshifts/issues/new) or (better yet) submit a [pull request](https://github.com/Liam-Deacon/phaseshifts/pulls).
+
+> [!TIP]
+> Please <a class="github-button" href="https://github.com/Liam-Deacon/phaseshifts" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" data-show-count="true" aria-label="Star Liam-Deacon/phaseshifts on GitHub">Star</a> it on GitHub as this will help
+> to easily indicate that others find the package useful.
 
 ## To Do
 
@@ -280,7 +315,7 @@ email above).
 >     `make latexpdf` commands from the `doc/` directory.
 > 2.  Test suit to verify the package is working as expected.
 > 3.  GUI frontend (Qt ui files are provided in the `gui/` directory for
->     anyone wishing to undertake this challenge). Other frontends are
+>     anyone wishing to undertake this challenge). Other front ends are
 >     welcome (I use Qt due to familiarity/experience). For those
 >     wishing a sneak preview, try executing `main.pyw`
 
@@ -288,7 +323,6 @@ See `TODO.rst` for more information.
 
 ## Contacts
 
-> - [Liam Deacon](mailto://liam.m.deacon@gmail.com) - *current
->   maintainer*
-> - [Michel Van Hove](mailto://vanhove@cityu.edu.hk) - Contact for
->   original LEEDPACK `phsh[0-3].f` programs
+- [Liam Deacon](mailto://liam.m.deacon@gmail.com) - *current maintainer*
+- [Michel Van Hove](mailto://vanhove@cityu.edu.hk) - Contact for
+  original LEEDPACK `phsh[0-3].f` programs
