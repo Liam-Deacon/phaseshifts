@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.9)
 
 project(phaseshifts
-  VERSION 0.1.7
+  VERSION 0.1.8
   DESCRIPTION "LIBPHSH module"
   LANGUAGES C Fortran
   )
