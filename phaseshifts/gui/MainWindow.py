@@ -71,7 +71,7 @@ __UPDATE_URL__ = ""
 
 
 # Platform specific setup
-if platform.system() is "Windows":
+if platform.system() == "Windows":
     from ctypes import windll
 
     # Tell Windows Python is merely hosting the application (taskbar icon fix)

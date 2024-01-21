@@ -152,7 +152,7 @@ class hartfock(object):
                             [
                                 ch
                                 for ch in f.next().split("!")[0]
-                                if ch is not "d" and ch is not "D"
+                                if ch.lower() != "d"
                             ]
                         )
                     )
