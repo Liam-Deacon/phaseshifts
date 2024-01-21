@@ -267,10 +267,9 @@ A number of alternatives are available, notably the following:
       a useful [poster overview of phaseshifts
       calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
       This is an officially mentioned piece of software on Michel Van
-      Hove's [LEEDPACK
-      webpage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
+      Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
       poster mentions that the software is written in python, this
-      software is not (currently) distributed on <https://PyPI.org> and
+      software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/))  and
       therefore harder to integrate with other python LEED-related
       projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
       [cleedpy](https://github.com/empa-scientific-it/cleedpy).
