@@ -12,18 +12,22 @@ name: Publish Docker Image(s)
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
+    # NOTE: user specifies branch/tag via workflow_dispatch in the UI
     inputs:
       tag:
         description: Docker tag to use
         required: false
         type: string
         default: latest
-      branch:
-        description: 'Git branch to use'
-        required: false
-        type: string
-        default: master
 
 jobs:
   push_to_registry:
@@ -35,8 +39,6 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.branch != '' && github.event.inputs.branch || 'master' }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
@@ -58,14 +60,20 @@ jobs:
           images: |
             ${{ secrets.DOCKER_USERNAME }}/phaseshifts
             ghcr.io/${{ github.repository }}
+          # yamllint: disable rule:line-length
           tags: |
-            type=raw,value=${{ github.event.inputs.tag != '' && github.event.inputs.tag || 'latest' }},enabled=true
+            type=raw,value=${{ github.event.inputs.tag != '' && github.event.inputs.tag || (github.event_name == 'release' && 'latest' || 'dev') }},enabled=${{ github.event.inputs.tag != '' || github.event_name == 'release' && 'true' || 'false' }}
+            type=ref,event=pr,enabled=${{ github.event_name == 'pull_request' && 'true' || 'false' }}
+            type=semver,pattern={{version}},enabled=${{ (github.event_name == 'release' || github.ref_type == 'tag') && 'true' || 'false' }}
+            type=semver,pattern={{major}}.{{minor}},enabled=${{ github.event_name == 'push' && github.ref_type == 'tag' && 'true' || 'false' }}
+            type=sha
+          # yamllint: enable rule:line-length
 
       - name: Build and push Docker image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
-          file: ./Dockerfile
+          file: ./dockerfiles/phaseshifts-phsh.dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -2,12 +2,13 @@ ARG PYTHON_VERSION=3.11
 FROM python:${PYTHON_VERSION}-slim as base
 
 RUN apt-get update \
-  && apt-get install --yes gfortran make \
+  && apt-get install --yes --no-install-recommends gfortran make \
   && apt-get clean --yes \
   && rm -rf /var/lib/apt/lists/*
 
 # install key dependencies
-RUN pip install --no-cache-dir numpy setuptools wheel
+RUN pip install --no-cache-dir --upgrade pip && \
+pip install --no-cache-dir numpy==1.26.3 setuptools==69.0.3 wheel==0.42.0
 
 FROM base as builder
 
@@ -31,5 +32,7 @@ COPY --from=builder /build/wheels /wheels
 
 RUN pip install --no-cache-dir /wheels/*
 RUN pip install --no-cache-dir /wheels/phaseshifts*.whl${PHASESHIFTS_EXTRAS}
+
+HEALTHCHECK NONE
 
 ENTRYPOINT [ "phsh.py" ]
