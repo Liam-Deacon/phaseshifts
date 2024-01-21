@@ -222,7 +222,7 @@ jobs:
   publish_to_testpypi:
     name: Publish to TestPyPI
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'release' && github.event.inputs.pypi_repo == 'testpypi' }}
+    if: ${{ always() && (github.event_name != 'release' && github.event.inputs.pypi_repo == 'testpypi') }}
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
@@ -246,7 +246,7 @@ jobs:
   publish_to_pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release' }}
+    if: ${{ always() && (github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release') }}
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
@@ -272,7 +272,7 @@ jobs:
   publish_release_artifacts:
     name: Upload release artifacts
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'release' }}
+    if: ${{ always() && github.event_name == 'release' }}
     permissions:
       contents: write
     needs:
