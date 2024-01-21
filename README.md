@@ -84,7 +84,7 @@ docker run ghcr.io/Liam-Deacon//phaseshifts:latest -v /path/to/host/input/data:/
 <!--lint disable no-unused-definitions-->
 > [!TIP]
 > Development docker images can be built locally, e.g.
-> `docker build . -t ghcr.io/Liam-Deacon/phaseshifts:dev`
+> `DOCKER_TAG=dev make docker`
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->

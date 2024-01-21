@@ -20,7 +20,7 @@ The simplest and most reliable cross-platform way to run `phsh.py` is through do
 
 
 .. tip:: Development docker images can be built locally, e.g.
-         :code:`docker build . -t ghcr.io/Liam-Deacon/phaseshifts:dev`
+         :code:`DOCKER_TAG=dev make docker`
 
 .. warning:: There is a `known possible bug <https://github.com/Liam-Deacon/phaseshifts/issues/6>`_
              where the compiled ``libphsh.f`` is not thread-safe (as ascertained by the fortran compiler),

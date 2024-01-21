@@ -59,4 +59,7 @@ clean:
 
 #: Build docker image
 docker:
-	$(DOCKER) build . -t "ghcr.io/Liam-Deacon/phaseshifts:$${DOCKER_TAG:-$$($(PYTHON) -c 'import phaseshifts; print(phaseshifts.__version__)')}"
+	export DOCKER_TAG="$${DOCKER_TAG:-$$($(PYTHON) -c 'import phaseshifts; print(phaseshifts.__version__)')}" && \
+	$(DOCKER) build \
+		-t "ghcr.io/liam-deacon/phaseshifts:$$DOCKER_TAG" \
+		-f dockerfiles/phaseshifts-phsh.dockerfile .
