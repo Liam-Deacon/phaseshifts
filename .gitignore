@@ -27,3 +27,8 @@ docs/_build/
 **/phsh0.f
 **/phsh1.f
 **/phsh2.f
+
+# testing
+.coverage
+**/coverage.xml
+htmlcov/
