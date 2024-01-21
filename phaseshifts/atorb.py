@@ -657,6 +657,7 @@ class Atorb(object):
 
 
         """
+        inp = None
         if "input" in kwargs:
             inp = os.path.abspath(kwargs.pop("input"))
 
@@ -678,6 +679,9 @@ class Atorb(object):
                     raise IOError(
                         "Unable to create output directory due to {!r}".format(err)
                     )  # noqa
+
+        if not inp:
+            raise ValueError("Input file not specified")
 
         # do lazy loading due to documentation not needing compiled code
         import phaseshifts.lib.libphsh  # noqa
