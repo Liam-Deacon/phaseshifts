@@ -149,11 +149,7 @@ class hartfock(object):
                 if os.path.isfile(input_stream):
                     alfa = float(
                         "".join(
-                            [
-                                ch
-                                for ch in f.next().split("!")[0]
-                                if ch is not "d" and ch is not "D"
-                            ]
+                            [ch for ch in f.next().split("!")[0] if ch.lower() != "d"]
                         )
                     )
                 else:
