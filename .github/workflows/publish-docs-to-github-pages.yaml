@@ -24,7 +24,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
@@ -54,8 +54,9 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           python3 -m pip install numpy setuptools wheel  # NOTE: needed for non PEP-517 enabled projects
-          python3 -m pip install -e .[doc]
-
+          python3 -m pip install -e .[doc] || python3 -m pip install -r requirements-doc.txt
+        env:
+          PHASESHIFTS_COMPILE: "false"
       - name: Build HTML Docs
         run: |  # NOTE: .nojekyll is important to maintain sphinx rendering
           make html && touch _build/html/.nojekyll

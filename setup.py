@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function  # noqa
+
 import os
 import sys
 import sysconfig
@@ -49,8 +51,6 @@ except ModuleNotFoundError as npy_err:
         # FIXME: Generated wheels unaware of native extension & deemed universal; *.so must be included in MANIFEST.in
         import subprocess
 
-        import numpy.f2py
-
         setup = setuptools.setup
 
         BUILD_BACKEND = "numpy.f2py"
@@ -68,9 +68,17 @@ except ModuleNotFoundError as npy_err:
                 ],
                 cwd="./phaseshifts/lib",
             )
-        INCLUDE_DIRS += [
-            "-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())
-        ]
+        try:
+            import numpy.f2py
+
+            INCLUDE_DIRS += [
+                "-I{}".format(x)
+                for x in (numpy.get_include(), numpy.f2py.get_include())
+            ]
+        except ImportError:
+            print(
+                "WARNING: Unable to import numpy.f2py module for build", file=sys.stderr
+            )
     else:
         raise npy_err
 
@@ -108,14 +116,28 @@ f2py_exts_sources = {
         ),
     ]
 }
+f2py_platform_extra_args = {
+    "darwin": {"extra_link_args": [], "extra_compile_args": []},
+    "win32": {"extra_link_args": [], "extra_compile_args": []},
+    "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+    "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+}[sys.platform]
+
 f2py_exts = (
-    []
+    [
+        # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
+        #       See https://stackoverflow.com/a/53463910/22567758
+        Extension(
+            name="phaseshifts.lib._native_build",
+            sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
+        )
+    ]
     if BUILD_BACKEND != "numpy.distutils"
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
-            extra_compile_args=["-fopenmp"],
-            extra_link_args=["-lgomp"],
+            extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
+            extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
         )
     ]
@@ -169,6 +191,8 @@ dist = setup(
         {}
         if BUILD_BACKEND == "skbuild"
         else {
+            # If any package contains *.f or *.pyd files, include them:
+            "": ["*.f", "*.pyd", "*.so", "*.dll"],
             # If any package contains *.txt or *.rst files, include them:
             ".": ["*.txt", "*.rst", "*.pyw", "ChangeLog"],
             "lib": ["lib/*.f", "lib/*.c", "lib/*.h"] + ["*.so", "*.pyd"],

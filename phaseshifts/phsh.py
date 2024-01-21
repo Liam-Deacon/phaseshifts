@@ -47,7 +47,7 @@ from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
 import argparse
-import json
+import datetime
 import subprocess
 import sys
 import os
@@ -58,21 +58,23 @@ from argparse import RawDescriptionHelpFormatter
 from glob import glob
 from shutil import copy
 
+import phaseshifts
+import phaseshifts.settings
 from phaseshifts import model, atorb
-from phaseshifts.leed import Converter, CLEED_validator, CSearch
-from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
 from phaseshifts.conphas import Conphas
+from phaseshifts.leed import Converter, CLEED_validator, CSearch
 
+try:
+    from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
+except ImportError:
+    # TODO: Create pure-python implementations of the fortran libphsh.f code
+    def function_not_implemented(*args, **kwargs):
+        """Simple placeholder function, which raises a NotImplementedError."""
+        raise NotImplementedError
+
+    phsh_rel = phsh_wil = phsh_cav = function_not_implemented  # type: ignore
 
 __all__ = []
-__version__ = "0.1.5-dev"
-__date__ = "2013-11-15"
-__updated__ = "2014-09-04"
-__contact__ = "liam.deacon@diamond.ac.uk"
-
-DEBUG = bool(json.loads((os.environ.get("PHASESHIFTS_DEBUG") or "0").lower()))
-TESTRUN = bool(json.loads((os.environ.get("PHASESHIFTS_TESTRUN") or "0").lower()))
-PROFILE = bool(json.loads((os.environ.get("PHASESHIFTS_PROFILE") or "0").lower()))
 
 
 def required_length(nmin, nmax):
@@ -81,7 +83,9 @@ def required_length(nmin, nmax):
     class RequiredLength(argparse.Action):
         def __call__(self, parser, args, values, option_string=None):
             if not nmin <= len(values) <= nmax:
-                msg = f'argument "{self.dest}" requires between {nmin} and {nmax} arguments'
+                msg = 'argument "{arg}" requires between {nmin} and {nmax} arguments'.format(
+                    arg=self.dest, nmin=nmin, nmax=nmax
+                )
                 raise argparse.ArgumentTypeError(msg)
             setattr(args, self.dest, values)
 
@@ -496,17 +500,13 @@ def main(argv=None):
         argv.append("--help")
 
     program_name = os.path.basename(sys.argv[0])
-    program_version = "v%s" % __version__
-    program_build_date = str(__updated__)
-    program_version_message = "%%(prog)s %s (%s)" % (
-        program_version,
-        program_build_date,
-    )
+    program_version = "v%s" % phaseshifts.__version__
+    program_version_message = "%%(prog)s %s" % program_version
     program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
     program_license = """%s
 
-      Created by Liam Deacon on %s.
-      Copyright 2013-2014 Liam Deacon. All rights reserved.
+      Created by Liam Deacon using LEEDPACK code (kindly permitted by Micheal Van Hove).
+      Copyright 2013-%s Liam Deacon. All rights reserved.
 
       Licensed under the MIT license (see LICENSE file for details)
 
@@ -516,8 +516,8 @@ def main(argv=None):
     usage:-
     """ % (
         program_shortdesc,
-        str(__date__),
-        __contact__,
+        datetime.date.today().year,
+        phaseshifts.__contact__,
     )
 
     try:
@@ -644,8 +644,8 @@ def main(argv=None):
         if DEBUG or TESTRUN:
             raise
         indent = len(program_name) * " "
-        sys.stderr.write(f"{program_name}: '{err}'\n")
-        sys.stderr.write(f"{indent} for help use --help")
+        sys.stderr.write("{}: '{}'\n".format(program_name, err))
+        sys.stderr.write("{} for help use --help".format(indent))
         return 2
 
     # create phase shifts (warning: black magic within - needs testing)
@@ -698,22 +698,22 @@ def main(argv=None):
             leed_cmd.append(arg)
 
         if verbose:
-            print(f"phsh - starting subprocess: '{' '.join(leed_cmd)}'...")
+            print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))
 
         # execute subprocess
         subprocess.check_call(leed_cmd)
 
 
 if __name__ == "__main__":
-    if DEBUG:
+    if phaseshifts.settings.DEBUG:
         sys.argv.append("-v")
 
-    if TESTRUN:
+    if phaseshifts.settings.TESTRUN:
         import doctest
 
         doctest.testmod()
 
-    if PROFILE:
+    if phaseshifts.settings.PROFILE:
         import cProfile
         import pstats
 

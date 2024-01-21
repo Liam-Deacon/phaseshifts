@@ -1,0 +1,56 @@
+[build-system]
+requires = ['setuptools', 'numpy', 'wheel']
+build-backend = 'setuptools.build_meta'
+
+[tool.cibuildwheel]
+build = [
+    # NOTE: Python 3.7 is the minimum supported version for cibuildwheel v2
+    "cp37-*",
+    "cp39-*",
+    "cp310-*",
+    "cp311-*",
+]
+skip = [
+    "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
+    "cp312-*"  # FIXME: CPython 3.12 builds fail due to missing distutils for f2py, see #8
+]
+test-command = "import phaseshifts.phsh as phsh"
+test-extras = ["test"]
+test-requires = ["pytest"]
+
+[tool.cibuildwheel.macos]
+archs = "x86_64 arm64"
+skip = [
+    "cp36-*arm64",
+    "cp37-*arm64",
+]
+environment = {CFLAGS="-std=c99 -fno-strict-aliasing", CC="clang", FC="gfortran", CXX="clang++"}
+
+[tool.cibuildwheel.windows]
+before-build = [
+    "pip install numpy delvewheel",
+    "build_linphsh.bat"
+]
+repair-wheel-command = [
+    # NOTE: delvewheel cannot mangle the libraries, stripping does not work
+    # "delvewheel show {wheel} -vv",
+    # "delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel"
+]
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = "E203, E501, W503"
+
+[tool.mypy]
+python_version = "3.8"
+ignore_missing_imports = true
+follow_imports = "skip"
+show_column_numbers = true
+
+[tool.pylint]
+disable = "C0114, C0115, C0116"
+max-line-length = 120
+
+[tool.ruff]
+target-version = "py38"  # 3.8 is minimum
+line-length = 120

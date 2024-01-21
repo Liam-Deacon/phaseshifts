@@ -49,7 +49,11 @@ shift calculation package.
 
    Windows users may have to add appropriate compiler switches, e.g. ::
 
+    # 32-bit
     f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-32 libphsh.f
+
+    # 64-bit
+    f2py -c -m libphsh --fcompiler=gfortran --compiler=mingw-64 libphsh.f
 
 """
 
@@ -82,7 +86,6 @@ except ImportError:
     mendeleev = None  # Need to install mendeleev
 
 from phaseshifts import elements
-from phaseshifts.lib.libphsh import hartfock  # type: ignore [import-untyped]
 
 elements_dict = OrderedDict(
     [
@@ -215,11 +218,9 @@ def get_element(
     ele_obj = elements.ELEMENTS.get(element)
     if mendeleev and not ele_obj and backend in ("mandeleev", None):
         elements_data = mendeleev.get_all_elements()
-        elements_data = {
-            **{e.protons: e for e in elements_data},
-            **{e.symbol: e for e in elements_data},
-            **{e.name: e for e in elements_data},
-        }
+        elements_data = {e.protons: e for e in elements_data}
+        elements_data.update({e.symbol: e for e in elements_data})
+        elements_data.update({e.name: e for e in elements_data})
         ele_obj = elements_data.get(element)
     if elementy and not ele_obj and backend in ("elementy", None):
         periodic_table = elementy.PeriodicTable()
@@ -232,7 +233,7 @@ def get_element(
             periodictable, str(element).lower()
         )
     if ele_obj is None:
-        raise LookupError(f"Unable to match element {element}")
+        raise LookupError("Unable to match element {}".format(element))
     return ele_obj
 
 
@@ -241,7 +242,7 @@ def get_electron_config(element_obj):
     electron_config = None
     if hasattr(element_obj, "orbitals"):
         electron_config = " ".join(
-            [f'{x["orbital"]}{x["electrons"]}' for x in element_obj.orbitals]
+            ["{orbital}{electrons}".format(**x) for x in element_obj.orbitals]
         )
     else:
         electron_config = getattr(element_obj, "eleconfig", None) or getattr(
@@ -254,7 +255,7 @@ class Atorb(object):
     r"""
     Description
     -----------
-     A python wrapper for the atorb program by Eric Shirley for use in
+     A python wrapper for the `atorb` program by Eric Shirley for use in
      calculating atomic scattering for different elements
 
     Notes
@@ -373,7 +374,7 @@ class Atorb(object):
             shell_info = (n, l, [l - s, l + s], occ)
         else:
             raise NotImplementedError(
-                "Exotic subshells beyond f-block have not been implemented"
+                "Exotic sub-shells beyond f-block have not been implemented"
             )
         return shell_info
 
@@ -483,7 +484,7 @@ class Atorb(object):
         electron_config = get_electron_config(ele)
         config = Atorb.replace_core_config(electron_config)
 
-        # get quantum numbers & occupancy for each electronic obrital in atom
+        # get quantum numbers & occupancy for each electronic orbital in atom
         electrons = []
         nlevels = 0
         for shell in config.split():
@@ -656,6 +657,7 @@ class Atorb(object):
 
 
         """
+        inp = None
         if "input" in kwargs:
             inp = os.path.abspath(kwargs.pop("input"))
 
@@ -674,9 +676,19 @@ class Atorb(object):
                     os.makedirs(output_dir, exist_ok=True)
                     os.chdir(output_dir)
                 except (OSError, IOError) as err:
-                    raise IOError("Unable to create output directory") from err
+                    raise IOError(
+                        "Unable to create output directory due to {!r}".format(err)
+                    )  # noqa
 
-        hartfock(inp)  # calculates atomic orbital charge densities for atom
+        if not inp:
+            raise ValueError("Input file not specified")
+
+        # do lazy loading due to documentation not needing compiled code
+        import phaseshifts.lib.libphsh  # noqa
+
+        phaseshifts.lib.libphsh.hartfock(
+            inp
+        )  # calculates atomic orbital charge densities for atom
 
         # get output filename
         lines = []

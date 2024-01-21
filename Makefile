@@ -1,16 +1,34 @@
 # Makefile for assisting with some common development activities
 
 PYTHON ?= $(shell pyenv which python 2>/dev/null || echo python)
+DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
-.PHONY: wheel install-deps libphsh check test clean
+.PHONY: build-deps cbuildwheel check install install-deps libphsh sdist test wheel
 
 #: Quickly generate binary wheel
 wheel: install-deps
 	$(PYTHON) setup.py build bdist_wheel
 
-#: Install dependencies
+#: Meta target, will attempt to build all it can
+build: sdist
+	if command -v docker 1>/dev/null; then $(MAKE) cibuildwheel; else $(MAKE) wheel; fi
+
+#: Build a matrix of wheels for different OSs and CPU archs
+cibuildwheel: build-deps $(DOCKER)
+	$(PYTHON) -m cibuildwheel --platform=auto --output-dir=dist .
+
+#: Create source distributions
+sdist: build-deps
+	$(PYTHON) build --sdist --no-isolation --formats=zip,tar
+
+#: Install build dependencies
+build-deps:
+	$(PYTHON) -m pip install build cibuildwheel
+
+#: Install setup_requires dependencies
 install-deps:
-	$(PYTHON) -m pip install wheel numpy setuptools 'meson; python_version >= "3.5"' ninja pytest scikit-build
+	$(PYTHON) -m pip install wheel numpy setuptools \
+		'meson; python_version >= "3.5"' ninja pytest scikit-build
 
 #: Install library into current virtualenv
 install:
@@ -41,4 +59,4 @@ clean:
 
 #: Build docker image
 docker:
-	docker build . -t "phaseshifts:$${DOCKER_TAG:-$$($(PYTHON) -c 'import phaseshifts; print(phaseshifts.__version__)')}"
+	$(DOCKER) build . -t "ghcr.io/Liam-Deacon/phaseshifts:$${DOCKER_TAG:-$$($(PYTHON) -c 'import phaseshifts; print(phaseshifts.__version__)')}"
