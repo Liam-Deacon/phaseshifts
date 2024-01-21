@@ -76,7 +76,7 @@ copyright = "2013-{}, Liam Deacon".format(datetime.date.today().year)
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = getattr(phaseshifts, "__version__", None) or "0.1.7-dev"
+release = getattr(phaseshifts, "__version__", None) or "0.1.8-dev"
 # The short X.Y version.
 version = ".".join(release.split(".")[:2])
 
