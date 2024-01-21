@@ -118,7 +118,7 @@ class Conphas:
     # also removes invalid characters
     def __fix_path(self, file_path):
         """Fix escaped characters in filepath"""
-        if platform.system() is "Windows":
+        if platform.system() == "Windows":
             file_path = os.path.abspath(file_path)
             fix_list = {
                 "\a": "\\a",
