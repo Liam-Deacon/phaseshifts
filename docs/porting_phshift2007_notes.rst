@@ -1,12 +1,12 @@
 .. _PortingNotes:
 
-=============
-Porting Notes
-=============
+=============================
+``phshift2007`` Porting  Notes
+=============================
 
-This document contains notes on porting the original
+This document contains notes on porting the original Barbieri / Van Hove
 `phshift2007 <https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip>`_
-code into the phaseshifts package.
+phase shift package code into the phaseshifts package.
 
 In order to compile the FORTRAN code on a modern system, a number of changes were
 made, including:

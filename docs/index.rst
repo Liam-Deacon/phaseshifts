@@ -20,6 +20,7 @@ Contents:
    acknowledgements
    scripts
    modules
+   porting_phshift2007_notes
    authors
    *
 
