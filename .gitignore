@@ -16,6 +16,7 @@ _skbuild/
 *.exe
 *.DLL
 *.pyd
+bin/phsh*
 
 # log files
 *.log
@@ -27,6 +28,8 @@ docs/_build/
 **/phsh0.f
 **/phsh1.f
 **/phsh2.f
+**/phshift2007/
+**/phshift2007.zip
 
 # testing
 .coverage
