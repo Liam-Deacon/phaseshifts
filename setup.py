@@ -74,9 +74,14 @@ except ModuleNotFoundError as npy_err:
         try:
             import numpy.f2py
 
-            INCLUDE_DIRS += ["-I{}".format(x) for x in (numpy.get_include(), numpy.f2py.get_include())]
+            INCLUDE_DIRS += [
+                "-I{}".format(x)
+                for x in (numpy.get_include(), numpy.f2py.get_include())
+            ]
         except ImportError:
-            print("WARNING: Unable to import numpy.f2py module for build", file=sys.stderr)
+            print(
+                "WARNING: Unable to import numpy.f2py module for build", file=sys.stderr
+            )
     else:
         raise npy_err
 
