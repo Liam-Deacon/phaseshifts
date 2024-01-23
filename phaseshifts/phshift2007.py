@@ -7,10 +7,20 @@ import subprocess  # nosec
 import urllib.request
 import zipfile
 
-PHSHIFT2007_DOWNLOAD_URL = (
-    "https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip"
-)
+PHSHIFT2007_DOWNLOAD_URL = "https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip"
 DEFAULT_DIRPATH = "."
+
+COMPILER_FLAGS = {
+    "gfortran": [
+        "-pie",
+        "-Wall",
+        "-static-libgcc",
+        "-static-libgfortran",
+        "-frecursive",
+        "-fcheck=bounds",
+        "-std=legacy",
+    ]
+}
 
 
 def download_phshift2007(dirpath=DEFAULT_DIRPATH):
@@ -34,24 +44,16 @@ def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):
     with open(ab_filepath, encoding="ascii") as fp_in:
         lines = fp_in.readlines()[3:]  # skip first three comment lines
         prog_marker = "C  program "
-        program_start_lines = [
-            i for i, line in enumerate(lines) if line.startswith(prog_marker)
-        ]
+        program_start_lines = [i for i, line in enumerate(lines) if line.startswith(prog_marker)]
         programs = {}
         for i, marker in enumerate(program_start_lines):
-            prog_name = (
-                lines[marker].lstrip(prog_marker).lower().strip("\n").strip("\r")
-            )
-            filename = os.path.join(
-                output_dirpath or os.path.dirname(ab_filepath), prog_name
-            )
+            prog_name = lines[marker].lstrip(prog_marker).lower().strip("\n").strip("\r")
+            filename = os.path.join(output_dirpath or os.path.dirname(ab_filepath), prog_name)
             with open(filename, mode="w", encoding="ascii") as fp_out:
                 if i == len(program_start_lines) - 1:
                     fp_out.writelines(lines[marker - 1 :])
                 else:
-                    fp_out.writelines(
-                        lines[marker - 1 : program_start_lines[i + 1] - 1]
-                    )
+                    fp_out.writelines(lines[marker - 1 : program_start_lines[i + 1] - 1])
             programs[prog_name] = filename
         return programs
 
@@ -71,19 +73,17 @@ def _compile_fortran_program(source_filepath, output_filepath=None):
             os.path.dirname(source_filepath),
             os.path.basename(source_filepath).replace(".for", ""),
         )
-    args = [
-        "gfortran",
-        "-pie",
-        "-Wall",
-        "-static-libgcc",
-        "-static-libgfortran",
-        "-frecursive",
-        "-fcheck=bounds",
-        "-std=legacy",
-        "-o",
-        output_filepath,
-        source_filepath,
-    ]
+        if sys.platform == "win32":
+            output_filepath += ".exe"
+    args = (
+        ["gfortran"]
+        + COMPILER_FLAGS["gfortran"]
+        + [
+            "-o",
+            output_filepath,
+            source_filepath,
+        ]
+    )
     print(" ".join(args))
     with subprocess.Popen(args) as proc:  # nosec
         status = proc.wait()
