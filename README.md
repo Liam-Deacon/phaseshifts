@@ -17,6 +17,7 @@
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Liam-Deacon/phaseshifts/total?logo=github)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/phaseshifts?logo=pypi&logoColor=white)](https://pypi.org/project/phaseshifts/)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
 <!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
 <!-- ![Coveralls branch](https://img.shields.io/coverallsCoverage/github/Liam-Deacon/phaseshifts) -->
@@ -306,6 +307,9 @@ acknowledge the following people who have made this package a reality:
 
 I would also be grateful if you acknowledge this python package
 (*phaseshifts*) as: *L.M. Deacon, private communication.*
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_large)
 
 ### Thanks
 
