@@ -7,13 +7,24 @@ words:
   - atorb
   - cavpot
   - conphas
+  - csearch
+  - debye
   - phaseshifts
   - libphsh
+  - lmax
+  - mufftin
   - mufpot
+  - neng
+  - overlayer
   - phsh
   - phshift
+  - zmin
+  - zmax
   # people
   - Barbieri
+  - Hartree
+  - Fock
+  - Moritz
   # acronyms
   - CLEED
   - EEAS
@@ -21,15 +32,22 @@ words:
   - LEEDPACK
   - SATLEED
   # python
+  - docstring
+  - docstrings
   - elementy
   - periodictable
   - scikit-build
   - skbuild
   - setuptools
   - numpydoc
-  # file exts
+  # numpy
+  - ndarray
+  # file and file extensions
   - .bmin
   - .pmin
+  - dataph
+  - leedph
+  - phasout
   # compiler flags/env vars
   - -fopenmp
   - -frecursive
@@ -38,3 +56,7 @@ words:
   - LIBDIR
   # other terms
   - autogen
+  - inequivalent
+  - malformatted
+  - nform
+  - unitcell
