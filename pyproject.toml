@@ -46,6 +46,7 @@ python_version = "3.8"
 ignore_missing_imports = true
 follow_imports = "skip"
 show_column_numbers = true
+check_untyped_defs = true
 
 [tool.pylint]
 disable = "C0114, C0115, C0116"
