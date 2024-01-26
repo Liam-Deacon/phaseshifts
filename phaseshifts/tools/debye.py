@@ -27,28 +27,14 @@ __updated__ = "2014-02-23"
 __contact__ = phaseshifts.__contact__
 
 
-class Debye_Waller(object):
-    """Debye_Waller is a class for calculating Debye-Waller factors."""
+class DebyeWaller(object):
+    """DebyeWaller is a class for calculating Debye-Waller factors."""
 
     def debye_waller_factor(self):
         """
         Calculate the Debye-Waller factor
         """
-        pass
-
-
-class CLIError(Exception):
-    """Generic exception to raise and log different fatal errors."""
-
-    def __init__(self, msg):
-        super(CLIError).__init__(type(self))
-        self.msg = "E: %s" % msg
-
-    def __str__(self):
-        return self.msg
-
-    def __unicode__(self):
-        return self.msg
+        raise NotImplementedError
 
 
 def main(argv=None):
@@ -60,22 +46,16 @@ def main(argv=None):
         sys.argv.extend(argv)
 
     program_name = os.path.basename(sys.argv[0])
-    program_version = "v%s" % __version__
-    program_build_date = str(__updated__)
-    program_version_message = "%%(prog)s %s (%s)" % (
-        program_version,
-        program_build_date,
-    )
-    program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
+    program_shortdesc = (__import__("__main__").__doc__ or "").split("\n")[1]
     program_license = """%s
 
-      Created by Liam Deacon on %s.
-      Copyright 2013-2014 Liam Deacon. All rights reserved.
+    Created by Liam Deacon on %s.
+    Copyright 2013-2014 Liam Deacon. All rights reserved.
 
-      Licensed under the MIT license (see LICENSE file for details)
+    Licensed under the MIT license (see LICENSE file for details)
 
-      Please send your feedback, including bugs notifications
-      and fixes, to: %s
+    Please send your feedback, including bugs notifications
+    and fixes, to: %s
 
     usage:-
     """ % (
@@ -84,6 +64,7 @@ def main(argv=None):
         __contact__,
     )
 
+    return_code = 0
     try:
         # Setup argument parser
         parser = ArgumentParser(
@@ -99,10 +80,10 @@ def main(argv=None):
 
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
-        return 0
-
+        pass
     except Exception as err:
         indent = len(program_name) * " "
         sys.stderr.write(program_name + ": " + repr(err) + "\n")
         sys.stderr.write(indent + "  for help use --help")
-        return 2
+        return_code = 2
+    return return_code

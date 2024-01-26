@@ -98,7 +98,7 @@ after execution. When operating in this mode, the following assumptions are made
 
 A full list of additional syntax to customise the generation of the phase shifts
 when using CLEED input files can be found in
-:py:meth:`phaseshifts.leed.Converter.import_CLEED`.
+:py:meth:`phaseshifts.adaptors.cleed_adaptors.CleedInputFileToMuffinTinPotentialModelConverter.import_cleed`.
 
 .. note::
   If the :envvar:`PHASESHIFT_LEED` environment variable is not found, but

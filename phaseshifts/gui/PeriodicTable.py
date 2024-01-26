@@ -70,8 +70,8 @@ def determineGuiFrontend():
 __APP_GUI__ = determineGuiFrontend()
 
 # Load resources & local modules
-import res_rc
-import elements
+import .res_rc
+import phaseshifts.core.elements as elements
 
 import re
 from collections import OrderedDict

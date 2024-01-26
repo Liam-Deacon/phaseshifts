@@ -38,6 +38,8 @@ shift calculation package.
 
 """
 
+# cspell: ignore atmrad atorbs covrad malformatted nform nineq
+
 from __future__ import print_function
 from __future__ import division
 
@@ -46,441 +48,11 @@ from copy import deepcopy
 from shutil import move
 from glob import glob
 
-import phaseshifts.atorb as atorb
-import phaseshifts.elements as elements
+
+from phaseshifts.core.atom import Atom
+from phaseshifts.core.unit_cell import Unitcell
+from phaseshifts import atorb
 from phaseshifts.lib import libphsh
-
-
-class Atom(object):
-    """
-    Atom class for input into cluster model for muffin-tin potential
-    calculations.
-    """
-
-    def __init__(self, element, coordinates=[0.0, 0.0, 0.0], **kwargs):
-        """
-        Constructor for Atom class.
-
-        Parameters
-        ----------
-
-        element : str or int
-            This is either the elemental symbol, name or atomic number.
-        coordinates : list[float, float, float] or ndarray
-            The fractional coordinates within the unitcell in terms of the
-            basis vector a.
-        tag : str, optional
-            Add a name tag to this element (useful if dealing with multiple
-            atoms of the same element in a given model). Default is the
-            symbol for that element - numeric ids may be appended in the model
-            class.
-        radius : float, optional
-            The muffin-tin radius of the atom in Angstroms (default is to
-            lookup 'atmrad' in the element dictionary).
-        valence : int, optional
-            The valency of the atom (default is to assume neutral atom).
-        occupancy : float, optional
-            The fractional occupancy of the atom in the given site.
-
-        """
-        self.element = elements.ELEMENTS[element]
-        self.coordinates = None  # dummy
-        self.set_coordinates(coordinates)
-        self.name = self.element.name.title()
-        self.tag = self.element.symbol.title()
-        self.Z = self.element.protons
-        self.radius = self.element.atmrad
-        self.valence = 0
-        if "valence" in kwargs:
-            if "radius" not in kwargs:
-                # assume covrad for non-zero valency
-                self.radius = self.element.covrad
-        self.__dict__.update(kwargs)
-
-    # checks whether two atoms are equal w.r.t. name, radius and valence
-    def __eq__(self, other):
-        if isinstance(other, Atom):
-            return (
-                self.name == other.name
-                and self.radius == other.radius
-                and self.valence == other.valence
-            )
-        else:
-            return False
-
-    # checks whether two atoms are not equal w.r.t. name, radius and valence
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    # reprinting of Atom object
-    def __repr__(self):
-        return str("Atom(%s, tag='%s', radius=%s, " "valence=%s)") % (
-            self.name,
-            self.tag,
-            self.radius,
-            self.valence,
-        )
-
-    # redefine hash method for checking uniqueness of class instance
-    def __hash__(self):
-        return hash(self.__repr__())
-
-    # set coordinates of atom within unitcell in terms of a
-    def set_coordinates(self, coordinates):
-        try:
-            self.coordinates = coordinates
-            self._coordinates = [r / 0.529 for r in coordinates]
-        except any as e:
-            raise e
-
-    # set valence of atom
-    def set_valence(self, valency):
-        """Sets the valency of the atom"""
-        self.valence = float(valency)
-
-    # set muffin-tin radius of atom
-    def set_mufftin_radius(self, radius):
-        """
-        Sets the muffin-tin radius of the atom in Angstroms.
-        """
-        try:
-            self.radius = float(radius)
-            self._radius = self.radius / 0.529  # in Bohr radii
-        except:
-            pass
-
-
-class Unitcell(object):
-    """
-    Unitcell class
-    """
-
-    def __init__(self, a, c, matrix_3x3, **kwargs):
-        """
-        Constructor for the Unitcell class
-
-        Parameters
-        ----------
-        a : float
-            The in-plane lattice vector in Angstroms
-        c : float
-            The out-of-plane lattice vector in Angstroms. For cubic systems this
-            will be equal to a.
-        matrix_3x3: ndarray
-            A 3x3 matrix describing the x,y,z construction of a,b,c basis vectors
-            of the unitcell. Units for x, y & z should be in terms of fractional
-            coordinates.
-        alpha : float, optional
-            Angle alpha in degrees.
-        beta : float, optional
-            Angle beta in degrees.
-        gamma : float, optional
-            Angle gamma in degrees.
-
-        """
-        # Convert Angstrom input to Bohr radii
-        self.set_a(a)
-        self.set_c(c)
-
-        # Set basis vectors
-        self.set_vectors(matrix_3x3)
-
-        # Set xstal system
-        self.alpha = 90.0
-        self.beta = 90.0
-        self.gamma = 90.0
-
-        # Update additional information
-        self.__dict__.update(kwargs)
-
-    # checks if two class instances are equal w.r.t. name, radius & valence
-    def __eq__(self, other):
-        if isinstance(other, Atom):
-            return (
-                self.a == other.a
-                and self.c == other.c
-                and self.alpha == other.alpha
-                and self.beta == other.beta
-                and self.gamma == other.gamma
-            )
-        else:
-            return False
-
-    # checks if two class instances are not equal w.r.t. name, radius & valence
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    # reprinting of class object
-    def __repr__(self):
-        return str("Unitcell(a=%s, c=%s, alpha=%s, beta=%s, gamma=%s, basis=%s)") % (
-            self.a,
-            self.c,
-            self.alpha,
-            self.beta,
-            self.gamma,
-            self.basis,
-        )
-
-    # redefine hash method for checking uniqueness of class instance
-    def __hash__(self):
-        return hash(self.__repr__())
-
-    # set basis vectors from (3x3) matrix in fractional coordinates
-    def set_vectors(self, m3x3):
-        self.basis = m3x3
-
-    # set a lattice parameter
-    def set_a(self, a):
-        """
-        Description
-        -----------
-        Set the magnitude of the in-plane lattice vector a in Angstroms.
-
-        Parameters
-        ----------
-        a: float
-            The magnitude of the in-plane lattice vector in Angstroms
-
-        Notes
-        -----
-        To retrieve a in terms of Angstroms use 'unitcell.a', whereas the
-        internal parameter 'unitcell._a' converts a into Bohr radii
-        (1 Bohr = 0.529Å), which is used for the muffin-tin potential
-        calculations in libphsh (CAVPOT subroutine).
-
-        """
-        self.a = float(a)
-        self._a = self.a / 0.529  # (1 Bohr = 0.529Å)
-
-    # set c lattice parameter
-    def set_c(self, c):
-        """
-        Description
-        -----------
-        Set the magnitude of the out-of-plane lattice vector a.
-
-        Parameters
-        ----------
-        c : float
-            The magnitude of the in-plane lattice vector in Angstroms
-
-        Notes
-        -----
-        To retrieve c in terms of Angstroms use 'unitcell.c', whereas the
-        internal parameter 'unitcell._c' converts c into Bohr radii
-        (1 Bohr = 0.529Å), which is used for the muffin-tin potential
-        calculations in libphsh (CAVPOT subroutine).
-
-        """
-        self.c = float(c)
-        self._c = self.c / 0.529  # (1 Bohr = 0.529Å)
-
-    # set angle alpha in degrees
-    def set_alpha(self, alpha):
-        self.alpha = float(alpha) % 360.0
-
-    # set angle beta in degrees
-    def set_beta(self, beta):
-        self.beta = float(beta) % 360.0
-
-    # set angle gamma in degrees
-    def set_gamma(self, gamma):
-        self.gamma = float(gamma) % 360.0
-
-
-class CoordinatesError(Exception):
-    """Coordinate exception to raise and log duplicate coordinates."""
-
-    def __init__(self, msg):
-        super(CoordinatesError).__init__(type(self))
-        self.msg = "CoordinatesError: %s" % msg
-
-    def __str__(self):
-        return self.msg
-
-    def __unicode__(self):
-        return self.msg
-
-
-class Model(object):
-    """
-    Generic model class.
-    """
-
-    def __init__(self, unitcell, atoms, **kwargs):
-        """
-        Constructor for Model class.
-
-        Parameters
-        ----------
-        unitcell : Unitcell
-            An instance of the Unitcell class.
-        atoms : list
-            Array of Atom class instances which constitute the model.
-
-        """
-        self.atoms = []
-        self.set_atoms(atoms)
-        self.set_unitcell(unitcell)
-        self.__dict__.update(kwargs)
-
-    # checks if two models are equal
-    def __eq__(self, other):
-        if isinstance(other, Atom):
-            return self.atoms == other.atoms and self.unitcell == other.unitcell
-        else:
-            return False
-
-    # checks if two models are not equal
-    def __neq__(self, other):
-        return not self.__eq__(other)
-
-    # reprinting of Atom object
-    def __repr__(self):
-        return str("Model(atoms=%s, unitcell=%s)") % (self.atoms, self.unitcell)
-
-    # redefine hash method for checking uniqueness of class instance
-    def __hash__(self):
-        return hash(self.__repr__())
-
-    # estimate number of inequivalent atoms
-    def _nineq_atoms(self):
-        """
-        Description
-        -----------
-        Internal method for estimating the number of inequivalent atoms
-
-        Returns
-        -------
-        nineq_atoms, element_dict : tuple
-            nineq_atoms : The estimated number of inequivalent atoms based on
-                the valence and radius of each atom.
-            element_dict : a dictionary of each element in the atom list where
-                each element contains an atom dictionary of 'nineq_atoms',
-                'n_atoms' and a complete 'atom_list'
-
-        Example
-        -------
-        >>> C1 = Atom('C', [0, 0, 0])
-        >>> Re1 = Atom('Re', [0, 0, 0], valence=2.0)
-        >>> Re2 = Atom('Re', [0, 0, 0], radius=1)
-        >>> uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        >>> mtz = MTZ_model(uc, atoms=[C1, Re1, Re2])
-        >>> print(mtz._nineq_atoms())
-         (3, {'Carbon': {'n_atoms': 1, 'atom_list': [Atom(Carbon, tag='C',
-         coordinates=[0, 0, 0], Z=6, radius=0.91, valence=0)], 'nineq_atoms':
-         1,'nineq_atoms_list': set([Atom(Carbon, tag='C',
-         coordinates=[0, 0, 0], Z=6, radius=0.91, valence=0)])}, 'Rhenium': {
-         'n_atoms': 2, 'atom_list': [Atom(Rhenium, tag='Re',
-         coordinates=[0, 0, 0], Z=75, radius=1.97, valence=2.0), Atom(Rhenium,
-         tag='Re', coordinates=[0, 0, 0], Z=75, radius=1, valence=0)],
-         'nineq_atoms': 2, 'nineq_atoms_list': set([Atom(Rhenium, tag='Re',
-         coordinates=[0, 0, 0], Z=75, radius=1.97, valence=2.0),
-         Atom(Rhenium, tag='Re', coordinates=[0, 0, 0], Z=75, radius=1,
-         valence=0)])}})
-
-        """
-        nineq_atoms = 0
-        element_dict = {}
-        atom_dict = {}
-        # loop through atom list, testing each element for duplicates
-        # get list of elements
-        elements = set([atom.name for atom in self.atoms])
-        for element in elements:
-            atoms = [atom for atom in self.atoms if atom.name == element]
-            n_atoms = len(set(atoms))
-            nineq_atoms += n_atoms
-            atom_dict = {
-                "nineq_atoms": n_atoms,
-                "n_atoms": len(atoms),
-                "atom_list": atoms,
-            }
-            element_dict[element] = atom_dict
-        return nineq_atoms, element_dict
-
-    def add_atom(self, element, position, **kwargs):
-        """
-        Append an Atom instance to the model
-
-        Parameters
-        ----------
-        element : str or int
-            Either an element name, symbol or atomic number.
-        position : list(float) or ndarray
-            (1x3) array of the fractional coordinates of the atom
-            within the unit cell in terms of the lattice vector a.
-
-        """
-        self.atoms.append(Atom(element, position, kwargs))
-
-    def check_coordinates(self):
-        """
-        Check for duplicate coordinates of different atoms in model.
-
-        Raises
-        ------
-        CoordinateError : exception
-          If duplicate positions found.
-
-        """
-        positions = [str(atom.coordinates) for atom in self.atoms]
-        info = ""
-        for position in set(
-            [position for position in positions if positions.count(position) > 1]
-        ):
-            for i, atom in enumerate(
-                [atom for atom in self.atoms if str(atom.coordinates) == position]
-            ):
-                info += "%s, coordinates=%s, index=%i\n" % (
-                    str(atom),
-                    atom.coordinates,
-                    i,
-                )
-        if len(set(positions)) < len(self.atoms):
-            raise CoordinatesError(
-                "Not every atom position in model is unique!\n%s\n" % info
-            )
-
-    def set_atoms(self, atoms):
-        """
-        Set the atoms for the model.
-
-        Parameters
-        ----------
-        atoms : list(Atoms)
-            Array of Atom instances. Entries in the list which are
-            not of type Atom will be ignored.
-
-        Raises
-        ------
-        TypeError : exception
-          If atoms parameter is not a list.
-
-        """
-        if isinstance(atoms, list):
-            self.atoms = [atom for atom in atoms if isinstance(atom, Atom)]
-        else:
-            raise TypeError
-
-    def set_unitcell(self, unitcell):
-        """
-        Set the unitcell for the model
-
-        Parameters
-        ----------
-        unitcell : Unitcell
-            Instance of Unitcell class to set to model.
-
-        Raises
-        ------
-        TypeError : exception
-          If unitcell parameter is not a Unitcell.
-
-        """
-        if isinstance(unitcell, Unitcell):
-            self.unitcell = unitcell
-        else:
-            raise TypeError
 
 
 class MTZ_model(Model):
@@ -491,6 +63,7 @@ class MTZ_model(Model):
     """
 
     def __init__(self, unitcell, atoms, **kwargs):
+        # type: (Unitcell, list[Atom], dict) -> None
         """
         Constructor for Model class.
 
@@ -544,30 +117,21 @@ class MTZ_model(Model):
         Parameters
         ----------
         nform : int or str
-          This governs the type of calculation, where nform can be:
-
-          **1.** "cav" or 0 - use Cavendish method
-
-          **2.** "wil" or 1 - use William's method
-
-          **3.** "rel" or 2 - Relativistic calculations
+            This governs the type of calculation, where nform can be:
+            - **1.** "cav" or 0 - use Cavendish method
+            - **2.** "wil" or 1 - use William's method
+            - **3.** "rel" or 2 - Relativistic calculations
 
         """
-        try:
-            if isinstance(nform, int):
-                if nform >= 0 and nform <= 2:
-                    self.nform = nform
-            elif isinstance(nform, str):
-                if nform == "cav":
-                    self.nform = 0
-                elif nform == "wil":
-                    self.nform = 1
-                elif nform == "rel":
-                    self.nform = 2
-                elif nform in ["0", "1", "2"]:
-                    self.nform = int(nform)
-        except any as e:
-            raise TypeError(e.msg)
+        nform_lookup = {
+            "cav": 0,
+            "wil": 1,
+            "rel": 2,
+            0: 0,
+            1: 1,
+            2: 2,
+        }
+        self.nform = nform_lookup.get(nform, None) if nform in nform_lookup else int(nform)
 
     def set_slab_c(self, c):
         """
@@ -587,10 +151,11 @@ class MTZ_model(Model):
         try:
             self.c = float(c)
             self._c = self.c / 0.529
-        except:
+        except TypeError:
             pass
 
     def load_from_file(self, filename):
+        # type: (str) -> None
         """
         Description
         -----------
@@ -604,36 +169,25 @@ class MTZ_model(Model):
         Raises
         ------
         IOError : exception
-          If the file cannot be read.
+            If the file cannot be read.
         TypeError : exception
-          If a input line cannot be parsed correctly.
+            If a input line cannot be parsed correctly.
 
         """
 
         filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
 
+        def load_coordinates(line):
+            """Load coordinates from line"""
+            return list(map(float, line.split("#")[0].split()[:3]))
+
         try:
-            with open(filename, "r") as f:
+            with open(filename, mode="r", encoding="utf-8") as f:
                 self.header = f.readline()
                 a = float(f.readline().split("#")[0].split()[0]) * 0.529
-                a1 = [
-                    t(s)
-                    for (t, s) in zip(
-                        (float, float, float), f.readline().split("#")[0].split()[:3]
-                    )
-                ]
-                a2 = [
-                    t(s)
-                    for (t, s) in zip(
-                        (float, float, float), f.readline().split("#")[0].split()[:3]
-                    )
-                ]
-                a3 = [
-                    t(s)
-                    for (t, s) in zip(
-                        (float, float, float), f.readline().split("#")[0].split()[:3]
-                    )
-                ]
+                a1 = load_coordinates(f.readline())
+                a2 = load_coordinates(f.readline())
+                a3 = load_coordinates(f.readline())
                 basis = [a1, a2, a3]
                 c = float(a3[-1]) * 0.529  # change to Angstroms from Bohr
                 self.set_unitcell(Unitcell(a, c, basis))
@@ -642,7 +196,7 @@ class MTZ_model(Model):
                 self.atoms = []
                 line = f.readline().split("#")[0]
                 while line.split()[0].isalpha():
-                    n, Z, val, rad = [
+                    n, protons, val, rad = [
                         t(s)
                         for (t, s) in zip(
                             (int, float, float, float),
@@ -650,25 +204,17 @@ class MTZ_model(Model):
                         )
                     ]
 
-                    for i in range(0, n):
-                        position = [
-                            t(s)
-                            for (t, s) in zip(
-                                (float, float, float),
-                                f.readline().split("#")[0].split()[:3],
-                            )
-                        ]
-
-                        atom = Atom(
+                    self.atoms = [
+                        Atom(
                             line.split()[0].capitalize(),
-                            coordinates=position,
+                            coordinates=load_coordinates(f.readline()),
                             tag=line.split()[1],
                             valence=val,
                             radius=rad,
-                            Z=int(Z),
+                            protons=int(protons),
                         )
-
-                        self.atoms.append(atom)
+                        for _ in range(0, n)
+                    ]
                     line = f.readline().split("#")[0]
 
                 # print(line)
@@ -677,10 +223,10 @@ class MTZ_model(Model):
                 self.set_nh(f.readline().split("#")[0].split()[0])
 
         except IOError:
-            raise IOError("cannot read '%s'" % filename)
+            raise IOError("Cannot read '%s'" % filename)
 
         except ValueError:
-            raise ValueError("malformatted input in '%s'" % filename)
+            raise ValueError("Malformatted input in '%s'" % filename)
 
     def create_atorbs(self, **kwargs):
         """
@@ -710,26 +256,17 @@ class MTZ_model(Model):
         """
 
         # check output path
-        if "output_dir" in kwargs:
-            output_dir = kwargs["output_dir"]
-        else:
-            if "library_dir" in kwargs:
-                output_dir = kwargs["library_dir"]
-            else:
-                output_dir = os.path.abspath(".")
+        output_dir = kwargs.get("output_dir") or kwargs.get("library_dir") or os.path.abspath(".")
 
         atorb_files = []
         at_files = []
 
         # generate input files for atomic orbitals and charge densities
-        for element in set([str(atom.element.symbol) for atom in self.atoms]):
-            if not os.path.isdir(os.path.join(output_dir, "Atorb")):
-                try:
-                    os.makedirs(os.path.join(output_dir, "Atorb"))
-                except WindowsError:
-                    pass  # directory already exists on Windows
-
-            atorb_file = os.path.join(output_dir, "Atorb", "atorb_%s.i" % element)
+        unique_elements = {str(atom.element.symbol) for atom in self.atoms}
+        for element in unique_elements:
+            atorb_dirpath = os.path.join(output_dir, "Atorb")
+            os.makedirs(atorb_dirpath, exist_ok=True)
+            atorb_file = os.path.join(atorb_dirpath, "atorb_%s.i" % element)
             if not os.path.isfile(atorb_file):  # create new atorb input file
                 atorb_file = atorb.Atorb.gen_input(element, filename=atorb_file)
 
@@ -782,61 +319,48 @@ class MTZ_model(Model):
         """
 
         # input
-        if "input_dir" in kwargs:
-            input_dir = os.path.abspath(
-                glob(os.path.expanduser(os.path.expandvars(kwargs["input_dir"])))[0]
-            )
-        else:
-            input_dir = os.path.abspath(".")
+        input_dir = (
+            os.path.abspath(".")
+            if "input_dir" not in kwargs
+            else os.path.abspath(glob(os.path.expanduser(os.path.expandvars(kwargs["input_dir"])))[0])
+        )
 
         if os.path.isfile(input_dir):
             input_dir = os.path.dirname(input_dir)
 
         if not os.path.isdir(input_dir):
-            raise IOError(
-                "'%s' is not a valid input directory - " "does not exist!" % input_dir
-            )
+            raise IOError("'%s' is not a valid input directory - does not exist!" % input_dir)
 
         # output filename
-        if "output_file" in kwargs:
-            output_file = os.path.abspath(kwargs["output_file"])
-        else:
-            output_file = os.path.abspath("atomic.i")
+        output_file = str(os.path.abspath(kwargs.get("output_file") or "atomic.i"))
 
         # get list of input
-        if "input_files" in kwargs:
-            files = kwargs["input_files"]
-        else:  # assume using atoms from model
-            files = [
-                os.path.join(input_dir, "at_" + atom.element.symbol + ".i")
-                for atom in self.atoms
-            ]
+        files = kwargs.get("input_files") or [  # assume using atoms from model
+            os.path.join(input_dir, "at_" + atom.element.symbol + ".i") for atom in self.atoms
+        ]
 
         # generate atomic.i input file by appending multiple at.i files
-        with open(output_file, "w") as f:
+        with open(output_file, mode="w", encoding="ascii") as out_file_ptr:
             # loop through each atomic charge density file in list
             for input_file in files:
-                if not os.path.isfile(str(input_file)) or input_file == None:
-                    raise IOError(
-                        "Radial charge density file "
-                        "'%s' does not exist!" % input_file
-                    )
+                if not os.path.isfile(str(input_file)) or input_file is None:
+                    raise IOError("Radial charge density file " "'%s' does not exist!" % input_file)
 
                 # append next input file to output
-                with open(input_file) as infile:
-                    f.write(infile.read())
+                with open(input_file, mode="r", encoding="utf-8") as input_file_ptr:
+                    out_file_ptr.write(input_file_ptr.read())
 
         return output_file
 
     def get_MTZ(self, filename):
         """Retrieves muffin-tin potential from file"""
         try:
-            with open(filename, "r") as f:
-                self.mtz = float([line for line in f][0])  # read first line
+            with open(filename, mode="r", encoding="utf-8") as fptr:
+                self.mtz = float(fptr.readline())  # read first line
         except IOError:
             raise IOError
 
-    def calculate_MTZ(self, mtz_string="", **kwargs):
+    def calculate_muffin_tin_potential(self, mtz_string="", **kwargs):
         """
         Description
         -----------
@@ -867,22 +391,15 @@ class MTZ_model(Model):
 
         # check to see if cluster input exists
         if "cluster_file" in kwargs:
-            cluster_file = os.path.abspath(
-                glob(os.path.expanduser(os.path.expandvars(kwargs["cluster_file"])))[0]
-            )
+            cluster_file = os.path.abspath(glob(os.path.expanduser(os.path.expandvars(kwargs["cluster_file"])))[0])
         else:
             cluster_file = os.path.abspath("cluster.i")
 
         if not os.path.isfile(cluster_file):
             raise IOError("MTZ cluster file '%s' does not exist!" % cluster_file)
 
-        if (
-            not os.access(os.path.dirname(cluster_file), os.W_OK)
-            and "atomic_file" not in kwargs
-        ):
-            raise IOError(
-                "Do not have write access to '%s'" % os.path.dirname(cluster_file)
-            )
+        if not os.access(os.path.dirname(cluster_file), os.W_OK) and "atomic_file" not in kwargs:
+            raise IOError("Do not have write access to '%s'" % os.path.dirname(cluster_file))
 
         # determine type of calculation - bulk or slab
         if "slab" in kwargs:
@@ -896,10 +413,7 @@ class MTZ_model(Model):
         if "atomic_file" in kwargs:
             atomic_file = os.path.abspath(kwargs["atomic_file"])
             if not os.path.isfile(atomic_file):
-                raise IOError(
-                    "Appended radial charge densities file "
-                    "'%s' does not exist!" % atomic_file
-                )
+                raise IOError("Appended radial charge densities file " "'%s' does not exist!" % atomic_file)
         else:  # generate on the fly
             input_dir = os.path.abspath(os.path.dirname(cluster_file))
             self.create_atorbs(output_dir=input_dir)
@@ -911,8 +425,8 @@ class MTZ_model(Model):
             output_file = "%s.i" % fid
 
         try:
-            os.makedirs(os.path.dirname(output_file))
-        except WindowsError:
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        except OSError:
             pass
 
         if os.path.isfile(output_file):
@@ -935,9 +449,7 @@ class MTZ_model(Model):
 
         # check to see if new file has been written
         if not os.path.isfile(output_file):
-            raise IOError(
-                "Failed to write muffin-tin potential file '%s'" % output_file
-            )
+            raise IOError("Failed to write muffin-tin potential file '%s'" % output_file)
 
         return output_file
 
@@ -963,9 +475,9 @@ class MTZ_model(Model):
             any duplicates will cause a CoordinateError to be raised.
         nform : int or str
             Choose calculation type from either:
-              - Cavendish (0)
-              - Williams (1)
-              - Relativistic (2)
+                - Cavendish (0)
+                - Williams (1)
+                - Relativistic (2)
         exchange : float
             Hartree-Fock exchange term alpha.
         nh : int
@@ -978,18 +490,15 @@ class MTZ_model(Model):
         Raises
         ------
         CoordinatesError : exception
-          if the model atoms have duplicate coordinates and the 'pos_check'
-          kwarg is set to True.
+            if the model atoms have duplicate coordinates and the 'pos_check'
+            kwarg is set to True.
 
         """
         # create backup of atoms
         mtz_atoms = deepcopy(self.atoms)
 
         # get file header - should be single line (force if not)
-        if "header" in kwargs:
-            header = kwargs["header"].replace("\n", " ").replace("\r", "")
-        else:
-            header = "MTZ cluster input file"
+        header = kwargs.get("header", "MTZ cluster input file").replace("\n", " ").replace("\r", "")
 
         if "bulk" in kwargs:
             if kwargs["bulk"]:
@@ -999,10 +508,7 @@ class MTZ_model(Model):
         else:
             fid = ""
 
-        if "nform" in kwargs:
-            self.set_nform(kwargs["nform"])
-        else:
-            self.nform = 2  # rel
+        self.set_nform(kwargs.get("nform", 2))
 
         if "exchange" in kwargs:
             self.set_exchange(kwargs["exchange"])
@@ -1015,10 +521,7 @@ class MTZ_model(Model):
             self.set_nh(10)
 
         # get filename or make educated guess
-        if "filename" in kwargs:
-            filename = kwargs["filename"]
-        else:
-            filename = "cluster%s.i" % fid
+        filename = kwargs.get("filename") or "cluster%s.i" % fid
 
         # determine if coordinate duplicates
         if "pos_check" in kwargs:
@@ -1026,64 +529,38 @@ class MTZ_model(Model):
                 self.check_coordinates()
 
         # auto-generate file
-        a = float(self.unitcell._a) * 0.529
-        with open(filename, "w") as f:
-            f.write(header + "\n")
-            f.write(
-                str(" %7.4f" % self.unitcell._a).ljust(33)
-                + "# a lattice parameter distance in Bohr radii\n"
-            )
-            f.write(
-                str(
-                    " %7.4f %7.4f %7.4f"
-                    % (
-                        self.unitcell.basis[0][0] / a,
-                        self.unitcell.basis[0][1] / a,
-                        self.unitcell.basis[0][2] / a,
-                    )
-                ).ljust(33)
-                + "# SPA coordinates of unit cell\n"
-            )
-            f.write(
-                str(
-                    " %7.4f %7.4f %7.4f"
-                    % (
-                        self.unitcell.basis[1][0] / a,
-                        self.unitcell.basis[1][1] / a,
-                        self.unitcell.basis[1][2] / a,
-                    )
-                ).ljust(33)
-                + "\n"
-            )
-            f.write(
-                str(
-                    " %7.4f %7.4f %7.4f"
-                    % (
-                        self.unitcell.basis[2][0] / a,
-                        self.unitcell.basis[2][1] / a,
-                        self.unitcell.basis[2][2] / a,
-                    )
-                ).ljust(33)
-                + "# Notice the value %.2f (%s calculation)\n"
-                % (self.unitcell.basis[2][2] / a, fid.replace("_", ""))
-            )
+        a = float(self.unitcell._a) * 0.529  # pylint: disable=protected-access
+        with open(filename, mode="w", encoding="ascii") as out_file_ptr:
+
+            def write_line(data, comment="", justify=33, end="\n"):
+                """Write line to file"""
+                comment = ("# " + comment.lstrip("# ")) if comment else ""
+                out_file_ptr.write(str(data).ljust(justify) + comment + end)
+
+            out_file_ptr.write(header + "\n")
+            write_line(data=" %7.4f" % self.unitcell._a, comment="a lattice parameter distance in Bohr radii")
+
+            comment3 = "Notice the value %.2f (%s calculation)" % (self.unitcell.basis[2][2] / a, fid.replace("_", ""))
+            for (
+                i,
+                comment,
+            ) in zip(range(3), ["SPA coordinates of unit cell", "", comment3]):
+                write_line(
+                    data=" %7.4f %7.4f %7.4f" % tuple(self.unitcell.basis[i][j] / a for j in range(3)),
+                    comment=comment,
+                )
 
             # TODO: better nineq_atoms prediction
             try:
-                nineq_atoms = int(kwargs["nineq_atoms"])
+                nineq_atoms = int(kwargs.get("nineq_atoms", len(set(self.atoms))))
             except TypeError:
-                nineq_atoms = self.nineq_atoms()[0]
-            except KeyError:
-                nineq_atoms = len(set(self.atoms))
+                nineq_atoms = self._nineq_atoms()[0]
 
             tags = []
 
             # check to see if nineq_atoms is estimated in code
             if isinstance(nineq_atoms, tuple):
-                f.write(
-                    str("%4i" % nineq_atoms[0]).ljust(33)
-                    + "# number of ineq. atoms in this file (NINEQ)\n"
-                )
+                write_line(data="%4i" % nineq_atoms[0], comment="number of inequivalent atoms in this file (NINEQ)")
 
                 # now loop through each inequivalent atom and add to file
                 elements_dict = nineq_atoms[1]
@@ -1091,150 +568,91 @@ class MTZ_model(Model):
                     atoms = elements_dict.get(element)["atom_list"]
 
                     # Loop through each inequivalent atom type
-                    for ineq_atom in set(atoms):
+                    for inequivalent_atom in set(atoms):
                         # get list of atoms of this type
                         # i.e. same element, radius & valence
-                        ineq_atoms = [atom for atom in atoms if atom == ineq_atom]
-                        ineq_tags = set(
-                            [atom.tag for atom in ineq_atoms if atom.tag not in tags]
-                        )
+                        inequivalent_atoms = [atom for atom in atoms if atom == inequivalent_atom]
+                        inequivalent_tags = {atom.tag for atom in inequivalent_atoms if atom.tag not in tags}
 
                         # select first unused tag from list
-                        for tag in ineq_tags:
+                        for tag in inequivalent_tags:
                             if tag not in tags:
-                                ineq_atom.tag = tag
+                                inequivalent_atom.tag = tag
                                 break
 
                         # avoid duplicate tags for different atoms
-                        while ineq_atom.tag in tags:
-                            number = "".join([ch for ch in atom.tag if ch.isdigit()])
+                        while inequivalent_atom.tag in tags:
+                            number = "".join([ch for ch in inequivalent_atom.tag if ch.isdigit()])
                             try:
                                 number = int(number)
                                 number += 1
                             except ValueError:
                                 number = 1
-                            ineq_atom.tag = (
-                                "".join(
-                                    [
-                                        ch
-                                        for ch in ineq_atom.tag
-                                        if ch.isalpha() or ch in ["_", "-", "+"]
-                                    ]
-                                )
-                                + "_"
-                                + str(number)
-                            )
+                            inequivalent_atom.tag = "".join(
+                                [ch for ch in inequivalent_atom.tag if ch.isalpha() or ch in ["_", "-", "+"]]
+                            ) + "_{}".format(number)
 
-                        f.write(
-                            "{0} {1}".format(
-                                ineq_atom.element.name.capitalize(), ineq_atom.tag
-                            ).ljust(33)
-                            + "# element, name tag\n"
+                        write_line(
+                            data="{0} {1}".format(inequivalent_atom.element.name.capitalize(), inequivalent_atom.tag),
+                            comment="element, name tag",
                         )
-                        f.write(
-                            str(
-                                "%4i %7.4f %7.4f %7.4f"
-                                % (
-                                    len(ineq_atoms),
-                                    ineq_atom.Z,
-                                    ineq_atom.valence,
-                                    ineq_atom.radius / 0.529,
-                                )
-                            ).ljust(33)
-                            + "# atoms in unit cell, "
-                            "Z, valence, Muffin-tin radius (Bohr radii)\n"
+                        write_line(
+                            data="%4i %7.4f %7.4f %7.4f"
+                            % (
+                                len(inequivalent_atoms),
+                                inequivalent_atom.protons,
+                                inequivalent_atom.valence,
+                                inequivalent_atom.radius / 0.529,
+                            ),
+                            comment="atoms in unit cell, Z, valence, Muffin-tin radius (Bohr radii)",
                         )
 
                         # write each inequivalent atom list to file
-                        for atom in ineq_atoms:
-                            f.write(
-                                str(
-                                    " %7.4f %7.4f %7.4f"
-                                    % (
-                                        atom.coordinates[0] / a,
-                                        atom.coordinates[1] / a,
-                                        atom.coordinates[2] / a,
-                                    )
-                                ).ljust(33)
-                                + "# coordinates in SPA units\n"
+                        for atom in inequivalent_atoms:
+                            write_line(
+                                data=" %7.4f %7.4f %7.4f" % tuple(atom.coordinates[i] / a for i in range(3)),
+                                comment="coordinates in SPA units",
                             )
 
             else:  # assume each element is an inequivalent atom
-                f.write(
-                    str("%4i" % nineq_atoms).ljust(33)
-                    + "# number of ineq. atoms in this file (NINEQ)\n"
-                )
+                write_line(data="%4i" % nineq_atoms, comment="number of inequivalent atoms in this file (NINEQ)")
 
                 for atom in set(self.atoms):
                     while atom.tag in tags:
-                        number = "".join([ch for ch in atom.tag if ch.isdigit()])
+                        number_str = "".join([ch for ch in atom.tag if ch.isdigit()])
                         try:
-                            number = int(number)
+                            number = int(number_str)
                             number += 1
                         except ValueError:
                             number = 1
                         atom.tag = (
-                            "".join(
-                                [
-                                    ch
-                                    for ch in atom.tag
-                                    if ch.isalpha() or ch in ["_", "-", "+"]
-                                ]
-                            )
+                            "".join([ch for ch in atom.tag if ch.isalpha() or ch in ["_", "-", "+"]])
                             + "_"
                             + str(number)
                         )
 
                     tags.append(atom.tag)
-                    f.write(
-                        "{0} {1}".format(
-                            atom.element.name.capitalize(), atom.tag
-                        ).ljust(33)
-                        + "# element, name tag\n"
+                    write_line("%s %s" % (atom.element.name.capitalize(), atom.tag), comment="# element, name tag")
+                    data = (tags.count(atom.tag), atom.protons, atom.valence, atom.radius / 0.529)
+                    write_line(
+                        data="%4i %7.4f %7.4f %7.4f" % data,
+                        comment="# atoms in unit cell, Z, valence, Muffin-tin radius (Bohr radii)"
                     )
-                    f.write(
-                        str(
-                            "%4i %7.4f %7.4f %7.4f"
-                            % (
-                                tags.count(atom.tag),
-                                atom.Z,
-                                atom.valence,
-                                atom.radius / 0.529,
-                            )
-                        ).ljust(33)
-                        + "# atoms in unit cell, Z, valence, "
-                        "Muffin-tin radius (Bohr radii)\n"
-                    )
-                    f.write(
-                        str(
-                            " %7.4f %7.4f %7.4f"
-                            % (
-                                atom.coordinates[0] / a,
-                                atom.coordinates[1] / a,
-                                atom.coordinates[2] / a,
-                            )
-                        ).ljust(33)
-                        + "# coordinates in SPA units\n"
+                    write_line(
+                        data=" %7.4f %7.4f %7.4f" % tuple(atom.coordinates[i] / a for i in range(3)),
+                        comment="# coordinates in SPA units\n"
                     )
 
-            f.write(
-                str("%4i" % self.nform).ljust(33)
-                + "# nform=2|1|0 (for rel, will or cav)\n"
-            )
-            f.write(
-                str(" %7.4f" % self.exchange).ljust(33)
-                + "# alpha (for Hartree type exchange term)\n"
-            )
-            f.write(
-                str("%4i" % self.nh).ljust(33)
-                + "# nh (for estimating muffin-tin zero)\n"
-            )
+            write_line(data="%4i" % self.nform, comment="# nform=2|1|0 (for rel, will or cav)")
+            write_line(data=" %7.4f" % self.exchange, comment="# alpha (for Hartree type exchange term)")
+            write_line("%4i" % self.nh, "# nh (for estimating muffin-tin zero)")
+
         # restore backup
         self.atoms = mtz_atoms
 
     def get_elements(self):
         """Return the unique elements in model"""
-        return set([atom.name for atom in self.atoms])
+        return {atom.name for atom in self.atoms}
 
 
 # #==============================================================================

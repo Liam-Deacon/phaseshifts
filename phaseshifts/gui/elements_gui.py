@@ -57,7 +57,7 @@ wxversion.ensureMinimal("2.8")
 import wx
 from wx.lib import fancytext, buttons, rcsizer
 
-from phaseshifts.elements import ELEMENTS, SERIES
+from phaseshifts.core.elements import ELEMENTS, SERIES
 
 
 class MainApp(wx.App):

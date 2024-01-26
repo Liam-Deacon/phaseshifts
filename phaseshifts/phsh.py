@@ -1,4 +1,4 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/env python
 # encoding: utf-8
 
 ##############################################################################
@@ -59,10 +59,12 @@ from glob import glob
 from shutil import copy
 
 import phaseshifts
+from phaseshifts.leed import CSearch
 import phaseshifts.settings
 from phaseshifts import model, atorb
 from phaseshifts.conphas import Conphas
-from phaseshifts.leed import Converter, CLEED_validator, CSearch
+from phaseshifts.adaptors.cleed_adaptors import CleedInputFileToMuffinTinPotentialModelConverter
+from phaseshifts.validators.cleed_validators import CleedInputFileValidator
 
 try:
     from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
@@ -127,10 +129,10 @@ class Wrapper(object):
         Returns
         -------
         output_files : list(str)
-           A list of phase shift output filenames
+            A list of phase shift output filenames
         """
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        if model_name == None:
+        if model_name is None:
             model_name = "atomic"
 
         # check formatting
@@ -152,8 +154,8 @@ class Wrapper(object):
 
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(bulk_file):
-            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=VERBOSE)
+        if CleedInputFileValidator.is_cleed_file(bulk_file):
+            bulk_mtz = CleedInputFileToMuffinTinPotentialModelConverter.import_cleed(bulk_file, verbose=VERBOSE)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
                 tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
@@ -164,8 +166,8 @@ class Wrapper(object):
 
         # Load slab model and calculate MTZ
         slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(slab_file):
-            slab_mtz = Converter.import_CLEED(slab_file)
+        if CleedInputFileValidator.is_cleed_file(slab_file):
+            slab_mtz = CleedInputFileToMuffinTinPotentialModelConverter.import_cleed(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
             slab_file = os.path.join(
                 tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
@@ -206,8 +208,8 @@ class Wrapper(object):
 
         if VERBOSE:
             print("\nModel")
-            print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
-            print("slab atoms: %s" % [s for s in slab_mtz.atoms])
+            print("bulk atoms: %s" % list(bulk_mtz.atoms))
+            print("slab atoms: %s" % list(slab_mtz.atoms))
 
         # calculate muffin-tin potential for bulk model
         print("\nCalculating bulk muffin-tin potential...")
@@ -223,7 +225,7 @@ class Wrapper(object):
                 % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
             )
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        bulk_mtz_file = bulk_mtz.calculate_muffin_tin_potential(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
@@ -257,7 +259,7 @@ class Wrapper(object):
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
-        slab_mtz_file = slab_mtz.calculate_MTZ(
+        slab_mtz_file = slab_mtz.calculate_muffin_tin_potential(
             cluster_file=slab_file,
             output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
             atomic_file=slab_atomic_file,
@@ -343,8 +345,8 @@ class Wrapper(object):
                 if "range" in kwargs:
                     try:
                         # get values
-                        with open(mufftin_filepath, "r") as f:
-                            lines = [line for line in f]
+                        with open(mufftin_filepath, mode="r", encoding="ascii") as file_ptr:
+                            lines = file_ptr.readlines()
 
                         ei, de, ef, lsm, vc = [
                             t(s)
@@ -368,14 +370,13 @@ class Wrapper(object):
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
-                        with open(mufftin_filepath, "w") as f:
-                            f.write("".join([str(line) for line in lines]))
+                        with open(mufftin_filepath, mode="w", encoding="ascii") as file_ptr:
+                            file_ptr.write("".join([str(line) for line in lines]))
 
-                    except any as e:
+                    except Exception as err:
                         sys.stderr.write(
-                            "Unable to change phase shift energy "
-                            "range - using Barbieri/Van Hove "
-                            "default of 20-300eV in 5eV steps\n"
+                            "Unable to change phase shift energy range - using Barbieri/Van Hove "
+                            "default of 20-300eV in 5eV steps (due to '{}')\n".format(err)
                         )
                         sys.stderr.flush()
 
@@ -395,7 +396,7 @@ class Wrapper(object):
                 )
 
                 # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
+                for i, phase_shift in enumerate(phaseshifts):
                     filename = os.path.splitext(phasout_files[i])[0]
                     if out_format == "curve":
                         filename += ".cur"
@@ -409,7 +410,7 @@ class Wrapper(object):
                         input_files=[phasout_files[i]],
                         output_file=filename,
                         formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
+                        lmax=lmax_dict[phase_shift],
                     )
                     phsh.calculate()
 
@@ -454,8 +455,8 @@ class Wrapper(object):
             dst = os.path.dirname(dst)
         if not os.path.exists(dst):
             try:
-                os.makedirs(dst)
-            except (PermissionError, WindowsError):
+                os.makedirs(dst, exist_ok=True)
+            except (PermissionError, OSError):
                 pass
 
         # copy each phase shift file to directory
@@ -502,16 +503,16 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % phaseshifts.__version__
     program_version_message = "%%(prog)s %s" % program_version
-    program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
+    program_shortdesc = (__import__("__main__").__doc__ or "").split("\n")[1]
     program_license = """%s
 
-      Created by Liam Deacon using LEEDPACK code (kindly permitted by Micheal Van Hove).
-      Copyright 2013-%s Liam Deacon. All rights reserved.
+    Created by Liam Deacon using LEEDPACK code (kindly permitted by Micheal Van Hove).
+    Copyright 2013-%s Liam Deacon. All rights reserved.
 
-      Licensed under the MIT license (see LICENSE file for details)
+    Licensed under the MIT license (see LICENSE file for details)
 
-      Please send your feedback, including bug notifications
-      and fixes, to: %s
+    Please send your feedback, including bug notifications
+    and fixes, to: %s
 
     usage:-
     """ % (
@@ -641,7 +642,7 @@ def main(argv=None):
         ### handle keyboard interrupt ###
         return 0
     except Exception as err:
-        if DEBUG or TESTRUN:
+        if phaseshifts.settings.DEBUG or phaseshifts.settings.TESTRUN:
             raise
         indent = len(program_name) * " "
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
@@ -701,7 +702,8 @@ def main(argv=None):
             print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))
 
         # execute subprocess
-        subprocess.check_call(leed_cmd)
+        return_code = subprocess.check_call(leed_cmd)
+    return return_code
 
 
 if __name__ == "__main__":

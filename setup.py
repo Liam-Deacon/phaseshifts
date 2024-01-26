@@ -150,7 +150,7 @@ README = "README.md"
 dist = setup(
     name="phaseshifts",
     packages=find_packages(),
-    version=getattr(phaseshifts, "__version__", "0.1.8-dev"),
+    version=getattr(phaseshifts, "__version__", "0.2.0-dev"),
     author="Liam Deacon",
     author_email="liam.m.deacon@gmail.com",
     license="MIT License",
@@ -161,7 +161,7 @@ dist = setup(
     long_description=(None if not os.path.exists(README) else open(README).read()),
     long_description_content_type="text/markdown",
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 3 - Alpha",  # NOTE: Move out of Alpha status once API is stable and well tested
         "Environment :: Console",
         "Environment :: X11 Applications :: Qt",  # The end goal is is to have Qt or other GUI frontend
         "Intended Audience :: Science/Research",

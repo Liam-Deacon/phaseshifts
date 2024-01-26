@@ -85,7 +85,7 @@ try:
 except ImportError:
     mendeleev = None  # Need to install mendeleev
 
-from phaseshifts import elements
+from phaseshifts.core import elements
 
 elements_dict = OrderedDict(
     [
