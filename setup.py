@@ -368,7 +368,12 @@ f2py_exts = (
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
-        )
+        ),
+        Extension(
+            name='phaseshifts.lib.libhartfock',
+            extra_compile_args=[],
+            sources=[os.path.join("phaseshifts", "lib", 'EEASiSSS', 'hf.f90')],
+        ),
     ]
 )
 
