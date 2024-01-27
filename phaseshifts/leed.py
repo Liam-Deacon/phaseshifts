@@ -341,10 +341,9 @@ class Converter:
         z_dist = 4.0  # calculate 'c' for slab from atom coordinates
         z_min = sys.float_info.max
         z_max = sys.float_info.min
-        title = "/".join([line.split(':')[1].lstrip() 
-                         for line in lines
-                         if line.startswith('c:')])     
-        
+        title = "/".join(
+            [line.split(":")[1].lstrip() for line in lines if line.startswith("c:")]
+        )
 
         # Hartree-Fock exchange term alpha
         try:

@@ -141,9 +141,9 @@ f2py_exts = (
             sources=f2py_exts_sources["libphsh"],
         ),
         Extension(
-            name='phaseshifts.lib.libhartfock',
+            name="phaseshifts.lib.libhartfock",
             extra_compile_args=[],
-            sources=[os.path.join("phaseshifts", "lib", 'EEASiSSS', 'hf.f90')],
+            sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
         ),
     ]
 )

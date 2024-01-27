@@ -79,7 +79,10 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % __date__
     program_build_date = str(__updated__)
-    program_version_message = "%%(prog)s %s (%s)" % (program_version, program_build_date)
+    program_version_message = "%%(prog)s %s (%s)" % (
+        program_version,
+        program_build_date,
+    )
     program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
     program_license = """%s
 
@@ -87,13 +90,16 @@ def main(argv=None):
         and comments.
 
     usage:-
-    """ % (program_shortdesc)
+    """ % (
+        program_shortdesc
+    )
 
     return_code = 0
     try:
         # Setup argument parser
         parser = argparse.ArgumentParser(
-            description=program_license, formatter_class=argparse.RawDescriptionHelpFormatter
+            description=program_license,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
         )
         parser.add_argument(
             "-i",
@@ -122,7 +128,9 @@ def main(argv=None):
             dest="chgden_dir",
             metavar="<chgden_dir>",
             default=(
-                os.path.expandvars("ATLIB") if os.path.expandvars("ATLIB") != "" else os.path.expanduser("~/atlib")
+                os.path.expandvars("ATLIB")
+                if os.path.expandvars("ATLIB") != ""
+                else os.path.expanduser("~/atlib")
             ),
             help="Specifies the output directory to place "
             "the calculated atomic charge density files into. "
@@ -133,14 +141,20 @@ def main(argv=None):
             "[default: %(default)s]",
         )
         parser.add_argument(
-            "-v", "--verbose", dest="verbose", action="count", help="Set verbosity level. [default: %(default)s]"
+            "-v",
+            "--verbose",
+            dest="verbose",
+            action="count",
+            help="Set verbosity level. [default: %(default)s]",
         )
-        parser.add_argument("-V", "--version", action="version", version=program_version_message)
+        parser.add_argument(
+            "-V", "--version", action="version", version=program_version_message
+        )
 
         # Process arguments
         args, unknown = parser.parse_known_args()
 
-        verbose = int(getattr(args,"verbose", False))
+        verbose = int(getattr(args, "verbose", False))
 
         if verbose > 0 and len(unknown) > 0:
             for arg in unknown:
@@ -156,7 +170,10 @@ def main(argv=None):
         args.chgden_dir = os.path.expanduser(os.path.expandvars(args.chgden_dir))
         if not os.path.isdir(args.chgden_dir):
             if verbose:
-                sys.stderr.write("hf - warning: '%s' does not exist. " "Creating directory..." % args.chgden_dir)
+                sys.stderr.write(
+                    "hf - warning: '%s' does not exist. "
+                    "Creating directory..." % args.chgden_dir
+                )
                 sys.stderr.flush()
             os.makedirs(args.chgden_dir)
 
@@ -175,6 +192,7 @@ def main(argv=None):
         return_code = 2
 
     return return_code
+
 
 if __name__ == "__main__":
     main()

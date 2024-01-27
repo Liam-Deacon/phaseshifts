@@ -30,29 +30,28 @@
 #                                                                            #
 ##############################################################################
 
-''' Provides an abstract factory class for phase shift calculations '''
+""" Provides an abstract factory class for phase shift calculations """
 
 from wrappers import BVHWrapper, EEASiSSSWrapper
 import sys
 
 
 class PhaseshiftFactory(object):
-    '''Class for backend selection'''
+    """Class for backend selection"""
+
     backend = object
     phsh_files = []
-    
+
     def __init__(self, backend, **kwargs):
         package = str(backend).lower()
         self.__dict__.update(kwargs)
         try:
             if package not in ["vht", "eeasisss"]:
-                sys.stderr.write("Invalid package selected - "
-                                 "using default (BVH)\n")
+                sys.stderr.write("Invalid package selected - " "using default (BVH)\n")
                 sys.stderr.flush()
                 self.backend = BVHWrapper
             else:
-                if (package == "bvh" or package == "van hove" 
-                   or package == "barbieri"):
+                if package == "bvh" or package == "van hove" or package == "barbieri":
                     self.backend = BVHWrapper
                 elif package == "eeasisss" or package == "rundgren":
                     self.backend = EEASiSSSWrapper
@@ -60,17 +59,18 @@ class PhaseshiftFactory(object):
             sys.stderr.write("Invalid phaseshifts backend\n")
             sys.stderr.flush()
             sys.exit(-2)
-    
+
     def createAtorbFiles(self):
         pass
-    
+
     def getPhaseShiftFiles(self):
-        '''Returns a list of generated phase shift files'''
-        return self.backend.autogen_from_input(self.bulk_file, 
-                                               self.slab_file, 
-                                               tmp_dir=self.tmp_dir, 
-                                               lmax=int(self.lmax),
-                                               format=self.format, 
-                                               store=self.store,
-                                               range=self.range
-                                               )     
+        """Returns a list of generated phase shift files"""
+        return self.backend.autogen_from_input(
+            self.bulk_file,
+            self.slab_file,
+            tmp_dir=self.tmp_dir,
+            lmax=int(self.lmax),
+            format=self.format,
+            store=self.store,
+            range=self.range,
+        )
