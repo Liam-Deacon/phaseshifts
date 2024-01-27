@@ -22,8 +22,8 @@ Contents:
    modules
    porting_phshift2007_notes
    authors
-   Van_Hove_Phase_Shift_Package_Guide
-   EEASiSSS_Phase_Shift_Package_Guide
+   bvh_package
+   eeasisss_package
    *
 
 Indices and tables

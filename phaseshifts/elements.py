@@ -287,7 +287,6 @@ class Element(object):
         if abs(frac - 1.0) > 1e-9:
             raise ValueError("%s - sum of isotope abundances != 1.0" % self.symbol)
 
-
 class Isotope(object):
     """Isotope massnumber, relative atomic mass, and abundance."""
 
