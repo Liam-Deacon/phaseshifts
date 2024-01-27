@@ -16,9 +16,9 @@ The aim of this package is to both automate and simplify the generation of
 phase shift files in a manner that is easy for the computational hitch-hiker,
 but powerful for those that wish to extend the package for particular needs.
 
-The `phsh.py` script unifies many of the steps needed for the phase
-shift calculations into a single command intended for the end-user. For more
-information please read the documentation at
+The :ref:`phsh` script unifies many of the steps needed for the phase 
+shift calculations into a single command intended for the end-user. For more 
+information please read the documentation at 
 `<http://pythonhosted.org//phaseshifts/>`_
 
 -------------------------
@@ -58,27 +58,30 @@ package [#]_ [#]_ [#]_ can also calculate phase shifts and is used
 in a number of recent works on oxides [#]_ [#]_. In the words of the package's
 author, John Rundgren, the main qualifications of the program are:
 
-+ The program accepts three sources of atomic potentials:
-   1. E. L. Shirley's atomic program [#]_ applied together with Mattheiss�s
-   superposition method.
-   2. The DFT-SCF program of V. Eyert using the full-potential
-   Augmented Spherical Wave method [#]_ .
-   3. The DFT-SCF program `WIEN2k <http://www.wien2k.at/>`_ using the
-   full-potential Augmented Plane Wave method.
++ The program accepts three sources of atomic potentials: 
+    
+    1. E. L. Shirley�s atomic program [#]_ applied together with Mattheiss�s 
+    superposition method.
+           
+    2. The DFT-SCF program of V. Eyert using the full-potential 
+    Augmented Spherical Wave method [#]_ .
+          
+    3. The DFT-SCF program `WIEN2k <http://www.wien2k.at/>`_ using the 
+    full-potential Augmented Plane Wave method.
+           
++ The exchange-correlation interaction between the scattered electron and the 
+  crystal�s electron gas generates an energy-dependent inner potential. 
+  The phase shifts are referred to the in-crystal kinetic energy, and it is 
+  supposed that an associated LEED code uses the same standard.
++ The crystal potential is everywhere continuous so as to exclude fortuitous 
+  standing-wave electron resonances in the muffin-tin spheres and pertaining 
+  fortuitous wobblings in the phase shift versus energy curves.
++ The optimization of the muffin-tin radii is made using the method of 
+  `Differential Evolution <http://www.physik.uni-augsburg.de/~eyert/ASWhome.shtml/>`_ 
+  , an extremely efficient minimizer.
 
-+ The exchange-correlation interaction between the scattered electron and the
-   crystal's electron gas generates an energy-dependent inner potential.
-   The phase shifts are referred to the in-crystal kinetic energy, and it is
-   supposed that an associated LEED code uses the same standard.
-+ The crystal potential is everywhere continuous so as to exclude fortuitous
-   standing-wave electron resonances in the muffin-tin spheres and pertaining
-   fortuitous wobblings in the phase shift versus energy curves.
-+ The optimization of the muffin-tin radii is made using the method of
-   `Differential Evolution <http://www.physik.uni-augsburg.de/~eyert/ASWhome.shtml/>`_,
-   an extremely efficient minimizer.
-
-.. note:: A short EEASiSSS users guide is appended to the input template files
-         `inputA` and `inputX` distributed with the original program package.
+.. note:: Please refer to the short :ref:`EEASiSSS_Phase_Shift_Package_Guide` for more information 
+          relating to using EEASiSSS.
 
 .. [#] J Rundgren, Phys. Rev. B 68, 125405 (2003).
 .. [#] J Rundgren, Phys. Rev. B 76, 195441 (2007).

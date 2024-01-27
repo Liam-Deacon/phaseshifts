@@ -42,21 +42,13 @@ import os
 from shutil import copy
 
 
+def expand_filepath(path):
+    """Expands the filepath for environment and user variables"""
+    return os.path.normpath(os.path.expanduser(os.path.expandvars(os.path.expanduser(path))))
+
+
 class FileUtils(object):
-    """
-    Class for performing phase shift related file operations
-    """
-
-    def __init__(self, params):
-        """
-        Constructor
-        """
-        pass
-
-    @staticmethod
-    def expand_filepath(path):
-        """Expands the filepath for environment and user variables"""
-        return os.path.expanduser(os.path.expandvars(os.path.expanduser(path)))
+    """Class for performing phase shift related file operations."""
 
     @staticmethod
     def copy_files(files, dst, verbose=False):
@@ -71,11 +63,7 @@ class FileUtils(object):
         # do check and create directory if needed
         if os.path.isfile(dst):
             dst = os.path.dirname(dst)
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-            except WindowsError:
-                pass
+        os.makedirs(dst, exist_ok=True)
 
         # copy each phase shift file to directory
         if verbose:

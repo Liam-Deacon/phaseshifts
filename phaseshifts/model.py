@@ -432,6 +432,16 @@ class Model(object):
             raise CoordinatesError("Not every atom position in model is unique!\n%s\n" % info)
 
     @property
+    def name(self):
+        '''Returns the model name'''
+        return self.name or ''
+    
+    @name.setter
+    def name(self, name):
+        '''Sets the name of the model'''
+        self.name = str(name) if not isinstance(name, str) else name
+
+    @property
     def elements(self):
         """Returns a list of unique elements within the model"""
         return {atom.element for atom in self.atoms}
