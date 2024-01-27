@@ -125,7 +125,7 @@ contains
   external errsub
 !f2py integer np
 !f2py intent(in,out) val
-!f2py errsub(np,val)   
+!f2py errsub(np,val)
 
   ! Initialize a population.
   pop_XC=0.0d0
@@ -4357,5 +4357,3 @@ end subroutine NeighborShells
   eev(1:ne)=egrid(1:ne)
   return
   end subroutine EnergyGrid
-
-

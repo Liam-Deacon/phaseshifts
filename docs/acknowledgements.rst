@@ -16,7 +16,7 @@ following people who have made this package a reality:
    PhD thesis (refer to the thesis: *E.L. Shirley, "Quasiparticle calculations in
    atoms and many-body core-valence partitioning", University of Illinois, Urbana, 1991*).
 
- - **J. Rundgren** - who developed the EEASiSSS package and collaborated on 
+ - **J. Rundgren** - who developed the EEASiSSS package and collaborated on
    numerous improvements to the underlying Fortran code base. Please cite
    *J. Rundgren, Phys. Rev. B 68 125405 (2003).*
 

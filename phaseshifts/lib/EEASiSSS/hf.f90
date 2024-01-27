@@ -7,32 +7,32 @@
 ! ref.: E.L. Shirley, PhD thesis, University of Illinois (1991),
 !       unpublished.
 ! ref.: S. Kotochigova, Z.H. Levine, E.L. Shirley, M.D. Stiles,
-!       and C.W. Clark, Phys. Rev. A 55, 191 (1997); 
+!       and C.W. Clark, Phys. Rev. A 55, 191 (1997);
 !       ibid. A 56, 5191 (1997).
 !
 ! The author appreciates acknowledgment in publications, by citing the
-! above two references when the code is first mentioned, e.g. 
+! above two references when the code is first mentioned, e.g.
 ! " ... using an atomic program [*,*], we have ... "
-! 
-! This program is a code originally written by Eric Shirley during his 
-! thesis work at the University of Illinois at Urbana-Champaign.  
-! Since then, the code has undergone many minor revisions, refinements,
-! improvements in numerical methods used, and so forth. 
 !
-! As a research tool, the program is provided with the understanding 
+! This program is a code originally written by Eric Shirley during his
+! thesis work at the University of Illinois at Urbana-Champaign.
+! Since then, the code has undergone many minor revisions, refinements,
+! improvements in numerical methods used, and so forth.
+!
+! As a research tool, the program is provided with the understanding
 ! that it may be imperfect. However, many tests argue for its accuracy
 ! as follows:
 !
 !  [1] The above work by Kotochigova et al.
-!  [2] Results cited in Shirley's thesis, as well the back-to-back 
-!      papers, E.L. Shirley and R.M. Martin, Phys. Rev. B 47, 15404 
+!  [2] Results cited in Shirley's thesis, as well the back-to-back
+!      papers, E.L. Shirley and R.M. Martin, Phys. Rev. B 47, 15404
 !      and 15413 (1993).
 !  [3] Comparison against results published by Charlotte Froese Fischer,
 !      The Hartree-Fock method for atoms: a numerical approach (Wiley,
 !      New York, 1977).
 !  [4] Band structure results obtained with pseudopotentials calculated
 !      in the code.
-!  [5] A comparison of Hartree-Fock results to OPM results by 
+!  [5] A comparison of Hartree-Fock results to OPM results by
 !      M.D. Stiles (unpublished).
 !
 ! And there are other tests, too.  However, tests are not guarantees,
@@ -59,7 +59,7 @@
       integer, parameter  :: nrmax = 17010
       integer, parameter  :: ntmax = 10
       integer, parameter  :: npmax = 60
-      real(dp) :: rmifac, rmafac, x137   
+      real(dp) :: rmifac, rmafac, x137
       !LD: parameter statements separate to real due to limitations of f2py
       parameter (rmifac = 1.d-06)        !0.00000001d0 !JR
       parameter (rmafac = 200.d0)        !800.d0       !JR
@@ -97,26 +97,26 @@
       character(len=1) :: ichar,txt
       character(len=3) :: mode
       character(len=10) :: atom
-      
+
       allocate( no(iorbs),nl(iorbs),nm(iorbs),is(iorbs))
       allocate( njrc(4),ilp(iorbs),r(nrmax),dr(nrmax),r2(nrmax))
       allocate( ev(iorbs),occ(iorbs),xnj(iorbs))
       allocate( ek(iorbs),phe(nrmax,iorbs),orb(nrmax,iorbs))
       allocate( vi(nrmax,7),cq(nrmax),vctab(nrmax,0:3))
-      allocate( vold(iorbs),vnew(iorbs), wgts( nwgmx ) ) 
-      
+      allocate( vold(iorbs),vnew(iorbs), wgts( nwgmx ) )
+
       !Setup input and log file units
       open(inpunit,file=trim(input_file),status='old')
       if (len_trim(log_file) .gt. 0) then
         logunit=61
         open(logunit,file=trim(log_file),status='replace')
       else
-        !logunit=6 ! stdout (on ifort & gfortran) => no need to open unit 
+        !logunit=6 ! stdout (on ifort & gfortran) => no need to open unit
         logunit=output_unit ! portable stdout but needs Fortran 2003 compliant compiler
       end if
-      if (len_trim(outdir) .eq. 0) outdir = '.' ! empty string passed to function 
+      if (len_trim(outdir) .eq. 0) outdir = '.' ! empty string passed to function
       outdir = adjustl(outdir)
-      
+
       rel = 0.d0
       nst = 2
       read(inpunit,'(a)') ichar
@@ -162,7 +162,7 @@
              if(txt=='w') goto 900                             !JR
            enddo                                               !JR
          else                                                  !JR
-           write(logunit,'(2a)') outfile(1:io),' calculation starts'!JR 
+           write(logunit,'(2a)') outfile(1:io),' calculation starts'!JR
          endif                                                 !JR
          call initiali(zorig,nr,rmin,rmax,r,dr,r2,dl,njrc,xntot,nel)
          do j=0,3
@@ -236,7 +236,7 @@
         do i = 1, nel
           write ( 99, * ) nl( i )
           rlast = r( 1 )
-          j = 2         
+          j = 2
           done = .false.
           do while ( .not. done )
             if ( r( j ) .gt. rlast + 0.01d0 ) then
@@ -386,7 +386,7 @@
       if ( unit .eq. 'invcm' ) mult = 0.000123985d0 / 27.2114d0
       if ( mult .lt. 0.d0 ) stop 'unsupported unit'
       value = value * mult
-      unit = 'hartree' 
+      unit = 'hartree'
       return
       end subroutine convert
 !----------------------------------------------------------------------
@@ -399,7 +399,7 @@
       integer  :: i, j, pow
       real(dp) :: pref, rtar, term, pi
       parameter (pi = 3.1415926535897932384d0)
-      
+
       do i=1,nlev
         write (6,'(2x,2i5)') i,llev(i)
         pow = llev( i ) + 1
@@ -653,10 +653,10 @@
           orb(ii)=orb(ii)+rpot*addin(ii)
           if (istart.eq.1) then
           etot=etot+rtot*dlr/2.d0*(&
-           +addin(ii+0)*q(ii+0)*q(ii+0)*14.d0*r(ii+0)& 
-           +addin(ii+1)*q(ii+1)*q(ii+1)*64.d0*r(ii+1)& 
-           +addin(ii+2)*q(ii+2)*q(ii+2)*24.d0*r(ii+2)& 
-           +addin(ii+3)*q(ii+3)*q(ii+3)*64.d0*r(ii+3)& 
+           +addin(ii+0)*q(ii+0)*q(ii+0)*14.d0*r(ii+0)&
+           +addin(ii+1)*q(ii+1)*q(ii+1)*64.d0*r(ii+1)&
+           +addin(ii+2)*q(ii+2)*q(ii+2)*24.d0*r(ii+2)&
+           +addin(ii+3)*q(ii+3)*q(ii+3)*64.d0*r(ii+3)&
            +addin(ii+4)*q(ii+4)*q(ii+4)*14.d0*r(ii+4))
           end if
         end do
@@ -843,7 +843,7 @@
       li=nl (i)
       mi=nm (i)
 
-!  part of electron-nucleus term ... 
+!  part of electron-nucleus term ...
 
       fa=zvalue*occ(i)*dl/45.d0
       etni=0.d0
@@ -886,9 +886,9 @@
          cg(li,li,la,0 , 0 )*cg(lj,lj,la,0 , 0 )
       if (mi+mj.ne.2*((mi+mj)/2)) coeff=-coeff
       call getrs(coeff,i,j,occ(i),occ(j),ratio,ri,rj,rc)
-      call mkvaltab( nr, r, dl, phe( 1, i ), phe( 1, i ),& 
+      call mkvaltab( nr, r, dl, phe( 1, i ), phe( 1, i ),&
                     valtab, la )
-      call mkvaltab( nr, r, dl, phe( 1, j ), phe( 1, j ),& 
+      call mkvaltab( nr, r, dl, phe( 1, j ), phe( 1, j ),&
                     ualtab, la )
       do k=1,nr
         orb(k,j)=orb(k,j)+valtab( k )*ri
@@ -899,12 +899,12 @@
       bwgt = 14.d0 / 45.d0
       do k = 1, nr
         bwgt = bwgt * rc * dl * r( k ) * 0.5d0
-        etot = etot + bwgt * ualtab( k ) *& 
+        etot = etot + bwgt * ualtab( k ) *&
                      phe( k, i ) * phe( k, i ) +&
                      bwgt * valtab( k ) *&
                      phe( k, j ) * phe( k, j )
         bcount = bcount + 1
-        if ( bcount .eq. 4 ) then 
+        if ( bcount .eq. 4 ) then
           bcount = 0
           bwgt = 28.d0 / 45.d0
         else
@@ -1012,20 +1012,20 @@
                     coeff=col*ccg*ccg
                   end if
                   call getrs(coeff,i,j,occ(i),occ(j),ratio,ri,rj,rc)
-                  call mkvaltab( nr, r, dl, phe( 1, i ), phe( 1, j ),& 
+                  call mkvaltab( nr, r, dl, phe( 1, i ), phe( 1, j ),&
                                 valtab, la )
                   exsum = 0.d0
                   bcount = 0
                   bwgt = 14.d0 / 45.d0
                   do k = 1, nr
-                    etot = etot -& 
+                    etot = etot -&
                       rc * valtab( k ) * dl * r( k ) * bwgt *&
                       phe( k, i ) * phe( k, j )
-                    exsum = exsum -& 
+                    exsum = exsum -&
                       rc * valtab( k ) * dl * r( k ) * bwgt *&
                       phe( k, i ) * phe( k, j )
                     bcount = bcount + 1
-                    if ( bcount .eq. 4 ) then 
+                    if ( bcount .eq. 4 ) then
                       bcount = 0
                       bwgt = 28.d0 / 45.d0
                     else
@@ -1057,7 +1057,7 @@
         rewind 66
         do i = 1, nel
           do k = 1, nr
-            write ( 66, '(2x,4i5,2(2x,1e20.12))' )& 
+            write ( 66, '(2x,4i5,2(2x,1e20.12))' )&
            i, nel, k, nr, r( k ), orb( k, i )
           end do
         end do
@@ -1143,10 +1143,10 @@
         if ((xn1+xn2)/r2(i).lt.1.d-30) then
           nex=0.d0
           ec=0.d0
-          ux1=0.d0 
-          ux2=0.d0 
-          uc1=0.d0 
-          uc2=0.d0 
+          ux1=0.d0
+          ux2=0.d0
+          uc1=0.d0
+          uc2=0.d0
         else
           call exchcorr(rel,r2(i),xn1,xn2,nex,ec,ux1,ux2,uc1,uc2,x137)
         end if
@@ -1228,11 +1228,11 @@
       return
       end subroutine rest
 !-----------------------------------------------------------------------
-!  subr gets Clebsch-Gordan coefficients, in the form of 
-!  cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's 
+!  subr gets Clebsch-Gordan coefficients, in the form of
+!  cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's
 !  'Elementary Theory of Angular Momentum', p. 39, Wigner's formula.
 !  those coefficients listed are only those for which l1.ge.l2.
-!  coefficients known to be zero because of either the L or M 
+!  coefficients known to be zero because of either the L or M
 !  selection rules are not computed, and should not be sought.
 
       subroutine clebschgordan(nel,nelmx,nl,cg)
@@ -1503,7 +1503,7 @@
         ec=0.d0
         ux1=0.d0
         ux2=0.d0
-        uc1=0.d0      
+        uc1=0.d0
         uc2=0.d0
 
       else
@@ -1599,7 +1599,7 @@
         dfdz=ft/denom*((1.d0+zeta)**trd-(1.d0-zeta)**trd)
         ec=ecu+f*(ecp-ecu)
         uc1=ucu+f*(ucp-ucu)+(ecp-ecu)*(1.d0-zeta)*dfdz
-        uc2=ucu+f*(ucp-ucu)-(ecp-ecu)*(1.d0+zeta)*dfdz        
+        uc2=ucu+f*(ucp-ucu)-(ecp-ecu)*(1.d0+zeta)*dfdz
 
 !  get the final functional and potential.
 
@@ -1645,9 +1645,9 @@
       if (ir.eq.0) then
         !'w' has ir=0.
 !JR     write ( 6, * ) ' nst = ', nst
-!JR     write (iu1,102)  etot,nst,rel,nr,rmin,rmax,zorig,xntot,nel 
+!JR     write (iu1,102)  etot,nst,rel,nr,rmin,rmax,zorig,xntot,nel
       else
-        read  (iu1,102)  etot,nst,rel,nr,rmin,rmax,zorig,xntot,nel 
+        read  (iu1,102)  etot,nst,rel,nr,rmin,rmax,zorig,xntot,nel
       end if
  102  format (f15.6,i2,f4.1,i5,d15.8,d15.8,f6.1,f12.8,i3)
 
@@ -1880,7 +1880,7 @@
       end do
       write (logunit,'(1x,1a16,2es22.14)') &
            'total energy =  ',etot,etot*27.2114d0
-           
+
 !JR      open(unit=99,file='chgsum',form='formatted',status='unknown')
 !JR      rewind 99
 !JR      do i=1,nr
@@ -1930,13 +1930,13 @@
       integer :: njrc( 4 ), nel
       integer :: no( nel ), nl( nel ), nm( nel )
       real(dp) :: vi( nrmax, 7 ), zorig
-      real(dp) :: xnj( nel ) 
+      real(dp) :: xnj( nel )
 
       integer :: is( nel )
       real(dp) :: ratio
       real(dp) :: ev( nel ), occ( nel ), ek( nel )
       real(dp) :: orb( nrmax, nel )
-   
+
       integer :: iuflag, vtry, isuse
       real(dp) :: xnum
       real(dp) :: cq( nr ), vold( nel ), vnew( nel )
@@ -1975,7 +1975,7 @@
             end if
             ev(i)=evi
           else
-            evi = ev( i ) 
+            evi = ev( i )
             call elener(nl(i),xkappa,xnj(i),zeff,&
                        evi,phe(1,i),v,xm1,xm2,nr,r,r2,dl,rel,isuse)
           end if
@@ -1987,7 +1987,7 @@
             ll=6-ll
           end do
           ek(i)=dl*ekk/3.d0
-        end if 
+        end if
         etot=etot+ek(i)*occ(i)
       end do
       call getpot(etot,rel,alfa,dl,nr,dr,r,r2,phe,ratio,orb,&
@@ -2008,7 +2008,7 @@
       integer :: njrc(4)
       real(dp) :: v(nr),r(nr),orb(nr)
       real(dp) :: xm1(nr),xm2(nr),vi(nrmax,7)
-      
+
       integer :: j,lp,lpx,lp2,l1,l2,lu,ij
       real(dp) :: alpha,aa,a2,zaa,za2,d1,d2,w1,w2
       real(dp) :: dvdl,ddvdll,dvdr,ddvdrr
@@ -2542,7 +2542,7 @@
         if (rtest.lt.0.d0) then
           write (6,*) 'Z>137 IS TOO BIG.'
           stop
-        end if  
+        end if
         ss=sqrt(rtest)
       end if
       ss=plead
@@ -2686,7 +2686,7 @@
         if (rtest.lt.0.d0) then
           write (6,*) 'Z>137 IS TOO BIG.'
           stop
-        end if  
+        end if
         ss=sqrt(rtest)
       end if
       ss=plead
@@ -2726,7 +2726,7 @@
       cont = .true.
       ready = .false.
       count = 0
-      i = 3 
+      i = 3
       do while ( cont .and. ( ief .eq. 0 ) )
         t=e-v(i)
         xm=1.d0+a2*t
@@ -2736,7 +2736,7 @@
         xk2=r2(i)*(tm*t-xmx*(xkappa/r(i)+0.75d0*xmx)+xm2(i)/tm)-xl4
         dk2=1.d0+dl2*xk2
         if ( dk2 .lt. 0.d0 ) then
-!CD        write ( 6, * ) 'dk2 trouble ...' 
+!CD        write ( 6, * ) 'dk2 trouble ...'
           ief = - 1
         end if
         phi(i)=p2*sqrt(xm*r(i))/dk2
@@ -2944,7 +2944,7 @@
           if ((im.eq.0).and.((cq(i)*ratio).gt.vq(i))) im=i
         end do
         if (ratio.lt.0) im=int(log(-ratio/r(1))/dl)
-        write (6,*)   im 
+        write (6,*)   im
         write (6,*) r(im)
         cor0=cq(im  )/r(im  )
         corp=cq(im+1)/r(im+1)
@@ -3101,7 +3101,7 @@
 
       integer  :: idoflag,nn,ief,ii
       real(dp) :: vl,vh,dum1,dum2(nrmax,7),xactual,xla,xerror,dxdla
-      real(dp) :: vmaybe,tmp 
+      real(dp) :: vmaybe,tmp
       real(dp) :: hb
       external hb
 
@@ -3186,7 +3186,7 @@
         do ii=1,n-l-1
           do while (phi(j+1)*phi(j).gt.0.d0)
             j=j+1
-          end do 
+          end do
         end do
         k=j+1
         do while (phi(k+1)/phi(k).gt.1.d0)
@@ -3405,7 +3405,7 @@
       return
       end subroutine fourier
 !------------------------------------------------------------------------
-!  exchange correlation routine, ceperley-alder data, 
+!  exchange correlation routine, ceperley-alder data,
 !  as parametrized by vosko, wilk and nusair., with macdonald vosko.
       subroutine exchcorr(rel,rr,rh1,rh2,nex,ec,ux1,ux2,uc1,uc2,x137)
       use dprec
@@ -3510,7 +3510,7 @@
       real(dp) :: rs, eecf, vwngen, der
       external vwngen
       parameter (a=0.0310907d0,b=7.06042d0,c=18.0578d0,x0=-0.32500d0)
-      
+
       eecf=vwngen(rs,a,b,c,x0,der)
       return
       end function eecf
@@ -3523,7 +3523,7 @@
       external vwngen
       parameter (b=1.13107d0,c=13.0045d0,x0=-0.00475840d0)
       parameter (pi=3.141592653589793238462643383279d0)
-      
+
       a=-1.d0/(3.d0*pi*pi)
       eeca=vwngen(rs,a,b,c,x0,der)
       return
@@ -3539,7 +3539,7 @@
       external xfcn
 !
       x=sqrt(rs)
-      q=sqrt(4.d0*c-b*b) 
+      q=sqrt(4.d0*c-b*b)
 
       xx=xfcn(x,b,c)
       xd=2.d0*x+b
@@ -3573,7 +3573,7 @@
       use dprec
       implicit none
       real(dp) :: x, b, c, xfcn
-      
+
       xfcn=c+x*(b+x)
       return
       end function xfcn
@@ -3601,7 +3601,7 @@
           fu1 = -0.5d0 + 1.5d0 * log( b + e ) / ( b * e )
         else
           fe1 = 1.d0 - 2.d0 * b ** 2 / 3.d0 + 2.d0 * b ** 4 / 5.d0 &
-               - 48.d0 * b ** 6 / 175.d0 
+               - 48.d0 * b ** 6 / 175.d0
           fu1 = -0.5d0 + 1.5d0 * ( 1.d0 - 2 * b ** 2 / 3.d0 + &
                                   8.d0 * b ** 4 / 15.d0 - &
                                   16.d0 * b ** 6 / 35.d0 )
@@ -3621,7 +3621,7 @@
           fu2 = -0.5d0 + 1.5d0 * log( b + e ) / ( b * e )
         else
           fe2 = 1.d0 - 2.d0 * b ** 2 / 3.d0 + 2.d0 * b ** 4 / 5.d0 &
-               - 48.d0 * b ** 6 / 175.d0 
+               - 48.d0 * b ** 6 / 175.d0
           fu2 = -0.5d0 + 1.5d0 * ( 1.d0 - 2 * b ** 2 / 3.d0 + &
                                   8.d0 * b ** 4 / 15.d0 - &
                                   16.d0 * b ** 6 / 35.d0 )
@@ -3636,7 +3636,7 @@
       return
       end subroutine getx
 !----------------------------------------------------------------------
-      subroutine mkkbfile( nel, nl, xnj, ev, dl, nr, r, rsqd, cq,& 
+      subroutine mkkbfile( nel, nl, xnj, ev, dl, nr, r, rsqd, cq,&
                           ldim, vi, orb, zorig, njrc )
       use dprec
       use PARAMS
@@ -3775,7 +3775,7 @@
         rsub=r(i)*xiu
         f=(one-exp(-rsub*rsub))
         vcpp=pref*f*f*f*f/(r(i)**four)
-        sig=sig+dr(i)*phi(i)*phi(i)*vcpp 
+        sig=sig+dr(i)*phi(i)*phi(i)*vcpp
   100 continue
       return
       end function sig
@@ -3786,7 +3786,7 @@
       real(dp) :: nec,xn,xn1,xn2,pi,rs,z,x,ecp,ecf,eca,vcp,vcf,vca,ecud
       real(dp) :: vcd,vcu,ec
 !     ceperly-alder (vw)
-!     
+!
 !     The Vosko-Wilk-Nusair parameterization is used.
 !     See Can. J.  Phys. 58, 1200 (1980) and
 !     Phys. Rev. B 22, 3812 (1980)
@@ -3801,7 +3801,7 @@
       call vwncop(x,ecp,vcp)
       call vwncof(x,ecf,vcf)
       call vwncoa(x,eca,vca)
-!     
+!
       call vwnmix(z,ecp,ecf,eca,vcp,vcf,vca,ecud,vcd,vcu)
       ec=ecud
       nec=xn*ec
@@ -3819,7 +3819,7 @@
       real(dp) :: x2,x,xox
       real(dp) :: taninq,xxb,ec,vc
       real(dp) :: one,two,three,third,a,b,c,q,x0,c1,c2,c3
-      
+
       parameter (one=1.0d0)
       parameter (two=2.0d0)
       parameter (three=3.0d0)
@@ -3832,7 +3832,7 @@
       parameter (c1=two * b / q )
       parameter (c2=two * ( b + two * x0 ) / q )
       parameter (c3=b * x0 / ( c + b * x0 + x0**2 ))
-      
+
       x2= x*x
       xox= x2 + b * x + c
       taninq= atan( q / ( two * x + b ) )
@@ -3871,7 +3871,7 @@
       parameter (c1=two * b / q )
       parameter (c2=two * ( b + two * x0 ) / q )
       parameter (c3=b * x0 / ( c + b * x0 + x0**2 ))
-      
+
       x2= x*x
       xox= x2 + b * x + c
       taninq= atan( q / ( two * x + b ) )
@@ -3888,7 +3888,7 @@
 !----------------------------------------------------------------------
       subroutine vwncoa(x,ec,vc)
 !     Vosko - Wilk - Nusair parameterization of Ceperly - Alder
-!     correlation contribution to the spin stiffness in the 
+!     correlation contribution to the spin stiffness in the
 !     paramagnetic limit
 !     Can. J.  Phys. 58, 1200 (1980)
 !     Phys. Rev. B 22, 3812 (1980)
@@ -3911,7 +3911,7 @@
       parameter (c1=two * b / q )
       parameter (c2=two * ( b + two * x0 ) / q )
       parameter (c3=b * x0 / ( c + b * x0 + x0**2 ))
-      
+
       x2= x*x
       xox= x2 + b * x + c
       taninq= atan( q / ( two * x + b ) )
@@ -3946,7 +3946,7 @@
       parameter (fthird=four*third)
       parameter (cmix1=1.92366105093154d0)
       parameter (cfppin=0.5848223622634647d0)
-      
+
       fup= one + pol
       fdn= one - pol
       fupth= fup**third
@@ -3975,4 +3975,3 @@
       vcu = (vc - vcpol)
       return
       end subroutine vwnmix
-

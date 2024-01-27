@@ -279,7 +279,9 @@ def get_element(
         elements_data.update({e.name: e for e in periodic_table.elements})
         ele_obj = elements_data.get(element)
     if periodictable and not ele_obj and backend in ("periodtable", None):
-        ele_obj = getattr(periodictable, element, None) or getattr(periodictable, str(element).lower())
+        ele_obj = getattr(periodictable, element, None) or getattr(
+            periodictable, str(element).lower()
+        )
     if ele_obj is None:
         raise LookupError("Unable to match element {}".format(element))
     return ele_obj
@@ -304,9 +306,13 @@ def get_electron_config(element_obj):
     """
     electron_config = None
     if hasattr(element_obj, "orbitals"):
-        electron_config = " ".join(["{orbital}{electrons}".format(**x) for x in element_obj.orbitals])
+        electron_config = " ".join(
+            ["{orbital}{electrons}".format(**x) for x in element_obj.orbitals]
+        )
     else:
-        electron_config = getattr(element_obj, "eleconfig", None) or getattr(element_obj, "econf", None)
+        electron_config = getattr(element_obj, "eleconfig", None) or getattr(
+            element_obj, "econf", None
+        )
     return electron_config
 
 
@@ -388,10 +394,23 @@ class Atorb(object):
 
     atlib = "$ATLIB" if "ATLIB" in os.environ else "~/atlib/"
     userhome = "~/hf.conf"
-    datalib = os.path.join(os.environ["APPDATA"], "phaseshifts") if sys.platform.startswith("win") else "~/.phaseshifts"
+    datalib = (
+        os.path.join(os.environ["APPDATA"], "phaseshifts")
+        if sys.platform.startswith("win")
+        else "~/.phaseshifts"
+    )
 
     def __init__(
-        self, ngrid=1000, rel=True, exchange=0.0, relic=0, mixing_SCF=0.05, tolerance=0.0005, xnum=100, ifil=0, **kwargs
+        self,
+        ngrid=1000,
+        rel=True,
+        exchange=0.0,
+        relic=0,
+        mixing_SCF=0.05,
+        tolerance=0.0005,
+        xnum=100,
+        ifil=0,
+        **kwargs,
     ):
         """
         Initialize the Atorb wrapper.
@@ -404,7 +423,11 @@ class Atorb(object):
         # set private data members
         self.ngrid = ngrid if isinstance(ngrid, int) else 1000
         self.rel = rel if isinstance(rel, bool) else True
-        self.exchange = exchange if isinstance(exchange, float) or isinstance(exchange, int) else 0.0
+        self.exchange = (
+            exchange
+            if isinstance(exchange, float) or isinstance(exchange, int)
+            else 0.0
+        )
         self.relic = relic if isinstance(relic, int) else 0
         self.mixing_SCF = mixing_SCF if isinstance(mixing_SCF, float) else 0.05
         self.tolerance = tolerance if isinstance(tolerance, float) else 0.0005
@@ -610,7 +633,9 @@ class Atorb(object):
         elif isinstance(conf, dict):
             self.__dict__.update(conf)
         else:
-            raise ValueError("conf argument '{}' is neither a " "str or dict instance".format(conf))
+            raise ValueError(
+                "conf argument '{}' is neither a " "str or dict instance".format(conf)
+            )
 
     def _get_conf_lookup_dirs(self):
         """
@@ -628,7 +653,9 @@ class Atorb(object):
         """
         filenames = [
             os.path.join(directory, "hf.conf")
-            for directory in list(self.atlib, self.userhome, self.datalib, os.path.curdir)
+            for directory in list(
+                self.atlib, self.userhome, self.datalib, os.path.curdir
+            )
         ]
         return [os.path.abspath(expand_filepath(f)) for f in filenames]
 
@@ -707,7 +734,9 @@ class Atorb(object):
 
         subshell = "".join([s for s in shell if s.isalpha()])
         try:
-            (n, nelectrons) = [t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())]
+            (n, nelectrons) = [
+                t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())
+            ]
         except ValueError:  # assume 1 electron in shell
             n = int(shell.replace(subshell, " ").split()[0])
             nelectrons = 1
@@ -744,7 +773,9 @@ class Atorb(object):
                 occ.append(((2.0 * j) + 1) * nelectrons / max_occ)
             shell_info = (n, l, [l - s, l + s], occ)
         else:
-            raise NotImplementedError("Exotic sub-shells beyond f-block have not been implemented")
+            raise NotImplementedError(
+                "Exotic sub-shells beyond f-block have not been implemented"
+            )
         return shell_info
 
     @staticmethod
@@ -801,7 +832,9 @@ class Atorb(object):
             mixing_SCF=self.mixing_SCF(),
             tolerance=self.tolerance(),
             xnum=self.xnum(),
-            atorb_file=(self.__dict__["atorb_file"] if "atorb_file" in self.__dict__ else None),
+            atorb_file=(
+                self.__dict__["atorb_file"] if "atorb_file" in self.__dict__ else None
+            ),
             output=(self.__dict__["output"] if "output" in self.__dict__ else None),
             header=(self.__dict__["header"] if "header" in self.__dict__ else None),
             ifil=(0 if "ifil" not in self.__dict__ else int(self.__dict__["ifil"])),
@@ -1072,7 +1105,7 @@ class Atorb(object):
             handle.write("{0}\n".format(output))
             handle.write("q\n")
             if not use_stream:
-            handle.close()
+                handle.close()
 
         return filename  # return output filename for further use
 
@@ -1179,7 +1212,9 @@ class Atorb(object):
             inp = os.path.abspath(kwargs.pop("input"))
 
         if "element" in kwargs:
-            inp = os.path.abspath(Atorb.gen_input(element=kwargs.pop("element"), **kwargs))
+            inp = os.path.abspath(
+                Atorb.gen_input(element=kwargs.pop("element"), **kwargs)
+            )
 
         current_dir = os.path.curdir
         output_dir = None
@@ -1192,7 +1227,9 @@ class Atorb(object):
                     os.makedirs(output_dir, exist_ok=True)
                     os.chdir(output_dir)
                 except (OSError, IOError) as err:
-                    raise IOError("Unable to create output directory due to {!r}".format(err))  # noqa
+                    raise IOError(
+                        "Unable to create output directory due to {!r}".format(err)
+                    )  # noqa
 
         if not inp:
             raise ValueError("Input file not specified")
@@ -1202,13 +1239,20 @@ class Atorb(object):
         # do lazy loading due to documentation not needing compiled code
         import phaseshifts.lib.libphsh  # noqa
 
-        phaseshifts.lib.libphsh.hartfock(inp)  # calculates atomic orbital charge densities for atom
+        phaseshifts.lib.libphsh.hartfock(
+            inp
+        )  # calculates atomic orbital charge densities for atom
 
         output_filename = validated.output
 
+        for i in range(len(lines)):
         os.chdir(current_dir)  # return to original directory
 
-        return os.path.join(output_dir, output_filename) if output_dir is not None else output_filename
+        return (
+            os.path.join(output_dir, output_filename)
+            if output_dir is not None
+            else output_filename
+        )
 
 
 class EEASiSSSAtorb(Atorb):
@@ -1236,7 +1280,10 @@ class EEASiSSSAtorb(Atorb):
         except ValueError:
             pass
 
-    def gen_conf_file(self, conf_file=("$ATLIB/hf.conf" if "ATLIB" in os.environ else "~/atlib/hf.conf")):
+    def gen_conf_file(
+        self,
+        conf_file=("$ATLIB/hf.conf" if "ATLIB" in os.environ else "~/atlib/hf.conf"),
+    ):
         """
         Description
         -----------
@@ -1319,7 +1366,11 @@ class EEASiSSSAtorb(Atorb):
             tolerance=self.tolerance(),
             xnum=self.xnum(),
             ifil=self.ifil(),
-            atorb_file=("inputA" if "atorb_file" in self.__dict__ else self.__dict__["atorb_file"]),
+            atorb_file=(
+                "inputA"
+                if "atorb_file" in self.__dict__
+                else self.__dict__["atorb_file"]
+            ),
             output=(self.__dict__["output"] if "output" in self.__dict__ else None),
             header=(self.__dict__["header"] if "header" in self.__dict__ else None),
             fmt=("eeasisss" if "fmt" not in self.__dict__ else self.__dict__["fmt"]),
@@ -1413,7 +1464,11 @@ class EEASiSSSAtorb(Atorb):
     def calculate_Q_density(
         elements=[],
         atorb_input="inputA",
-        output_dir=(expand_filepath("ATLIB") if "ATLIB" in os.environ else expand_filepath("~/atlib/")),
+        output_dir=(
+            expand_filepath("ATLIB")
+            if "ATLIB" in os.environ
+            else expand_filepath("~/atlib/")
+        ),
         **kwargs,
     ):
         """
@@ -1492,7 +1547,12 @@ class EEASiSSSAtorb(Atorb):
         if elements == []:
             return []
         else:
-            elements = set([ELEMENTS[element] if not isinstance(element, Element) else element for element in elements])
+            elements = set(
+                [
+                    ELEMENTS[element] if not isinstance(element, Element) else element
+                    for element in elements
+                ]
+            )
 
         output_dir = expand_filepath(output_dir) or os.curdir
         atorb_input = expand_filepath(atorb_input) or os.path.join(
@@ -1502,10 +1562,16 @@ class EEASiSSSAtorb(Atorb):
         EEASiSSSAtorb.gen_input(elements=elements, atorb_file=atorb_input, **kwargs)
 
         Atorb.calculate_Q_density(
-            atorb_input=atorb_input, output_dir=output_dir, subroutine=eeasisss_hartfock, **kwargs
+            atorb_input=atorb_input,
+            output_dir=output_dir,
+            subroutine=eeasisss_hartfock,
+            **kwargs,
         )
 
-        elements = [ELEMENTS[element] if not isinstance(element, Element) else element for element in set(elements)]
+        elements = [
+            ELEMENTS[element] if not isinstance(element, Element) else element
+            for element in set(elements)
+        ]
 
         return [
             os.path.join(output_dir, "chgden" + element.symbol)

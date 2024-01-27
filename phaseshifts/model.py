@@ -101,7 +101,11 @@ class Atom(object):
     # checks whether two atoms are equal w.r.t. name, radius and valence
     def __eq__(self, other):
         if isinstance(other, Atom):
-            return self.name == other.name and self.radius == other.radius and self.valence == other.valence
+            return (
+                self.name == other.name
+                and self.radius == other.radius
+                and self.valence == other.valence
+            )
         else:
             return False
 
@@ -422,24 +426,30 @@ class Model(object):
         """
         positions = [str(atom.coordinates) for atom in self.atoms]
         info = ""
-        for position in set([position for position in positions if positions.count(position) > 1]):
-            for i, atom in enumerate([atom for atom in self.atoms if str(atom.coordinates) == position]):
+        for position in set(
+            [position for position in positions if positions.count(position) > 1]
+        ):
+            for i, atom in enumerate(
+                [atom for atom in self.atoms if str(atom.coordinates) == position]
+            ):
                 info += "%s, coordinates=%s, index=%i\n" % (
                     str(atom),
                     atom.coordinates,
                     i,
                 )
         if len(set(positions)) < len(self.atoms):
-            raise CoordinatesError("Not every atom position in model is unique!\n%s\n" % info)
+            raise CoordinatesError(
+                "Not every atom position in model is unique!\n%s\n" % info
+            )
 
     @property
     def name(self):
-        '''Returns the model name'''
-        return self.name or ''
-    
+        """Returns the model name"""
+        return self.name or ""
+
     @name.setter
     def name(self, name):
-        '''Sets the name of the model'''
+        """Sets the name of the model"""
         self.name = str(name) if not isinstance(name, str) else name
 
     @property
@@ -628,9 +638,24 @@ class MTZ_model(Model):
             with open(filename, "r") as f:
                 self.header = f.readline()
                 a = float(f.readline().split("#")[0].split()[0]) * 0.529
-                a1 = [t(s) for (t, s) in zip((float, float, float), f.readline().split("#")[0].split()[:3])]
-                a2 = [t(s) for (t, s) in zip((float, float, float), f.readline().split("#")[0].split()[:3])]
-                a3 = [t(s) for (t, s) in zip((float, float, float), f.readline().split("#")[0].split()[:3])]
+                a1 = [
+                    t(s)
+                    for (t, s) in zip(
+                        (float, float, float), f.readline().split("#")[0].split()[:3]
+                    )
+                ]
+                a2 = [
+                    t(s)
+                    for (t, s) in zip(
+                        (float, float, float), f.readline().split("#")[0].split()[:3]
+                    )
+                ]
+                a3 = [
+                    t(s)
+                    for (t, s) in zip(
+                        (float, float, float), f.readline().split("#")[0].split()[:3]
+                    )
+                ]
                 basis = [a1, a2, a3]
                 c = float(a3[-1]) * 0.529  # change to Angstroms from Bohr
                 self.set_unitcell(Unitcell(a, c, basis))
@@ -808,7 +833,9 @@ class MTZ_model(Model):
 
         # input
         if "input_dir" in kwargs:
-            input_dir = os.path.abspath(glob(os.path.expanduser(os.path.expandvars(kwargs["input_dir"])))[0])
+            input_dir = os.path.abspath(
+                glob(os.path.expanduser(os.path.expandvars(kwargs["input_dir"])))[0]
+            )
         else:
             input_dir = os.path.abspath(".")
 
@@ -816,7 +843,9 @@ class MTZ_model(Model):
             input_dir = os.path.dirname(input_dir)
 
         if not os.path.isdir(input_dir):
-            raise IOError("'%s' is not a valid input directory - " "does not exist!" % input_dir)
+            raise IOError(
+                "'%s' is not a valid input directory - " "does not exist!" % input_dir
+            )
 
         # output filename
         if "output_file" in kwargs:
@@ -828,14 +857,20 @@ class MTZ_model(Model):
         if "input_files" in kwargs:
             files = kwargs["input_files"]
         else:  # assume using atoms from model
-            files = [os.path.join(input_dir, "at_" + atom.element.symbol + ".i") for atom in self.atoms]
+            files = [
+                os.path.join(input_dir, "at_" + atom.element.symbol + ".i")
+                for atom in self.atoms
+            ]
 
         # generate atomic.i input file by appending multiple at.i files
         with open(output_file, "w") as f:
             # loop through each atomic charge density file in list
             for input_file in files:
                 if not os.path.isfile(str(input_file)) or input_file == None:
-                    raise IOError("Radial charge density file " "'%s' does not exist!" % input_file)
+                    raise IOError(
+                        "Radial charge density file "
+                        "'%s' does not exist!" % input_file
+                    )
 
                 # append next input file to output
                 with open(input_file) as infile:
@@ -882,15 +917,22 @@ class MTZ_model(Model):
 
         # check to see if cluster input exists
         if "cluster_file" in kwargs:
-            cluster_file = os.path.abspath(glob(os.path.expanduser(os.path.expandvars(kwargs["cluster_file"])))[0])
+            cluster_file = os.path.abspath(
+                glob(os.path.expanduser(os.path.expandvars(kwargs["cluster_file"])))[0]
+            )
         else:
             cluster_file = os.path.abspath("cluster.i")
 
         if not os.path.isfile(cluster_file):
             raise IOError("MTZ cluster file '%s' does not exist!" % cluster_file)
 
-        if not os.access(os.path.dirname(cluster_file), os.W_OK) and "atomic_file" not in kwargs:
-            raise IOError("Do not have write access to '%s'" % os.path.dirname(cluster_file))
+        if (
+            not os.access(os.path.dirname(cluster_file), os.W_OK)
+            and "atomic_file" not in kwargs
+        ):
+            raise IOError(
+                "Do not have write access to '%s'" % os.path.dirname(cluster_file)
+            )
 
         # determine type of calculation - bulk or slab
         if "slab" in kwargs:
@@ -904,7 +946,10 @@ class MTZ_model(Model):
         if "atomic_file" in kwargs:
             atomic_file = os.path.abspath(kwargs["atomic_file"])
             if not os.path.isfile(atomic_file):
-                raise IOError("Appended radial charge densities file " "'%s' does not exist!" % atomic_file)
+                raise IOError(
+                    "Appended radial charge densities file "
+                    "'%s' does not exist!" % atomic_file
+                )
         else:  # generate on the fly
             input_dir = os.path.abspath(os.path.dirname(cluster_file))
             self.create_atorbs(output_dir=input_dir)
@@ -940,7 +985,9 @@ class MTZ_model(Model):
 
         # check to see if new file has been written
         if not os.path.isfile(output_file):
-            raise IOError("Failed to write muffin-tin potential file '%s'" % output_file)
+            raise IOError(
+                "Failed to write muffin-tin potential file '%s'" % output_file
+            )
 
         return output_file
 
@@ -1032,7 +1079,10 @@ class MTZ_model(Model):
         a = float(self.unitcell._a) * 0.529
         with open(filename, "w") as f:
             f.write(header + "\n")
-            f.write(str(" %7.4f" % self.unitcell._a).ljust(33) + "# a lattice parameter distance in Bohr radii\n")
+            f.write(
+                str(" %7.4f" % self.unitcell._a).ljust(33)
+                + "# a lattice parameter distance in Bohr radii\n"
+            )
             f.write(
                 str(
                     " %7.4f %7.4f %7.4f"
@@ -1064,7 +1114,8 @@ class MTZ_model(Model):
                         self.unitcell.basis[2][2] / a,
                     )
                 ).ljust(33)
-                + "# Notice the value %.2f (%s calculation)\n" % (self.unitcell.basis[2][2] / a, fid.replace("_", ""))
+                + "# Notice the value %.2f (%s calculation)\n"
+                % (self.unitcell.basis[2][2] / a, fid.replace("_", ""))
             )
 
             # TODO: better nineq_atoms prediction
@@ -1079,7 +1130,10 @@ class MTZ_model(Model):
 
             # check to see if nineq_atoms is estimated in code
             if isinstance(nineq_atoms, tuple):
-                f.write(str("%4i" % nineq_atoms[0]).ljust(33) + "# number of ineq. atoms in this file (NINEQ)\n")
+                f.write(
+                    str("%4i" % nineq_atoms[0]).ljust(33)
+                    + "# number of ineq. atoms in this file (NINEQ)\n"
+                )
 
                 # now loop through each inequivalent atom and add to file
                 elements_dict = nineq_atoms[1]
@@ -1091,7 +1145,9 @@ class MTZ_model(Model):
                         # get list of atoms of this type
                         # i.e. same element, radius & valence
                         ineq_atoms = [atom for atom in atoms if atom == ineq_atom]
-                        ineq_tags = set([atom.tag for atom in ineq_atoms if atom.tag not in tags])
+                        ineq_tags = set(
+                            [atom.tag for atom in ineq_atoms if atom.tag not in tags]
+                        )
 
                         # select first unused tag from list
                         for tag in ineq_tags:
@@ -1108,13 +1164,21 @@ class MTZ_model(Model):
                             except ValueError:
                                 number = 1
                             ineq_atom.tag = (
-                                "".join([ch for ch in ineq_atom.tag if ch.isalpha() or ch in ["_", "-", "+"]])
+                                "".join(
+                                    [
+                                        ch
+                                        for ch in ineq_atom.tag
+                                        if ch.isalpha() or ch in ["_", "-", "+"]
+                                    ]
+                                )
                                 + "_"
                                 + str(number)
                             )
 
                         f.write(
-                            "{0} {1}".format(ineq_atom.element.name.capitalize(), ineq_atom.tag).ljust(33)
+                            "{0} {1}".format(
+                                ineq_atom.element.name.capitalize(), ineq_atom.tag
+                            ).ljust(33)
                             + "# element, name tag\n"
                         )
                         f.write(
@@ -1146,7 +1210,10 @@ class MTZ_model(Model):
                             )
 
             else:  # assume each element is an inequivalent atom
-                f.write(str("%4i" % nineq_atoms).ljust(33) + "# number of ineq. atoms in this file (NINEQ)\n")
+                f.write(
+                    str("%4i" % nineq_atoms).ljust(33)
+                    + "# number of ineq. atoms in this file (NINEQ)\n"
+                )
 
                 for atom in set(self.atoms):
                     while atom.tag in tags:
@@ -1157,14 +1224,23 @@ class MTZ_model(Model):
                         except ValueError:
                             number = 1
                         atom.tag = (
-                            "".join([ch for ch in atom.tag if ch.isalpha() or ch in ["_", "-", "+"]])
+                            "".join(
+                                [
+                                    ch
+                                    for ch in atom.tag
+                                    if ch.isalpha() or ch in ["_", "-", "+"]
+                                ]
+                            )
                             + "_"
                             + str(number)
                         )
 
                     tags.append(atom.tag)
                     f.write(
-                        "{0} {1}".format(atom.element.name.capitalize(), atom.tag).ljust(33) + "# element, name tag\n"
+                        "{0} {1}".format(
+                            atom.element.name.capitalize(), atom.tag
+                        ).ljust(33)
+                        + "# element, name tag\n"
                     )
                     f.write(
                         str(
@@ -1191,9 +1267,18 @@ class MTZ_model(Model):
                         + "# coordinates in SPA units\n"
                     )
 
-            f.write(str("%4i" % self.nform).ljust(33) + "# nform=2|1|0 (for rel, will or cav)\n")
-            f.write(str(" %7.4f" % self.exchange).ljust(33) + "# alpha (for Hartree type exchange term)\n")
-            f.write(str("%4i" % self.nh).ljust(33) + "# nh (for estimating muffin-tin zero)\n")
+            f.write(
+                str("%4i" % self.nform).ljust(33)
+                + "# nform=2|1|0 (for rel, will or cav)\n"
+            )
+            f.write(
+                str(" %7.4f" % self.exchange).ljust(33)
+                + "# alpha (for Hartree type exchange term)\n"
+            )
+            f.write(
+                str("%4i" % self.nh).ljust(33)
+                + "# nh (for estimating muffin-tin zero)\n"
+            )
         # restore backup
         self.atoms = mtz_atoms
 

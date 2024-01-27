@@ -12,7 +12,7 @@ University of California,
 
 Berkeley,
 
-California 94720, 
+California 94720,
 
 USA
 

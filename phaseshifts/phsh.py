@@ -151,7 +151,9 @@ class Wrapper(object):
         self.__dict__.update(kwargs)
 
     @staticmethod
-    def autogen_from_input(bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs):
+    def autogen_from_input(
+        bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs
+    ):
         """
            Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
@@ -224,7 +226,9 @@ class Wrapper(object):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
+            bulk_file = os.path.join(
+                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
+            )
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -234,7 +238,9 @@ class Wrapper(object):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
+            slab_file = os.path.join(
+                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
+            )
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -257,7 +263,9 @@ class Wrapper(object):
             at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
+                    element=elem, output_dir=tmp_dir
+                )
             else:
                 atomic_dict[elem] = at_file
 
@@ -285,8 +293,13 @@ class Wrapper(object):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
-            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
+            print(
+                "\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz")
+            )
+            print(
+                "\tmufftin file: '%s'"
+                % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
+            )
 
         bulk_mtz_file = bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
@@ -298,7 +311,9 @@ class Wrapper(object):
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
         # prepare at files for appending into atomic file
-        slab_at_files = [atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)]
+        slab_at_files = [
+            atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)
+        ]
 
         # create atomic.i input file from mtz model
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
@@ -314,7 +329,9 @@ class Wrapper(object):
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz"))
+            print(
+                "\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz")
+            )
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
@@ -328,13 +345,18 @@ class Wrapper(object):
         )
 
         # create raw phase shift files
-        print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
+        print(
+            "\nGenerating phase shifts from '%s'..."
+            % os.path.basename(mufftin_filepath)
+        )
         filepath = os.path.join(tmp_dir, slab_model_name)
         phasout_filepath = filepath + "_phasout.i"
         dataph_filepath = filepath + "_dataph.d"
 
         phaseshifts = [atom.tag for atom in set(slab_mtz.atoms)]
-        phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)]
+        phasout_files = [
+            os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)
+        ]
         phsh_files = []
 
         # assign phase shift specific lmax values
@@ -357,7 +379,9 @@ class Wrapper(object):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phasout_files = Conphas.split_phasout(
+                    filename=phasout_filepath, output_filenames=phasout_files
+                )
 
                 # eliminate pi-jumps
                 for i, phaseshift in enumerate(phaseshifts):
@@ -367,7 +391,9 @@ class Wrapper(object):
                     else:
                         filename += ".phs"
                     phsh_files.append(filename)
-                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
+                    print(
+                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
+                    )
                     phsh = Conphas(
                         input_files=[phasout_files[i]],
                         output_file=filename,
@@ -386,7 +412,9 @@ class Wrapper(object):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phasout_files = Conphas.split_phasout(
+                    filename=phasout_filepath, output_filenames=phasout_files
+                )
 
             if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
                 # check energy range
@@ -405,12 +433,15 @@ class Wrapper(object):
                         ]
 
                         # assign new values
-                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
+                        (ei, ef, de) = [
+                            t(s) for t, s in zip((float, float, float), kwargs["range"])
+                        ]
 
                         # edit energy range
-                        lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(
-                            "e", "D"
-                        )
+                        lines[1] = str(
+                            "%12.4f%12.4f%12.4f    %3i    %12.4f\n"
+                            % (ei, de, ef, lsm, vc)
+                        ).replace("e", "D")
                         #                         lines[1] = ff.FortranRecordWriter(
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
@@ -437,7 +468,9 @@ class Wrapper(object):
                 # print("Current time " + time.strftime("%X"))
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phasout_files = Conphas.split_phasout(
+                    filename=phasout_filepath, output_filenames=phasout_files
+                )
 
                 # eliminate pi-jumps
                 for i, phaseshift in enumerate(phaseshifts):
@@ -447,7 +480,9 @@ class Wrapper(object):
                     else:
                         filename += ".phs"
                     phsh_files.append(filename)
-                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
+                    print(
+                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
+                    )
                     phsh = Conphas(
                         input_files=[phasout_files[i]],
                         output_file=filename,
@@ -462,13 +497,17 @@ class Wrapper(object):
         # copy files to storage location
         if "store" in kwargs and out_format != "cleed":
             if kwargs["store"] != ".":
-                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
+                dst = os.path.abspath(
+                    os.path.expanduser(os.path.expandvars(kwargs["store"]))
+                )
             else:
                 dst = os.path.abspath(".")
             Wrapper._copy_files(phsh_files, dst, verbose=True)
 
         elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
+            dst = os.path.abspath(
+                os.path.expanduser(os.path.expandvars("$CLEED_PHASE"))
+            )
             Wrapper._copy_files(phsh_files, dst, verbose=True)
 
         else:
@@ -484,7 +523,9 @@ class Wrapper(object):
         if platform.system() == "Windows" and dst.startswith("/cygdrive"):
             if os.environ["CLEED_PHASE"] == dst:
                 env = "CLEED_PHASE="
-            dst = '"%s"' % (dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:]))
+            dst = '"%s"' % (
+                dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])
+            )
 
         # do check and create directory if needed
         if os.path.isfile(dst):
@@ -591,9 +632,15 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+        parser = ArgumentParser(
+            description=program_license, formatter_class=RawDescriptionHelpFormatter
+        )
         parser.add_argument(
-            "-b", "--bulk", dest="bulk", metavar="<bulk_file>", help="path to MTZ bulk or CLEED *.bul input file"
+            "-b",
+            "--bulk",
+            dest="bulk",
+            metavar="<bulk_file>",
+            help="path to MTZ bulk or CLEED *.bul input file",
         )
         parser.add_argument(
             "-i",
@@ -699,7 +746,9 @@ def main(argv=None):
             "produce postscript graphs when using the EEASiSSS"
             "backend. [default: %(default)s]",
         )
-        parser.add_argument("-V", "--version", action="version", version=program_version_message)
+        parser.add_argument(
+            "-V", "--version", action="version", version=program_version_message
+        )
 
         # Process arguments
         args, unknown = parser.parse_known_args()
