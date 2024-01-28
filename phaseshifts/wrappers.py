@@ -573,8 +573,8 @@ class BVHWrapper(object):
                     except Exception as err:
                         sys.stderr.write(
                             "Unable to change phase shift energy "
-                            "range (due to '{}') - using Barbieri/Van Hove ".format(err)
-                            "default of 20-300eV in 5eV steps\n"
+                            "range (due to '{}') - using Barbieri/Van Hove "
+                            "default of 20-300eV in 5eV steps\n".format(err)
                         )
                         sys.stderr.flush()
 
