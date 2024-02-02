@@ -66,7 +66,7 @@ add_custom_command(
 )
 
 set(PHSHIFT2007_BUILD_COMMAND
-${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/phaseshifts/phshift2007.py"
+${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/phaseshifts/build/phshift2007.py"
 )
 
 add_custom_command(
