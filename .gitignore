@@ -1,7 +1,7 @@
 *venv*/
 *.eggs/
-build/
-dist/
+/build/
+/dist/
 phaseshifts.egg-info/
 libphsh.f.bak
 MANIFEST
@@ -9,20 +9,21 @@ MANIFEST
 # cache
 *.pyc
 **/__pycache__
-_skbuild/
+/_skbuild/
 
 # built binary objects
 *.so
 *.exe
 *.DLL
 *.pyd
-bin/phsh*
+/bin/phsh*
 
 # log files
 *.log
 
 # docs
-docs/_build/
+/docs/_build/
+/_build
 
 # read-only
 **/phsh0.f
@@ -34,4 +35,4 @@ docs/_build/
 # testing
 .coverage
 **/coverage.xml
-htmlcov/
+/htmlcov/
