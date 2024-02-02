@@ -68,6 +68,8 @@ clean:
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
 	find phaseshifts -name '*.so' | xargs rm -f
 	rm -rf htmlcov coverage.xml
+	find phaseshifts -type d -name __pycache__ | xargs rm -rf
+	find -name '*.pyc' -delete
 
 #: Build docker image
 docker:
