@@ -1,0 +1,66 @@
+project:   phshift2007
+summary: Barbieri / Van Hove phase shift package source documentation.
+author: Michel Van Hove <em>et al.</em>
+email: vanhove@cityu.edu.hk
+website: https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html
+year: 2007
+exclude_dir: "../phaseshifts/lib/"
+src_dir: ../build/phshift2007/
+project_download: https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip
+author_description:
+    Please acknowledge use of the Barbieri/Van Hove phase shift package, as: <br><br>
+    <em>A. Barbieri and M.A. Van Hove, private communication.</em>
+extensions: .for
+incl_src: true
+graph: true
+coloured_edges: true
+externalize: true
+output_dir: _build/html/ford/phshift2007
+dbg: true
+force: true
+warn: true
+search: true
+doc_license: mit
+privacy_policy_url: https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html
+
+<!-- project_github: https://github.com/Liam-Deacon/phaseshifts -->
+## Introduction
+
+This is the development documentation of the Barbieri/Van Hove phase shift package
+and contains (minimally modified, for the purposes of documentation - see notes) Fortran source code. There are call graphs to assist with debugging as well as highlighted source
+code to follow.
+
+> **TIP:** See the [Programs](lists/programs.html) page to view an overview list of programs.
+
+### Document Processing Notes
+
+This package was processed by the [phaseshifts](https://github.com/Liam-Deacon/phaseshifts) python package using `python -m phaseshifts.build.phshift2007 --action download --action unzip --action extract` in order to create the `phsh*.for` source files from the zip archive when downloading the source from the [LEED Calculation Home Page](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html) and then processed using [FORD](https://github.com/Fortran-FOSS-Programmers/ford).
+
+This included adding a notice regarding the source (for posterity) and replacing tabs with spaces in order for FORD to process the files without error.
+
+## Compiling
+
+The easiest way to compile the source code is to use the `phaseshifts` python package.
+
+```bash
+pip install phaseshifts
+python -m phaseshifts.build.phshift2007 --action=all  # use --help for all options
+```
+
+### Using CMake
+
+Alternatively CMake may be used to drive the process:
+
+```bash
+git checkout https://github.com/Liam-Deacon/phaseshifts
+cd phaseshifts
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release  # or Debug
+# use CMake to download/extracts phsh*.for source and then compile
+cmake --build build --verbose \
+  --target phsh0 \
+  --target phsh1 \
+  --target phsh2rel \
+  --target phsh3
+# phsh binaries are under bin
+ls bin/
+```

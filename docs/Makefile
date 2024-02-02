@@ -25,6 +25,7 @@ help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html       to make standalone HTML files"
 	@echo "  dirhtml    to make HTML files named index.html in directories"
+	@echo "  fordhtml   to make HTML files with Ford"
 	@echo "  singlehtml to make a single large HTML file"
 	@echo "  pickle     to make pickle files"
 	@echo "  json       to make JSON files"
@@ -53,6 +54,30 @@ html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+.PHONY: _phsh
+_phsh:
+	cd ../ && make cmake.debug && cmake --build build --target phsh
+
+../build/phshift2007/phsh0.for: _phsh
+../build/phshift2007/phsh1.for: _phsh
+../build/phshift2007/phsh2cav.for: _phsh
+../build/phshift2007/phsh2rel.for: _phsh
+../build/phshift2007/phsh2wil.for: _phsh
+../build/phshift2007/phsh3.for: _phsh
+
+.phsh: ../build/phshift2007/phsh0.for ../build/phshift2007/phsh1.for ../build/phshift2007/phsh2rel.for ../build/phshift2007/phsh2cav.for ../build/phshift2007/phsh2wil.for ../build/phshift2007/phsh3.for
+	date > .phsh
+
+ford.phshift2007: .phsh
+	mkdir -p html
+	ford -d ../build/phshift2007 ford-project-phshift2007.md.in
+
+ford.phaseshifts:
+	mkdir -p html
+	ford -d ../build/phshift2007 ford-project-phaseshifts.md.in
+
+fordhtml: ford.phaseshifts ford.phshift2007
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml

@@ -31,7 +31,24 @@ def unzip_phshift2007(zipfile_path=None, dirpath=DEFAULT_DIRPATH):
         zip_ref.extractall(dirpath)
 
 
-def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):
+def _generate_notice_lines():
+    """Generate the notice lines for the extracted Fortran programs."""
+    return [
+        "!* -------------------------------------------------------------------\n"
+        "! > **IMPORTANT:** This file was automatically extracted from the\n",
+        "! original phshift2007.zip archive using the phaseshifts python\n",
+        "! package and has been modified for processing with the fortran\n",
+        "! documentation tool, FORD.\n",
+        "!\n",
+        "! It is intended for documentation only. Please obtain copies of the\n",
+        "! origin source from the _LEED Calculation Home Page_ site at: \n",
+        "! https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip\n",
+        "!\n",
+        "!---------------------------------------------------------------------\n",
+        "\n",
+    ]
+
+def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):  # pylint: disable=too-many-locals
     """Extracts the Fortran programs from the .ab files in the phshift2007.zip archive."""
     with open(ab_filepath, encoding="ascii") as fp_in:
         lines = fp_in.readlines()[3:]  # skip first three comment lines
@@ -49,11 +66,30 @@ def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):
             )
             with open(filename, mode="w", encoding="ascii") as fp_out:
                 if i == len(program_start_lines) - 1:
-                    fp_out.writelines(lines[marker - 1 :])
+                    program_lines = lines[marker - 1 :].copy()
                 else:
-                    fp_out.writelines(
-                        lines[marker - 1 : program_start_lines[i + 1] - 1]
+                    program_lines = lines[marker - 1 : program_start_lines[i + 1] - 1].copy()
+                header_lines = [line.lstrip(" \t").lower() for line in program_lines[:100]]
+                if not any(line.startswith("program ") for line in header_lines):
+                    # find the first non-comment line
+                    index = 0
+                    for j, line in enumerate(header_lines):
+                        if line[0] not in ("c", "!"):
+                            index = j
+                            break
+                    program_lines.insert(index, "      PROGRAM %s\n" % prog_name.upper().strip(".FOR"))
+                else:
+                    # Rename the existing program line to match the PHSH*.FOR program comment header.
+                    # This avoids conflicts between different versions of similarly named programs/subroutines
+                    # when comparing documentation.
+                    index = next(
+                        i for i, line in enumerate(header_lines) if line.startswith("program ")
                     )
+                    program_lines[index] = "      PROGRAM %s\n" % prog_name.upper().strip(".FOR")
+                # Write a notice to let users know that this is not the original source
+                fp_out.writelines(_generate_notice_lines())
+                # NOTE: FORD currently does not support tabs in the source code, so replace with spaces
+                fp_out.writelines(map(lambda x: x.replace("\t", "      "), program_lines))
             programs[prog_name] = filename
         return programs
 

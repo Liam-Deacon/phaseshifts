@@ -1,0 +1,39 @@
+project: phaseshifts
+summary: Python phaseshifts package FORTRAN source documentation.
+author: Liam Deacon <em>et al.</em>
+email: liam.m.deacon@gmail.com
+website: https://liam-deacon.github.io/phaseshifts/
+year: 2014-2024
+exclude_dir: ../build/phshift2007
+exclude_dir: ../phaseshifts/lib/.phsh.orig/
+src_dir: ../phaseshifts/
+project_download: https://github.com/Liam-Deacon/phaseshifts/releases
+project_github: https://github.com/Liam-Deacon/phaseshifts
+author_description:
+    Please acknowledge use of the Barbieri/Van Hove phase shift package, as: <br><br>
+    <em>A. Barbieri and M.A. Van Hove, private communication.</em>
+extensions: .for
+incl_src: true
+graph: true
+coloured_edges: true
+externalize: true
+output_dir: _build/html/ford/phaseshifts
+dbg: true
+force: true
+warn: true
+search: true
+doc_license: mit
+
+## Introduction
+
+This is the development documentation of the phaseshifts package
+and contains Fortran source code used in the EEAS phase shift calculations.
+There are call graphs to assist with debugging as well as highlighted source code to follow.
+
+## Compiling
+
+The easiest way to compile the source code is to use the `phaseshifts` python package.
+
+```bash
+pip install phaseshifts  # compiles native code with cmake via PEP-517 (or setup.py)
+```

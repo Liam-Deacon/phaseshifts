@@ -74,6 +74,14 @@ Additional changes were made to improve the readability of the code:
     Should you not trust the bundled f2py library, then a future version of ``phsh.py``
     will allow you to run the original phshift2007 programs via wrapped subprocess calls.
 
+Fortran Source Documentation
+----------------------------
+
+`FORD <https://github.com/Fortran-FOSS-Programmers/ford>`_ API documentation for the FORTRAN
+source code can be found in the `here <ford/phaseshifts/index.html>`_ which provides
+a detailed breakdown of the source code, including call graphs and source code specific
+information (as extracted automatically).
+
 Compiler Notes
 --------------
 
@@ -132,3 +140,9 @@ The following issues are known to exist in the current version of the code:
    a workaround is to run via ephemeral docker containers, see :ref:`running` section.
 2. Many minor compiler warnings have been ignored, such as those related to
    implicit typing of variables. These should be fixed in future releases.
+3. The code dynamically links against shared libraries (
+   e.g. ``libgfortran.so`` on Linux, ``libgfortran.dylib`` on Mac OS X, and
+   ``libgfortran-5.dll`` on Windows) and as such may not be portable to all systems.
+   Unfortunately statically linking against libgfortran appears to be broken
+   (on Debian systems and/or via brew) as it was not compiled with ``-fPIC``.
+   This is a known issue and will be fixed in future releases.

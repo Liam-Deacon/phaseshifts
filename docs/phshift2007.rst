@@ -4,6 +4,9 @@
 APPENDIX I: Barbieri/Van Hove Phase Shift Package - A Brief User Guide
 **********************************************************************
 
+.. note:: There is low-level documentation of the Fortran files available in the
+          `FORD generated HTML files <ford/phshift2007/index.html>`_.
+
 \ A. Barbieri, M.A. Van Hove
 
 Lawrence Berkeley Laboratory,
