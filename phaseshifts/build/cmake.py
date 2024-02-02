@@ -47,7 +47,8 @@ class CMakeBuild(setuptools.command.build_ext.build_ext):
         env = os.environ.copy()
 
         build_dir = os.path.abspath("build")
-        os.makedirs(build_dir, exist_ok=True)
+        if not os.path.exists(build_dir):  # added for python 2.7 compatibility
+            os.makedirs(build_dir, **({"exist_ok": True} if sys.version_info >= (3, 2) else {}))
 
         try:
             print("Running: " + " ".join([self.CMAKE, "-S", os.path.dirname(build_dir), "-B", build_dir] + cmake_args))
