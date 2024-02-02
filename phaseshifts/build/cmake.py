@@ -1,7 +1,9 @@
 """Module for driving cmake builds from python as part of setup process."""
+
+# pylint: disable=fixme
+
 import os
-import platform
-import subprocess
+import subprocess  # nosec: B404
 import sys
 
 import setuptools
@@ -10,23 +12,23 @@ import setuptools.command.build_ext
 try:
     import cmake  # noqa
 except ModuleNotFoundError:
-    cmake = None
+    cmake = None  # pylint: disable=invalid-name
 
 
 class CMakeBuild(setuptools.command.build_ext.build_ext):
     """Custom build_ext command class for driving CMake."""
 
     _CMAKE_EXE = "cmake" + (".exe" if sys.platform == "win32" else "")
-    CMAKE = _CMAKE_EXE if not cmake else os.path.join(cmake.CMAKE_BIN_DIR, _CMAKE_EXE)
+    CMAKE = _CMAKE_EXE if not getattr(cmake, "CMAKE_BIN_DIR", None) else os.path.join(cmake.CMAKE_BIN_DIR, _CMAKE_EXE)
 
     def run(self):
         try:
-            subprocess.check_output([self.CMAKE, "--version"])
-        except subprocess.CalledProcessError as err:
-            raise RuntimeError(
+            subprocess.check_output([self.CMAKE, "--version"])  # nosec: B603
+        except subprocess.CalledProcessError:
+            raise RuntimeError(  # noqa: B904  # TODO: Remove when we drop python2.7 support
                 "CMake must be installed to build the following extensions: "
-                + ", ".join(e.name for e in self.extensions)
-            ) from err
+                + ", ".join(ext.name for ext in self.extensions)
+            )
 
         for ext in self.extensions:
             self.build_extension(ext)
@@ -42,35 +44,24 @@ class CMakeBuild(setuptools.command.build_ext.build_ext):
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
 
-        if platform.system() == "Windows":
-            if sys.maxsize > 2**32:
-                # We are on a Win 64-bit system
-                cmake_args += ["-A", "x64"]
-            build_args += ["--", "/m"]
-        else:
-            # These flags are passed as-is to the underlying build tool (make)
-            # build_args += ["--", "-j2"]
-            pass
-
         env = os.environ.copy()
-        env["CXXFLAGS"] = '{} -DVERSION_INFO="{}"'.format(
-            env.get("CXXFLAGS", ""), self.distribution.get_version()
-        )
 
         build_dir = os.path.abspath("build")
         os.makedirs(build_dir, exist_ok=True)
 
         try:
             print("Running: " + " ".join([self.CMAKE, "-S", os.path.dirname(build_dir), "-B", build_dir] + cmake_args))
-            subprocess.check_call(
+            subprocess.check_call(  # nosec: B603
                 [self.CMAKE, "-S", os.path.dirname(build_dir), "-B", build_dir] + cmake_args,
                 env=env,
             )
-            subprocess.check_call([self.CMAKE, "--build", build_dir, "--verbose"] + build_args, env=env)
+            subprocess.check_call([self.CMAKE, "--build", build_dir, "--verbose"] + build_args, env=env)  # nosec: B603
         except subprocess.CalledProcessError as err:
-            raise RuntimeError(f"CMake error: {err}") from err
+            raise RuntimeError(  # noqa: B904  # TODO: Remove when we drop python2.7 support
+                "CMake error: {}".format(err)
+            )
 
 
 if __name__ == "__main__":
-    from distutils.dist import Distribution
-    CMakeBuild(dist=Distribution()).build_extension()
+    from setuptools.dist import Distribution
+    CMakeBuild(dist=Distribution()).build_extension()  # type: ignore
