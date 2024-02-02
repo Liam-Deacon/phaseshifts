@@ -21,7 +21,7 @@ import phaseshifts.build.cmake  # noqa
 
 README = "README.md"
 try:
-    with open(README, mode="r", encoding="utf-8") as fh:
+    with open(README, mode="r") as fh:
         LONG_DESCRIPTION = fh.read()
 except IOError:
     LONG_DESCRIPTION = ""
@@ -56,14 +56,19 @@ setup(
         "gui": [],
         "dev": [
             "black",
+            "cmake>=3.27",
             "isort",
             "numpy",
             "pre-commit",
             "ruff",
-            "cmake>=3.27",
             "wheel",
         ],
-        "test": ["pytest", "pytest-cov"],
+        "test": [
+            "cmake>=3.27",
+            "mock==3.0.5; python_version < '3.3'",
+            "pytest",
+            "pytest-cov",
+        ],
         "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
