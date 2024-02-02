@@ -67,6 +67,7 @@ clean:
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
 	find phaseshifts -name '*.so' | xargs rm -f
+	rm -rf htmlcov coverage.xml
 
 #: Build docker image
 docker:
