@@ -5,7 +5,7 @@ DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
 PREFIX ?= /usr/local
 
-.PHONY: build-deps cbuildwheel check install install-deps libphsh sdist test wheel
+.PHONY: build-deps cbuildwheel check clean install install-deps libphsh sdist test wheel
 
 #: Quickly generate binary wheel
 wheel: install-deps
@@ -36,12 +36,19 @@ install-deps:
 pip-install:
 	$(PYTHON) -m pip install .
 
-libphsh.cmake:
-	cmake -S . -B build \
-		-DPYTHON_INCLUDE_DIR="$$($(PYTHON) -c "import sysconfig; print(sysconfig.get_path('include'))")"  \
-		-DPYTHON_LIBRARY="$$($(PYTHON) -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")"
-	FFLAGS="-fallow-argument-mismatch -std=f95" \
-		cmake --build build
+#: Build the project using cmake
+cmake:
+	(test -d build || $(MAKE) cmake.release) && cmake --build build
+
+#: Build the project using cmake in release mode
+cmake.release:
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+	$(MAKE) cmake
+
+#: Build the project using cmake in debug mode
+cmake.debug:
+	cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+	$(MAKE) cmake
 
 #: Build the f2py wrapped libphsh shared library within source tree
 libphsh:
@@ -59,6 +66,7 @@ clean:
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
+	find phaseshifts -name '*.so' | xargs rm -f
 
 #: Build docker image
 docker:

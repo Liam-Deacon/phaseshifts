@@ -13,18 +13,20 @@ PHSHIFT2007_DOWNLOAD_URL = (
 DEFAULT_DIRPATH = "."
 
 
-def download_phshift2007(dirpath=DEFAULT_DIRPATH):
-    # type: (str) -> str
+def download_phshift2007(dirpath=DEFAULT_DIRPATH, force=False):
+    # type: (str, bool) -> str
     """Download phshift2007 from the web."""
     os.makedirs(dirpath, exist_ok=True)
     zipfile_path = os.path.join(dirpath, "phshift2007.zip")
-    urllib.request.urlretrieve(PHSHIFT2007_DOWNLOAD_URL, zipfile_path)  # nosec: B310
+    if not os.path.exists(zipfile_path) or force:
+        urllib.request.urlretrieve(PHSHIFT2007_DOWNLOAD_URL, zipfile_path)  # nosec: B310
     return zipfile_path
 
 
-def unzip_phshift2007(zipfile_path, dirpath=DEFAULT_DIRPATH):
-    # type: (str, str) -> None
+def unzip_phshift2007(zipfile_path=None, dirpath=DEFAULT_DIRPATH):
+    # type: (str|None, str) -> None
     """Unzip phshift2007 contents from the zipfile."""
+    zipfile_path = zipfile_path or os.path.join(dirpath, "phshift2007.zip")
     with zipfile.ZipFile(zipfile_path, mode="r") as zip_ref:
         zip_ref.extractall(dirpath)
 
@@ -64,7 +66,7 @@ def extract_phshift2007(dirpath=DEFAULT_DIRPATH):
 
 
 def _compile_fortran_program(source_filepath, output_filepath=None):
-    # type: (str, str) -> str
+    # type: (str, str|None) -> str
     """Compiles the Fortran program from the .for file in the phshift2007.zip archive."""
     if not output_filepath:
         output_filepath = os.path.join(
@@ -88,7 +90,7 @@ def _compile_fortran_program(source_filepath, output_filepath=None):
     with subprocess.Popen(args) as proc:  # nosec
         status = proc.wait()
         if status != 0:
-            raise subprocess.CalledProcessError(status, " ".join(proc.args))
+            raise subprocess.CalledProcessError(status, " ".join(map(str, proc.args)))
     return output_filepath
 
 
@@ -99,14 +101,14 @@ def compile_phshift2007(dirpath=DEFAULT_DIRPATH):
         print("Compiled %s" % _compile_fortran_program(source_filepath))
 
 
-def do_action(action, output_dirpath=DEFAULT_DIRPATH):
+def do_action(action, output_dirpath=DEFAULT_DIRPATH, force=False):
     """Perform the specified action."""
     if action in ("download", "all"):
-        zipfile_path = download_phshift2007(output_dirpath)
+        zipfile_path = download_phshift2007(output_dirpath, force=force)
         print("Downloaded phshift2007 to {}".format(zipfile_path))
 
     if action in ("unzip", "all"):
-        unzip_phshift2007(zipfile_path, output_dirpath)
+        unzip_phshift2007(dirpath=output_dirpath)
         print("Unzipped phshift2007 to {}".format(output_dirpath))
 
     if action in ("extract", "all"):
@@ -129,11 +131,19 @@ def get_parser():
         help="The directory path to download and extract phshift2007 to.",
     )
     parser.add_argument(
+        "--force",
+        action="store_true",
+        default=False,
+        help="Force the download of phshift2007 even if it already exists.",
+    )
+    parser.add_argument(
         "--action",
+        dest="actions",
         type=str,
         default="all",
+        nargs="+",
         choices=["download", "unzip", "extract", "compile", "all"],
-        help="The action to perform [default %(default)s].",
+        help="The action(s) to perform [default %(default)s].",
     )
     return parser
 
@@ -142,7 +152,8 @@ def main(argv=None):
     """Main entry point for the script."""
     parser = get_parser()
     args, _ = parser.parse_known_args(argv or sys.argv)
-    do_action(action=args.action, output_dirpath=args.output_dirpath)
+    for action in args.actions:
+        do_action(action=action, output_dirpath=args.output_dirpath, force=args.force)
 
 
 if __name__ == "__main__":
