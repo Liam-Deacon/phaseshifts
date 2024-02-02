@@ -9,6 +9,8 @@ project(phaseshifts
   LANGUAGES C Fortran
   )
 
+enable_language(Fortran)
+
 option(NUMPY_F2PY_INCLUDE_DIR "f2py include directory" "")
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/phaseshifts/lib)
@@ -18,10 +20,13 @@ set(Python3_FIND_STRATEGY "LOCATION")
 set(Python3_FIND_VIRTUALENV FIRST)
 find_package (Python3 COMPONENTS Interpreter Development NumPy  REQUIRED)
 
-MESSAGE(NOTICE "PYTHON3_EXECUTABLE: ${Python3_EXECUTABLE}")
-MESSAGE(NOTICE "PYTHON_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
-MESSAGE(NOTICE "PYTHON_LIBRARIES: ${Python3_LIBRARIES}")
-MESSAGE(NOTICE "PYTHON_NUMPY_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
+message(NOTICE "PYTHON3_EXECUTABLE: ${Python3_EXECUTABLE}")
+message(NOTICE "PYTHON_INCLUDE_DIRS: ${Python3_INCLUDE_DIRS}")
+message(NOTICE "PYTHON_LIBRARIES: ${Python3_LIBRARIES}")
+message(NOTICE "PYTHON_NUMPY_INCLUDE_DIRS: ${Python3_NumPy_INCLUDE_DIRS}")
+
+string(TOLOWER "${CMAKE_Fortran_COMPILER_ID}" FORTRAN_COMPILER_ID)
+message(NOTICE "Fortran Compiler Type: ${FORTRAN_COMPILER_ID}")
 
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -30,6 +35,12 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
       "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n"
   )
 endif()
+
+execute_process(
+  COMMAND "${Python3_EXECUTABLE}" -c "import platform, sys; print('-'.join([platform.python_implementation().lower(), ''.join(map(str, sys.version_info[:2])), platform.processor().lower(), platform.system().lower()]))"
+  OUTPUT_VARIABLE CPYTHON_ABI_TAG
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 # F2PY headers
 if (NOT NUMPY_F2PY_INCLUDE_DIR)
@@ -43,7 +54,7 @@ else()
   set(F2PY_INCLUDE_DIR "${NUMPY_F2PY_INCLUDE_DIR}")
 endif()
 
-MESSAGE(NOTICE "F2PY_INCLUDE_DIR: ${F2PY_INCLUDE_DIR}")
+message(NOTICE "F2PY_INCLUDE_DIR: ${F2PY_INCLUDE_DIR}")
 
 # Prepping the module
 set(f2py_module_name "libphsh")
@@ -127,20 +138,22 @@ target_include_directories("${f2py_module_name}" PUBLIC
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 # target_link_options("${f2py_module_name}" PRIVATE "-static-libgcc" "-static-libgfortran")
 
+set(LIBPHSH_SUFFIX_PREFIX ".${CPYTHON_ABI_TAG}-${FORTRAN_COMPILER_ID}")
+
 if (UNIX)
   if (APPLE)
     set_target_properties(
       "${f2py_module_name}" PROPERTIES
       LINK_FLAGS  '-Wl,-dylib,-undefined,dynamic_lookup'
-      SUFFIX ".dylib")
+      SUFFIX "${LIBPHSH_SUFFIX_PREFIX}.dylib")
   else()  # LINUX
     set_target_properties(
       "${f2py_module_name}" PROPERTIES
       LINK_FLAGS  '-Wl,--allow-shlib-undefined'
-      SUFFIX ".so")
+      SUFFIX "${LIBPHSH_SUFFIX_PREFIX}.so")
   endif()
 else()
-  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${LIBPHSH_SUFFIX_PREFIX}.pyd")
 endif()
 
 add_dependencies("${f2py_module_name}" genpyf)
