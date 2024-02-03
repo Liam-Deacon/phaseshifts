@@ -18,6 +18,7 @@ PyMVPA project, which we've adapted for NIPY use. PyMVPA is an MIT-licensed
 project."""
 
 # Stdlib imports
+import io
 import os
 import re
 
@@ -163,7 +164,7 @@ class ApiDocWriter(object):
         if filename is None:
             # nothing that we could handle here.
             return ([], [])
-        f = open(filename, "rt")
+        f = io.open(filename, mode="rt", encoding="utf-8")
         functions, classes = self._parse_lines(f)
         f.close()
         return functions, classes
@@ -358,7 +359,7 @@ class ApiDocWriter(object):
                 continue
             # write out to file
             outfile = os.path.join(outdir, m + self.rst_extension)
-            fileobj = open(outfile, "wt")
+            fileobj = io.open(outfile, mode="wt", encoding="utf-8")
             fileobj.write(api_str)
             fileobj.close()
             written_modules.append(m)
@@ -411,10 +412,9 @@ class ApiDocWriter(object):
             relpath = outdir.replace(relative_to + os.path.sep, "")
         else:
             relpath = outdir
-        idx = open(path, "wt")
-        w = idx.write
-        w(".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n")
-        w(".. toctree::\n\n")
-        for f in self.written_modules:
-            w(" %s\n" % os.path.join(relpath, f))
-        idx.close()
+        with io.open(path, mode="wt", encoding="utf-8") as idx:
+            w = idx.write
+            w(".. AUTO-GENERATED FILE -- DO NOT EDIT!\n\n")
+            w(".. toctree::\n\n")
+            for f in self.written_modules:
+                w(" %s\n" % os.path.join(relpath, f))

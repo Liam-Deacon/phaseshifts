@@ -1,8 +1,9 @@
 """Module defining adaptors to CLEED."""
+import io
 import glob
-from math import sqrt
 import os.path
 import sys
+from math import sqrt
 
 from phaseshifts.core import model
 from phaseshifts.core import elements
@@ -98,7 +99,7 @@ class CleedInputFileToMuffinTinPotentialModelConverter:
                 other_input = name + ".bul"
 
             try:
-                with open(other_input, mode="r", encoding="ascii") as input_file_ptr:
+                with io.open(other_input, mode="r", encoding="ascii") as input_file_ptr:
                     other_lines = input_file_ptr.readlines()
 
             except OSError:
@@ -107,7 +108,7 @@ class CleedInputFileToMuffinTinPotentialModelConverter:
         else:
             raise OSError("cannot open '%s'" % filename)
 
-        with open(filename, mode="r", encoding="ascii") as input_file_ptr:
+        with io.open(filename, mode="r", encoding="ascii") as input_file_ptr:
             # get input lines, stripping left whitespace and comments
             lines = [line.lstrip() for line in input_file_ptr if not line.lstrip().startswith("#")]
 

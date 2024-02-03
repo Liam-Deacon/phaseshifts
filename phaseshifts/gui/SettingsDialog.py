@@ -27,6 +27,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+import io
 import os
 import sys
 from time import gmtime, strftime
@@ -334,7 +335,7 @@ class SettingsDialog(QtGui.QDialog):
             config.set("PHASESHIFTS", option, str(value))
 
         try:
-            with open(filepath, "w") as configfile:  # save
+            with io.open(filepath, mode="w", encoding="utf-8") as configfile:  # save
                 config.write(configfile)
         except IOError:
             QtGui.QMessageBox.critical(

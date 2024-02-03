@@ -54,6 +54,7 @@ Examples
 
 # cspell: ignore conpha dtype gmtime IFAK loadtxt phas
 
+import io
 import getpass
 import math
 import ntpath
@@ -226,7 +227,7 @@ class Conphas:
         + `data` is a (2 x n_phases) array containing the phase shift data.
 
         """
-        with open(filename, mode="r", encoding="ascii") as input_file_ptr:
+        with io.open(filename, mode="r", encoding="ascii") as input_file_ptr:
             _title = input_file_ptr.readline()  # skip first line
             (initial_energy, energy_step, n_phases, lmf) = [
                 t(s) for (t, s) in zip((float, float, int, int), input_file_ptr.readline().replace("-", " -").split())
@@ -240,7 +241,7 @@ class Conphas:
     def split_phasout(filename, output_filenames=()):
         """split phasout input file into separate files"""
         try:
-            with open(filename, mode="r", encoding="ascii") as phasout:
+            with io.open(filename, mode="r", encoding="ascii") as phasout:
                 lines = phasout.readlines()
 
         except IOError:
@@ -274,7 +275,7 @@ class Conphas:
         phsh_list.append(len(lines))
         for i_phsh in range(1, len(phsh_list)):
             try:
-                with open(phsh_filenames[i_phsh - 1], mode="w", encoding="ascii") as phsh_file:
+                with io.open(phsh_filenames[i_phsh - 1], mode="w", encoding="ascii") as phsh_file:
                     [phsh_file.write(lines[i]) for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh])]
             except IOError:
                 raise IOError
@@ -430,20 +431,20 @@ class Conphas:
 
             # write datafile 'dataph.d'
             try:
-                with open(dataph, mode="w", encoding="ascii") as out_file_ptr:
+                with io.open(dataph, mode="w", encoding="ascii") as out_file_ptr:
                     write_dataph_file(
                         out_file_ptr, l_max=self.lmax, n_phases=n_phases, conpha_data=conpha[i], energy_data=energy
                     )
             except IOError:
                 base = ntpath.basename(dataph)
                 phsh_filepath = os.path.join(tempfile.gettempdir(), "phsh", base)
-                with open(phsh_filepath, mode="w", encoding="ascii") as out_file_ptr:
+                with io.open(phsh_filepath, mode="w", encoding="ascii") as out_file_ptr:
                     write_dataph_file(
                         out_file_ptr, l_max=self.lmax, n_phases=n_phases, conpha_data=conpha[i], energy_data=energy
                     )
 
         # write final aggregated leedph output
-        with open(self.output_file, mode="w", encoding="ascii") as out_file_ptr:
+        with io.open(self.output_file, mode="w", encoding="ascii") as out_file_ptr:
             # write header based on format
             self._write_phase_shift_header(out_file_ptr, neng=neng)
 

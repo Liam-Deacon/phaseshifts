@@ -57,6 +57,7 @@ shift calculation package.
 
 """
 
+import io
 import os
 from collections import OrderedDict
 
@@ -550,7 +551,7 @@ class Atorb(object):
             ech = 100
 
         # produce output file
-        with open(filename, "w") as f:
+        with io.open(filename, mode="w", encoding="ascii") as f:
             f.write("C".ljust(70, "*") + "\n")
             f.write("C" + str(header) + "\n")
             f.write("C".ljust(70, "*") + "\n")
@@ -695,7 +696,7 @@ class Atorb(object):
         output_filename = "atorb"
 
         try:
-            with open(inp, "r") as f:
+            with io.open(inp, mode="r", encoding="ascii") as f:
                 lines = [line for line in f]
         except IOError:
             raise IOError

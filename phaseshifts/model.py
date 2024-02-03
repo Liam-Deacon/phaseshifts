@@ -43,6 +43,7 @@ shift calculation package.
 from __future__ import print_function
 from __future__ import division
 
+import io
 import os
 from copy import deepcopy
 from shutil import move
@@ -182,7 +183,7 @@ class MTZ_model(Model):
             return list(map(float, line.split("#")[0].split()[:3]))
 
         try:
-            with open(filename, mode="r", encoding="utf-8") as f:
+            with io.open(filename, mode="r", encoding="utf-8") as f:
                 self.header = f.readline()
                 a = float(f.readline().split("#")[0].split()[0]) * 0.529
                 a1 = load_coordinates(f.readline())
@@ -340,14 +341,14 @@ class MTZ_model(Model):
         ]
 
         # generate atomic.i input file by appending multiple at.i files
-        with open(output_file, mode="w", encoding="ascii") as out_file_ptr:
+        with io.open(output_file, mode="w", encoding="ascii") as out_file_ptr:
             # loop through each atomic charge density file in list
             for input_file in files:
                 if not os.path.isfile(str(input_file)) or input_file is None:
                     raise IOError("Radial charge density file " "'%s' does not exist!" % input_file)
 
                 # append next input file to output
-                with open(input_file, mode="r", encoding="utf-8") as input_file_ptr:
+                with io.open(input_file, mode="r", encoding="utf-8") as input_file_ptr:
                     out_file_ptr.write(input_file_ptr.read())
 
         return output_file
@@ -355,7 +356,7 @@ class MTZ_model(Model):
     def get_MTZ(self, filename):
         """Retrieves muffin-tin potential from file"""
         try:
-            with open(filename, mode="r", encoding="utf-8") as fptr:
+            with io.open(filename, mode="r", encoding="utf-8") as fptr:
                 self.mtz = float(fptr.readline())  # read first line
         except IOError:
             raise IOError
@@ -530,7 +531,7 @@ class MTZ_model(Model):
 
         # auto-generate file
         a = float(self.unitcell._a) * 0.529  # pylint: disable=protected-access
-        with open(filename, mode="w", encoding="ascii") as out_file_ptr:
+        with io.open(filename, mode="w", encoding="ascii") as out_file_ptr:
 
             def write_line(data, comment="", justify=33, end="\n"):
                 """Write line to file"""

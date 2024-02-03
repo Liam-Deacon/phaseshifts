@@ -1,6 +1,7 @@
 """A collection of utilities to assist with extracting phshift2007 in a cross-platform manner."""
 
 import argparse
+import io
 import os.path
 import sys
 import subprocess  # nosec
@@ -16,7 +17,8 @@ DEFAULT_DIRPATH = "."
 def download_phshift2007(dirpath=DEFAULT_DIRPATH, force=False):
     # type: (str, bool) -> str
     """Download phshift2007 from the web."""
-    os.makedirs(dirpath, exist_ok=True)
+    if not os.path.exists(dirpath):
+        os.makedirs(dirpath, **({"exist_ok": True} if sys.version_info >= (3, 2) else {}))
     zipfile_path = os.path.join(dirpath, "phshift2007.zip")
     if not os.path.exists(zipfile_path) or force:
         urllib.request.urlretrieve(PHSHIFT2007_DOWNLOAD_URL, zipfile_path)  # nosec: B310
@@ -50,7 +52,7 @@ def _generate_notice_lines():
 
 def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):  # pylint: disable=too-many-locals
     """Extracts the Fortran programs from the .ab files in the phshift2007.zip archive."""
-    with open(ab_filepath, encoding="ascii") as fp_in:
+    with io.open(ab_filepath, encoding="ascii") as fp_in:
         lines = fp_in.readlines()[3:]  # skip first three comment lines
         prog_marker = "C  program "
         program_start_lines = [
@@ -64,7 +66,7 @@ def _extract_fortran_programs_from_ab_file(ab_filepath, output_dirpath=None):  #
             filename = os.path.join(
                 output_dirpath or os.path.dirname(ab_filepath), prog_name
             )
-            with open(filename, mode="w", encoding="ascii") as fp_out:
+            with io.open(filename, mode="w", encoding="ascii") as fp_out:
                 if i == len(program_start_lines) - 1:
                     program_lines = lines[marker - 1 :].copy()
                 else:
@@ -126,9 +128,13 @@ def _compile_fortran_program(source_filepath, output_filepath=None):
     with subprocess.Popen(args) as proc:  # nosec
         status = proc.wait()
         if status != 0:
-            raise subprocess.CalledProcessError(status, " ".join(map(str, proc.args)))
+            raise subprocess.CalledProcessError(status, " ".join(map(_as_string, proc.args)))  # type: ignore[arg-type]
     return output_filepath
 
+
+def _as_string(string_or_bytes):
+    # type: (str|bytes) -> str
+    return string_or_bytes.decode("utf-8") if isinstance(string_or_bytes, bytes) else string_or_bytes
 
 def compile_phshift2007(dirpath=DEFAULT_DIRPATH):
     """Compiles the phshift2007 Fortran programs."""

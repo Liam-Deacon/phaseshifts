@@ -2,6 +2,7 @@
 """Setup script for the phaseshifts package installation."""
 from __future__ import print_function  # noqa
 
+import io
 import os
 import sys
 
@@ -21,8 +22,8 @@ import phaseshifts.build.cmake  # noqa
 
 README = "README.md"
 try:
-    with open(README, mode="r") as fh:
-        LONG_DESCRIPTION = fh.read()
+    with io.open(README, mode="r", encoding="utf-8") as file_handle:
+        LONG_DESCRIPTION = file_handle.read()
 except IOError:
     LONG_DESCRIPTION = ""
 

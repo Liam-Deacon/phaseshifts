@@ -1,5 +1,6 @@
 from __future__ import print_function, division
 
+import io
 from math import copysign, log, exp, sqrt, pi, atan, cos, sin, log10, cosh, sinh
 import sys
 
@@ -26,12 +27,12 @@ def phsh_cav(mufftin_file, phasout_file, dataph_file):
     estore = [None] * 401
 
     # first input channels
-    mtz = open(mufftin_file, "r")  # unit=4
+    mtz = io.open(mufftin_file, mode="r", encoding="utf-8")  # unit=4
 
     # now output channels
-    zph = open("zph.o", "rw")  # unit=6
-    phasout = open(phasout_file, "rw")  # unit=9
-    dataph = open(dataph_file, "rw")  # unit=8
+    zph = io.open("zph.o", mode="rw", encoding="utf-8")  # unit=6
+    phasout = io.open(phasout_file, mode="rw", encoding="utf-8")  # unit=9
+    dataph = io.open(dataph_file, mode="rw", encoding="utf-8")  # unit=8
 
     # standard values for phase shifts calculation
     dataph.write("\n")  # 110
@@ -284,12 +285,12 @@ def phsh_wil(
     r = y = f = ilst = nrr = float
 
     # input channels
-    mtz = open(mufftin_file, "r")  # unit=5
+    mtz = io.open(mufftin_file, mode="r", encoding="utf-8")  # unit=5
 
     # now output channels
-    zph = open(zph_file, "w")  # unit=6
-    phasout = open(phasout_file, "w")  # unit=7
-    dataph = open(dataph_file, "w")  # unit=8
+    zph = io.open(zph_file, mode="w", encoding="utf-8")  # unit=6
+    phasout = io.open(phasout_file, mode="w", encoding="utf-8")  # unit=7
+    dataph = io.open(dataph_file, mode="w", encoding="utf-8")  # unit=8
 
     # read ip
     #   ip = 0: only radial wavedef
@@ -863,10 +864,10 @@ def phsh_rel(
     """
 
     # sort input and output streams
-    inpdat = open(inpdat_file, "w")  # unit=4
-    mtz = open(mufftin_file, "r")  # unit=5
-    phasout = open(phasout_file, "w")  # unit=7
-    dataph = open(dataph_file, "w")  # unit=8
+    inpdat = io.open(inpdat_file, mode="w", encoding="utf-8")  # unit=4
+    mtz = io.open(mufftin_file, mode="r", encoding="utf-8")  # unit=5
+    phasout = io.open(phasout_file, mode="w", encoding="utf-8")  # unit=7
+    dataph = io.open(dataph_file, mode="w", encoding="utf-8")  # unit=8
 
     inpdat.write("input data\n")  # 13 format (1h1, /  / ,t61,'input data',)
     name = mtz.readline().split()  # 10

@@ -1,5 +1,7 @@
 """Provides adaptors and validators when working with LEED files."""
 
+import io
+
 from phaseshifts.adaptors.cleed_adaptors import *  # noqa
 from phaseshifts.validators.cleed_validators import *  # noqa
 
@@ -17,7 +19,7 @@ class CSearch:
 
     def get_iteration(self, iteration):
         try:
-            with open(self.model + ".log", mode="r", encoding="ascii") as file_ptr:
+            with io.open(self.model + ".log", mode="r", encoding="ascii") as file_ptr:
                 return [line for line in file_ptr if line.startswith("#") and "par" in line][
                     int(iteration)
                 ]

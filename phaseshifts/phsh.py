@@ -48,6 +48,7 @@ from __future__ import absolute_import, division, with_statement
 
 import argparse
 import datetime
+import io
 import subprocess
 import sys
 import os
@@ -345,7 +346,7 @@ class Wrapper(object):
                 if "range" in kwargs:
                     try:
                         # get values
-                        with open(mufftin_filepath, mode="r", encoding="ascii") as file_ptr:
+                        with io.open(mufftin_filepath, mode="r", encoding="ascii") as file_ptr:
                             lines = file_ptr.readlines()
 
                         ei, de, ef, lsm, vc = [
@@ -370,7 +371,7 @@ class Wrapper(object):
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
-                        with open(mufftin_filepath, mode="w", encoding="ascii") as file_ptr:
+                        with io.open(mufftin_filepath, mode="w", encoding="ascii") as file_ptr:
                             file_ptr.write("".join([str(line) for line in lines]))
 
                     except Exception as err:
@@ -721,7 +722,7 @@ if __name__ == "__main__":
 
         profile_filename = "wrapper_profile.txt"
         cProfile.run("main()", profile_filename)
-        statsfile = open("profile_stats.txt", "wb")
+        statsfile = io.open("profile_stats.txt", "wb")
         p = pstats.Stats(profile_filename, stream=statsfile)
         stats = p.strip_dirs().sort_stats("cumulative")
         stats.print_stats()
