@@ -173,7 +173,13 @@ dist = setup(
     ],
     extras_require={
         "atorb": ["mendeleev", "elementy"],
-        "gui": [],
+        "gui": [
+            "six",
+            "qtpy",
+            "pyqt5; python_version < '3.7'",
+            "pyside6; python_version >= '3.7'",
+            "pyqtgraph",
+        ],
         "dev": [
             "black",
             "isort",
@@ -183,7 +189,7 @@ dist = setup(
             "scikit-build; python_version > '3.11'",
             "wheel",
         ],
-        "test": ["pytest", "pytest-cov"],
+        "test": ["pytest", "pytest-cov", "pytest-qt"],
         "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",

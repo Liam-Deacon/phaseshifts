@@ -28,33 +28,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+# pylint: disable=invalid-name,super-with-arguments,consider-using-f-string
+
 # Python version compatibility
 from __future__ import print_function, with_statement
+import datetime
 
 # Import standard library modules
 import logging
-import ntpath
 import os
 import platform
 import sys
-from collections import OrderedDict
+import tempfile
 
 # Import Qt modules
-import PyQt4
-from PyQt4 import QtCore, QtGui, uic
-import res_rc  # note this requires compiled resource file res_rc.py
-
-__QT_TYPE__ = "PyQt4"
+from qtpy import QtCore, QtGui, QtWidgets, uic, API_NAME
 
 # other modules
-from settings import Settings
-from ImportDialog import ImportDialog
+from .settings import Settings
+from .UpdateDialog import UpdateDialog
+from .ImportDialog import ImportDialog
+
 import phaseshifts
 from phaseshifts.model import MTZ_model, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = "Liam Deacon"
-__APP_COPYRIGHT__ = "\xa9" + "2013 {0}".format(__APP_AUTHOR__)
+__APP_COPYRIGHT__ = "\xa92013-{year} {author}".format(year=datetime.date.today().year, author=__APP_AUTHOR__)
 __APP_DESCRIPTION__ = "A simple Python-based program\nfor generation of phase shifts"
 __APP_DISTRIBUTION__ = phaseshifts.__package__
 __APP_CONTACT__ = phaseshifts.__contact__
@@ -65,7 +65,6 @@ __PYTHON__ = "{0}.{1}.{2}".format(
     sys.version_info.major,
     sys.version_info.minor,
     sys.version_info.micro,
-    sys.version_info.releaselevel,
 )
 __UPDATE_URL__ = ""
 
@@ -83,14 +82,15 @@ if platform.system() == "Windows":
 # ==============================================================================
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
     """Class for main application widget"""
 
     def __init__(self, parent=None):
+        self.model = None
         super(MainWindow, self).__init__(parent)
 
         # dynamically load ui
-        uiFile = "gui/MainWindow.ui"  # change to desired relative ui file path
+        uiFile = os.path.join(os.path.dirname(__file__), "MainWindow.ui")
         self.ui = uic.loadUi(uiFile, self)
         self.ui.show()
 
@@ -110,23 +110,23 @@ class MainWindow(QtGui.QMainWindow):
         self.logger.setLevel(logging.DEBUG)
 
         # create file handler which logs all messages
-        fh = logging.FileHandler(
-            os.path.join(os.environ["TEMP"], __APP_NAME__ + str(".log"))
+        file_handler = logging.FileHandler(
+            os.path.join(tempfile.gettempdir(), __APP_NAME__ + str(".log"))
         )  # temp directory is emptied on system reboot
         formatter = logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
-        fh.setFormatter(formatter)
-        fh.setLevel(logging.INFO)  # change to taste
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(logging.INFO)  # change to taste
 
         # create console handler with a higher log level
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.WARNING)
-        ch.setFormatter(formatter)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.WARNING)
+        console_handler.setFormatter(formatter)
 
         # add the handlers to the logger
-        self.logger.addHandler(ch)
-        self.logger.addHandler(fh)
+        self.logger.addHandler(console_handler)
+        self.logger.addHandler(file_handler)
 
         ######################################
         # SETTINGS
@@ -136,17 +136,16 @@ class MainWindow(QtGui.QMainWindow):
 
         # tree dictionaries
         # self.treeRootDict = self.ui.getChildItems(self.ui.treeWidgetBulk)
-        bulkTree = self.ui.treeWidgetBulk.invisibleRootItem()
-        slabTree = self.ui.treeWidgetSlab.invisibleRootItem()
-        # bulk = OrderedDict([str(bulkTree.child(i).text(0)) for i in range(bulkTree.childCount())])
-        # slab = OrderedDict([str(slabTree.child(i).text(0)) for i in range(slabTree.childCount())])
+        _bulk_tree = self.ui.treeWidgetBulk.invisibleRootItem()
+        _slab_tree = self.ui.treeWidgetSlab.invisibleRootItem()
+        # bulk = OrderedDict([str(_bulk_tree.child(i).text(0)) for i in range(_bulk_tree.childCount())])
+        # slab = OrderedDict([str(_slab_tree.child(i).text(0)) for i in range(_slab_tree.childCount())])
         # print(bulk)
         # od = OrderedDict([('bulk', bulk),
         #                  ('slab', slab)])
 
         # print(od)
 
-    # initialise UI
     def initUi(self):
         """Class to initialise the Qt Widget and setup slots and signals"""
 
@@ -175,7 +174,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pushSlabToText.pressed.connect(self.changeModelView)
         self.ui.pushSlabToTree.pressed.connect(self.changeModelView)
 
-    # Show about dialog
     def about(self):
         """Display 'About' dialog"""
         text = __APP_DESCRIPTION__
@@ -184,21 +182,20 @@ class MainWindow(QtGui.QMainWindow):
         text += "\n{0}".format(__APP_COPYRIGHT__)
         text += "\n" + __APP_LICENSE__
         text += "\n\nPython: {0}".format(__PYTHON__)
-        text += "\nGUI frontend: {0} {1}".format(__QT_TYPE__, QtCore.QT_VERSION_STR)
+        text += "\nGUI frontend: {0}".format(API_NAME)
 
-        msg = QtGui.QMessageBox.about(self, self.ui.windowTitle(), text)
+        QtWidgets.QMessageBox.about(self, self.ui.windowTitle(), text)
 
-    # Display about dialog
     def aboutQt(self):
         """Display Qt dialog"""
-        QtGui.QApplication.aboutQt()
+        QtWidgets.QApplication.aboutQt()
 
-    # Report bug / email devs
     def contactDeveloper(self):
+        """Report bug / email developer"""
         QtGui.QDesktopServices.openUrl(
             QtCore.QUrl(
                 str("mailto: {email}?subject={name} feedback&body=").format(
-                    email=__APP_EMAIL__, name=__APP_NAME__
+                    email=phaseshifts.__contact__, name=__APP_NAME__
                 )
             )
         )
@@ -206,8 +203,6 @@ class MainWindow(QtGui.QMainWindow):
     # check for update
     def getUpdate(self):
         """Check for app updates"""
-        from UpdateDialog import UpdateDialog
-
         updateDialog = UpdateDialog(parent=self)
         updateDialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         updateDialog.exec_()
@@ -283,7 +278,7 @@ class MainWindow(QtGui.QMainWindow):
             helpDialog.exec_()
 
         except NameError:
-            QtGui.QMessageBox.information(
+            QtWidgets.QMessageBox.information(
                 self, "Help", "Help is not currently available"
             )
             self.logger.error("unable to create Help dialog")
@@ -291,17 +286,19 @@ class MainWindow(QtGui.QMainWindow):
     # model builder
     def modelBuilderDialog(self):
         """Start new instance of model builder wizard"""
-        pass
+        ...  # TODO: Implement this
 
     def getInputFile(
         self,
-        startpath=str(
-            QtGui.QDesktopServices.storageLocation(QtGui.QDesktopServices.HomeLocation)
-        ),
+        startpath=None,
         model=None,
     ):
-        """returns file path of input"""
-        if model == None:
+        """Returns file path of input."""
+        if startpath is None:
+            startpath = str(
+            QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.HomeLocation)[0]
+        )
+        if model is None:
             model = ""
         else:
             model += " "
@@ -316,7 +313,7 @@ class MainWindow(QtGui.QMainWindow):
                 startpath = self.lastpath
 
         filepath = str(
-            QtGui.QFileDialog.getOpenFileName(
+            QtWidgets.QFileDialog.getOpenFileName(
                 parent=None, caption="Open %sInput File" % model, directory=startpath
             )
         )
@@ -341,7 +338,7 @@ class MainWindow(QtGui.QMainWindow):
             tabText = str(
                 self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())
             ).lower()
-            if tabText == "bulk" or tabText == "slab":
+            if tabText in ("bulk", "slab"):
                 model = tabText
             else:  # unknown
                 return self.importDialog()  # start dialog
@@ -358,7 +355,7 @@ class MainWindow(QtGui.QMainWindow):
             uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
             mtz = MTZ_model(uc, atoms=[atom])  # initialise muffin-tin model
             mtz.load_from_file(filename)  # load file
-            exec("self.%s = mtz" % model)
+            exec("self.%s = mtz" % model)  # pylint: disable=exec-used
             self.updateModelUi(model)
 
         except IOError:
@@ -366,7 +363,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def settingsDialog(self):
         """Launch settings dialog"""
-        from SettingsDialog import SettingsDialog
+        from .SettingsDialog import SettingsDialog
 
         settingsDialog = SettingsDialog(parent=self)
         settingsDialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -382,7 +379,7 @@ class MainWindow(QtGui.QMainWindow):
             )
             if model == "bulk":
                 tree = self.ui.treeWidgetBulk
-                mtz = eval("self.%s" % model)
+                mtz = eval("self.%s" % model, {"self": self}, {})  # pylint: disable=eval-used
             elif model == "slab":
                 tree = self.ui.treeWidgetSlab
             else:
@@ -394,7 +391,7 @@ class MainWindow(QtGui.QMainWindow):
             for branch in trunk:
                 branch = branch.replace(" ", "").split("=")[0]
                 item = root.child(self.treeRootDict.get(model).get(branch))
-                if "Name":
+                if branch == "Name":
                     item.setText = mtz.header
                 elif branch == "Unitcell":
                     for i in range(3):
@@ -406,7 +403,7 @@ class MainWindow(QtGui.QMainWindow):
                     params = self.getChildItemsDict(
                         tree.topLevelItem(trunk.get(branch))
                     )
-                    parent = root.child(trunk.get(branch))
+                    _parent = root.child(trunk.get(branch))
                     for param in params:
                         node = item.child(self.treeRootDict.get(model).get(branch))
                         if param == "nh":  # update nh
@@ -432,11 +429,11 @@ class MainWindow(QtGui.QMainWindow):
             for i in range(child_count):
                 item = root.child(i)
                 var = str(item.text(0))
-                exec("%s = i" % var)
-                topLevelDict.update({var: eval(var)})
+                exec("%s = i" % var)  # pylint: disable=exec-used
+                topLevelDict.update({var: eval(var)})  # pylint: disable=eval-used
             return topLevelDict
-        except any as e:
-            self.logger.error(e.msg)
+        except Exception as err:  # pylint: disable=broad-except
+            self.logger.error(str(err))
 
     def getChildItemHandle(self, obj, name=str):
         if isinstance(obj, QtGui.QTreeWidget):
@@ -444,27 +441,13 @@ class MainWindow(QtGui.QMainWindow):
         elif isinstance(obj, QtGui.QTreeWidgetItem):
             root = obj
 
+        item = None
         if isinstance(name, int):
-            return root.child(name)
+            item = root.child(name)
         elif isinstance(name, str):
             for i in range(root.childCount()):
-                item = root.child(i)
-                if str(item.text(0)) == name:
-                    return item
-
-
-# boilerplate function - should be applicable to most applications
-def main(argv=None):
-    """Entry point if executing as standalone"""
-    if argv is None:
-        argv = sys.argv
-
-    app = QtGui.QApplication(sys.argv)
-    window = MainWindow()
-
-    return app.exec_()
-
-
-# Execute main function if running as standalone module
-if __name__ == "__main__":
-    main()
+                _item = root.child(i)
+                if str(_item.text(0)) == name:
+                    item = _item
+                    break
+        return item

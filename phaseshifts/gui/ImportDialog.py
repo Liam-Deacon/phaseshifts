@@ -27,12 +27,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+# pylint: disable=invalid-name,super-with-arguments,consider-using-f-string
 
-from PyQt4 import QtGui, uic
-import res_rc
+import os
+
+from qtpy import QtWidgets, uic
 
 
-class ImportDialog(QtGui.QDialog):
+class ImportDialog(QtWidgets.QDialog):
     """
     Dialog class for updating sequences
     """
@@ -44,7 +46,7 @@ class ImportDialog(QtGui.QDialog):
         self.action = None
 
         # dynamically load ui
-        self.ui = uic.loadUi("gui/ImportDialog.ui", self)
+        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "ImportDialog.ui"), self)
         self.initUi()
 
         if isinstance(model, str):
@@ -56,7 +58,7 @@ class ImportDialog(QtGui.QDialog):
 
     def initUi(self):
         # Setup slots and signals
-        self.ui.buttonBox.clicked[QtGui.QAbstractButton].connect(self.buttonPress)
+        self.ui.buttonBox.clicked[QtWidgets.QAbstractButton].connect(self.buttonPress)
 
     def buttonPress(self, button):
         """Deal with user interaction of button group"""
