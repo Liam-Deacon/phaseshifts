@@ -7,7 +7,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore
+from six import ensure_binary
+from qtpy import QtCore
 
 qt_resource_data = "\
 \x00\x00\x02\x6d\
@@ -4250,17 +4251,20 @@ qt_resource_struct = "\
 \x00\x00\x04\xd8\x00\x00\x00\x00\x00\x01\x00\x00\x80\x65\
 "
 
+RESOURCES = [
+    0x01,
+    ensure_binary(qt_resource_struct),
+    ensure_binary(qt_resource_name),
+    ensure_binary(qt_resource_data),
+]
+
 
 def qInitResources():
-    QtCore.qRegisterResourceData(
-        0x01, qt_resource_struct, qt_resource_name, qt_resource_data
-    )
+    QtCore.qRegisterResourceData(*RESOURCES)
 
 
 def qCleanupResources():
-    QtCore.qUnregisterResourceData(
-        0x01, qt_resource_struct, qt_resource_name, qt_resource_data
-    )
+    QtCore.qUnregisterResourceData(*RESOURCES)
 
 
 qInitResources()
