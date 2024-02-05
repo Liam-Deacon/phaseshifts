@@ -54,7 +54,9 @@ from phaseshifts.model import MTZ_model, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = "Liam Deacon"
-__APP_COPYRIGHT__ = "\xa92013-{year} {author}".format(year=datetime.date.today().year, author=__APP_AUTHOR__)
+__APP_COPYRIGHT__ = "\xa92013-{year} {author}".format(
+    year=datetime.date.today().year, author=__APP_AUTHOR__
+)
 __APP_DESCRIPTION__ = "A simple Python-based program\nfor generation of phase shifts"
 __APP_DISTRIBUTION__ = phaseshifts.__package__
 __APP_CONTACT__ = phaseshifts.__contact__
@@ -296,8 +298,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """Returns file path of input."""
         if startpath is None:
             startpath = str(
-            QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.HomeLocation)[0]
-        )
+                QtCore.QStandardPaths.standardLocations(
+                    QtCore.QStandardPaths.StandardLocation.HomeLocation
+                )[0]
+            )
         if model is None:
             model = ""
         else:
@@ -379,7 +383,9 @@ class MainWindow(QtWidgets.QMainWindow):
             )
             if model == "bulk":
                 tree = self.ui.treeWidgetBulk
-                mtz = eval("self.%s" % model, {"self": self}, {})  # pylint: disable=eval-used
+                mtz = eval(
+                    "self.%s" % model, {"self": self}, {}
+                )  # pylint: disable=eval-used
             elif model == "slab":
                 tree = self.ui.treeWidgetSlab
             else:

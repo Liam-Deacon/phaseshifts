@@ -53,7 +53,9 @@ class SettingsDialog(QtWidgets.QDialog):
         super(SettingsDialog, self).__init__(parent)
 
         # dynamically load ui
-        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "SettingsDialog.ui"), self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "SettingsDialog.ui"), self
+        )
 
         # settings default
         self.settings = Settings()
@@ -244,7 +246,9 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = general_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, err)
+                )
                 sys.stderr.flush()
 
         for option in atorb_dict:  # load each setting from atorb section
@@ -253,7 +257,9 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = atorb_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, err)
+                )
                 sys.stderr.flush()
 
         for option in phsh_dict:  # load each setting from phaseshifts section
@@ -262,7 +268,9 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = phsh_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, str(err)))
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, str(err))
+                )
                 sys.stderr.flush()
 
     def saveConfig(self):

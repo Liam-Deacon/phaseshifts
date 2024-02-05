@@ -32,6 +32,7 @@ from .. import elements
 
 ELEMENTS_DICT = OrderedDict([(element.symbol, element.name) for element in ELEMENTS])
 
+
 # Create a class for our main window
 class PeriodicTableDialog(QtWidgets.QFrame):
     """Periodic table dialog class"""
@@ -40,7 +41,9 @@ class PeriodicTableDialog(QtWidgets.QFrame):
         super(PeriodicTableDialog, self).__init__(parent)
 
         # Or more dynamically
-        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "PeriodicTable.ui"), self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "PeriodicTable.ui"), self
+        )
         self.ui.show()
 
         self.selectedElement = "H"  # default is Hydrogen
@@ -67,7 +70,9 @@ class PeriodicTableDialog(QtWidgets.QFrame):
             config = re.sub(r"([spdf])", r"\1<sup>", element.eleconfig)
             config = config.replace(" ", "</sup>&nbsp;") + "</sup>"
             tooltip = ""
-            tooltip = tooltip + """
+            tooltip = (
+                tooltip
+                + """
                 <html>
                     <span style=" font-weight:600;">{name}</span><br/>
                     Z={protons}<br/>
@@ -78,18 +83,23 @@ class PeriodicTableDialog(QtWidgets.QFrame):
                     &#961;={density}&nbsp;g/L<br/>
                     &#967;={eleneg}
                 </html>""".format(
-                protons=element.protons,
-                name=element.name,
-                tmelt=element.tmelt,
-                tboil=element.tboil,
-                config=config,
-                mass=element.mass,
-                density=element.density,
-                eleneg=element.eleneg,
+                    protons=element.protons,
+                    name=element.name,
+                    tmelt=element.tmelt,
+                    tboil=element.tboil,
+                    config=config,
+                    mass=element.mass,
+                    density=element.density,
+                    eleneg=element.eleneg,
+                )
             )
 
             # pylint: disable=eval-used
-            eval("self.element_%i.clicked.connect(self.buttonClick)" % i, {"self", self}, {})
+            eval(
+                "self.element_%i.clicked.connect(self.buttonClick)" % i,
+                {"self", self},
+                {},
+            )
             eval("""self.element_%i.setToolTip(tooltip)""" % i, {"self", self}, {})
             # pylint: enable=eval-used
 

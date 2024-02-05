@@ -58,7 +58,9 @@ class UpdateDialog(QtWidgets.QDialog):
         self.proxy = proxy
 
         # dynamically load ui
-        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "UpdateDialog.ui"), self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "UpdateDialog.ui"), self
+        )
         self.initUi()
 
         self.ui.show()

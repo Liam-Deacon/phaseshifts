@@ -27,6 +27,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 # pylint: disable=invalid-name,super-with-arguments,consider-using-f-string
 
 import os
@@ -46,7 +47,9 @@ class ImportDialog(QtWidgets.QDialog):
         self.action = None
 
         # dynamically load ui
-        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "ImportDialog.ui"), self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "ImportDialog.ui"), self
+        )
         self.initUi()
 
         if isinstance(model, str):

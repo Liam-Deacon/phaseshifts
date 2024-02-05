@@ -4252,7 +4252,10 @@ qt_resource_struct = "\
 "
 
 RESOURCES = [
-    0x01, ensure_binary(qt_resource_struct), ensure_binary(qt_resource_name), ensure_binary(qt_resource_data)
+    0x01,
+    ensure_binary(qt_resource_struct),
+    ensure_binary(qt_resource_name),
+    ensure_binary(qt_resource_data),
 ]
 
 

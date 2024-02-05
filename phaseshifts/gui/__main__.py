@@ -25,6 +25,7 @@ def get_parser():
     )
     return parser
 
+
 def main(argv=None):
     """Entry point if executing as standalone."""
     if argv is None:
