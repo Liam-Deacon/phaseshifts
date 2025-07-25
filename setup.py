@@ -5,6 +5,7 @@ import os
 import sys
 import sysconfig
 import subprocess  # nosec
+import shutil
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -234,9 +235,15 @@ f2py_exts_sources = {
     ]
 }
 try:
-    if phaseshifts and hasattr(phaseshifts, "phshift2007"):
-        # Use the platform-filtered flags directly from COMPILER_FLAGS
-        gfortran_compiler_args = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+    # Detect MSVC toolchain; avoid GNU Fortran flags when it is active
+    is_msvc = os.name == "nt" and shutil.which("cl.exe") is not None
+    if (not is_msvc) and phaseshifts and hasattr(phaseshifts, "phshift2007"):
+        # Use the platform‑filtered flags directly from COMPILER_FLAGS
+        gfortran_compiler_args = [
+            flag
+            for flag in phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+            if flag not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+        ]
     else:
         gfortran_compiler_args = []
 except (NameError, AttributeError, KeyError):
@@ -246,8 +253,10 @@ except (NameError, AttributeError, KeyError):
 f2py_platform_extra_args = {
     "darwin": {"extra_link_args": [], "extra_compile_args": []},
     "win32": {
-        "extra_link_args": gfortran_compiler_args,
-        "extra_compile_args": gfortran_compiler_args,
+        "extra_link_args": ([] if shutil.which("cl.exe") else gfortran_compiler_args),
+        "extra_compile_args": (
+            [] if shutil.which("cl.exe") else gfortran_compiler_args
+        ),
     },
     "linux": {
         "extra_link_args": gfortran_compiler_args + ["-lgomp"],

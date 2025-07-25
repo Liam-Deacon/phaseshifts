@@ -3,13 +3,11 @@
 ### setup project ###
 cmake_minimum_required(VERSION 3.15)
 
+#
 # Windows-specific configuration for mixed toolchains
 if(WIN32)
-  # Force MinGW Makefiles generator on Windows to avoid MSVC/gfortran mixing
-  if(NOT CMAKE_GENERATOR STREQUAL "MinGW Makefiles" AND NOT CMAKE_GENERATOR STREQUAL "MSYS Makefiles")
-    message(STATUS "Windows detected - forcing MinGW Makefiles generator for compatibility")
-    set(CMAKE_GENERATOR "MinGW Makefiles" CACHE STRING "Generator" FORCE)
-  endif()
+  # Retain the generator chosen by the user (MSVC, MinGW, or others) and simply report it.
+  message(STATUS "Windows detected - using CMake generator: ${CMAKE_GENERATOR}")
 
   # Ensure gfortran is found on Windows - check multiple common paths
   if(NOT CMAKE_Fortran_COMPILER)
@@ -234,7 +232,18 @@ elseif (UNIX)
   endif()
 endif()
 
+
 add_dependencies("${f2py_module_name}" genpyf generate_f2py_files)
+
+# --- Optional on‑the‑fly generation of libphsh (disabled by default) ---
+option(GENERATE_LIBPHSH "Generate libphsh Fortran library automatically if missing" OFF)
+if(GENERATE_LIBPHSH)
+  add_custom_target(generate_libphsh
+    COMMAND ${CMAKE_COMMAND} -E echo "TODO: generate libphsh from source"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating libphsh Fortran library")
+  add_dependencies("${f2py_module_name}" generate_libphsh)
+endif()
 
 # Debug output to help diagnose build issues
 message(STATUS "Building target: ${f2py_module_name}")
