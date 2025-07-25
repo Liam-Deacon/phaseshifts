@@ -38,7 +38,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest  # TODO: Needs #32 to be resolved
+          - windows-latest # TODO: Needs #32 to be resolved
           # - macos-latest
         python-version:
           # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
@@ -68,7 +68,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           # Install additional Windows-specific build tools
-          pip install setuptools-scm
+          pip install setuptools-scm scikit-build scikit-build-core cmake
         shell: bash
 
       # Windows-specific setup for Fortran compilation
@@ -94,19 +94,18 @@ jobs:
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          # Use setup.py for Windows to avoid CMake toolchain issues
-          echo "Building with setup.py on Windows..."
+          # Use scikit-build/CMake for modern Python builds on Windows
+          echo "Building with scikit-build/CMake on Windows..."
           echo "Python version: $(python --version)"
           echo "GCC version: $(gcc --version | head -1)"
           echo "Gfortran version: $(gfortran --version | head -1)"
-          make libphsh
+          echo "CMake version: $(cmake --version | head -1)"
+          make
         shell: bash
         env:
           CC: gcc
           FC: gfortran
           PYTHON: python
-          # Disable CMake for Windows builds
-          DISABLE_CMAKE: 1
 
       - name: Build binaries (Unix)
         if: matrix.os != 'windows-latest'
