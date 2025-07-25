@@ -1,19 +1,21 @@
 {
-    "recommendations": [
-        "ms-python.python",
-        "littlefoxteam.vscode-python-test-adapter",
-        "ms-python.pylint",
-        "ms-python.black-formatter",
-        "ms-python.isort",
-        "fortran-lang.linter-gfortran",
-        "mechatroner.rainbow-csv",
-        "charliermarsh.ruff",
-        "shardulm94.trailing-spaces",
-        "mhutchie.git-graph",
-        "ms-azuretools.vscode-docker",
-        "streetsidesoftware.code-spell-checker",
-        "ms-vscode.cmake-tools",
-        "redhat.vscode-yaml",
-        "derivitec-ltd.cmake-test-adapter"
-    ]
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.autopep8",
+    "littlefoxteam.vscode-python-test-adapter",
+    "ms-python.pylint",
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "fortran-lang.linter-gfortran",
+    "mechatroner.rainbow-csv",
+    "charliermarsh.ruff",
+    "shardulm94.trailing-spaces",
+    "mhutchie.git-graph",
+    "ms-azuretools.vscode-docker",
+    "streetsidesoftware.code-spell-checker",
+    "ms-vscode.cmake-tools",
+    "redhat.vscode-yaml",
+    "derivitec-ltd.cmake-test-adapter"
+  ]
 }

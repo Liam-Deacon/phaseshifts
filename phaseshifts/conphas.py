@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 
 ##############################################################################
@@ -321,8 +321,8 @@ class Conphas:
 
         Examples
         --------
-        >>> con = Conphas(output_file=r'testing\leedph_py.d', lmax=10)
-        >>> con.set_input_files([r'testing\\ph1'])
+        >>> con = Conphas(output_file=r'testing/leedph_py.d', lmax=10)
+        >>> con.set_input_files([r'testing/ph1'])
         >>> con.set_format('cleed')
         >>> con.calculate()
          L = 0

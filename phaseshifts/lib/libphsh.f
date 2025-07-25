@@ -7,13 +7,14 @@
 ! http://www.icts.hkbu.edu.hk/vanhove/VanHove_files/leed/leedpack.html
 !
 !=======================================================================
-
-! NOTE: To view a rough comparison to (almost) the original source, run:
 !
-!       cat phaseshifts/lib/.phsh.orig/*.f > phsh.f
+! NOTE To view a rough comparison to (almost) the original source, run:
+!
+!       cd phaseshifts/lib/.phsh.orig
+!       cat phsh0.f phsh1.f phsh2.f > phsh.f
 !       code --diff phsh.f phaseshifts/lib/libphsh.f
 !
-
+!
 !-----------------------------------------------------------------------
 ! hartfock subroutine:
 !

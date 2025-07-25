@@ -1,8 +1,5 @@
 import sys
 import os
-import re
-
-import pytest
 
 import phaseshifts
 
@@ -16,25 +13,74 @@ def test_libphsh_exists():
     WHEN searching phaseshifts/lib directory
     THEN there should be a compiled shared object for libphsh (.pyd|.dll on Windows, .so otherwise)
     """
-    assert os.path.exists(PHASESHIFTS_LIB_DIR)
+    assert os.path.exists(PHASESHIFTS_LIB_DIR), (
+        "Directory does not exist: %s\nCurrent working directory: %s\nContents of parent: %s"
+        % (
+            PHASESHIFTS_LIB_DIR,
+            os.getcwd(),
+            os.listdir(os.path.dirname(PHASESHIFTS_LIB_DIR)),
+        )
+    )
+
+    found = False
+    details = []
+    shared_obj_candidates = []
     for directory, _, files in os.walk(PHASESHIFTS_LIB_DIR):
         if "__pycache__" in directory or not directory.endswith("/lib"):
             continue
+        details.append("Checked directory: %s\nFiles: %s" % (directory, files))
 
-        if sys.platform == "win32":
-            assert any(
-                [
-                    re.match(r"^libphsh.*\.(dll|pyd)$", filename, re.IGNORECASE)
-                    for filename in files
-                ]
-            ), "Expected to find a file matching regex 'phaseshifts/lib/libphsh.*\.(dll|pyd)' (case insensitive)"
+        for filename in files:
+            # Accept libphsh, libphsh.so, libphsh.pyd, libphsh.dll
+            if (
+                filename == "libphsh"
+                or filename.startswith("libphsh")
+                and (
+                    filename.endswith(".so")
+                    or filename.endswith(".pyd")
+                    or filename.endswith(".dll")
+                )
+            ):
+                shared_obj_candidates.append(os.path.join(directory, filename))
+
+    # Check file type of candidates
+    def describe_file_type(filepath):
+        if not os.path.exists(filepath):
+            return "File does not exist: %s" % filepath
+        with open(filepath, "rb") as f:
+            header = f.read(4)
+        if header.startswith(b"\x7fELF"):
+            return "ELF shared object (Linux)"
+        elif header[:2] == b"MZ":
+            return "Windows DLL"
+        elif header[:4] == b"\xcf\xfa\xed\xfe" or header[:4] == b"\xfe\xed\xfa\xcf":
+            return "Mach-O (macOS)"
         else:
-            assert any(
-                [
-                    filename.startswith("libphsh") and filename.endswith(".so")
-                    for filename in files
-                ]
-            ), "Expected to find file matching 'phaseshifts/lib/libphsh*.so' glob pattern"
+            return "Unknown file type: %s" % header
+
+    found = False
+    file_type_details = []
+    for candidate in shared_obj_candidates:
+        file_type = describe_file_type(candidate)
+        file_type_details.append("%s: %s" % (candidate, file_type))
+        if (
+            file_type.startswith("ELF shared object")
+            or file_type.startswith("Mach-O")
+            or file_type.startswith("Windows DLL")
+        ):
+            found = True
+            break
+
+    assert found, (
+        "Expected to find a valid libphsh shared object in '%s'\nPlatform: %s\nCandidates: %s\nFile type details:\n%s\nDirectory walk details:\n%s"
+        % (
+            PHASESHIFTS_LIB_DIR,
+            sys.platform,
+            shared_obj_candidates,
+            "\n".join(file_type_details),
+            "\n".join(details),
+        )
+    )
 
 
 def test_import_libphsh():
@@ -47,7 +93,7 @@ def test_import_libphsh():
     try:
         import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
     except ModuleNotFoundError:
-        pytest.fail("libphsh*{} has not been compiled".format(ext))
+        assert False, "libphsh*{} has not been compiled".format(ext)
     except ImportError as err:
         if sys.platform == "win32":
             _ = (
@@ -64,6 +110,25 @@ def test_import_libphsh():
 
                 return  # success after adding DLL directory to path
         err_message = "{}: ".format(ext).join(str(err).split("{}: ".format(ext))[1:])
-        pytest.fail(
-            "Unable to import compiled libphsh due to: '{}'".format(err_message)
+        assert False, "Unable to import compiled libphsh due to: '{}'".format(
+            err_message
         )
+
+
+def test_libphsh_hb_invocation():
+    """
+    GIVEN a successfully imported libphsh extension
+    WHEN calling a simple Fortran function (hb)
+    THEN the function should execute and return a float
+    """
+    try:
+        import phaseshifts.lib.libphsh as libphsh
+    except Exception as err:
+        assert False, "Could not import libphsh: %s" % str(err)
+    try:
+        result = libphsh.hb(2.5, 1.0)
+    except Exception as err:
+        assert False, "Could not call libphsh.hb(2.5, 1.0): %s" % str(err)
+    assert isinstance(
+        result, float
+    ), "Expected float result from libphsh.hb, got %s" % type(result)

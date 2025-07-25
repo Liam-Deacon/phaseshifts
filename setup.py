@@ -4,6 +4,7 @@ from __future__ import print_function  # noqa
 import os
 import sys
 import sysconfig
+from collections import defaultdict
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -13,10 +14,15 @@ except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
 try:
-    import setuptools  # type: ignore [import-untyped]
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
-    from distutils.core import find_packages  # type: ignore [attr-defined]
+    # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
+    try:
+        from distutils.core import find_packages
+    except ImportError:
+        raise ImportError(
+            "setuptools is required for building phaseshifts. Please install setuptools."
+        )
 
 INCLUDE_DIRS = []
 
@@ -29,58 +35,50 @@ except ImportError:
     skbuild = None  # type: ignore [assignment]
 
 BUILD_BACKEND = None
-try:
-    from numpy.distutils.core import Extension, setup
+# Build logic for legacy and modern Python
+if tuple(sys.version_info[:2]) <= (3, 11):
+    # Try modern build first: scikit-build + CMake
+    try:
+        import skbuild
+        from skbuild import setup  # noqa: F811
 
-    BUILD_BACKEND = "numpy.distutils"
-except ModuleNotFoundError as npy_err:
-    if skbuild and tuple(sys.version_info[:2]) >= (3, 11) and "bdist_wheel" in sys.argv:
-        # TODO: Need to use migrate to a new f2py build backend, but have issues with pyproject.toml PEP-517 install
-        # FIXME: Currently skbuild with CMakeLists.txt does not work, check with `make libphsh.cmake`
-        try:
-            from skbuild import setup
-
-            BUILD_BACKEND = "skbuild"
-        except ImportError:
-            raise NotImplementedError(
-                "TODO: Generate binary wheels correctly using pyproject.toml, scikit-build and cmake"
-            )
-    if tuple(sys.version_info[:2]) >= (3, 11):
-        # We can invoke f2py and compile manually
-        # HACK: Workaround missing distutils by invoking f2py directly
-        # FIXME: Generated wheels unaware of native extension & deemed universal; *.so must be included in MANIFEST.in
-        import subprocess
-
-        setup = setuptools.setup
-
+        BUILD_BACKEND = "skbuild"
+    except ImportError:
+        print(
+            "WARNING: scikit-build not found; falling back to legacy numpy.f2py build.",
+            file=sys.stderr,
+        )
         BUILD_BACKEND = "numpy.f2py"
-        if not any(x in sys.argv for x in ("sdist", "wheel")):
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "numpy.f2py",
-                    "libphsh.f",
-                    "-m",
-                    "libphsh",
-                    "-c",
-                    "-f77flags='-frecursive'",
-                ],
-                cwd="./phaseshifts/lib",
-            )
+    except Exception as e:
+        print(
+            f"WARNING: scikit-build build failed ({e}); falling back to legacy numpy.f2py build.",
+            file=sys.stderr,
+        )
+        BUILD_BACKEND = "numpy.f2py"
+    if BUILD_BACKEND == "numpy.f2py":
+        from setuptools import find_packages, setup, Extension  # noqa: F811
+
         try:
             import numpy.f2py
 
-            INCLUDE_DIRS += [
-                "-I{}".format(x)
-                for x in (numpy.get_include(), numpy.f2py.get_include())
-            ]
+            INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
         except ImportError:
             print(
-                "WARNING: Unable to import numpy.f2py module for build", file=sys.stderr
+                "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                file=sys.stderr,
             )
-    else:
-        raise npy_err
+        # Optionally, run f2py manually if needed
+        # subprocess.check_call([...])
+else:
+    # Modern build: require scikit-build and CMake
+    try:
+        from skbuild import setup
+
+        BUILD_BACKEND = "skbuild"
+    except ImportError:
+        raise ImportError(
+            "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
+        )
 
 if len(sys.argv) == 1:
     sys.argv.append("install")
@@ -96,15 +94,6 @@ if BUILD_BACKEND == "skbuild":
     }
 
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
-if len(sys.argv) < 2 and BUILD_BACKEND == "numpy.distutils":
-    # add build_ext and --inplace flags when performing: `python setup.py`
-    sys.argv.extend(BUILD_EXT_INPLACE_ARGS)
-elif BUILD_BACKEND == "numpy.f2py":
-    # FIXME: The following is a crude workaround to build_ext to avoid compiled libphsh*.so with undefined symbols
-    for arg in filter(lambda x: x in sys.argv, BUILD_EXT_INPLACE_ARGS):
-        sys.argv.remove(arg)
-    if "build" not in sys.argv:
-        sys.argv.append("build")
 
 # build f2py extensions
 f2py_exts_sources = {
@@ -116,12 +105,15 @@ f2py_exts_sources = {
         ),
     ]
 }
-f2py_platform_extra_args = {
-    "darwin": {"extra_link_args": [], "extra_compile_args": []},
-    "win32": {"extra_link_args": [], "extra_compile_args": []},
-    "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-    "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-}[sys.platform]
+f2py_platform_extra_args = defaultdict(
+    dict,
+    {
+        "darwin": {"extra_link_args": [], "extra_compile_args": []},
+        "win32": {"extra_link_args": [], "extra_compile_args": []},
+        "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+        "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+    },
+)[sys.platform]
 
 f2py_exts = (
     [
@@ -147,7 +139,8 @@ print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
 
 README = "README.md"
 
-dist = setup(
+# --- Fallback logic for build ---
+setup_args = dict(
     name="phaseshifts",
     packages=find_packages(),
     version=getattr(phaseshifts, "__version__", "0.1.8-dev"),
@@ -189,7 +182,7 @@ dist = setup(
             "scikit-build; python_version > '3.11'",
             "wheel",
         ],
-        "test": ["pytest", "pytest-cov", "pytest-qt"],
+        "test": ["pytest", "pytest-cov"],
         "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
@@ -217,3 +210,19 @@ dist = setup(
     ext_modules=f2py_exts,
     console=[os.path.join("phaseshifts", "phsh.py")],
 )
+
+build_failed = False
+if BUILD_BACKEND == "skbuild":
+    try:
+        dist = setup(**setup_args, **CMAKE_ARGS)
+    except Exception as e:
+        print(f"WARNING: skbuild/CMake build failed ({e})", file=sys.stderr)
+        build_failed = True
+        # Fallback for Python <3.12
+        if tuple(sys.version_info[:2]) <= (3, 11):
+            print("Falling back to setuptools/numpy.f2py build.", file=sys.stderr)
+            dist = setup(**setup_args)
+        else:
+            raise
+else:
+    dist = setup(**setup_args)
