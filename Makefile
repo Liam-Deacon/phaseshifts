@@ -71,7 +71,9 @@ clean:
 	rm -rf venv*
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
-		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
+		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd \
+		phaseshifts/lib/libphsh \
+		atorb_C.txt
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
 
 #: Build docker image
