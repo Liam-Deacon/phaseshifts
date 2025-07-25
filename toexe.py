@@ -1,7 +1,7 @@
 # setup.py
 try:
     from distutils.core import setup
-except:
+except Exception:
     from setuptools import setup
 import py2exe, os
 
