@@ -118,8 +118,11 @@ For python 3.11 or older:
 pip install phaseshifts
 
 # development install
+uv --python=3.11 venv # create a virtual environment using uv (optional)
+source venv/bin/activate # Linux/Mac systems => activate the virtual environment (optional)
+python -m ensurepip
 pip install wheel numpy setuptools  # needed for older python/pip versions
-pip install -e .
+pip install -e '.[gui,dev,test]' # extra deps are only needed for development/testing purposes
 phsh --help
 ```
 
@@ -355,6 +358,10 @@ wishes to get involved are most welcome.  Please either
 > Please [star](https://github.com/Liam-Deacon/phaseshifts) it on GitHub as this will help
 > to easily indicate that others find the package useful.
 <!--lint enable no-unused-definitions-->
+
+## Copilot & Agentic Coding Instructions
+
+For agentic coding guidelines, Copilot instructions, and best practices, please see [AGENTS.md](./AGENTS.md) in the root of this repository. The file `.github/copilot-instructions.md` is a pointer to AGENTS.md for compatibility with GitHub and Copilot workflows.
 
 ## To Do
 
