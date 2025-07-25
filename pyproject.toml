@@ -115,8 +115,7 @@ cmake.build-type = "Release"
 cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
 build.targets = ["libphsh"]
-# Completely disable install_data to prevent data file installation conflicts
-install.strip = false
+# Only install CMake Runtime components (the compiled extension)
 install.components = ["Runtime"]
 # Exclude documentation and build files from wheels
 wheel.exclude = [
