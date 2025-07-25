@@ -145,7 +145,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
    # Using chocolatey (if you have it)
    choco install mingw
    ```
-   
+
    Or download and install manually from: <https://www.mingw-w64.org/downloads/>
 
 4. **Install CMake** (for modern build system):
@@ -154,7 +154,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
    # Using chocolatey
    choco install cmake
    ```
-   
+
    Or download from: <https://cmake.org/download/>
 
 #### Installation Steps
@@ -164,7 +164,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
    ```cmd
    # Open Command Prompt or PowerShell
    python -m venv phaseshifts-env
-   
+
    # Activate the environment
    phaseshifts-env\Scripts\activate
    ```
@@ -174,10 +174,10 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
    ```cmd
    python -m pip install --upgrade pip setuptools wheel
    pip install numpy scipy periodictable
-   
+
    # For Python 3.12+ (modern build system)
    pip install scikit-build cmake
-   
+
    # For development (optional)
    pip install pytest flake8
    ```
@@ -187,10 +187,10 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
    ```cmd
    # Latest release from PyPI
    pip install phaseshifts
-   
+
    # Or development version from GitHub
    pip install git+https://github.com/Liam-Deacon/phaseshifts.git
-   
+
    # Or for local development
    git clone https://github.com/Liam-Deacon/phaseshifts.git
    cd phaseshifts

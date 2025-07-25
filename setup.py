@@ -182,16 +182,19 @@ if BUILD_BACKEND == "skbuild":
         '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
         '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
     ]
-    
+
     # Windows-specific CMake configuration
     if os.name == "nt":
         # Force MinGW Makefiles generator on Windows
-        cmake_args.extend([
-            "-G", "MinGW Makefiles",
-            "-DCMAKE_C_COMPILER=gcc",
-            "-DCMAKE_Fortran_COMPILER=gfortran",
-        ])
-    
+        cmake_args.extend(
+            [
+                "-G",
+                "MinGW Makefiles",
+                "-DCMAKE_C_COMPILER=gcc",
+                "-DCMAKE_Fortran_COMPILER=gfortran",
+            ]
+        )
+
     CMAKE_ARGS = {"cmake_args": cmake_args}
 
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]

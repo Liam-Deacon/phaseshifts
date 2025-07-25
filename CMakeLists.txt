@@ -10,14 +10,14 @@ if(WIN32)
     message(STATUS "Windows detected - forcing MinGW Makefiles generator for compatibility")
     set(CMAKE_GENERATOR "MinGW Makefiles" CACHE STRING "Generator" FORCE)
   endif()
-  
+
   # Ensure gfortran is found on Windows
   if(NOT CMAKE_Fortran_COMPILER)
-    find_program(GFORTRAN_EXECUTABLE 
+    find_program(GFORTRAN_EXECUTABLE
       NAMES gfortran gfortran.exe
-      PATHS 
+      PATHS
         "C:/mingw64/bin"
-        "C:/tools/mingw64/bin" 
+        "C:/tools/mingw64/bin"
         "C:/msys64/mingw64/bin"
         "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
       DOC "gfortran compiler"
