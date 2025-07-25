@@ -1,5 +1,4 @@
 include *.txt *.py *.rst *.md
-exclude setup.py
 recursive-include phaseshifts *.py *.txt *.rst *.pyw *.pyx
 recursive-include phaseshifts/gui *.ui *.py *.bat *.sh *.svg *.png *.qrc
 recursive-include phaseshifts/cython *
@@ -13,3 +12,10 @@ recursive-include phaseshifts/res *
 
 # TODO: Remove shared libraries from source distribution includes once numpy.distutils migration is stable
 recursive-include phaseshifts/lib  *.so *.pyd
+
+# Exclude unnecessary files for the source distribution
+exclude setup.py
+exclude requirements.txt
+exclude MANIFEST.in
+exclude README.md
+exclude CODE_OF_CONDUCT.md
