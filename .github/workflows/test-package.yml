@@ -77,9 +77,13 @@ jobs:
         run: |
           # Install MinGW-w64 for consistent gcc/gfortran toolchain
           choco install mingw --force
-          # Add to PATH
+          # Add to PATH (both possible locations)
           echo "C:\tools\mingw64\bin" >> $GITHUB_PATH
-          # Verify installation
+          echo "C:\mingw64\bin" >> $GITHUB_PATH
+          # Verify installation and PATH
+          echo "PATH: $PATH"
+          where gcc
+          where gfortran
           gcc --version
           gfortran --version
         shell: bash
@@ -100,12 +104,17 @@ jobs:
           echo "GCC version: $(gcc --version | head -1)"
           echo "Gfortran version: $(gfortran --version | head -1)"
           echo "CMake version: $(cmake --version | head -1)"
+          # Set CMake generator and compilers for MinGW
+          export CMAKE_GENERATOR="MinGW Makefiles"
+          export CMAKE_C_COMPILER=gcc
+          export CMAKE_Fortran_COMPILER=gfortran
           make
         shell: bash
         env:
           CC: gcc
           FC: gfortran
           PYTHON: python
+          CMAKE_GENERATOR: "MinGW Makefiles"
 
       - name: Build binaries (Unix)
         if: matrix.os != 'windows-latest'
