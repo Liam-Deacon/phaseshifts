@@ -42,8 +42,7 @@ jobs:
           # - windows-latest  # TODO: Needs #32 to be resolved
           # - macos-latest
         python-version:
-          # NOTE: 2.7 through to 3.6 inclusive are not provided in the ubuntu-latest runner
-          - "3.7"
+          # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
           # - "3.8"  # This version has issues with the build, but is not officially supported anyway
           - "3.9"
           - "3.10"
