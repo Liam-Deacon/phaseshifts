@@ -21,24 +21,24 @@
 ## Documentation Build Notes
 
 - **Documentation is generated using Sphinx**. All source files are in the `docs/` directory.
-- **Build HTML docs:**  
+- **Build HTML docs:**
   Run `make html` from the `docs/` directory. Output will be in `docs/_build/html`.
-- **Build PDF docs:**  
+- **Build PDF docs:**
   Run `make latexpdf` from the `docs/` directory. Output will be in `docs/_build/latex`.
-- **Clean build artifacts:**  
+- **Clean build artifacts:**
   Run `make clean` in `docs/` to remove all generated files.
-- **Other formats:**  
+- **Other formats:**
   The `docs/Makefile` supports many targets (see `make help`), including `epub`, `man`, `text`, `json`, etc.
-- **Prerequisites:**  
+- **Prerequisites:**
   Sphinx must be installed (`pip install sphinx`). If `sphinx-build` is not found, follow the error message in the Makefile to install or set your PATH.
-- **Troubleshooting:**  
+- **Troubleshooting:**
   If you see "The 'sphinx-build' command was not found", ensure Sphinx is installed and available in your PATH.
-- **Advanced usage:**  
+- **Advanced usage:**
   See `docs/Makefile` for all supported build targets and options.
 
 ## Documentation Tests
 
-- **Test documentation build:**  
+- **Test documentation build:**
   Run `pytest tests/test_docs_build.py` to verify that documentation builds successfully.
 - The test will run `make html` in the `docs/` directory and check for the output in `docs/_build/html/index.html`.
 - If Sphinx is not installed, the test will be skipped.
