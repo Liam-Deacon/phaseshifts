@@ -96,4 +96,8 @@ endif()
 
 add_dependencies("${f2py_module_name}" genpyf)
 
+# Only install the compiled extension - no data files
 install(TARGETS "${f2py_module_name}" DESTINATION phaseshifts/lib/)
+
+# Prevent CMake from automatically installing any other files
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
