@@ -18,6 +18,10 @@ _skbuild/
 *.pyd
 bin/phsh*
 
+# built files and test artifacts
+atorb_C.txt
+phaseshifts/lib/libphsh
+
 # log files
 *.log
 
