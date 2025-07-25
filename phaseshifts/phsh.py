@@ -1,5 +1,13 @@
-#!/usr/local/bin/python2.7
-# encoding: utf-8
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+from __future__ import (
+    print_function,
+    unicode_literals,
+    absolute_import,
+    division,
+    with_statement,
+)
 
 ##############################################################################
 # Author: Liam Deacon                                                        #
@@ -43,8 +51,6 @@ Examples
 
 
 """
-from __future__ import print_function, unicode_literals
-from __future__ import absolute_import, division, with_statement
 
 import argparse
 import datetime
