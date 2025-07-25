@@ -1,8 +1,5 @@
 import sys
 import os
-import re
-
-import pytest
 
 import phaseshifts
 
@@ -96,7 +93,7 @@ def test_import_libphsh():
     try:
         import phaseshifts.lib.libphsh  # type: ignore [import-untyped] # noqa
     except ModuleNotFoundError:
-        pytest.fail("libphsh*{} has not been compiled".format(ext))
+        assert False, "libphsh*{} has not been compiled".format(ext)
     except ImportError as err:
         if sys.platform == "win32":
             _ = (
@@ -113,6 +110,25 @@ def test_import_libphsh():
 
                 return  # success after adding DLL directory to path
         err_message = "{}: ".format(ext).join(str(err).split("{}: ".format(ext))[1:])
-        pytest.fail(
-            "Unable to import compiled libphsh due to: '{}'".format(err_message)
+        assert False, "Unable to import compiled libphsh due to: '{}'".format(
+            err_message
         )
+
+
+def test_libphsh_hb_invocation():
+    """
+    GIVEN a successfully imported libphsh extension
+    WHEN calling a simple Fortran function (hb)
+    THEN the function should execute and return a float
+    """
+    try:
+        import phaseshifts.lib.libphsh as libphsh
+    except Exception as err:
+        assert False, "Could not import libphsh: %s" % str(err)
+    try:
+        result = libphsh.hb(2.5, 1.0)
+    except Exception as err:
+        assert False, "Could not call libphsh.hb(2.5, 1.0): %s" % str(err)
+    assert isinstance(
+        result, float
+    ), "Expected float result from libphsh.hb, got %s" % type(result)
