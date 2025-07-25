@@ -120,7 +120,7 @@ install.strip = false
 install.components = ["Runtime"]
 # Exclude documentation and build files from wheels
 wheel.exclude = [
-    "*.txt", "*.md", "*.rst", "*.yaml", "*.yml", "*.png", "*.pdf", 
+    "*.txt", "*.md", "*.rst", "*.yaml", "*.yml", "*.png", "*.pdf",
     "docs/**", "htmlcov/**", "test/**", "tests/**",
     "dockerfiles/**", "*.ipynb", "*.json", "*.xml", "*.bat", "*.sh",
     "MANIFEST.in", "*.cfg", "Makefile", "CMakeLists.txt", "setup.py", "setup.cfg"
