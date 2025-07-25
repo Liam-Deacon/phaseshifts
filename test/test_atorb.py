@@ -22,7 +22,7 @@ class Test(unittest.TestCase):
         from phaseshifts.atorb import Atorb
 
         at = Atorb()
-        self.failUnless(isinstance(at, Atorb))
+        self.assertTrue(isinstance(at, Atorb))
 
     def test_info(self):
         """Test static method Atorb.get_quantum_info"""
@@ -30,7 +30,7 @@ class Test(unittest.TestCase):
         testmsg(self.shortDescription())
         from phaseshifts.atorb import Atorb
 
-        self.failUnlessEqual(
+        self.assertEqual(
             Atorb.get_quantum_info("3d6"), (3, 2, [1.5, 2.5], [2.4, 3.6])
         )
 
@@ -40,7 +40,7 @@ class Test(unittest.TestCase):
         testmsg(self.shortDescription())
         from phaseshifts.atorb import Atorb
 
-        self.failUnless(Atorb.replace_core_config("[Ar]"), "1s2 2s2 2p6 3s2 3p6")
+        self.assertTrue(Atorb.replace_core_config("[Ar]"), "1s2 2s2 2p6 3s2 3p6")
 
     def test_calc(self):
         """Test static method Atorb.gen_input"""
@@ -48,8 +48,9 @@ class Test(unittest.TestCase):
         testmsg(self.shortDescription())
         from phaseshifts.atorb import Atorb
 
-        file = Atorb.gen_input("C", rel=True, output=os.tmpfile())
-        self.failIf(not os.path.isfile(file))
+        import tempfile
+        file = Atorb.gen_input("C", rel=True, output=tempfile.NamedTemporaryFile().name)
+        self.assertTrue(os.path.isfile(file))
 
 
 if __name__ == "__main__":
