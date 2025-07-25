@@ -1,6 +1,7 @@
 # Makefile for assisting with some common development activities
 
-PYTHON ?= $(shell pyenv which python 2>/dev/null || echo python)
+PYTHON_VERSION ?= 3.11
+PYTHON ?= $(shell python$(PYTHON_VERSION) 2>/dev/null || which python3 2>/dev/null || echo python)
 DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
 PREFIX ?= /usr/local
