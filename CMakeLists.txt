@@ -3,6 +3,31 @@
 ### setup project ###
 cmake_minimum_required(VERSION 3.15)
 
+# Windows-specific configuration for mixed toolchains
+if(WIN32)
+  # On Windows, prefer all-MSVC or all-MinGW toolchain to avoid linking issues
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR 
+      "Mixed MSVC/gfortran toolchain detected on Windows. "
+      "This causes linking failures. Please use one of:\n"
+      "1. All-MSVC with Intel Fortran\n"
+      "2. All-MinGW (gcc + gfortran)\n"
+      "3. Use setup.py instead of CMake for Windows builds\n"
+      "Suggestion: Set CMAKE_Fortran_COMPILER to use Intel Fortran or configure MinGW"
+    )
+  endif()
+  
+  # Check for Intel Fortran if using MSVC
+  if(MSVC)
+    message(STATUS "MSVC detected - checking for compatible Fortran compiler")
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+      message(STATUS "Intel Fortran found - compatible with MSVC")
+    else()
+      message(WARNING "Non-Intel Fortran with MSVC may cause issues")
+    endif()
+  endif()
+endif()
+
 project(phaseshifts
   VERSION 0.1.8
   DESCRIPTION "LIBPHSH module"
@@ -104,7 +129,19 @@ set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSIO
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 
 # Platform-specific linking and compiler flags
-if (UNIX)
+if (WIN32)
+  # Windows-specific configuration
+  message(STATUS "Configuring for Windows build")
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(WARNING "Mixed MSVC/gfortran toolchain detected - this may cause linking issues")
+    message(STATUS "Consider using Intel Fortran or all-MinGW toolchain")
+    # Try to set compatible flags
+    set_target_properties("${f2py_module_name}" PROPERTIES
+      LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
+  endif()
+  # Use standard Windows extension naming
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
     LINK_FLAGS  '-Wl,-dylib,-undefined,dynamic_lookup')
