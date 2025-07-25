@@ -95,14 +95,31 @@ jobs:
           Install-Module -Name "VcRedist" -Force
         shell: pwsh
 
+
+      - name: Find python DLL path for MinGW
+        if: matrix.os == 'windows-latest'
+        id: find_py_dll
+        run: |
+          setlocal enabledelayedexpansion
+          set PYMAJMIN=${{ matrix.python-version }}
+          set PYMAJ=!PYMAJMIN:~0,1!
+          set PYMIN=!PYMAJMIN:~2,2!
+          set PYDLL=python!PYMAJ!!PYMIN!.dll
+          for /f "delims=" %%F in ('dir /s /b !PYDLL!') do set DLLPATH=%%F
+          if not defined DLLPATH (
+            echo !PYDLL! not found!
+            exit /b 1
+          )
+          echo DLLPATH=!DLLPATH!>> %GITHUB_ENV%
+        shell: cmd
+
       - name: Generate MinGW python defs
         if: matrix.os == 'windows-latest'
         run: |
-          REM inside the runner
-          "C:\Python311\python.exe" -m pip install pexports
-          pexports C:\Python311\python311.dll > python311.def
-          dlltool -d python311.def -l libpython311.dll.a -k
-          move libpython311.dll.a C:\msys64\mingw64\lib
+          "C:\Python${{ matrix.python-version | replace('.', '') }}\python.exe" -m pip install pexports
+          pexports "%DLLPATH%" > python.def
+          dlltool -d python.def -l libpython.dll.a -k
+          if exist libpython.dll.a move libpython.dll.a C:\msys64\mingw64\lib
         shell: cmd
 
       - name: Build binaries (Windows)
