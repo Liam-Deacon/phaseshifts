@@ -27,30 +27,62 @@ def test_libphsh_exists():
 
     found = False
     details = []
+    shared_obj_candidates = []
     for directory, _, files in os.walk(PHASESHIFTS_LIB_DIR):
         if "__pycache__" in directory or not directory.endswith("/lib"):
             continue
         details.append("Checked directory: %s\nFiles: %s" % (directory, files))
 
-        if sys.platform == "win32":
-            found = any(
-                re.match(r"^libphsh.*\.(dll|pyd)$", filename, re.IGNORECASE)
-                for filename in files
-            )
-            expected = "libphsh*.dll or libphsh*.pyd"
-        else:
-            found = any(
-                filename.startswith("libphsh") and filename.endswith(".so")
-                for filename in files
-            )
-            expected = "libphsh*.so"
+        for filename in files:
+            # Accept libphsh, libphsh.so, libphsh.pyd, libphsh.dll
+            if (
+                filename == "libphsh"
+                or filename.startswith("libphsh")
+                and (
+                    filename.endswith(".so")
+                    or filename.endswith(".pyd")
+                    or filename.endswith(".dll")
+                )
+            ):
+                shared_obj_candidates.append(os.path.join(directory, filename))
 
-        if found:
+    # Check file type of candidates
+    def describe_file_type(filepath):
+        if not os.path.exists(filepath):
+            return "File does not exist: %s" % filepath
+        with open(filepath, "rb") as f:
+            header = f.read(4)
+        if header.startswith(b"\x7fELF"):
+            return "ELF shared object (Linux)"
+        elif header[:2] == b"MZ":
+            return "Windows DLL"
+        elif header[:4] == b"\xcf\xfa\xed\xfe" or header[:4] == b"\xfe\xed\xfa\xcf":
+            return "Mach-O (macOS)"
+        else:
+            return "Unknown file type: %s" % header
+
+    found = False
+    file_type_details = []
+    for candidate in shared_obj_candidates:
+        file_type = describe_file_type(candidate)
+        file_type_details.append("%s: %s" % (candidate, file_type))
+        if (
+            file_type.startswith("ELF shared object")
+            or file_type.startswith("Mach-O")
+            or file_type.startswith("Windows DLL")
+        ):
+            found = True
             break
 
     assert found, (
-        "Expected to find file matching '%s' in '%s'\nPlatform: %s\nDirectory walk details:\n%s"
-        % (expected, PHASESHIFTS_LIB_DIR, sys.platform, "\n".join(details))
+        "Expected to find a valid libphsh shared object in '%s'\nPlatform: %s\nCandidates: %s\nFile type details:\n%s\nDirectory walk details:\n%s"
+        % (
+            PHASESHIFTS_LIB_DIR,
+            sys.platform,
+            shared_obj_candidates,
+            "\n".join(file_type_details),
+            "\n".join(details),
+        )
     )
 
 
