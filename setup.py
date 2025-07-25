@@ -37,6 +37,7 @@ except ImportError:
 
 BUILD_BACKEND = None
 
+
 # Build logic for legacy and modern Python
 if tuple(sys.version_info[:2]) <= (3, 11):
     # Try modern build first: scikit-build + CMake
@@ -83,7 +84,6 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 if phaseshifts and hasattr(phaseshifts, "phshift2007"):
                     # Get fortran flags and filter out problematic ones for f2py
                     fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
-
                     # Filter out flags that f2py/numpy.distutils might not handle well
                     filtered_flags = []
                     for flag in fortran_flags:
@@ -91,7 +91,6 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                         if flag in ["-pie", "-static-libgcc", "-static-libgfortran"]:
                             continue
                         filtered_flags.append(flag)
-
                     if filtered_flags:
                         fortran_flags_str = " ".join(filtered_flags)
                         args.append(f"--f77flags={fortran_flags_str}")
@@ -105,15 +104,73 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 args.append("--f77flags=-frecursive")
             subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
 else:
-    # Modern build: require scikit-build and CMake
+    # Modern build: require scikit-build and CMake for Python 3.12+
     try:
         from skbuild import setup
 
         BUILD_BACKEND = "skbuild"
     except ImportError:
-        raise ImportError(
-            "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
-        )
+        # On Windows, fallback to numpy.f2py if scikit-build not available
+        if os.name == "nt":
+            print(
+                "WARNING: scikit-build not found on Windows; falling back to legacy numpy.f2py build.",
+                file=sys.stderr,
+            )
+            BUILD_BACKEND = "numpy.f2py"
+            from setuptools import find_packages, setup, Extension  # noqa: F811
+
+            try:
+                import numpy.f2py
+
+                INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
+            except ImportError:
+                print(
+                    "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                    file=sys.stderr,
+                )
+            if not any(x in sys.argv for x in ("sdist", "wheel")):
+                args = [
+                    sys.executable,
+                    "-m",
+                    "numpy.f2py",
+                    "libphsh.f",
+                    "-m",
+                    "libphsh",
+                    "-c",
+                ]
+                try:
+                    if phaseshifts and hasattr(phaseshifts, "phshift2007"):
+                        # Get fortran flags and filter out problematic ones for f2py
+                        fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS[
+                            "gfortran"
+                        ]
+                        # Filter out flags that f2py/numpy.distutils might not handle well
+                        filtered_flags = []
+                        for flag in fortran_flags:
+                            # Skip linking flags for f2py compilation step
+                            if flag in [
+                                "-pie",
+                                "-static-libgcc",
+                                "-static-libgfortran",
+                            ]:
+                                continue
+                            filtered_flags.append(flag)
+                        if filtered_flags:
+                            fortran_flags_str = " ".join(filtered_flags)
+                            args.append(f"--f77flags={fortran_flags_str}")
+                        else:
+                            args.append("--f77flags=-frecursive")
+                    else:
+                        # Default fallback
+                        args.append("--f77flags=-frecursive")
+                except (NameError, AttributeError, KeyError):
+                    # Fallback if phaseshifts module or compiler flags not available
+                    args.append("--f77flags=-frecursive")
+                subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
+        else:
+            raise ImportError(
+                "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
+            )
 
 if len(sys.argv) == 1:
     sys.argv.append("install")
@@ -121,12 +178,21 @@ if len(sys.argv) == 1:
 CMAKE_ARGS = {}
 
 if BUILD_BACKEND == "skbuild":
-    CMAKE_ARGS = {
-        "cmake_args": [
-            '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
-            '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
-        ]
-    }
+    cmake_args = [
+        '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
+        '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+    ]
+    
+    # Windows-specific CMake configuration
+    if os.name == "nt":
+        # Force MinGW Makefiles generator on Windows
+        cmake_args.extend([
+            "-G", "MinGW Makefiles",
+            "-DCMAKE_C_COMPILER=gcc",
+            "-DCMAKE_Fortran_COMPILER=gfortran",
+        ])
+    
+    CMAKE_ARGS = {"cmake_args": cmake_args}
 
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
 

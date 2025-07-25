@@ -5,6 +5,29 @@ cmake_minimum_required(VERSION 3.15)
 
 # Windows-specific configuration for mixed toolchains
 if(WIN32)
+  # Force MinGW Makefiles generator on Windows to avoid MSVC/gfortran mixing
+  if(NOT CMAKE_GENERATOR STREQUAL "MinGW Makefiles" AND NOT CMAKE_GENERATOR STREQUAL "MSYS Makefiles")
+    message(STATUS "Windows detected - forcing MinGW Makefiles generator for compatibility")
+    set(CMAKE_GENERATOR "MinGW Makefiles" CACHE STRING "Generator" FORCE)
+  endif()
+  
+  # Ensure gfortran is found on Windows
+  if(NOT CMAKE_Fortran_COMPILER)
+    find_program(GFORTRAN_EXECUTABLE 
+      NAMES gfortran gfortran.exe
+      PATHS 
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin" 
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+      DOC "gfortran compiler"
+    )
+    if(GFORTRAN_EXECUTABLE)
+      set(CMAKE_Fortran_COMPILER "${GFORTRAN_EXECUTABLE}" CACHE FILEPATH "Fortran compiler" FORCE)
+      message(STATUS "Found gfortran: ${GFORTRAN_EXECUTABLE}")
+    endif()
+  endif()
+
   # On Windows, prefer all-MSVC or all-MinGW toolchain to avoid linking issues
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message(FATAL_ERROR
