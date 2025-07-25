@@ -1,4 +1,5 @@
 include *.txt *.py *.rst *.md
+exclude setup.py
 recursive-include phaseshifts *.py *.txt *.rst *.pyw *.pyx
 recursive-include phaseshifts/gui *.ui *.py *.bat *.sh *.svg *.png *.qrc
 recursive-include phaseshifts/cython *
