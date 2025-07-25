@@ -62,15 +62,15 @@ jobs:
           pip install -r requirements.txt
           # Install build dependencies
           pip install setuptools wheel numpy
-        
-      # Windows-specific dependencies  
+
+      # Windows-specific dependencies
       - name: Install Windows build dependencies
         if: matrix.os == 'windows-latest'
         run: |
           # Install additional Windows-specific build tools
           pip install setuptools-scm
         shell: bash
-      
+
       # Windows-specific setup for Fortran compilation
       - name: Setup Windows Fortran compiler
         if: matrix.os == 'windows-latest'
@@ -83,14 +83,14 @@ jobs:
           gcc --version
           gfortran --version
         shell: bash
-        
+
       # NOTE: There are some limitations with Windows builds needing to be visited in #32
       - name: Install Microsoft Visual C++ Redistributables
         if: matrix.os == 'windows-latest'
         run: |
           Install-Module -Name "VcRedist" -Force
         shell: pwsh
-        
+
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
@@ -107,7 +107,7 @@ jobs:
           PYTHON: python
           # Disable CMake for Windows builds
           DISABLE_CMAKE: 1
-          
+
       - name: Build binaries (Unix)
         if: matrix.os != 'windows-latest'
         run: make

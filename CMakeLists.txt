@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.15)
 if(WIN32)
   # On Windows, prefer all-MSVC or all-MinGW toolchain to avoid linking issues
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    message(FATAL_ERROR 
+    message(FATAL_ERROR
       "Mixed MSVC/gfortran toolchain detected on Windows. "
       "This causes linking failures. Please use one of:\n"
       "1. All-MSVC with Intel Fortran\n"
@@ -16,7 +16,7 @@ if(WIN32)
       "Suggestion: Set CMAKE_Fortran_COMPILER to use Intel Fortran or configure MinGW"
     )
   endif()
-  
+
   # Check for Intel Fortran if using MSVC
   if(MSVC)
     message(STATUS "MSVC detected - checking for compatible Fortran compiler")
