@@ -82,6 +82,13 @@ docker run ghcr.io/Liam-Deacon/phaseshifts:latest  # will display usage
 docker run ghcr.io/Liam-Deacon//phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
 ```
 
+Alternatively, if you have [uv](https://docs.astral.sh/uv/) installed, you can use the following command:
+
+```bash
+# run phsh.py directly from uv
+uv --python=3.11 --from git+https://github.com/Liam-Deacon/phaseshifts.git#master phsh.py
+```
+
 <!--lint disable no-unused-definitions-->
 > [!TIP]
 > Development docker images can be built locally, e.g.
