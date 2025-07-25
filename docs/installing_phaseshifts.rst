@@ -105,7 +105,7 @@ steps below.
 
      pip install -e .  # will try CMake/scikit-build first, then fallback to f2py
 
-   Fortran compiler is required for both build paths.
+   A Fortran compiler is required for both build paths.
 
 .. tip::
    If you encounter build errors, ensure you have CMake, scikit-build-core, and a working Fortran compiler installed. If the modern build fails, the installer will automatically fallback to the legacy build if possible.
