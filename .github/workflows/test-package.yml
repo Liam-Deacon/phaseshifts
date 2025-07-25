@@ -95,7 +95,6 @@ jobs:
           Install-Module -Name "VcRedist" -Force
         shell: pwsh
 
-
       - name: Find python DLL path for MinGW
         if: matrix.os == 'windows-latest'
         id: find_py_dll
@@ -116,7 +115,8 @@ jobs:
       - name: Generate MinGW python defs
         if: matrix.os == 'windows-latest'
         run: |
-          "C:\Python${{ matrix.python-version | replace('.', '') }}\python.exe" -m pip install pexports
+          set PYVER=%PYTHON_VERSION:.=%
+          "C:\Python%PYVER%\python.exe" -m pip install pexports
           pexports "%DLLPATH%" > python.def
           dlltool -d python.def -l libpython.dll.a -k
           if exist libpython.dll.a move libpython.dll.a C:\msys64\mingw64\lib
