@@ -115,6 +115,17 @@ cmake.build-type = "Release"
 cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
 build.targets = ["libphsh"]
-# Only install CMake targets, exclude all other files
-sdist.exclude = ["*.rst", "*.md", "requirements*.txt", "MANIFEST.in"]
-wheel.exclude = ["*.rst", "*.md", "requirements*.txt", "MANIFEST.in"]
+# Completely disable install_data to prevent data file installation conflicts
+install.strip = false
+install.components = ["Runtime"]
+# Exclude documentation and build files from wheels
+wheel.exclude = [
+    "*.txt", "*.md", "*.rst", "*.yaml", "*.yml", "*.png", "*.pdf", 
+    "docs/**", "htmlcov/**", "test/**", "tests/**",
+    "dockerfiles/**", "*.ipynb", "*.json", "*.xml", "*.bat", "*.sh",
+    "MANIFEST.in", "*.cfg", "Makefile", "CMakeLists.txt", "setup.py", "setup.cfg"
+]
+sdist.exclude = [
+    "htmlcov/**", "*.png", "*.pdf", "docs/_build/**",
+    "test/**/__pycache__/**", "tests/**/__pycache__/**"
+]
