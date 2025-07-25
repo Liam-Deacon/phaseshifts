@@ -4,6 +4,7 @@ from __future__ import print_function  # noqa
 import os
 import sys
 import sysconfig
+import subprocess  # nosec
 from collections import defaultdict
 
 sys.path.append(os.path.dirname(__file__))
