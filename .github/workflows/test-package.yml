@@ -103,6 +103,7 @@ jobs:
           pexports C:\Python311\python311.dll > python311.def
           dlltool -d python311.def -l libpython311.dll.a -k
           move libpython311.dll.a C:\msys64\mingw64\lib
+        shell: cmd
 
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
