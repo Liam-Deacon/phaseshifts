@@ -16,25 +16,42 @@ def test_libphsh_exists():
     WHEN searching phaseshifts/lib directory
     THEN there should be a compiled shared object for libphsh (.pyd|.dll on Windows, .so otherwise)
     """
-    assert os.path.exists(PHASESHIFTS_LIB_DIR)
+    assert os.path.exists(PHASESHIFTS_LIB_DIR), (
+        "Directory does not exist: %s\nCurrent working directory: %s\nContents of parent: %s"
+        % (
+            PHASESHIFTS_LIB_DIR,
+            os.getcwd(),
+            os.listdir(os.path.dirname(PHASESHIFTS_LIB_DIR)),
+        )
+    )
+
+    found = False
+    details = []
     for directory, _, files in os.walk(PHASESHIFTS_LIB_DIR):
         if "__pycache__" in directory or not directory.endswith("/lib"):
             continue
+        details.append("Checked directory: %s\nFiles: %s" % (directory, files))
 
         if sys.platform == "win32":
-            assert any(
-                [
-                    re.match(r"^libphsh.*\.(dll|pyd)$", filename, re.IGNORECASE)
-                    for filename in files
-                ]
-            ), "Expected to find a file matching regex 'phaseshifts/lib/libphsh.*\.(dll|pyd)' (case insensitive)"
+            found = any(
+                re.match(r"^libphsh.*\.(dll|pyd)$", filename, re.IGNORECASE)
+                for filename in files
+            )
+            expected = "libphsh*.dll or libphsh*.pyd"
         else:
-            assert any(
-                [
-                    filename.startswith("libphsh") and filename.endswith(".so")
-                    for filename in files
-                ]
-            ), "Expected to find file matching 'phaseshifts/lib/libphsh*.so' glob pattern"
+            found = any(
+                filename.startswith("libphsh") and filename.endswith(".so")
+                for filename in files
+            )
+            expected = "libphsh*.so"
+
+        if found:
+            break
+
+    assert found, (
+        "Expected to find file matching '%s' in '%s'\nPlatform: %s\nDirectory walk details:\n%s"
+        % (expected, PHASESHIFTS_LIB_DIR, sys.platform, "\n".join(details))
+    )
 
 
 def test_import_libphsh():
