@@ -16,6 +16,7 @@ recursive-include phaseshifts/lib  *.so *.pyd
 # Exclude unnecessary files for the source distribution
 exclude setup.py
 exclude requirements.txt
+exclude AGENTS.md
+exclude CODE_OF_CONDUCT.md
 exclude MANIFEST.in
 exclude README.md
-exclude CODE_OF_CONDUCT.md
