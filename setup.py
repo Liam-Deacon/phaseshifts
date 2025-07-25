@@ -127,22 +127,22 @@ except NameError:
     gfortran_compiler_args = []
 
 f2py_platform_extra_args = defaultdict(
-  list,
-  {
-    "darwin": {"extra_link_args": [], "extra_compile_args": []},
-    "win32": {
-        "extra_link_args": gfortran_compiler_args,
-        "extra_compile_args": gfortran_compiler_args,
+    list,
+    {
+        "darwin": {"extra_link_args": [], "extra_compile_args": []},
+        "win32": {
+            "extra_link_args": gfortran_compiler_args,
+            "extra_compile_args": gfortran_compiler_args,
+        },
+        "linux": {
+            "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+            "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+        },
+        "linux2": {
+            "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+            "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+        },
     },
-    "linux": {
-        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
-        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
-    },
-    "linux2": {
-        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
-        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
-    },
-  },
 )[sys.platform]
 
 f2py_exts = (
