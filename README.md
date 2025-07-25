@@ -126,6 +126,102 @@ pip install -e '.[gui,dev,test]' # extra deps are only needed for development/te
 phsh --help
 ```
 
+### Windows Installation
+
+For Windows users, here's a step-by-step guide to install phaseshifts with all necessary build dependencies:
+
+#### Prerequisites
+
+1. **Install Python 3.9-3.13** from [python.org](https://www.python.org/downloads/windows/) or via [Windows Store](https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K)
+   - Make sure to check "Add Python to PATH" during installation
+
+2. **Install Microsoft Visual C++ Build Tools** (required for Python package compilation):
+   - Download from [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+   - Or install Visual Studio Community with C++ development tools
+
+3. **Install MinGW-w64** (for Fortran compilation):
+
+   ```cmd
+   # Using chocolatey (if you have it)
+   choco install mingw
+   ```
+   
+   Or download and install manually from: <https://www.mingw-w64.org/downloads/>
+
+4. **Install CMake** (for modern build system):
+
+   ```cmd
+   # Using chocolatey
+   choco install cmake
+   ```
+   
+   Or download from: <https://cmake.org/download/>
+
+#### Installation Steps
+
+1. **Create a virtual environment** (recommended):
+
+   ```cmd
+   # Open Command Prompt or PowerShell
+   python -m venv phaseshifts-env
+   
+   # Activate the environment
+   phaseshifts-env\Scripts\activate
+   ```
+
+2. **Install build dependencies**:
+
+   ```cmd
+   python -m pip install --upgrade pip setuptools wheel
+   pip install numpy scipy periodictable
+   
+   # For Python 3.12+ (modern build system)
+   pip install scikit-build cmake
+   
+   # For development (optional)
+   pip install pytest flake8
+   ```
+
+3. **Install phaseshifts**:
+
+   ```cmd
+   # Latest release from PyPI
+   pip install phaseshifts
+   
+   # Or development version from GitHub
+   pip install git+https://github.com/Liam-Deacon/phaseshifts.git
+   
+   # Or for local development
+   git clone https://github.com/Liam-Deacon/phaseshifts.git
+   cd phaseshifts
+   pip install -e ".[dev,test]"
+   ```
+
+4. **Verify installation**:
+
+   ```cmd
+   python -c "import phaseshifts; print('Success!')"
+   phsh.py --help
+   ```
+
+#### Troubleshooting Windows Issues
+
+- **"error: Microsoft Visual C++ 14.0 is required"**: Install Visual Studio Build Tools as described above
+- **"gfortran not found"**: Ensure MinGW-w64 is installed and `gfortran.exe` is in your PATH
+- **"CMake not found"**: Install CMake and ensure it's in your PATH
+- **DLL import errors**: Try installing the Visual C++ Redistributable from Microsoft
+
+<!--lint disable no-unused-definitions-->
+> [!TIP]
+> Windows users can also use [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) which includes most scientific packages and build tools pre-installed:
+>
+> ```cmd
+> conda create -n phaseshifts python=3.11 numpy scipy
+> conda activate phaseshifts
+> pip install phaseshifts
+> ```
+<!--lint enable no-unused-definitions-->
+
 ### Details
 
 The [phaseshifts](http://https://pypi.python.org/pypi/phaseshifts/)
