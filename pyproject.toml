@@ -117,12 +117,18 @@ wheel.install-dir = "phaseshifts/lib"
 build.targets = ["libphsh"]
 # Only install CMake Runtime components (the compiled extension)
 install.components = ["Runtime"]
-# Exclude documentation and build files from wheels
+# Completely disable automatic data file discovery and MANIFEST.in processing
+experimental = true
+wheel.packages = ["phaseshifts"]
+# Override source discovery to ignore MANIFEST.in
+build-dir = "build"
+# Exclude ALL non-essential files from wheels
 wheel.exclude = [
     "*.txt", "*.md", "*.rst", "*.yaml", "*.yml", "*.png", "*.pdf",
     "docs/**", "htmlcov/**", "test/**", "tests/**",
     "dockerfiles/**", "*.ipynb", "*.json", "*.xml", "*.bat", "*.sh",
-    "MANIFEST.in", "*.cfg", "Makefile", "CMakeLists.txt", "setup.py", "setup.cfg"
+    "MANIFEST.in", "*.cfg", "Makefile", "CMakeLists.txt", "setup.py", "setup.cfg",
+    "ChangeLog", "LICENSE.txt", "TODO.rst", "requirements*.txt", "*.lock"
 ]
 sdist.exclude = [
     "htmlcov/**", "*.png", "*.pdf", "docs/_build/**",
