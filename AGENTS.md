@@ -3,6 +3,11 @@
 ## Build, Lint, and Test Commands
 
 - **Install dependencies:** `pip install -r requirements.txt`
+- **Best practices:**
+  Always use a Python virtual environment (venv, conda, etc.) for development and installs.
+  Prefer `uv` for managing virtual environments & packages.
+- **Never:**
+  Use `--break-system-packages` or install packages into the system Python unless absolutely necessary and explicitly confirmed by user. This prevents system breakage and ensures reproducible builds.
 - **Build Fortran extension:** `make libphsh` or `python setup.py build_ext --inplace`
 - **Run all tests:** `pytest tests/ test/ --verbose`
 - **Run a single test:** `pytest tests/test_phshift2007.py::test_e2e`
@@ -50,7 +55,7 @@
 - **Tests:** Place in `tests/` or `test/` directories; use `pytest` or `unittest`.
 - **Docstrings:** Use NumPy or Google style for functions/classes.
 - **Compatibility:** Support Python 2.7+ and 3.5–3.11 (see README and requirements).
-- **Fortran Extensions:** Ensure `libphsh` is built before running tests that require it.
+- **Fortran Extensions:** Ensure `libphsh` is built before running tests that require it. For fixed-format Fortran, use the `.f` extension and update all build references accordingly. For Fortran 90 free-format code, use `.f90`.
 - **Pre-commit:** Use flake8 and pytest for linting and testing before commits.
 
 ## Fortran Code Notes
