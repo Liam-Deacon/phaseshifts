@@ -83,7 +83,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 if phaseshifts and hasattr(phaseshifts, "phshift2007"):
                     # Get fortran flags and filter out problematic ones for f2py
                     fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
-                    
+
                     # Filter out flags that f2py/numpy.distutils might not handle well
                     filtered_flags = []
                     for flag in fortran_flags:
@@ -91,7 +91,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                         if flag in ["-pie", "-static-libgcc", "-static-libgfortran"]:
                             continue
                         filtered_flags.append(flag)
-                    
+
                     if filtered_flags:
                         fortran_flags_str = " ".join(filtered_flags)
                         args.append(f"--f77flags={fortran_flags_str}")
