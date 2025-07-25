@@ -52,7 +52,10 @@ class Test(unittest.TestCase):
             successes = [
                 imp for imp in imports.get(packages) if isimportable("phaseshifts", imp)
             ]
-            self.failIf(len(successes) < len(imports.get(packages)))
+            self.assertFalse(
+                len(successes) < len(imports.get(packages)),
+                "Failed to import some modules from package: %s" % packages,
+            )
             sys.stderr.write(
                 "Failed to import %i out of %i modules\n\n"
                 % (

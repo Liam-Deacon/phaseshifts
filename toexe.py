@@ -1,5 +1,8 @@
 # setup.py
-from distutils.core import setup
+try:
+    from distutils.core import setup
+except:
+    from setuptools import setup
 import py2exe, os
 
 setup(

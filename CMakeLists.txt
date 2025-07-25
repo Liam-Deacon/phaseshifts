@@ -1,7 +1,7 @@
 # Modified from https://numpy.org/doc/stable/f2py/buildtools/skbuild.html#cmake-modules-only
 
 ### setup project ###
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.15)
 
 project(phaseshifts
   VERSION 0.1.8
@@ -31,17 +31,17 @@ if (NOT SKBUILD)
   message(STATUS "Looking in ${SKBLD_DIR}/resources/cmake for CMake modules")
 endif()
 
-# scikit-build style includes
-find_package(PythonExtensions REQUIRED) # for ${PYTHON_EXTENSION_MODULE_SUFFIX}
+# Use modern scikit-build-core CMake modules
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-# Grab the variables from a local Python installation
-# NumPy headers
+# NumPy include directory
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
   -c "import numpy; print(numpy.get_include())"
   OUTPUT_VARIABLE NumPy_INCLUDE_DIRS
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 # F2PY headers
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
@@ -79,7 +79,7 @@ add_library("${f2py_module_name}" MODULE
 target_include_directories("${f2py_module_name}" PUBLIC
                            ${F2PY_INCLUDE_DIR}
                            ${NumPy_INCLUDE_DIRS}
-                           ${PYTHON_INCLUDE_DIRS})
+                           ${Python_INCLUDE_DIRS})
 
 set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")

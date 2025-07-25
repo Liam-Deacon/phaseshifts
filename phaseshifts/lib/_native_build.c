@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <Python.h>
 
-void dummy() {
+static PyObject *dummy(PyObject *self, PyObject *args) {
     printf("This is a dummy function to force a platform-specific wheel.\n");
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 
 static PyMethodDef module_methods[] = {
