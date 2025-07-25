@@ -5,7 +5,6 @@ import os
 import sys
 import sysconfig
 import subprocess  # nosec
-from collections import defaultdict
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -19,12 +18,9 @@ try:
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
     # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
-    try:
-        from distutils.core import find_packages
-    except ImportError:
-        raise ImportError(
-            "setuptools is required for building phaseshifts. Please install setuptools."
-        )
+    raise ImportError(
+        "setuptools is required for building phaseshifts. Please install setuptools."
+    )
 
 INCLUDE_DIRS = []
 
@@ -82,8 +78,10 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 "-f77flags='-frecursive'",
             ]
             try:
-                args += phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
-            except NameError:
+                if phaseshifts and hasattr(phaseshifts, 'phshift2007'):
+                    args += phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+            except (NameError, AttributeError, KeyError):
+                # Fallback if phaseshifts module or compiler flags not available
                 pass
             subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
 else:
@@ -123,28 +121,28 @@ f2py_exts_sources = {
     ]
 }
 try:
-    gfortran_compiler_args = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
-except NameError:
+    if phaseshifts and hasattr(phaseshifts, 'phshift2007'):
+        gfortran_compiler_args = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+    else:
+        gfortran_compiler_args = []
+except (NameError, AttributeError, KeyError):
     gfortran_compiler_args = []
 
-f2py_platform_extra_args = defaultdict(
-    list,
-    {
-        "darwin": {"extra_link_args": [], "extra_compile_args": []},
-        "win32": {
-            "extra_link_args": gfortran_compiler_args,
-            "extra_compile_args": gfortran_compiler_args,
-        },
-        "linux": {
-            "extra_link_args": gfortran_compiler_args + ["-lgomp"],
-            "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
-        },
-        "linux2": {
-            "extra_link_args": gfortran_compiler_args + ["-lgomp"],
-            "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
-        },
+f2py_platform_extra_args = {
+    "darwin": {"extra_link_args": [], "extra_compile_args": []},
+    "win32": {
+        "extra_link_args": gfortran_compiler_args,
+        "extra_compile_args": gfortran_compiler_args,
     },
-)[sys.platform]
+    "linux": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+    "linux2": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+}.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
 f2py_exts = (
     [
