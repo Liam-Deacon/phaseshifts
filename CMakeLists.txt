@@ -11,7 +11,7 @@ if(WIN32)
     set(CMAKE_GENERATOR "MinGW Makefiles" CACHE STRING "Generator" FORCE)
   endif()
 
-  # Ensure gfortran is found on Windows
+  # Ensure gfortran is found on Windows - check multiple common paths
   if(NOT CMAKE_Fortran_COMPILER)
     find_program(GFORTRAN_EXECUTABLE
       NAMES gfortran gfortran.exe
@@ -20,11 +20,38 @@ if(WIN32)
         "C:/tools/mingw64/bin"
         "C:/msys64/mingw64/bin"
         "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
       DOC "gfortran compiler"
     )
     if(GFORTRAN_EXECUTABLE)
       set(CMAKE_Fortran_COMPILER "${GFORTRAN_EXECUTABLE}" CACHE FILEPATH "Fortran compiler" FORCE)
       message(STATUS "Found gfortran: ${GFORTRAN_EXECUTABLE}")
+    else()
+      message(WARNING "gfortran not found. Please install MinGW-w64 or ensure gfortran is in PATH")
+    endif()
+  endif()
+
+  # Also look for gcc if not already set
+  if(NOT CMAKE_C_COMPILER)
+    find_program(GCC_EXECUTABLE
+      NAMES gcc gcc.exe
+      PATHS
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin"
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
+      DOC "gcc compiler"
+    )
+    if(GCC_EXECUTABLE)
+      set(CMAKE_C_COMPILER "${GCC_EXECUTABLE}" CACHE FILEPATH "C compiler" FORCE)
+      message(STATUS "Found gcc: ${GCC_EXECUTABLE}")
     endif()
   endif()
 
@@ -155,6 +182,11 @@ set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 if (WIN32)
   # Windows-specific configuration
   message(STATUS "Configuring for Windows build")
+  
+  # Set proper extension for Windows
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+  
+  # Handle mixed toolchain issues
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message(WARNING "Mixed MSVC/gfortran toolchain detected - this may cause linking issues")
     message(STATUS "Consider using Intel Fortran or all-MinGW toolchain")
@@ -162,8 +194,16 @@ if (WIN32)
     set_target_properties("${f2py_module_name}" PROPERTIES
       LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
   endif()
-  # Use standard Windows extension naming
-  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+  
+  # Set Windows-specific compiler flags for gfortran
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    target_compile_options("${f2py_module_name}" PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:-Wall -frecursive -fcheck=bounds -std=legacy>
+    )
+    # Note: Avoid -pie, -static-libgcc, -static-libgfortran on Windows
+    # as they can cause issues with Python extension modules
+  endif()
+  
 elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
