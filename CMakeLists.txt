@@ -86,6 +86,8 @@ set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 
 configure_file(${CMAKE_SOURCE_DIR}/README.md README.md COPYONLY)
 install(FILES "${CMAKE_BINARY_DIR}/README.md" DESTINATION .)
+configure_file(${CMAKE_SOURCE_DIR}/requirements.txt requirements.txt COPYONLY)
+install(FILES "${CMAKE_BINARY_DIR}/requirements.txt" DESTINATION .)
 
 if (UNIX)
   if (APPLE)
