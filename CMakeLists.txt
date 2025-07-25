@@ -182,10 +182,10 @@ set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 if (WIN32)
   # Windows-specific configuration
   message(STATUS "Configuring for Windows build")
-  
+
   # Set proper extension for Windows
   set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
-  
+
   # Handle mixed toolchain issues
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message(WARNING "Mixed MSVC/gfortran toolchain detected - this may cause linking issues")
@@ -194,7 +194,7 @@ if (WIN32)
     set_target_properties("${f2py_module_name}" PROPERTIES
       LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
   endif()
-  
+
   # Set Windows-specific compiler flags for gfortran
   if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     target_compile_options("${f2py_module_name}" PRIVATE
@@ -203,7 +203,7 @@ if (WIN32)
     # Note: Avoid -pie, -static-libgcc, -static-libgfortran on Windows
     # as they can cause issues with Python extension modules
   endif()
-  
+
 elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
