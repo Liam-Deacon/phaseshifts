@@ -1,8 +1,8 @@
 .. _PortingNotes:
 
-=============================
+==============================
 ``phshift2007`` Porting  Notes
-=============================
+==============================
 
 This document contains notes on porting the original Barbieri / Van Hove
 `phshift2007 <https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip>`_

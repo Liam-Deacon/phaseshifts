@@ -4,8 +4,12 @@ dictionaries:
   - python
   - softwareTerms
 words:
+  - atorb
+  - cavpot
+  - conphas
   - phaseshifts
   - libphsh
+  - mufpot
   - phsh
   - phshift
   # people
@@ -16,8 +20,21 @@ words:
   - LEED
   - LEEDPACK
   - SATLEED
+  # python
+  - elementy
+  - periodictable
+  - scikit-build
+  - skbuild
+  - setuptools
+  - numpydoc
   # file exts
   - .bmin
   - .pmin
+  # compiler flags/env vars
+  - -fopenmp
+  - -frecursive
+  - -lgomp
+  - DPYTHON
+  - LIBDIR
   # other terms
   - autogen

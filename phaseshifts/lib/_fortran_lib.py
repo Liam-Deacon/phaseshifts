@@ -7,6 +7,7 @@ The functionality currently targets `libphsh.f` by default and provides utilitie
 compiled wrapped `libphsh` fortran shared library and adds the ability to crudely compile
 on the fly (useful when installing this package from source distribution).
 """
+
 import importlib
 import os
 import subprocess

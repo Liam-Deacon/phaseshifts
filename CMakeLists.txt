@@ -1,7 +1,7 @@
 # Modified from https://numpy.org/doc/stable/f2py/buildtools/skbuild.html#cmake-modules-only
 
 ### setup project ###
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.15)
 
 project(phaseshifts
   VERSION 0.1.8
@@ -17,6 +17,9 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   )
 endif()
 
+# OpenMP option (default OFF due to EXIT statement conflicts in Fortran code)
+option(USE_OPENMP "Enable OpenMP support" OFF)
+
 # Ensure scikit-build modules
 if (NOT SKBUILD)
   find_package(PythonInterp 3.12 REQUIRED)
@@ -31,17 +34,17 @@ if (NOT SKBUILD)
   message(STATUS "Looking in ${SKBLD_DIR}/resources/cmake for CMake modules")
 endif()
 
-# scikit-build style includes
-find_package(PythonExtensions REQUIRED) # for ${PYTHON_EXTENSION_MODULE_SUFFIX}
+# Use modern scikit-build-core CMake modules
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-# Grab the variables from a local Python installation
-# NumPy headers
+# NumPy include directory
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
   -c "import numpy; print(numpy.get_include())"
   OUTPUT_VARIABLE NumPy_INCLUDE_DIRS
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
 # F2PY headers
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
@@ -54,8 +57,15 @@ execute_process(
 set(f2py_module_name "libphsh")
 set(f2py_module_dirpath "phaseshifts/lib")
 set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
-set(f2py_module_c "${f2py_module_name}module.c")
-set(f2py_wrapper_f "${f2py_module_name}-f2pywrappers.f")
+set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
+set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
+
+# Check if source file exists
+if(NOT EXISTS "${fortran_src_file}")
+  message(FATAL_ERROR "Fortran source file not found: ${fortran_src_file}")
+endif()
+
+message(STATUS "Fortran source exists: ${fortran_src_file}")
 
 # Target for enforcing dependencies
 add_custom_target(genpyf
@@ -68,6 +78,15 @@ add_custom_command(
       --lower # Important
       "${fortran_src_file}"
   DEPENDS "${fortran_src_file}" # Fortran source
+  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+  COMMENT "Generating f2py wrappers for ${f2py_module_name}"
+  VERBATIM
+)
+
+# Ensure f2py files are generated before building the module
+add_custom_target(generate_f2py_files
+  DEPENDS "${f2py_module_c}" "${f2py_wrapper_f}"
+  COMMENT "Ensuring f2py files are generated"
 )
 
 add_library("${f2py_module_name}" MODULE
@@ -79,23 +98,57 @@ add_library("${f2py_module_name}" MODULE
 target_include_directories("${f2py_module_name}" PUBLIC
                            ${F2PY_INCLUDE_DIR}
                            ${NumPy_INCLUDE_DIRS}
-                           ${PYTHON_INCLUDE_DIRS})
+                           ${Python_INCLUDE_DIRS})
 
 set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 
-
-
+# Platform-specific linking and compiler flags
 if (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
     LINK_FLAGS  '-Wl,-dylib,-undefined,dynamic_lookup')
   else()
+    # Linux-specific flags
+    if(USE_OPENMP)
+      find_package(OpenMP QUIET)
+      if(OpenMP_Fortran_FOUND)
+        target_link_libraries("${f2py_module_name}" PUBLIC OpenMP::OpenMP_Fortran)
+        message(STATUS "OpenMP found and linked")
+      else()
+        # Fallback: try to link gomp directly if available
+        find_library(GOMP_LIBRARY gomp)
+        if(GOMP_LIBRARY)
+          target_link_libraries("${f2py_module_name}" PUBLIC ${GOMP_LIBRARY})
+          target_compile_options("${f2py_module_name}" PRIVATE -fopenmp)
+          message(STATUS "Using gomp library: ${GOMP_LIBRARY}")
+        else()
+          message(WARNING "OpenMP requested but not found - building without OpenMP support")
+        endif()
+      endif()
+    else()
+      message(STATUS "OpenMP disabled (USE_OPENMP=OFF)")
+    endif()
     set_target_properties("${f2py_module_name}" PROPERTIES
-  LINK_FLAGS  '-Wl,--allow-shlib-undefined')
+      LINK_FLAGS  '-Wl,--allow-shlib-undefined')
   endif()
 endif()
 
-add_dependencies("${f2py_module_name}" genpyf)
+add_dependencies("${f2py_module_name}" genpyf generate_f2py_files)
 
-install(TARGETS "${f2py_module_name}" DESTINATION phaseshifts/lib/)
+# Debug output to help diagnose build issues
+message(STATUS "Building target: ${f2py_module_name}")
+message(STATUS "Fortran source: ${fortran_src_file}")
+message(STATUS "F2PY module C: ${f2py_module_c}")
+message(STATUS "F2PY wrapper F: ${f2py_wrapper_f}")
+message(STATUS "Python extension suffix: ${PYTHON_EXTENSION_MODULE_SUFFIX}")
+message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+message(STATUS "OpenMP support: ${USE_OPENMP}")
+if(NOT USE_OPENMP)
+  message(STATUS "Note: To enable OpenMP, use -DUSE_OPENMP=ON (may cause build failures due to EXIT statements in Fortran code)")
+endif()
+
+# Only install the compiled extension - no data files
+install(TARGETS "${f2py_module_name}"
+        DESTINATION phaseshifts/lib/
+        COMPONENT Runtime)

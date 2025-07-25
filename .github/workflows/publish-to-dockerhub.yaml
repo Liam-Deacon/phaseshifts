@@ -20,6 +20,22 @@ on:
   pull_request:
     branches:
       - master
+    paths-ignore:
+      - docs/**
+      - tests/**
+      - dockerfiles/**
+      - scripts/**
+      - LICENSE
+      - README.md
+      - CONTRIBUTING.md
+      - CODE_OF_CONDUCT.md
+      - SECURITY.md
+      - CHANGELOG.md
+      - PULL_REQUEST_TEMPLATE.md
+      - ISSUE_TEMPLATE.md
+      - CODEOWNERS
+      - .github/**
+      - '!.github/workflows/publish-docker-image.yml'
   workflow_dispatch:
     # NOTE: user specifies branch/tag via workflow_dispatch in the UI
     inputs:

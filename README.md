@@ -17,6 +17,7 @@
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Liam-Deacon/phaseshifts/total?logo=github)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/phaseshifts?logo=pypi&logoColor=white)](https://pypi.org/project/phaseshifts/)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
 <!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
 <!-- ![Coveralls branch](https://img.shields.io/coverallsCoverage/github/Liam-Deacon/phaseshifts) -->
@@ -81,6 +82,13 @@ docker run ghcr.io/Liam-Deacon/phaseshifts:latest  # will display usage
 docker run ghcr.io/Liam-Deacon//phaseshifts:latest -v /path/to/host/input/data:/data [<phsh-args> ...]
 ```
 
+Alternatively, if you have [uv](https://docs.astral.sh/uv/) installed, you can use the following command:
+
+```bash
+# run phsh.py directly from uv
+uv --python=3.11 --from git+https://github.com/Liam-Deacon/phaseshifts.git#master phsh.py
+```
+
 <!--lint disable no-unused-definitions-->
 > [!TIP]
 > Development docker images can be built locally, e.g.
@@ -110,8 +118,11 @@ For python 3.11 or older:
 pip install phaseshifts
 
 # development install
+uv --python=3.11 venv # create a virtual environment using uv (optional)
+source venv/bin/activate # Linux/Mac systems => activate the virtual environment (optional)
+python -m ensurepip
 pip install wheel numpy setuptools  # needed for older python/pip versions
-pip install -e .
+pip install -e '.[gui,dev,test]' # extra deps are only needed for development/testing purposes
 phsh --help
 ```
 
@@ -263,25 +274,41 @@ function use refer to the pdf manual.
 
 A number of alternatives are available, notably the following:
 
-  1.  [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/files/) (with
-      a useful [poster overview of phaseshifts
-      calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
-      This is an officially mentioned piece of software on Michel Van
-      Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
-      poster mentions that the software is written in python, this
-      software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/))  and
-      therefore harder to integrate with other python LEED-related
-      projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
-      [cleedpy](https://github.com/empa-scientific-it/cleedpy).
-  2.  A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
-      1978).](https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501)
-      A program for calculating elastic scattering phase shifts for an
-      electron colliding with a one-electron target using perturbation
-      theory. Computer Physics Communications, 14(1-2), 99-107.", however
-      this code is not publicly available online (pay-walled by journal).
+  1. [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/files/) (with
+     a useful [poster overview of phaseshifts
+     calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
+     This is an officially mentioned piece of software on Michel Van
+     Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
+     poster mentions that the software is written in python, this
+     software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/))  and
+     therefore harder to integrate with other python LEED-related
+     projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
+     [cleedpy](https://github.com/empa-scientific-it/cleedpy).
+  2. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
+     [(EEASiSSS)](https://www.researchgate.net/profile/John-Rundgren-2/publication/235583683_Optimized_surface-slab_excited-state_muffin-tin_potential_and_surface_core_level_shifts/links/5a266f89a6fdcc8e866bd7e5/Optimized-surface-slab-excited-state-muffin-tin-potential-and-surface-core-level-shifts.pdf)
+     is authored by John Rundgren and first described in the paper: *"J. Rundgren Phys. Rev. B 68 125405 (2003)"*.
+     This program takes a different approach to calculating phase shifts by using optimised muffin-tin potentials
+     for surface slabs with preassigned surface core-level shifts.
+     Whilst the source code is not publicly available online (to this author's best knowledge), John Rundgren
+     has been more than happy to assist when approached in the past.
+  3. A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
+     1978).](https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501)
+     A program for calculating elastic scattering phase shifts for an
+     electron colliding with a one-electron target using perturbation
+     theory. Computer Physics Communications, 14(1-2), 99-107.", however
+     this code is not publicly available online (pay-walled by journal).
 
 <!--lint disable no-unused-definitions-->
 > [!NOTE]
+> It would be fantastic to include this software (and document it's use) as part of the phaseshifts python package
+> allowing the user to choose the backend they wish to use for calculating phase shifts (e.g. ``EEASiSSS`` or ``phshift2007``).
+> As such [John Rundgren](https://www.researchgate.net/profile/John-Rundgren-2) should be contacted to see if
+> he would be happy to collaborate on making this possible. This is being tracked by
+> [this item](https://github.com/Liam-Deacon/phaseshifts/issues/92).
+<!--lint enable no-unused-definitions-->
+
+<!--lint disable no-unused-definitions-->
+> [!IMPORTANT]
 > Should you know of alternatives, please either [open an
 > issue](https://Liam-Deacon/phaseshifts/issues) or (better yet) create
 > a PR with changes to this documentation to keep this list up to date.
@@ -307,6 +334,9 @@ acknowledge the following people who have made this package a reality:
 I would also be grateful if you acknowledge this python package
 (*phaseshifts*) as: *L.M. Deacon, private communication.*
 
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_large)
+
 ### Thanks
 
 I wish to personally add a heart-felt thanks to both Eric Shirley and
@@ -328,6 +358,10 @@ wishes to get involved are most welcome.  Please either
 > Please [star](https://github.com/Liam-Deacon/phaseshifts) it on GitHub as this will help
 > to easily indicate that others find the package useful.
 <!--lint enable no-unused-definitions-->
+
+## Copilot & Agentic Coding Instructions
+
+For agentic coding guidelines, Copilot instructions, and best practices, please see [AGENTS.md](./AGENTS.md) in the root of this repository. The file `.github/copilot-instructions.md` is a pointer to AGENTS.md for compatibility with GitHub and Copilot workflows.
 
 ## To Do
 

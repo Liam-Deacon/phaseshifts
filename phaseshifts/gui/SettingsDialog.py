@@ -27,21 +27,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+# pylint: disable=invalid-name,super-with-arguments,consider-using-f-string
+
 import os
 import sys
 from time import gmtime, strftime
-from PyQt4 import QtGui, uic
-import res_rc
 
 try:
     import configparser
-except ImportError:
-    import ConfigParser as configparser
+except ImportError:  # pragma no-cover
+    import ConfigParser as configparser  # TODO: Remove when python 2.7 support is removed
 
-from settings import Settings
+from qtpy import QtCore, QtWidgets, uic
+
+from .settings import Settings
 
 
-class SettingsDialog(QtGui.QDialog):
+class SettingsDialog(QtWidgets.QDialog):
     """
     Dialog class for updating sequences
     """
@@ -50,7 +53,9 @@ class SettingsDialog(QtGui.QDialog):
         super(SettingsDialog, self).__init__(parent)
 
         # dynamically load ui
-        self.ui = uic.loadUi("gui/SettingsDialog.ui", self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "SettingsDialog.ui"), self
+        )
 
         # settings default
         self.settings = Settings()
@@ -79,10 +84,10 @@ class SettingsDialog(QtGui.QDialog):
         self.ui.toolWritePath.pressed.connect(self.getWritePath)
         self.ui.lineLogFile.editingFinished.connect(self.updateLogPath)
         self.ui.toolLogFile.pressed.connect(self.getLogPath)
-        self.ui.buttonBoxSave.clicked[QtGui.QAbstractButton].connect(
+        self.ui.buttonBoxSave.clicked[QtWidgets.QAbstractButton].connect(
             self.adjustSettings
         )
-        self.ui.buttonBoxApply.clicked[QtGui.QAbstractButton].connect(
+        self.ui.buttonBoxApply.clicked[QtWidgets.QAbstractButton].connect(
             self.adjustSettings
         )
 
@@ -144,21 +149,21 @@ class SettingsDialog(QtGui.QDialog):
     def getLogPath(self):
         """use file dialog to set path to log file"""
         logfile = str(
-            QtGui.QFileDialog.getSaveFileName(
+            QtWidgets.QFileDialog.getSaveFileName(
                 self, "Save Log File...", "log.txt", "Text document (*.txt)"
             )
         )
 
         if logfile != "":  # check for empty path
             if os.path.isfile(logfile):
-                reply = QtGui.QMessageBox.warning(
+                reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
                     "File already exists! Do you wish to overwrite?",
-                    QtGui.QMessageBox.Yes,
-                    QtGui.QMessageBox.No,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No,
                 )
-                if reply == QtGui.QMessageBox.No:
+                if reply == QtWidgets.QMessageBox.No:
                     # get current time-stamp
                     timestamp = strftime("%Y-%m-%d_%H%M", gmtime())
                     logfile, extension = os.path.splitext(logfile)
@@ -167,15 +172,15 @@ class SettingsDialog(QtGui.QDialog):
 
             elif not os.path.exists(os.path.dirname(logfile)):
                 # no parent directory
-                reply = QtGui.QMessageBox.warning(
+                reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
                     "'%s' directory does not exist! "
                     "Do you wish to create it?" % os.path.dirname(logfile),
-                    QtGui.QMessageBox.Yes,
-                    QtGui.QMessageBox.No,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No,
                 )
-                if reply == QtGui.QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.Yes:
                     # create parent directory
                     os.makedirs(os.path.dirname(logfile))
                 else:
@@ -188,15 +193,15 @@ class SettingsDialog(QtGui.QDialog):
         config = configparser.ConfigParser()
         default = os.path.join(
             str(
-                QtGui.QDesktopServices.storageLocation(
-                    QtGui.QDesktopServices.DataLocation
-                )
+                QtCore.QStandardPaths.standardLocations(
+                    QtCore.QStandardPaths.StandardLocation.AppConfigLocation
+                )[0]
             ),
             ".phaseshifts",
             "config.ini",
         )
         filepath = str(
-            QtGui.QFileDialog.getOpenFileName(self, "Open ini file...", default)
+            QtWidgets.QFileDialog.getOpenFileName(self, "Open ini file...", default)
         )
 
         if filepath == "":
@@ -205,7 +210,7 @@ class SettingsDialog(QtGui.QDialog):
         try:
             config.read(filepath)
         except IOError:
-            QtGui.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, "Error!", "Unable to read ini file '%s'" % filepath
             )
             return
@@ -239,42 +244,48 @@ class SettingsDialog(QtGui.QDialog):
             try:
                 value = config.get("GENERAL", option)
                 line = general_dict.get(option)
-                eval(line % value)
-            except Exception as e:
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, e))
+                eval(line % value)  # pylint: disable=eval-used
+            except Exception as err:  # pylint: disable=broad-except
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, err)
+                )
                 sys.stderr.flush()
 
         for option in atorb_dict:  # load each setting from atorb section
             try:
                 value = config.get("ATORB", option)
                 line = atorb_dict.get(option)
-                eval(line % value)
-            except Exception as e:
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, e))
+                eval(line % value)  # pylint: disable=eval-used
+            except Exception as err:  # pylint: disable=broad-except
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, err)
+                )
                 sys.stderr.flush()
 
         for option in phsh_dict:  # load each setting from phaseshifts section
             try:
                 value = config.get("PHASESHIFTS", option)
                 line = phsh_dict.get(option)
-                eval(line % value)
-            except Exception as e:
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, e))
+                eval(line % value)  # pylint: disable=eval-used
+            except Exception as err:  # pylint: disable=broad-except
+                sys.stderr.write(
+                    "Error loading %s in config file - %s\n" % (option, str(err))
+                )
                 sys.stderr.flush()
 
     def saveConfig(self):
         config = configparser.ConfigParser()
         default = os.path.join(
             str(
-                QtGui.QDesktopServices.storageLocation(
-                    QtGui.QDesktopServices.DataLocation
-                )
+                QtCore.QStandardPaths.standardLocations(
+                    QtCore.QStandardPaths.StandardLocation.AppConfigLocation
+                )[0]
             ),
             ".phaseshifts",
             "config.ini",
         )
         filepath = str(
-            QtGui.QFileDialog.getSaveFileName(self, "Save ini file...", default)
+            QtWidgets.QFileDialog.getSaveFileName(self, "Save ini file...", default)
         )
 
         if filepath == "":
@@ -285,7 +296,7 @@ class SettingsDialog(QtGui.QDialog):
             try:
                 os.makedirs(filepath)
             except IOError:
-                QtGui.QMessageBox.critical(
+                QtWidgets.QMessageBox.critical(
                     self, "Error!", "Unable to create directory '%s'" % filepath
                 )
                 return
@@ -337,33 +348,33 @@ class SettingsDialog(QtGui.QDialog):
             with open(filepath, "w") as configfile:  # save
                 config.write(configfile)
         except IOError:
-            QtGui.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, "Error!", "Unable to write settings file '%s'" % filepath
             )
 
     def getWritePath(self):
         """use file dialog to set path to generated files"""
         path = str(
-            QtGui.QFileDialog.getExistingDirectory(
+            QtWidgets.QFileDialog.getExistingDirectory(
                 self, "Specify File Directory", self.ui.lineWritePath.text()
             )
         )
 
         if path != "":  # check for empty path
             if not os.path.exists(path):
-                reply = QtGui.QMessageBox.warning(
+                reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
                     "'%s' directory does not exist! "
                     "Do you wish to create it?" % os.pardir(path),
-                    QtGui.QMessageBox.Yes,
-                    QtGui.QMessageBox.No,
+                    QtWidgets.QMessageBox.Yes,
+                    QtWidgets.QMessageBox.No,
                 )
-                if reply == QtGui.QMessageBox.Yes:
+                if reply == QtWidgets.QMessageBox.Yes:
                     try:
                         os.makedirs(path)
                     except IOError:
-                        QtGui.QMessageBox.critical(
+                        QtWidgets.QMessageBox.critical(
                             self, "Error!", "Unable to create directory '%s'" % path
                         )
                         return
@@ -419,7 +430,7 @@ class SettingsDialog(QtGui.QDialog):
 
     def updateFormat(self, formatting=None):
         """update formatting of phase shift files"""
-        if isinstance(self.sender(), QtGui.QComboBox):
+        if isinstance(self.sender(), QtWidgets.QComboBox):
             self.format = self.sender().currentText()
             return
 
@@ -467,7 +478,7 @@ class SettingsDialog(QtGui.QDialog):
 
     def updatePhaseMethod(self, method=None):
         """update method for calculating phase shifts"""
-        if isinstance(self.sender(), QtGui.QRadioButton):
+        if isinstance(self.sender(), QtWidgets.QRadioButton):
             self.phaseMethod = str(self.sender().text())
             return
 
@@ -508,33 +519,33 @@ class SettingsDialog(QtGui.QDialog):
         """update directory where intermediate files will be stored.
         This should be useful for debugging purposes"""
         path = self.ui.lineWritePath.text()
-        if isinstance(self.sender(), QtGui.QComboBox):
+        if isinstance(self.sender(), QtWidgets.QComboBox):
             text = str(self.sender().currentText()).upper()
             app = "phaseshifts"
             if text == "DOCUMENTS":
                 path = os.path.join(
                     str(
-                        QtGui.QDesktopServices.storageLocation(
-                            QtGui.QDesktopServices.DocumentsLocation
-                        )
+                        QtCore.QStandardPaths.standardLocations(
+                            QtCore.QStandardPaths.StandardLocation.DocumentsLocation
+                        )[0]
                     ),
                     app,
                 )
             elif text == "APPDATA":
                 path = os.path.join(
                     str(
-                        QtGui.QDesktopServices.storageLocation(
-                            QtGui.QDesktopServices.DataLocation
-                        )
+                        QtCore.QStandardPaths.standardLocations(
+                            QtCore.QStandardPaths.StandardLocation.AppDataLocation
+                        )[0]
                     ),
                     app,
                 )
             elif text == "TEMP":
                 path = os.path.join(
                     str(
-                        QtGui.QDesktopServices.storageLocation(
-                            QtGui.QDesktopServices.TempLocation
-                        )
+                        QtCore.QStandardPaths.standardLocations(
+                            QtCore.QStandardPaths.StandardLocation.TempLocation
+                        )[0]
                     ),
                     app,
                 )
@@ -542,9 +553,9 @@ class SettingsDialog(QtGui.QDialog):
                 app = "." + str(app)
                 path = os.path.join(
                     str(
-                        QtGui.QDesktopServices.storageLocation(
-                            QtGui.QDesktopServices.HomeLocation
-                        )
+                        QtCore.QStandardPaths.standardLocations(
+                            QtCore.QStandardPaths.StandardLocation.HomeLocation
+                        )[0]
                     ),
                     app,
                 )
@@ -558,7 +569,7 @@ class SettingsDialog(QtGui.QDialog):
             try:
                 os.makedirs(path)
             except IOError:
-                QtGui.QMessageBox.critical(
+                QtWidgets.QMessageBox.critical(
                     self, "Error!", "Unable to create directory '%s'" % path
                 )
                 return

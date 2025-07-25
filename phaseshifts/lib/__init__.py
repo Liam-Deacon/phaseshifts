@@ -1,4 +1,5 @@
 """The subpackage is for library code, likely compiled from Fortran or C sources."""
+
 from ._fortran_lib import (
     is_module_importable,
     compile_f2py_shared_library,

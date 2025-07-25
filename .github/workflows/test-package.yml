@@ -11,64 +11,82 @@ name: Test Package
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
+    paths:
+      - phaseshifts/*
+      - tests/*
+      - setup.py
+      - requirements*.txt
+      - Makefile
+      - MANIFEST.in
+      - "**/*.py"
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
+    paths:
+      - phaseshifts/*
+      - tests/*
+      - setup.py
+      - requirements*.txt
+      - Makefile
+      - MANIFEST.in
+      - "**/*.py"
 
 jobs:
   build:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os:
           - ubuntu-latest
           - windows-latest  # TODO: Needs #32 to be resolved
           # - macos-latest
         python-version:
-          # NOTE: 2.7 through to 3.6 inclusive are not provided in the ubuntu-latest runner
-          - "3.7"
+          # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
           # - "3.8"  # This version has issues with the build, but is not officially supported anyway
           - "3.9"
           - "3.10"
           - "3.11"
-          # - "3.12"  # TODO: Support python 3.12, f2py backend broken and needs to be fixed, see issue #8
+          - "3.12"
+          - "3.13"
     runs-on: ${{ matrix.os }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-cov
-        pip install -r requirements.txt
-    # NOTE: There are some limitations with Windows builds needing to be visited in #32
-    - name: Install Microsoft Visual C++ Redistributables
-      if: matrix.os == 'windows-latest'
-      run: |
-        Install-Module -Name "VcRedist" -Force
-      shell: pwsh
-    - name: Build binaries
-      run: make
-      shell: bash
-    - name: Lint with flake8
-      continue-on-error: true
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        pytest tests/
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
-      env:
-         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    - name: Run codacy-coverage-reporter
-      uses: codacy/codacy-coverage-reporter-action@v1
-      with:
-        project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        coverage-reports: coverage.xml
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install flake8 pytest pytest-cov
+          pip install -r requirements.txt
+      # NOTE: There are some limitations with Windows builds needing to be visited in #32
+      - name: Install Microsoft Visual C++ Redistributables
+        if: matrix.os == 'windows-latest'
+        run: |
+          Install-Module -Name "VcRedist" -Force
+        shell: pwsh
+      - name: Build binaries
+        run: make
+        shell: bash
+        env:
+          PYTHON: python
+      - name: Lint with flake8
+        continue-on-error: true
+        run: |
+          # stop the build if there are Python syntax errors or undefined names
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          pytest tests/
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
