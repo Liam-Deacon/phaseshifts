@@ -78,14 +78,31 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 "-m",
                 "libphsh",
                 "-c",
-                "-f77flags='-frecursive'",
             ]
             try:
                 if phaseshifts and hasattr(phaseshifts, "phshift2007"):
-                    args += phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+                    # Get fortran flags and filter out problematic ones for f2py
+                    fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+                    
+                    # Filter out flags that f2py/numpy.distutils might not handle well
+                    filtered_flags = []
+                    for flag in fortran_flags:
+                        # Skip linking flags for f2py compilation step
+                        if flag in ["-pie", "-static-libgcc", "-static-libgfortran"]:
+                            continue
+                        filtered_flags.append(flag)
+                    
+                    if filtered_flags:
+                        fortran_flags_str = " ".join(filtered_flags)
+                        args.append(f"--f77flags={fortran_flags_str}")
+                    else:
+                        args.append("--f77flags=-frecursive")
+                else:
+                    # Default fallback
+                    args.append("--f77flags=-frecursive")
             except (NameError, AttributeError, KeyError):
                 # Fallback if phaseshifts module or compiler flags not available
-                pass
+                args.append("--f77flags=-frecursive")
             subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
 else:
     # Modern build: require scikit-build and CMake
