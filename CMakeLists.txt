@@ -81,7 +81,7 @@ add_custom_command(
 )
 
 # Ensure f2py files are generated before building the module
-add_custom_target(generate_f2py_files 
+add_custom_target(generate_f2py_files
   DEPENDS "${f2py_module_c}" "${f2py_wrapper_f}"
   COMMENT "Ensuring f2py files are generated"
 )
@@ -138,6 +138,6 @@ message(STATUS "Python extension suffix: ${PYTHON_EXTENSION_MODULE_SUFFIX}")
 message(STATUS "CMAKE_CURRENT_BINARY_DIR: ${CMAKE_CURRENT_BINARY_DIR}")
 
 # Only install the compiled extension - no data files
-install(TARGETS "${f2py_module_name}" 
+install(TARGETS "${f2py_module_name}"
         DESTINATION phaseshifts/lib/
         COMPONENT Runtime)
