@@ -69,6 +69,8 @@ jobs:
     - name: Build binaries
       run: make
       shell: bash
+      env:
+          PYTHON: python
     - name: Lint with flake8
       continue-on-error: true
       run: |
