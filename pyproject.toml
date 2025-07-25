@@ -116,5 +116,5 @@ cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
 build.targets = ["libphsh"]
 # Only install CMake targets, exclude all other files
-sdist.exclude = ["*.rst", "*.md", "requirements*.txt"]
-wheel.exclude = ["*.rst", "*.md", "requirements*.txt"]
+sdist.exclude = ["*.rst", "*.md", "requirements*.txt", "MANIFEST.in"]
+wheel.exclude = ["*.rst", "*.md", "requirements*.txt", "MANIFEST.in"]
