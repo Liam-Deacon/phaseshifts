@@ -8,7 +8,7 @@ HTML_INDEX = os.path.join(DOCS_DIR, "_build", "html", "index.html")
 
 def sphinx_installed():
     try:
-        subprocess.run(
+        subprocess.run(  # noqa: S603; nosec
             ["sphinx-build", "--version"],
             check=True,
             stdout=subprocess.PIPE,

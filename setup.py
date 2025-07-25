@@ -4,6 +4,7 @@ from __future__ import print_function  # noqa
 import os
 import sys
 import sysconfig
+from collections import defaultdict
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -13,7 +14,6 @@ except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
 try:
-    import setuptools  # type: ignore [import-untyped]
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
     # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
@@ -40,7 +40,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
     # Try modern build first: scikit-build + CMake
     try:
         import skbuild
-        from skbuild import setup
+        from skbuild import setup  # noqa: F811
 
         BUILD_BACKEND = "skbuild"
     except ImportError:
@@ -56,9 +56,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
         )
         BUILD_BACKEND = "numpy.f2py"
     if BUILD_BACKEND == "numpy.f2py":
-        import setuptools
-        from setuptools import find_packages, setup, Extension
-        import subprocess
+        from setuptools import find_packages, setup, Extension  # noqa: F811
 
         try:
             import numpy.f2py
@@ -74,7 +72,6 @@ if tuple(sys.version_info[:2]) <= (3, 11):
 else:
     # Modern build: require scikit-build and CMake
     try:
-        import skbuild
         from skbuild import setup
 
         BUILD_BACKEND = "skbuild"
@@ -108,12 +105,15 @@ f2py_exts_sources = {
         ),
     ]
 }
-f2py_platform_extra_args = {
-    "darwin": {"extra_link_args": [], "extra_compile_args": []},
-    "win32": {"extra_link_args": [], "extra_compile_args": []},
-    "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-    "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-}[sys.platform]
+f2py_platform_extra_args = defaultdict(
+    dict,
+    {
+        "darwin": {"extra_link_args": [], "extra_compile_args": []},
+        "win32": {"extra_link_args": [], "extra_compile_args": []},
+        "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+        "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+    },
+)[sys.platform]
 
 f2py_exts = (
     [
