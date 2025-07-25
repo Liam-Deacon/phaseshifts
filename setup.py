@@ -18,9 +18,12 @@ try:
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
     # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
-    raise ImportError(
-        "setuptools is required for building phaseshifts. Please install setuptools."
-    )
+    try:
+        from distutils.core import find_packages
+    except ImportError:
+        raise ImportError(
+            "setuptools is required for building phaseshifts. Please install setuptools."
+        )
 
 INCLUDE_DIRS = []
 
@@ -78,7 +81,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 "-f77flags='-frecursive'",
             ]
             try:
-                if phaseshifts and hasattr(phaseshifts, 'phshift2007'):
+                if phaseshifts and hasattr(phaseshifts, "phshift2007"):
                     args += phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
             except (NameError, AttributeError, KeyError):
                 # Fallback if phaseshifts module or compiler flags not available
@@ -121,7 +124,7 @@ f2py_exts_sources = {
     ]
 }
 try:
-    if phaseshifts and hasattr(phaseshifts, 'phshift2007'):
+    if phaseshifts and hasattr(phaseshifts, "phshift2007"):
         gfortran_compiler_args = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
     else:
         gfortran_compiler_args = []
