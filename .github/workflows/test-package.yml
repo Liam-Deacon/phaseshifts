@@ -95,6 +95,15 @@ jobs:
           Install-Module -Name "VcRedist" -Force
         shell: pwsh
 
+      - name: Generate MinGW python defs
+        if: matrix.os == 'windows-latest'
+        run: |
+          REM inside the runner
+          "C:\Python311\python.exe" -m pip install pexports
+          pexports C:\Python311\python311.dll > python311.def
+          dlltool -d python311.def -l libpython311.dll.a -k
+          move libpython311.dll.a C:\msys64\mingw64\lib
+
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
