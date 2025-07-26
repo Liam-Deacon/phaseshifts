@@ -98,15 +98,20 @@ jobs:
       - name: Find python DLL path for MinGW
         if: matrix.os == 'windows-latest'
         id: find_py_dll
+        continue-on-error: true
         run: |
           setlocal enabledelayedexpansion
           set PYMAJMIN=${{ matrix.python-version }}
           set PYMAJ=!PYMAJMIN:~0,1!
           set PYMIN=!PYMAJMIN:~2,2!
           set PYDLL=python!PYMAJ!!PYMIN!.dll
+          echo Looking for !PYDLL! ...
           for /f "delims=" %%F in ('dir /s /b !PYDLL!') do set DLLPATH=%%F
           if not defined DLLPATH (
-            echo !PYDLL! not found!
+            echo "::warning ::!PYDLL! not found! Listing all python*.dll files:"
+            dir /s /b python*.dll || echo "No python DLLs found."
+            echo "::warning ::MinGW setup will fail, will fallback to MSVC compiler."
+            echo "MINGW_SUCCESS=false" >> %GITHUB_ENV%
             exit /b 1
           )
           echo DLLPATH=!DLLPATH!>> %GITHUB_ENV%
@@ -114,34 +119,64 @@ jobs:
 
       - name: Generate MinGW python defs
         if: matrix.os == 'windows-latest'
+        continue-on-error: true
+        id: mingw_setup
         run: |
           set PYVER=%PYTHON_VERSION:.=%
           "C:\Python%PYVER%\python.exe" -m pip install pexports
+          if not defined DLLPATH (
+            echo "::warning ::DLLPATH not set, skipping pexports/dlltool. MinGW setup failed."
+            echo "MINGW_SUCCESS=false" >> %GITHUB_ENV%
+            exit /b 1
+          )
           pexports "%DLLPATH%" > python.def
           dlltool -d python.def -l libpython.dll.a -k
-          if exist libpython.dll.a move libpython.dll.a C:\msys64\mingw64\lib
+          if exist libpython.dll.a (
+            move libpython.dll.a C:\msys64\mingw64\lib
+            echo "MINGW_SUCCESS=true" >> %GITHUB_ENV%
+            echo "MinGW setup completed successfully"
+          ) else (
+            echo "::warning ::Failed to generate libpython.dll.a"
+            echo "MINGW_SUCCESS=false" >> %GITHUB_ENV%
+            exit /b 1
+          )
         shell: cmd
 
+      - name: Setup MSVC if MinGW failed
+        if: matrix.os == 'windows-latest' && env.MINGW_SUCCESS == 'false'
+        uses: microsoft/setup-msbuild@v1.0.2
+        
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          # Use scikit-build/CMake for modern Python builds on Windows
-          echo "Building with scikit-build/CMake on Windows..."
           echo "Python version: $(python --version)"
-          echo "GCC version: $(gcc --version | head -1)"
-          echo "Gfortran version: $(gfortran --version | head -1)"
-          echo "CMake version: $(cmake --version | head -1)"
-          # Set CMake generator and compilers for MinGW
-          export CMAKE_GENERATOR="MinGW Makefiles"
-          export CMAKE_C_COMPILER=gcc
-          export CMAKE_Fortran_COMPILER=gfortran
+          
+          # Check if MinGW setup was successful
+          if [ "$MINGW_SUCCESS" = "true" ]; then
+            echo "Using MinGW/GCC toolchain for build..."
+            echo "GCC version: $(gcc --version | head -1)"
+            echo "Gfortran version: $(gfortran --version | head -1)"
+            echo "CMake version: $(cmake --version | head -1)"
+            # Set CMake generator and compilers for MinGW
+            export CMAKE_GENERATOR="MinGW Makefiles"
+            export CMAKE_C_COMPILER=gcc
+            export CMAKE_Fortran_COMPILER=gfortran
+            export CC=gcc
+            export FC=gfortran
+          else
+            echo "MinGW setup failed, falling back to MSVC toolchain..."
+            # Use MSVC compiler
+            export CMAKE_GENERATOR="Visual Studio 17 2022"
+            # Note: For Fortran, you might need Intel Fortran or other MSVC-compatible Fortran compiler
+            echo "Warning: MSVC doesn't include a Fortran compiler. Consider Intel Fortran or other alternatives."
+            unset CC
+            unset FC
+          fi
+          
           make
         shell: bash
         env:
-          CC: gcc
-          FC: gfortran
           PYTHON: python
-          CMAKE_GENERATOR: "MinGW Makefiles"
 
       - name: Build binaries (Unix)
         if: matrix.os != 'windows-latest'
