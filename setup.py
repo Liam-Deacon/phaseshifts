@@ -4,12 +4,14 @@ from __future__ import print_function  # noqa
 import os
 import sys
 import sysconfig
-from collections import defaultdict
+import subprocess  # nosec
+import shutil
 
 sys.path.append(os.path.dirname(__file__))
 
 try:
     import phaseshifts
+    import phaseshifts.phshift2007
 except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
@@ -35,6 +37,8 @@ except ImportError:
     skbuild = None  # type: ignore [assignment]
 
 BUILD_BACKEND = None
+
+
 # Build logic for legacy and modern Python
 if tuple(sys.version_info[:2]) <= (3, 11):
     # Try modern build first: scikit-build + CMake
@@ -67,18 +71,103 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 "WARNING: numpy.f2py not found; Fortran extension will not be built.",
                 file=sys.stderr,
             )
-        # Optionally, run f2py manually if needed
-        # subprocess.check_call([...])
+        if not any(x in sys.argv for x in ("sdist", "wheel")):
+            args = [
+                sys.executable,
+                "-m",
+                "numpy.f2py",
+                "libphsh.f",
+                "-m",
+                "libphsh",
+                "-c",
+            ]
+            try:
+                if phaseshifts and hasattr(phaseshifts, "phshift2007"):
+                    # Use the platform-filtered flags directly from COMPILER_FLAGS
+                    fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+                    # Filter out flags that f2py/numpy.distutils might not handle well
+                    f2py_safe_flags = [
+                        flag
+                        for flag in fortran_flags
+                        if flag
+                        not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+                    ]
+                    if f2py_safe_flags:
+                        fortran_flags_str = " ".join(f2py_safe_flags)
+                        args.append(f"--f77flags={fortran_flags_str}")
+                    else:
+                        args.append("--f77flags=-frecursive")
+                else:
+                    # Default fallback
+                    args.append("--f77flags=-frecursive")
+            except (NameError, AttributeError, KeyError):
+                # Fallback if phaseshifts module or compiler flags not available
+                args.append("--f77flags=-frecursive")
+            subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
 else:
-    # Modern build: require scikit-build and CMake
+    # Modern build: require scikit-build and CMake for Python 3.12+
     try:
         from skbuild import setup
 
         BUILD_BACKEND = "skbuild"
     except ImportError:
-        raise ImportError(
-            "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
-        )
+        # On Windows, fallback to numpy.f2py if scikit-build not available
+        if os.name == "nt":
+            print(
+                "WARNING: scikit-build not found on Windows; falling back to legacy numpy.f2py build.",
+                file=sys.stderr,
+            )
+            BUILD_BACKEND = "numpy.f2py"
+            from setuptools import find_packages, setup, Extension  # noqa: F811
+
+            try:
+                import numpy.f2py
+
+                INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
+            except ImportError:
+                print(
+                    "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                    file=sys.stderr,
+                )
+            if not any(x in sys.argv for x in ("sdist", "wheel")):
+                args = [
+                    sys.executable,
+                    "-m",
+                    "numpy.f2py",
+                    "libphsh.f",
+                    "-m",
+                    "libphsh",
+                    "-c",
+                ]
+                try:
+                    if phaseshifts and hasattr(phaseshifts, "phshift2007"):
+                        # Use the platform-filtered flags directly from COMPILER_FLAGS
+                        fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS[
+                            "gfortran"
+                        ]
+                        # Filter out flags that f2py/numpy.distutils might not handle well
+                        f2py_safe_flags = [
+                            flag
+                            for flag in fortran_flags
+                            if flag
+                            not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+                        ]
+                        if f2py_safe_flags:
+                            fortran_flags_str = " ".join(f2py_safe_flags)
+                            args.append(f"--f77flags={fortran_flags_str}")
+                        else:
+                            args.append("--f77flags=-frecursive")
+                    else:
+                        # Default fallback
+                        args.append("--f77flags=-frecursive")
+                except (NameError, AttributeError, KeyError):
+                    # Fallback if phaseshifts module or compiler flags not available
+                    args.append("--f77flags=-frecursive")
+                subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
+        else:
+            raise ImportError(
+                "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
+            )
 
 if len(sys.argv) == 1:
     sys.argv.append("install")
@@ -86,12 +175,52 @@ if len(sys.argv) == 1:
 CMAKE_ARGS = {}
 
 if BUILD_BACKEND == "skbuild":
-    CMAKE_ARGS = {
-        "cmake_args": [
-            '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
-            '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+    cmake_args = [
+        '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
+        '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+    ]
+
+    # Windows-specific CMake configuration
+    if os.name == "nt":
+        # Force MinGW Makefiles generator on Windows
+        cmake_args.extend(
+            [
+                "-G",
+                "MinGW Makefiles",
+                "-DCMAKE_C_COMPILER=gcc",
+                "-DCMAKE_Fortran_COMPILER=gfortran",
+            ]
+        )
+
+        # Check if MinGW is available in common locations
+        mingw_paths = [
+            "C:/mingw64/bin/gfortran.exe",
+            "C:/tools/mingw64/bin/gfortran.exe",
+            "C:/msys64/mingw64/bin/gfortran.exe",
+            "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/gfortran.exe",
         ]
-    }
+
+        gfortran_found = False
+        for path in mingw_paths:
+            if os.path.exists(path):
+                cmake_args.extend(
+                    [
+                        f"-DCMAKE_Fortran_COMPILER={path}",
+                        f"-DCMAKE_C_COMPILER={path.replace('gfortran.exe', 'gcc.exe')}",
+                    ]
+                )
+                gfortran_found = True
+                print(f"Found gfortran at: {path}")
+                break
+
+        if not gfortran_found:
+            print(
+                "WARNING: gfortran not found in common locations. "
+                "Please ensure MinGW-w64 is installed and in PATH.",
+                file=sys.stderr,
+            )
+
+    CMAKE_ARGS = {"cmake_args": cmake_args}
 
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
 
@@ -105,15 +234,39 @@ f2py_exts_sources = {
         ),
     ]
 }
-f2py_platform_extra_args = defaultdict(
-    dict,
-    {
-        "darwin": {"extra_link_args": [], "extra_compile_args": []},
-        "win32": {"extra_link_args": [], "extra_compile_args": []},
-        "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-        "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
+try:
+    # Detect MSVC toolchain; avoid GNU Fortran flags when it is active
+    is_msvc = os.name == "nt" and shutil.which("cl.exe") is not None
+    if (not is_msvc) and phaseshifts and hasattr(phaseshifts, "phshift2007"):
+        # Use the platform‑filtered flags directly from COMPILER_FLAGS
+        gfortran_compiler_args = [
+            flag
+            for flag in phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+            if flag not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+        ]
+    else:
+        gfortran_compiler_args = []
+except (NameError, AttributeError, KeyError):
+    gfortran_compiler_args = []
+
+# Platform-specific extra arguments
+f2py_platform_extra_args = {
+    "darwin": {"extra_link_args": [], "extra_compile_args": []},
+    "win32": {
+        "extra_link_args": ([] if shutil.which("cl.exe") else gfortran_compiler_args),
+        "extra_compile_args": (
+            [] if shutil.which("cl.exe") else gfortran_compiler_args
+        ),
     },
-)[sys.platform]
+    "linux": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+    "linux2": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+}.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
 f2py_exts = (
     [

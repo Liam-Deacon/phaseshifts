@@ -3,6 +3,79 @@
 ### setup project ###
 cmake_minimum_required(VERSION 3.15)
 
+#
+# Windows-specific configuration for mixed toolchains
+if(WIN32)
+  # Retain the generator chosen by the user (MSVC, MinGW, or others) and simply report it.
+  message(STATUS "Windows detected - using CMake generator: ${CMAKE_GENERATOR}")
+
+  # Ensure gfortran is found on Windows - check multiple common paths
+  if(NOT CMAKE_Fortran_COMPILER)
+    find_program(GFORTRAN_EXECUTABLE
+      NAMES gfortran gfortran.exe
+      PATHS
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin"
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
+      DOC "gfortran compiler"
+    )
+    if(GFORTRAN_EXECUTABLE)
+      set(CMAKE_Fortran_COMPILER "${GFORTRAN_EXECUTABLE}" CACHE FILEPATH "Fortran compiler" FORCE)
+      message(STATUS "Found gfortran: ${GFORTRAN_EXECUTABLE}")
+    else()
+      message(WARNING "gfortran not found. Please install MinGW-w64 or ensure gfortran is in PATH")
+    endif()
+  endif()
+
+  # Also look for gcc if not already set
+  if(NOT CMAKE_C_COMPILER)
+    find_program(GCC_EXECUTABLE
+      NAMES gcc gcc.exe
+      PATHS
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin"
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
+      DOC "gcc compiler"
+    )
+    if(GCC_EXECUTABLE)
+      set(CMAKE_C_COMPILER "${GCC_EXECUTABLE}" CACHE FILEPATH "C compiler" FORCE)
+      message(STATUS "Found gcc: ${GCC_EXECUTABLE}")
+    endif()
+  endif()
+
+  # On Windows, prefer all-MSVC or all-MinGW toolchain to avoid linking issues
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(FATAL_ERROR
+      "Mixed MSVC/gfortran toolchain detected on Windows. "
+      "This causes linking failures. Please use one of:\n"
+      "1. All-MSVC with Intel Fortran\n"
+      "2. All-MinGW (gcc + gfortran)\n"
+      "3. Use setup.py instead of CMake for Windows builds\n"
+      "Suggestion: Set CMAKE_Fortran_COMPILER to use Intel Fortran or configure MinGW"
+    )
+  endif()
+
+  # Check for Intel Fortran if using MSVC
+  if(MSVC)
+    message(STATUS "MSVC detected - checking for compatible Fortran compiler")
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+      message(STATUS "Intel Fortran found - compatible with MSVC")
+    else()
+      message(WARNING "Non-Intel Fortran with MSVC may cause issues")
+    endif()
+  endif()
+endif()
+
 project(phaseshifts
   VERSION 0.1.8
   DESCRIPTION "LIBPHSH module"
@@ -104,7 +177,32 @@ set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSIO
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 
 # Platform-specific linking and compiler flags
-if (UNIX)
+if (WIN32)
+  # Windows-specific configuration
+  message(STATUS "Configuring for Windows build")
+
+  # Set proper extension for Windows
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+
+  # Handle mixed toolchain issues
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(WARNING "Mixed MSVC/gfortran toolchain detected - this may cause linking issues")
+    message(STATUS "Consider using Intel Fortran or all-MinGW toolchain")
+    # Try to set compatible flags
+    set_target_properties("${f2py_module_name}" PROPERTIES
+      LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
+  endif()
+
+  # Set Windows-specific compiler flags for gfortran
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    target_compile_options("${f2py_module_name}" PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:-Wall -frecursive -fcheck=bounds -std=legacy>
+    )
+    # Note: Avoid -pie, -static-libgcc, -static-libgfortran on Windows
+    # as they can cause issues with Python extension modules
+  endif()
+
+elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
     LINK_FLAGS  '-Wl,-dylib,-undefined,dynamic_lookup')
@@ -134,7 +232,18 @@ if (UNIX)
   endif()
 endif()
 
+
 add_dependencies("${f2py_module_name}" genpyf generate_f2py_files)
+
+# --- Optional on‑the‑fly generation of libphsh (disabled by default) ---
+option(GENERATE_LIBPHSH "Generate libphsh Fortran library automatically if missing" OFF)
+if(GENERATE_LIBPHSH)
+  add_custom_target(generate_libphsh
+    COMMAND ${CMAKE_COMMAND} -E echo "TODO: generate libphsh from source"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating libphsh Fortran library")
+  add_dependencies("${f2py_module_name}" generate_libphsh)
+endif()
 
 # Debug output to help diagnose build issues
 message(STATUS "Building target: ${f2py_module_name}")
