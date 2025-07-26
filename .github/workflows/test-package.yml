@@ -98,44 +98,24 @@ jobs:
       - name: Find python DLL path for MinGW
         if: matrix.os == 'windows-latest'
         id: find_py_dll
-        shell: pwsh
+        continue-on-error: true
         run: |
-          # Determine the DLL name (e.g. python311.dll) using the *current* Python runtime
-          python - << 'PY'
-          import os, sys, pathlib
-          dll_name = f"python{sys.version_info.major}{sys.version_info.minor}.dll"
-          search_root = pathlib.Path(sys.base_prefix)
-          dll_path = next(search_root.rglob(dll_name), None)
-          with open(os.environ["GITHUB_ENV"], "a") as fh:
-              if dll_path:
-                  fh.write(f"DLLPATH={dll_path}\n")
-                  fh.write("MINGW_SUCCESS=true\n")
-                  print(f"Found {dll_path}")
-              else:
-                  fh.write("MINGW_SUCCESS=false\n")
-                  print(f"::warning ::{dll_name} not found – MinGW setup will fall back to MSVC")
-          PY
-
-      - name: (DISABLED) Generate python import library for MSVC
-        if: false # change to 'true' to enable
-        shell: pwsh
-        run: |
-          python - << 'PY'
-          import os, sys, pathlib, subprocess, shutil
-          maj, min = sys.version_info[:2]
-          dll_name = f"python{maj}{min}.dll"
-          dll_path = next(pathlib.Path(sys.base_prefix).rglob(dll_name), None)
-          if not dll_path:
-              print(f"{dll_name} not found – skipping import library generation")
-              raise SystemExit(0)
-          lib_name = f"python{maj}{min}.lib"
-          print(f"Generating {lib_name} from {dll_path} …")
-          # Requires the MSVC 'lib' tool in PATH
-          subprocess.check_call(["lib", f"/def:{dll_path}", f"/name:{dll_name}", f"/out:{lib_name}", "/machine:x64"])
-          target = pathlib.Path(r"C:\msys64\mingw64\lib") / lib_name
-          shutil.move(lib_name, target)
-          print(f"Wrote {target}")
-          PY
+          setlocal enabledelayedexpansion
+          set PYMAJMIN=${{ matrix.python-version }}
+          set PYMAJ=!PYMAJMIN:~0,1!
+          set PYMIN=!PYMAJMIN:~2,2!
+          set PYDLL=python!PYMAJ!!PYMIN!.dll
+          echo Looking for !PYDLL! ...
+          for /f "delims=" %%F in ('dir /s /b !PYDLL!') do set DLLPATH=%%F
+          if not defined DLLPATH (
+            echo "::warning ::!PYDLL! not found! Listing all python*.dll files:"
+            dir /s /b python*.dll || echo "No python DLLs found."
+            echo "::warning ::MinGW setup will fail, will fallback to MSVC compiler."
+            echo "MINGW_SUCCESS=false" >> %GITHUB_ENV%
+            exit /b 1
+          )
+          echo DLLPATH=!DLLPATH!>> %GITHUB_ENV%
+        shell: cmd
 
       - name: Generate MinGW python defs
         if: matrix.os == 'windows-latest'
