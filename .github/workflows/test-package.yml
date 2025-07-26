@@ -145,12 +145,12 @@ jobs:
       - name: Setup MSVC if MinGW failed
         if: matrix.os == 'windows-latest' && env.MINGW_SUCCESS == 'false'
         uses: microsoft/setup-msbuild@v1.0.2
-        
+
       - name: Build binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           echo "Python version: $(python --version)"
-          
+
           # Check if MinGW setup was successful
           if [ "$MINGW_SUCCESS" = "true" ]; then
             echo "Using MinGW/GCC toolchain for build..."
@@ -172,7 +172,7 @@ jobs:
             unset CC
             unset FC
           fi
-          
+
           make
         shell: bash
         env:
