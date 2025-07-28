@@ -158,7 +158,7 @@ uv run --python=3.11 --with=git+https://github.com/Liam-Deacon/phaseshifts.git#m
 
 <!-- markdownlint-disable MD026 -->
 
-### TDLR;
+### TLDR;
 
 <!--lint enable MD026 -->
 
