@@ -379,7 +379,7 @@ A number of alternatives are available, notably the following:
 <!--lint disable no-unused-definitions-->
 
 > [!NOTE]
-> It would be fantastic to include this software (and document it's use) as part of the phaseshifts python package
+> It would be fantastic to include this software (and document its use) as part of the phaseshifts python package
 > allowing the user to choose the backend they wish to use for calculating phase shifts (e.g. `EEASiSSS` or `phshift2007`).
 > As such [John Rundgren](https://www.researchgate.net/profile/John-Rundgren-2) should be contacted to see if
 > he would be happy to collaborate on making this possible. This is being tracked by
