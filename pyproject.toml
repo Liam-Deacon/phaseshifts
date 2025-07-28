@@ -15,6 +15,9 @@ dependencies = [
     "typing_extensions"
 ]
 
+[project.scripts]
+phaseshifts = "phaseshifts.cli:main"
+
 [project.optional-dependencies]
 atorb = [
     "mendeleev",

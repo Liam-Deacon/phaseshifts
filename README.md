@@ -18,6 +18,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/phaseshifts?logo=pypi&logoColor=white)](https://pypi.org/project/phaseshifts/)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
+
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
 <!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
 <!-- ![Coveralls branch](https://img.shields.io/coverallsCoverage/github/Liam-Deacon/phaseshifts) -->
@@ -31,51 +32,86 @@
 [![Watch on GitHub](https://img.shields.io/github/watchers/Liam-Deacon/phaseshifts.svg?style=social)](https://github.com/Liam-Deacon/phaseshifts/watchers)
 
 This package is a Python-based implementation of the Barbieri/Van Hove
-phase shift (a.k.a. *phshift*) calculation package needed to produce
+phase shift (a.k.a. _phshift_) calculation package needed to produce
 elastic electron atom scattering (EEAS) phase shifts for modelling
 within various LEED packages (including CLEED), as well as for certain
 XPD packages. To quote the original authors' site:
 
 "The phase shift calculation is performed in several steps:
 
-  1. Calculation of the radial charge density for a free atom.
-  2. Calculation of the radial muffin-tin potential for atoms embedded in
-     a surface defined by the user (the surface is represented by a slab
-     that is periodically repeated in 3 dimensions, within vacuum between
-     the repeated slabs); various approximations to the exchange
-     potential are available; relativistic effects are taken into
-     account.
-  3. Calculation of phase shifts from the muffin-tin potential.
-  4. Elimination of pi-jumps in the energy dependence of the phase
-     shifts."
+1. Calculation of the radial charge density for a free atom.
+2. Calculation of the radial muffin-tin potential for atoms embedded in
+   a surface defined by the user (the surface is represented by a slab
+   that is periodically repeated in 3 dimensions, within vacuum between
+   the repeated slabs); various approximations to the exchange
+   potential are available; relativistic effects are taken into
+   account.
+3. Calculation of phase shifts from the muffin-tin potential.
+4. Elimination of pi-jumps in the energy dependence of the phase
+   shifts."
 
 <!--lint disable no-unused-definitions-->
+
 > [!NOTE]
 > You can get the original Fortran source (& learn more about the
-> *phshift* programs) from Michel Van Hove's LEED Calculation Home Page:
+> _phshift_ programs) from Michel Van Hove's LEED Calculation Home Page:
 >
 > <https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html>
 >
-> A local copy of the source files can be found under
-> `phaseshifts/lib/.phsh.orig/phsh[0-2].f`.
+> Run `make phshift2007` to download the original source code.
+
 <!--lint enable no-unused-definitions-->
 
 ## Running
 
-The <span class="title-ref">phsh.py</span> script (available after
-installing the package) aims to simplify these steps with a single
-command. For more information please read the documentation at
+### Command Line Interface (CLI)
+
+After installing the package, you can use the new CLI entry points:
+
+- Run the main CLI (default phase shift calculation):
+
+  ```bash
+  python -m phaseshifts --help
+  # or
+  python -m phaseshifts phsh [args]
+  ```
+
+- Run the atomic orbital generator subcommand:
+
+  ```bash
+  python -m phaseshifts atorb --output-dir ./atorb_lib --rel --ngrid 2000 --method HF
+  ```
+
+- You can also invoke the CLI subpackage directly:
+
+  ```bash
+  python -m phaseshifts.cli --help
+  ```
+
+- If installed as a script (via pip/uv), you can use:
+
+  ```bash
+  phaseshifts --help
+  phaseshifts phsh [args]
+  phaseshifts atorb [args]
+  ```
+
+The CLI provides two main subcommands:
+
+- `phsh` (default): Phase shift calculation (see `phsh.py` for details)
+- `atorb`: Generate atomic orbital input files for all known elements
+
+For more information please read the documentation at
 <http://pythonhosted.org/phaseshifts/> (latest PyPI release) or [GitHub
 Pages](https://liam-deacon.github.io/phaseshifts/) (latest master)
 
 The simplest and most reliable cross-platform way to run
-<span class="title-ref">phsh.py</span> is through docker:
+`phsh.py` is through docker:
 
 ```bash
 # obtain the image
 docker pull ghcr.io/Liam-Deacon/phaseshifts:latest  # should only need to do this once
 
-# run phsh.py via the docker image
 docker run ghcr.io/Liam-Deacon/phaseshifts:latest  # will display usage
 
 # or more generally (adjust as needed)
@@ -89,13 +125,23 @@ Alternatively, if you have [uv](https://docs.astral.sh/uv/) installed, you can u
 uv --python=3.11 --from git+https://github.com/Liam-Deacon/phaseshifts.git#master phsh.py
 ```
 
+Alternatively, if you have [uv](https://docs.astral.sh/uv/) installed, you can use the following command:
+
+```bash
+# run phsh.py directly from uv
+uv run --python=3.11 --with=git+https://github.com/Liam-Deacon/phaseshifts.git#master --script phaseshifts/phsh.py
+```
+
 <!--lint disable no-unused-definitions-->
+
 > [!TIP]
 > Development docker images can be built locally, e.g.
 > `DOCKER_TAG=dev make docker`
+
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->
+
 > [!WARNING]
 > There is a [known possible
 > bug](https://github.com/Liam-Deacon/phaseshifts/issues/6) where the
@@ -105,11 +151,16 @@ uv --python=3.11 --from git+https://github.com/Liam-Deacon/phaseshifts.git#maste
 > `docker run ghcr.io/Liam-Deacon/phaseshifts:latest` as this works
 > around this limitation due to the emphereal nature of container
 > instances created using `docker run`.
+
 <!--lint enable no-unused-definitions-->
 
 ## Install
 
-### TDLR;
+<!-- markdownlint-disable MD026 -->
+
+### TLDR;
+
+<!--lint enable MD026 -->
 
 For python 3.11 or older:
 
@@ -137,52 +188,53 @@ packages. Currently, it has only been tested most extensively with Python 2.7
 on Windows, so there are no guarantees with other platforms. To perform
 a setup follow the steps below.
 
-> 1.  Install the numpy, scipy and periodictable packages.
+> 1. Install the numpy, scipy and periodictable packages.
 >
->     On systems compatible with PyPI this can be done using the
->     command:
+>    On systems compatible with PyPI this can be done using the
+>    command:
 >
->     ```bash
->     pip install numpy scipy periodictable
->     ```
+>    ```bash
+>    pip install numpy scipy periodictable
+>    ```
 >
->     Or if you have the easy_install package:
+>    Or if you have the easy_install package:
 >
->     ```bash
->     easy_install install numpy scipy periodictable
->     ```
+>    ```bash
+>    easy_install install numpy scipy periodictable
+>    ```
 >
->     Older versions of numpy & scipy did not allow simultaneous
->     installation -if you experience problems then try first installing
->     numpy before attempting to install scipy. The periodictable
->     package allows lookup of the most common crystal structure for a
->     given element and is instrumental in many of the convenience
->     functions contained in the model module.
+>    Older versions of numpy & scipy did not allow simultaneous
+>    installation -if you experience problems then try first installing
+>    numpy before attempting to install scipy. The periodictable
+>    package allows lookup of the most common crystal structure for a
+>    given element and is instrumental in many of the convenience
+>    functions contained in the model module.
 >
->     Alternatively download and install these packages manually
->     following the instructions provided for the respective packages.
+>    Alternatively download and install these packages manually
+>    following the instructions provided for the respective packages.
 >
-> 2.  To install the phaseshifts package:
+> 2. To install the phaseshifts package:
 >
->      ```bash
->      python setup.py install
->      ```
+>    ```bash
+>    python setup.py install
+>    ```
 >
->     With any luck the package has been installed successfully. A set
->     of test scripts are provided, however a simple check may suffice
->     using an interactive session of the python interpreter:
+>    With any luck the package has been installed successfully. A set
+>    of test scripts are provided, however a simple check may suffice
+>    using an interactive session of the python interpreter:
 >
->     ```python
->     >>> import phaseshifts
->     >>> from phaseshifts.lib import libphsh # compiled FORTRAN .pyd or .so using f2py
->     ```
+>    ```python
+>    >>> import phaseshifts
+>    >>> from phaseshifts.lib import libphsh # compiled FORTRAN .pyd or .so using f2py
+>    ```
 >
->     If these execute without errors then it is likely that all is
->     well, but in case of problems or bugs please use the contact
->     provided below and I will do my best to address the problem
->     quickly.
+>    If these execute without errors then it is likely that all is
+>    well, but in case of problems or bugs please use the contact
+>    provided below and I will do my best to address the problem
+>    quickly.
 
 <!--lint disable no-unused-definitions-->
+
 > [!TIP]
 > On Windows systems it may be easier to install a scientific python
 > distibution rather than install the dependencies from source -
@@ -191,21 +243,26 @@ a setup follow the steps below.
 > gfortran) installed is highly recommended. Mac OS X users can simply
 > do `brew install gfortran` and Debian/Ubuntu users can do
 > `sudo apt-get install -y gfortran`.
+
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->
+
 > [!NOTE]
 > On unix systems, setup the virtualenv on Python 3.10 or lower,
-> activate it and run <span class="title-ref">make</span>.
+> activate it and run `make`.
+
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->
+
 > [!WARNING]
 > Python 3.12 compatibility is a work in progress due to the removal of
 > `numpy.distuils` build backend for `f2py` preventing simple
 > installation via `pip install`, [this github
 > issue](https://github.com/Liam-Deacon/phaseshifts/issues/8) tracks
 > progress on fixing this known issue.
+
 <!--lint enable no-unused-definitions-->
 
 ## About the code
@@ -218,13 +275,12 @@ explain the general use of the library.
 If you aren't familiar with the phase shift calculation process, you can
 read further information in `doc/` folder:
 
-  - [`phshift2007`](https://phaseshifts.readthedocs.io/en/latest/phshift2007.html) - a brief user guide/documentation concerning the
-    input files (& details of the original fortran
-    <span class="title-ref">phshift</span> package).
-  - [phaseshifts API](https://phaseshifts.readthedocs.io/en/latest/modules.html) - a more detailed overview of the library functions
-    and how to calculate phase shifts using the convenience functions in
-    this package. This is not yet finished and so the reader is referred
-    to the above document for the time being.
+- [`phshift2007`](https://phaseshifts.readthedocs.io/en/latest/phshift2007.html) - a brief user guide/documentation concerning the
+  input files (& details of the original fortran `phshift` package).
+- [phaseshifts API](https://phaseshifts.readthedocs.io/en/latest/modules.html) - a more detailed overview of the library functions
+  and how to calculate phase shifts using the convenience functions in
+  this package. This is not yet finished and so the reader is referred
+  to the above document for the time being.
 
 For those wanting a crash course of the Van Hove / Tong programs, I
 advise reading the [phsh2007](https://phaseshifts.readthedocs.io/en/latest/phshift2007.html) document. See the `examples/` directory
@@ -234,7 +290,7 @@ file for helpful comments regarding each line of input.
 
 Those of you who are eager to generate phase shifts - first look at the
 example cluster files for a bulk and slab calculation, noting that the
-atoms in the model are in fractional units of the *a* basis vector for
+atoms in the model are in fractional units of the _a_ basis vector for
 the unit cell (SPA units). Next, after creating a bulk and slab model in
 the `cluster.i` format, simply use the following python code:
 
@@ -249,17 +305,22 @@ determine what output to produce. For more detailed documentation and
 function use refer to the pdf manual.
 
 <!--lint disable no-unused-definitions-->
+
 > [!TIP]
 > A standalone command line utility **phsh.py** is provided as a way of
 > automating the generation of phase shifts as part of a script. For
 > more information use:
 >
-> ``` bash
+> ```bash
 > phsh.py --help
 > ```
+
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->
+
+<!--lint disable no-inline-html>
+
 > [!NOTE]
 > The <span class="title-ref">phaseshifts.leed</span> module provides a
 > conversion class for CLEED `.inp` and `.bul` files. This is included
@@ -268,50 +329,71 @@ function use refer to the pdf manual.
 > `.bmin`) and error checking is limited. There are also plans to
 > include a validator to check the files for malformatted input at some
 > point in the future.
+
 <!--lint enable no-unused-definitions-->
+
+## Terms of Use
+
+The phaseshifts package incorporates code from the Barbieri/Van Hove phase shift calculation package. Use of this package is subject to the following conditions:
+
+- **Citation:** If you use phaseshifts in published work, you must acknowledge and cite the original authors as follows:
+
+```raw
+"The LEED calculations and phase shift computations were performed using the phaseshifts package, which incorporates code from the Barbieri/Van Hove phase shift calculation package."
+
+A. Barbieri and M.A. Van Hove, private communication (https://www.icts.hkbu.edu.hk/vanhove/)
+```
+
+- **Redistribution:** Redistribution of the Barbieri/Van Hove phase shift calculation package, or any package that includes it (including phaseshifts), is prohibited without prior permission from the original authors. Please direct users to the official repository or website.
+
+- **Warranty:** This software is provided "as is", without warranty of any kind. Use is at your own risk.
 
 ### Alternatives
 
 A number of alternatives are available, notably the following:
 
-  1. [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/files/) (with
-     a useful [poster overview of phaseshifts
-     calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
-     This is an officially mentioned piece of software on Michel Van
-     Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
-     poster mentions that the software is written in python, this
-     software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/))  and
-     therefore harder to integrate with other python LEED-related
-     projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
-     [cleedpy](https://github.com/empa-scientific-it/cleedpy).
-  2. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
-     [(EEASiSSS)](https://www.researchgate.net/profile/John-Rundgren-2/publication/235583683_Optimized_surface-slab_excited-state_muffin-tin_potential_and_surface_core_level_shifts/links/5a266f89a6fdcc8e866bd7e5/Optimized-surface-slab-excited-state-muffin-tin-potential-and-surface-core-level-shifts.pdf)
-     is authored by John Rundgren and first described in the paper: *"J. Rundgren Phys. Rev. B 68 125405 (2003)"*.
-     This program takes a different approach to calculating phase shifts by using optimised muffin-tin potentials
-     for surface slabs with preassigned surface core-level shifts.
-     Whilst the source code is not publicly available online (to this author's best knowledge), John Rundgren
-     has been more than happy to assist when approached in the past.
-  3. A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
-     1978).](https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501)
-     A program for calculating elastic scattering phase shifts for an
-     electron colliding with a one-electron target using perturbation
-     theory. Computer Physics Communications, 14(1-2), 99-107.", however
-     this code is not publicly available online (pay-walled by journal).
+1. [AQuaLEED](https://physics.mff.cuni.cz/kfpp/povrchy/files/) (with
+   a useful [poster overview of phaseshifts
+   calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
+   This is an officially mentioned piece of software on Michel Van
+   Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
+   poster mentions that the software is written in python, this
+   software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/)) and
+   therefore harder to integrate with other python LEED-related
+   projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
+   [cleedpy](https://github.com/empa-scientific-it/cleedpy).
+2. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
+   [(EEASiSSS)](https://www.researchgate.net/profile/John-Rundgren-2/publication/235583683_Optimized_surface-slab_excited-state_muffin-tin_potential_and_surface_core_level_shifts/links/5a266f89a6fdcc8e866bd7e5/Optimized-surface-slab-excited-state-muffin-tin-potential-and-surface-core-level-shifts.pdf)
+   is authored by John Rundgren and first described in the paper: _"J. Rundgren Phys. Rev. B 68 125405 (2003)"_.
+   This program takes a different approach to calculating phase shifts by using optimised muffin-tin potentials
+   for surface slabs with preassigned surface core-level shifts.
+   Whilst the source code is not publicly available online (to this author's best knowledge), John Rundgren
+   has been more than happy to assist when approached in the past.
+3. A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
+   1978).](https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501)
+   A program for calculating elastic scattering phase shifts for an
+   electron colliding with a one-electron target using perturbation
+   theory. Computer Physics Communications, 14(1-2), 99-107.", however
+   this code is not publicly available online (pay-walled by journal).
 
 <!--lint disable no-unused-definitions-->
+
 > [!NOTE]
-> It would be fantastic to include this software (and document it's use) as part of the phaseshifts python package
-> allowing the user to choose the backend they wish to use for calculating phase shifts (e.g. ``EEASiSSS`` or ``phshift2007``).
+> It would be fantastic to include this software (and document its use) as part of the phaseshifts python package
+> allowing the user to choose the backend they wish to use for calculating phase shifts (e.g. `EEASiSSS` or `phshift2007`).
 > As such [John Rundgren](https://www.researchgate.net/profile/John-Rundgren-2) should be contacted to see if
 > he would be happy to collaborate on making this possible. This is being tracked by
 > [this item](https://github.com/Liam-Deacon/phaseshifts/issues/92).
+
 <!--lint enable no-unused-definitions-->
 
 <!--lint disable no-unused-definitions-->
+
 > [!IMPORTANT]
 > Should you know of alternatives, please either [open an
 > issue](https://Liam-Deacon/phaseshifts/issues) or (better yet) create
 > a PR with changes to this documentation to keep this list up to date.
+
 <!--lint enable no-unused-definitions-->
 
 ## Acknowledgements
@@ -320,20 +402,19 @@ As with all scientific progress, we stand on the shoulders of giants. If
 this package is of use to you in publishing papers then please
 acknowledge the following people who have made this package a reality:
 
-  - **A. Barbieri** and **M.A. Van Hove** - who developed most of the
-    original fortran code. Use *A. Barbieri and M.A. Van Hove, private
-    communication.* (see `doc/phsh2007.txt` for further details).
-  - **E.L. Shirley** - who developed part of the fortran code during
-    work towards his PhD thesis (refer to the thesis: *E.L. Shirley,
-    "Quasiparticle calculations in atoms and many-body core-valence
-    partitioning", University of Illinois, Urbana, 1991*).
-  - **Christoph Gohlke** - who developed the elements.py module used
-    extensively throughout for the modelling convenience functions (see
-    'elements.py' for license details).
+- **A. Barbieri** and **M.A. Van Hove** - who developed most of the
+  original fortran code. Use _A. Barbieri and M.A. Van Hove, private
+  communication._ (see `doc/phsh2007.txt` for further details).
+- **E.L. Shirley** - who developed part of the fortran code during
+  work towards his PhD thesis (refer to the thesis: _E.L. Shirley,
+  "Quasiparticle calculations in atoms and many-body core-valence
+  partitioning", University of Illinois, Urbana, 1991_).
+- **Christoph Gohlke** - who developed the elements.py module used
+  extensively throughout for the modelling convenience functions (see
+  'elements.py' for license details).
 
 I would also be grateful if you acknowledge this python package
-(*phaseshifts*) as: *L.M. Deacon, private communication.*
-
+(_phaseshifts_) as: _L.M. Deacon, private communication._
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_large)
 
@@ -350,13 +431,15 @@ This package is developed/maintained in my spare time so any bug
 reports, patches, or other feedback are very welcome.
 
 The project is (still) in the early developmental stages and so anyone who
-wishes to get involved are most welcome.  Please either
+wishes to get involved are most welcome. Please either
 [create an issue](https://github.com/Liam-Deacon/phaseshifts/issues/new) or (better yet) submit a [pull request](https://github.com/Liam-Deacon/phaseshifts/pulls).
 
 <!--lint disable no-unused-definitions-->
+
 > [!TIP]
 > Please [star](https://github.com/Liam-Deacon/phaseshifts) it on GitHub as this will help
 > to easily indicate that others find the package useful.
+
 <!--lint enable no-unused-definitions-->
 
 ## Copilot & Agentic Coding Instructions
@@ -365,25 +448,25 @@ For agentic coding guidelines, Copilot instructions, and best practices, please 
 
 ## To Do
 
-> 1.  Documentation - the manual has been started, but is not complete
->     and thus is a high priority. The current aim is to use sphinx to
->     generate html and latex documents for semi-automated generation of
->     both the tutorial and supporting website. If you have the
->     phaseshifts source and the
->     [sphinx](https://pypi.python.org/pypi/Sphinx) and the
->     [numpydoc](https://pypi.python.org/pypi/numpydoc) PyPi packages
->     then you can try making html or latex manuals using `make html` or
->     `make latexpdf` commands from the `doc/` directory.
-> 2.  Test suit to verify the package is working as expected.
-> 3.  GUI frontend (Qt ui files are provided in the `gui/` directory for
->     anyone wishing to undertake this challenge). Other front ends are
->     welcome (I use Qt due to familiarity/experience). For those
->     wishing a sneak preview, try executing `main.pyw`
+> 1. Documentation - the manual has been started, but is not complete
+>    and thus is a high priority. The current aim is to use sphinx to
+>    generate html and latex documents for semi-automated generation of
+>    both the tutorial and supporting website. If you have the
+>    phaseshifts source and the
+>    [sphinx](https://pypi.python.org/pypi/Sphinx) and the
+>    [numpydoc](https://pypi.python.org/pypi/numpydoc) PyPi packages
+>    then you can try making html or latex manuals using `make html` or
+>    `make latexpdf` commands from the `doc/` directory.
+> 2. Test suit to verify the package is working as expected.
+> 3. GUI frontend (Qt ui files are provided in the `gui/` directory for
+>    anyone wishing to undertake this challenge). Other front ends are
+>    welcome (I use Qt due to familiarity/experience). For those
+>    wishing a sneak preview, try executing `main.pyw`
 
 See either [todo issues](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aopen+is%3Aissue+label%3A%22todo+%3Aspiral_notepad%3A%22) or [TODO.rst](https://github.com/Liam-Deacon/phaseshifts/blob/master/TODO.rst) for more information.
 
 ## Contacts
 
-  - [Liam Deacon](mailto://liam.m.deacon@gmail.com) - *current maintainer*
-  - [Michel Van Hove](mailto://vanhove@cityu.edu.hk) - Contact for
+- [Liam Deacon](mailto://liam.m.deacon@gmail.com) - _current maintainer_
+- [Michel Van Hove](mailto://vanhove@cityu.edu.hk) - Contact for
   original LEEDPACK `phsh[0-3].f` programs

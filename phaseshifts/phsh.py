@@ -508,7 +508,12 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % phaseshifts.__version__
     program_version_message = "%%(prog)s %s" % program_version
-    program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
+    # Use this module's docstring or a static string for shortdesc
+    program_shortdesc = (
+        (__doc__ or "phsh.py - quickly generate phase shifts").split("\n")[1]
+        if (__doc__ and len((__doc__ or "").split("\n")) > 1)
+        else "phsh.py - quickly generate phase shifts"
+    )
     program_license = """%s
 
       Created by Liam Deacon using LEEDPACK code (kindly permitted by Micheal Van Hove).
