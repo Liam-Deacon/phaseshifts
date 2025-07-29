@@ -7,7 +7,7 @@ on:
     inputs:
       version:
         description: Version to upload
-        default: ''
+        default: ""
       pypi_repo:
         description: PyPI Repo
         type: choice
@@ -39,10 +39,12 @@ on:
 
 env:
   CIBW_BEFORE_BUILD: pip install numpy
+  CIBW_BEFORE_BUILD_LINUX: yum install -y python3-devel || true && pip install numpy
+  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install numpy
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
-  CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh"  # most simple, yet effective sanity check
-  CIBW_TEST_EXTRAS: ''
-  CIBW_TEST_REQUIRES: ''
+  CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
+  CIBW_TEST_EXTRAS: ""
+  CIBW_TEST_REQUIRES: ""
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
@@ -56,7 +58,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
       # TODO: Figure out how to create a sdist zip for Windows
       - name: Build sdist
         run: |
@@ -146,15 +148,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # https://github.com/AntoineD/pdfo/blob/f6a45b3921807ad99a438f65ee2b01fa193038bb/.github/workflows/build_wheels.yml#L14C1-L23C1
-      - name: Provide gfortran (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          # https://github.com/actions/virtual-environments/issues/2524
-          # https://github.com/cbg-ethz/dce/blob/master/.github/workflows/pkgdown.yaml
-          sudo ln -s /usr/local/bin/gfortran-12 /usr/local/bin/gfortran
-          sudo mkdir /usr/local/gfortran
-          sudo ln -s /usr/local/Cellar/gcc@12/*/lib/gcc/12 /usr/local/gfortran/lib
-          gfortran --version
+      - name: Setup Fortran (gfortran)
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: gcc
+          version: 13
+        # This sets up gfortran and gcc for macOS runners
+        # FC, CC, and CXX environment variables will be set for subsequent steps
+        # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
@@ -167,7 +168,7 @@ jobs:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: arm64
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
       - uses: actions/upload-artifact@v4
         with:
           name: macos
@@ -178,7 +179,7 @@ jobs:
     runs-on: windows-latest
     needs: build_sdist
     env:
-      CIBW_TEST_COMMAND: ""  # FIXME: This is a workaround for an issue with DLL loading on Windows
+      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
     steps:
       - uses: actions/checkout@v4
 
@@ -206,7 +207,7 @@ jobs:
     needs: build_sdist
     env:
       CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
-      CIBW_TEST_COMMAND: ""  # FIXME: This is a workaround for an issue with DLL loading on Windows
+      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
     steps:
       - uses: actions/checkout@v4
 
@@ -224,7 +225,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && (github.event_name != 'release' && github.event.inputs.pypi_repo == 'testpypi') }}
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
       - build_legacy_wheels_linux
@@ -248,7 +249,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ always() && (github.event.inputs.pypi_repo == 'pypi' || github.event_name == 'release') }}
     permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write # IMPORTANT: this permission is mandatory for trusted publishing
     needs:
       - build_sdist
       - build_legacy_wheels_linux
