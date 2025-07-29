@@ -44,7 +44,7 @@ build-deps:
 #: Install setup_requires dependencies
 install-deps:
 	$(PYTHON) -m pip install wheel numpy setuptools \
-		'meson; python_version >= "3.5"' ninja pytest scikit-build
+		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
 
 #: Install library into current virtualenv
 pip-install:
