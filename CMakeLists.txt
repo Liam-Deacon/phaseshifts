@@ -167,7 +167,7 @@ if(ENABLE_PHSHIFT2007_BINARIES)
   file(ARCHIVE_EXTRACT INPUT "${PHSH2007_ZIP}" DESTINATION "${PHSH2007_SRC_DIR}")
 
   # Split .ab3 and .ab4 files into .for files using Python script
-  set(SPLIT_SCRIPT "${CMAKE_SOURCE_DIR}/phaseshifts/lib/split_ab.py")
+  set(SPLIT_SCRIPT "${CMAKE_SOURCE_DIR}/phaseshifts/lib/helpers/split_ab.py")
   add_custom_command(
       OUTPUT "${PHSH2007_BUILD_DIR}/phsh0.for" "${PHSH2007_BUILD_DIR}/phsh1.for" "${PHSH2007_BUILD_DIR}/phsh2cav.for" "${PHSH2007_BUILD_DIR}/phsh2rel.for" "${PHSH2007_BUILD_DIR}/phsh2wil.for" "${PHSH2007_BUILD_DIR}/phsh3.for"
       COMMAND ${Python_EXECUTABLE} "${SPLIT_SCRIPT}" "${PHSH2007_SRC_DIR}/psprog.ab3" "${PHSH2007_BUILD_DIR}"
