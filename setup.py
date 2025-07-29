@@ -85,11 +85,22 @@ if len(sys.argv) == 1:
 
 CMAKE_ARGS = {}
 
+#: True-like command line flags
+TRUE_OPTS = {"y", "yes", "on", "true", "1"}
+
+# Read environment variable to control phshift2007 binary build
+BUILD_PHSHIFT2007 = (
+    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "ON").lower() in TRUE_OPTS
+)
+
 if BUILD_BACKEND == "skbuild":
     CMAKE_ARGS = {
         "cmake_args": [
             '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
             '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+            "-DENABLE_PHSHIFT2007_BINARIES={}".format(
+                "ON" if BUILD_PHSHIFT2007 else "OFF"
+            ),
         ]
     }
 
