@@ -39,10 +39,12 @@ sdist: build-deps
 
 #: Install build dependencies
 build-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install build cibuildwheel
 
 #: Install setup_requires dependencies
 install-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
 		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
 
