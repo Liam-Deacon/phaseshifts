@@ -21,7 +21,7 @@ def split_ab(input_path, output_dir):
                 out_f.close()
             fname = m.group(1).lower()
             out_path = os.path.join(output_dir, fname)
-            out_f = open(out_path, "w")
+            out_f = open(out_path, "w", encoding="utf-8")
         if out_f:
             out_f.write(line)
     if out_f:
