@@ -62,11 +62,12 @@ build-backend = "scikit_build_core.build"
 
 [tool.cibuildwheel]
 build = [
-    # NOTE: Python 3.7 is the minimum supported version for cibuildwheel v2
-    "cp37-*",
+    # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
     "cp39-*",
     "cp310-*",
     "cp311-*",
+    "cp312-*",
+    "cp313-*",
 ]
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
