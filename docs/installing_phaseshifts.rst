@@ -109,3 +109,11 @@ steps below.
 
 .. tip::
    If you encounter build errors, ensure you have CMake, scikit-build-core, and a working Fortran compiler installed. If the modern build fails, the installer will automatically fallback to the legacy build if possible.
+
+.. tip::
+   To optionally disable building the phshift2007 Fortran binaries (e.g., for minimal installs or CI), set the environment variable before installation:
+
+     export PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES=OFF
+     pip install .
+
+   By default, the binaries are built and included. Set to "OFF" to skip downloading, building, and packaging the phshift2007 binaries. This is useful for environments where Fortran compilers are unavailable or the binaries are not needed (typically useful for debugging).
