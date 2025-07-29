@@ -16,6 +16,7 @@ _skbuild/
 *.exe
 *.DLL
 *.pyd
+phaseshifts/lib/libphsh
 bin/phsh*
 
 # log files
