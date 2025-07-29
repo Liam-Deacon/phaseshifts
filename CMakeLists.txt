@@ -176,7 +176,7 @@ if(ENABLE_PHSHIFT2007_BINARIES)
       COMMENT "Splitting .ab3/.ab4 files into .for files for phshift2007"
       VERBATIM
   )
-  add_custom_target(phsh_sources ALL DEPENDS 
+  add_custom_target(phsh_sources ALL DEPENDS
       "${PHSH2007_BUILD_DIR}/phsh0.for" "${PHSH2007_BUILD_DIR}/phsh1.for" "${PHSH2007_BUILD_DIR}/phsh2cav.for" "${PHSH2007_BUILD_DIR}/phsh2rel.for" "${PHSH2007_BUILD_DIR}/phsh2wil.for" "${PHSH2007_BUILD_DIR}/phsh3.for"
   )
 
