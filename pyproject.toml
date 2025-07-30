@@ -72,7 +72,7 @@ build = [
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
-test-command = "import phaseshifts.libphsh as phsh"
+test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
