@@ -35,7 +35,7 @@ if (NOT SKBUILD)
 endif()
 
 # Use modern scikit-build-core CMake modules
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
 # NumPy include directory
 execute_process(
