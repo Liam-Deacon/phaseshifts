@@ -77,6 +77,7 @@ clean:
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
 	rm -rf phaseshifts/lib/_native_build*.so phaseshifts/lib/_native_build*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
+	rm -rf .cmake/ CMakeInit.txt CMakeCache.txt .skbuild-info.json CMakeFiles/
 
 #: Build docker image
 docker:
