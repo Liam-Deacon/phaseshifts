@@ -136,14 +136,17 @@ f2py_platform_extra_args = defaultdict(
     },
 )[sys.platform]
 
-
-#: Flag for possible future pure Python build (to avoid madness of compiler dependencies and bundling problematic fortran)
-PURE_PYTHON_BUILD = (
-    os.environ.get("PHASESHIFTS_PURE_PYTHON_BUILD", "").lower() in TRUE_OPTS
-)
-
 f2py_exts = (
     [
+        # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
+        #       See https://stackoverflow.com/a/53463910/22567758
+        Extension(
+            name="phaseshifts.lib._native_build",
+            sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
+        )
+    ]
+    if BUILD_BACKEND != "numpy.distutils"
+    else [
         Extension(
             name="phaseshifts.lib.libphsh",
             include_dirs=INCLUDE_DIRS,
@@ -152,8 +155,6 @@ f2py_exts = (
             sources=f2py_exts_sources["libphsh"],
         )
     ]
-    if not PURE_PYTHON_BUILD
-    else []
 )
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
