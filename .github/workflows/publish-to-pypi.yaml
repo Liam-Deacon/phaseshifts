@@ -100,8 +100,15 @@ jobs:
           output-dir: dist/
         env:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
-          CIBW_BUILD: cp27-* cp35-* cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*
+          CIBW_BUILD: cp27-* cp35-* cp36-* cp37-* cp38-*
           CIBW_SKIP: cp38-* cp39-* cp312-* cp313-* # Known issue with CPython 3.8, see #67
+          CIBW_BEFORE_BUILD: | # Patch pyproject.toml to use legacy setuptools
+            sed -i \
+              -e '/^\[build-system\]/,/^$/ s|build-backend = .*|build-backend = "setuptools.build_meta:__legacy__"|' \
+              -e '/^\[build-system\]/,/^$/ s|requires = .*|requires = ["setuptools<=44.1.1", "wheel<0.32"]|' \
+              pyproject.toml;
+            pip install numpy 'scikit-build-core; python_version > "3.7"'
+
       - uses: actions/upload-artifact@v4
         with:
           name: linux-legacy
@@ -123,7 +130,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_SKIP: cp38-* cp39-* cp310-* cp311-* cp*musl*
+          CIBW_SKIP: cp38-* cp*musl*
       - uses: actions/upload-artifact@v4
         with:
           name: linux-x86_64
