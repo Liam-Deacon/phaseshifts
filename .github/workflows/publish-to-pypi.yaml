@@ -180,12 +180,31 @@ jobs:
             python -c "
             import zipfile;
             import glob;
-            wheel = glob.glob('dist/*.whl')[0];
-            z = zipfile.ZipFile(wheel);
-            files = [f for f in z.namelist() if 'libphsh' in f or f.endswith('.so') or f.endswith('.dylib')];
-            print(f'Found {len(files)} compiled extensions in wheel:');
-            [print(f'  {f}') for f in files];
-            assert len(files) > 0, 'No libphsh compiled extensions found in wheel'
+            import os;
+            # Look for wheel files in the current working directory and output directory
+            wheel_patterns = ['*.whl', 'output/*.whl', '../output/*.whl', 'dist/*.whl', '../dist/*.whl'];
+            wheel = None;
+            for pattern in wheel_patterns:
+                wheels = glob.glob(pattern);
+                if wheels:
+                    wheel = wheels[0];
+                    break;
+            if not wheel:
+                print('No wheel file found, checking installed package instead');
+                import phaseshifts.lib;
+                # Check if libphsh module exists in installed package
+                try:
+                    from phaseshifts.lib import libphsh;
+                    print('libphsh extension imported successfully from installed package');
+                except ImportError as e:
+                    print(f'Failed to import libphsh: {e}');
+                    raise AssertionError('libphsh extension not found in installed package');
+            else:
+                z = zipfile.ZipFile(wheel);
+                files = [f for f in z.namelist() if 'libphsh' in f or f.endswith('.so') or f.endswith('.dylib')];
+                print(f'Found {len(files)} compiled extensions in wheel: {wheel}');
+                [print(f'  {f}') for f in files];
+                assert len(files) > 0, 'No libphsh compiled extensions found in wheel';
             "
 
       - uses: actions/upload-artifact@v4
