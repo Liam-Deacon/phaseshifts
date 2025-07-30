@@ -72,7 +72,7 @@ build = [
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
-test-command = "import phaseshifts.phsh as phsh"
+test-command = "import phaseshifts.libphsh as phsh"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
@@ -90,6 +90,7 @@ CC="clang"
 FC="gfortran"
 CXX="clang++"
 CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
+MACOSX_DEPLOYMENT_TARGET = "15.0"  # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
 before-build = [

@@ -90,7 +90,7 @@ TRUE_OPTS = {"y", "yes", "on", "true", "1"}
 
 # Read environment variable to control phshift2007 binary build
 BUILD_PHSHIFT2007 = (
-    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "ON").lower() in TRUE_OPTS
+    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
 )
 
 if BUILD_BACKEND == "skbuild":
