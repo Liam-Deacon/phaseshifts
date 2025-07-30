@@ -105,7 +105,7 @@ CC="clang"
 FC="gfortran"
 CXX="clang++"
 CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
-MACOSX_DEPLOYMENT_TARGET = "15.0"  # Minimum supported macOS version for CIBW
+MACOSX_DEPLOYMENT_TARGET = "11.0"  # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
 before-build = [
