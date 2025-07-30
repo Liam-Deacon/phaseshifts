@@ -122,7 +122,7 @@ f2py_exts_sources = {
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh" + (".f" if BUILD_BACKEND == "numpy.distutils" else "module.c"),
+            "libphsh.f",
         ),
     ]
 }
@@ -146,6 +146,7 @@ f2py_exts = (
     [
         Extension(
             name="phaseshifts.lib.libphsh",
+            include_dirs=INCLUDE_DIRS,
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
