@@ -5,7 +5,7 @@ description = "Python-based version of the Barbieri/Van Hove phase shift calcula
 authors = [
     { name = "Liam Deacon", email = "liam.m.deacon@gmail.com" }
 ]
-license = "MIT"
+license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
