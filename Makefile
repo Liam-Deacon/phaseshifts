@@ -39,10 +39,12 @@ sdist: build-deps
 
 #: Install build dependencies
 build-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install build cibuildwheel
 
 #: Install setup_requires dependencies
 install-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
 		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
 
@@ -73,7 +75,9 @@ clean:
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
+	rm -rf phaseshifts/lib/_native_build*.so phaseshifts/lib/_native_build*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
+	rm -rf .cmake/ CMakeInit.txt CMakeCache.txt .skbuild-info.json CMakeFiles/
 
 #: Build docker image
 docker:

@@ -14,6 +14,22 @@ dependencies = [
     "periodictable",
     "typing_extensions"
 ]
+keywords = [
+    "phaseshifts",
+    "atomic scattering",
+    "muffin-tin",
+    "diffraction"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Environment :: X11 Applications :: Qt",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Chemistry",
+    "Topic :: Scientific/Engineering :: Physics"
+]
 
 [project.scripts]
 phaseshifts = "phaseshifts.cli:main"
@@ -36,15 +52,14 @@ dev = [
     "numpy",
     "pre-commit",
     "ruff",
-    "scikit-build; python_version > '3.11'",
+    "scikit-build-core; python_version > '3.11'",
     "wheel"
 ]
 test = [
     "pytest",
-    "pytest-cov",
-    "pytest-qt"
+    "pytest-cov"
 ]
-doc = [
+docs = [
     "sphinx>=7,<8",
     "sphinx_rtd_theme",
     "numpydoc",
@@ -62,27 +77,35 @@ build-backend = "scikit_build_core.build"
 
 [tool.cibuildwheel]
 build = [
-    # NOTE: Python 3.7 is the minimum supported version for cibuildwheel v2
-    "cp37-*",
+    # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
     "cp39-*",
     "cp310-*",
     "cp311-*",
+    "cp312-*",
+    "cp313-*",
 ]
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
-test-command = "import phaseshifts.phsh as phsh"
+test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
 [tool.cibuildwheel.macos]
-archs = "x86_64 arm64"
+archs = "arm64"
 skip = [
     # NOTE: Python <3.8 is not supported on macOS arm64 (m1 CPU architecture)
     "cp36-*arm64",
     "cp37-*arm64",
 ]
-environment = {CFLAGS="-std=c99 -fno-strict-aliasing", CC="clang", FC="gfortran", CXX="clang++"}
+
+[tool.cibuildwheel.macos.environment]
+CFLAGS="-std=c99 -fno-strict-aliasing"
+CC="clang"
+FC="gfortran"
+CXX="clang++"
+CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
+MACOSX_DEPLOYMENT_TARGET = "15.0"  # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
 before-build = [
