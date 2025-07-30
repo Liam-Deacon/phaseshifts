@@ -190,7 +190,7 @@ setup_args = dict(
             "numpy",
             "pre-commit",
             "ruff",
-            "scikit-build; python_version > '3.11'",
+            "scikit-build-core; python_version > '3.11'",
             "wheel",
         ],
         "test": ["pytest", "pytest-cov"],
