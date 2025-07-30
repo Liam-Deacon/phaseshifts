@@ -163,6 +163,7 @@ jobs:
         # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
+        if: ${{ false }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
         continue-on-error: true
         with:
           output-dir: dist/
@@ -175,6 +176,19 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: arm64
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_TEST_COMMAND: | # FIXME: Cannot install on runner - unsure why
+            python -c "import phaseshifts; print('Package imported successfully')"
+            python -c "
+            import zipfile;
+            import glob;
+            wheel = glob.glob('dist/*.whl')[0];
+            z = zipfile.ZipFile(wheel);
+            files = [f for f in z.namelist() if 'libphsh' in f or f.endswith('.so') or f.endswith('.dylib')];
+            print(f'Found {len(files)} compiled extensions in wheel:');
+            [print(f'  {f}') for f in files];
+            assert len(files) > 0, 'No libphsh compiled extensions found in wheel'
+            "
+
       - uses: actions/upload-artifact@v4
         with:
           name: macos
