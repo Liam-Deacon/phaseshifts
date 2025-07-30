@@ -205,7 +205,7 @@ setup_args = dict(
             "wheel",
         ],
         "test": ["pytest", "pytest-cov"],
-        "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
+        "docs": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
