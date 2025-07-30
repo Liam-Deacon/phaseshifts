@@ -193,6 +193,10 @@ def test_phshift2007_binary_runs(binary, input_file):
         assert result.stdout, f"{binary} produced no output"
 
 
+@pytest.mark.skipif(
+    not BINARY_TESTS_ENABLED,
+    reason="phsh2007 binary tests disabled",
+)
 def test_phshift2007_full_workflow_re():
     """Test the full workflow for Re (Rhenium) using the original binaries and example files."""
     # Paths
