@@ -14,6 +14,12 @@ dependencies = [
     "periodictable",
     "typing_extensions"
 ]
+keywords = [
+    "phaseshifts",
+    "atomic scattering",
+    "muffin-tin",
+    "diffraction"
+]
 
 [project.scripts]
 phaseshifts = "phaseshifts.cli:main"
