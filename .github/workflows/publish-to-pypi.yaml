@@ -36,8 +36,12 @@ on:
         description: Build i686 wheels
         default: true
         type: boolean
+      build_wheels_macos:
+        description: Build mac wheels
+        default: true
+        type: boolean
       build_windows:
-        description: Build Windows jobs
+        description: Build windows wheels
         default: true
         type: boolean
 
@@ -153,6 +157,7 @@ jobs:
     name: Build Mac Wheels
     runs-on: macos-latest
     needs: build_sdist
+    if: ${{ github.event.inputs.build_wheels_macos }}
     steps:
       - uses: actions/checkout@v4
       # https://github.com/AntoineD/pdfo/blob/f6a45b3921807ad99a438f65ee2b01fa193038bb/.github/workflows/build_wheels.yml#L14C1-L23C1
@@ -166,7 +171,7 @@ jobs:
         # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
-        if: ${{ false }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
+        if: ${{ false && github.event.inputs.build_legacy_wheels }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
         continue-on-error: true
         with:
           output-dir: dist/
