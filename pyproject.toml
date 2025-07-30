@@ -57,8 +57,7 @@ dev = [
 ]
 test = [
     "pytest",
-    "pytest-cov",
-    "pytest-qt"
+    "pytest-cov"
 ]
 doc = [
     "sphinx>=7,<8",
