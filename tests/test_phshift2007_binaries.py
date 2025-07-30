@@ -4,6 +4,14 @@ import pytest
 import tempfile
 import shutil
 
+BINARY_TESTS_ENABLED = os.environ.get("BINARIES_TESTING_ENABLED", "").lower() in {
+    "true",
+    "yes",
+    "y",
+    "on",
+    "1",
+}
+
 BIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bin"))
 INPUT_DIR = os.path.abspath(
     os.path.join(
@@ -32,6 +40,10 @@ REQUIRED_FILES = {
 
 
 @pytest.mark.parametrize("binary,input_file", BINARY_TESTS)
+@pytest.mark.skipif(
+    not BINARY_TESTS_ENABLED,
+    reason="phsh2007 binary tests disabled",
+)
 def test_phshift2007_binary_runs(binary, input_file):
     """
     Runs each phsh binary in a dedicated ephemeral temp directory, copying all required files.
