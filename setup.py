@@ -6,6 +6,26 @@ import sys
 import sysconfig
 from collections import defaultdict
 
+try:
+    from contextlib import suppress
+except ImportError:  # TODO: Remove when we drop support for python 2.7
+    # For Python <3.4, suppress is not available
+    def suppress(*exceptions):  # type: ignore[no-redef]
+        """Context manager that suppresses specified exceptions."""
+
+        class SuppressContext:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                return isinstance(exc_value, exceptions)
+
+        return SuppressContext()
+
+
+with suppress(ImportError):
+    from typing import Literal  # noqa: F401
+
 sys.path.append(os.path.dirname(__file__))
 
 try:
@@ -29,12 +49,12 @@ INCLUDE_DIRS = []
 # WARNING: numpy.distutils is completely removed in python 3.12 and deprecated for removal in python 3.11 by Oct 2025
 # The project will therefore need to be migrated to use a different build backend, see
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
-try:
-    import skbuild
-except ImportError:
-    skbuild = None  # type: ignore [assignment]
+with suppress(ImportError):
+    import skbuild  # noqa: F401
 
-BUILD_BACKEND = None
+# Select build backend. Modern builds require scikit-build and CMake (default)
+BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.f2py"]
+
 # Build logic for legacy and modern Python
 if tuple(sys.version_info[:2]) <= (3, 11):
     # Try modern build first: scikit-build + CMake
@@ -69,16 +89,6 @@ if tuple(sys.version_info[:2]) <= (3, 11):
             )
         # Optionally, run f2py manually if needed
         # subprocess.check_call([...])
-else:
-    # Modern build: require scikit-build and CMake
-    try:
-        from skbuild import setup
-
-        BUILD_BACKEND = "skbuild"
-    except ImportError:
-        raise ImportError(
-            "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
-        )
 
 if len(sys.argv) == 1:
     sys.argv.append("install")
