@@ -93,7 +93,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
           CIBW_BUILD: cp27-* cp35-* cp36-* cp37-* cp38-* cp39-* cp310-* cp311-*
-          CIBW_SKIP: cp38-* cp39-* cp31*-* # Known issue with CPyton 3.8, see #67
+          CIBW_SKIP: cp38-* cp39-* cp312-* cp313-* # Known issue with CPyton 3.8, see #67
       - uses: actions/upload-artifact@v4
         with:
           name: linux-legacy
