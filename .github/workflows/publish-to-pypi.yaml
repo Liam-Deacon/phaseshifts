@@ -36,6 +36,10 @@ on:
         description: Build i686 wheels
         default: true
         type: boolean
+      build_windows:
+        description: Build Windows jobs
+        default: true
+        type: boolean
 
 env:
   CIBW_BEFORE_BUILD_LINUX: pip install numpy 'scikit-build-core; python_version > "3.7"'
@@ -216,6 +220,7 @@ jobs:
     name: Build Legacy Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
+    if: ${{ github.event.inputs.build_windows && github.event.inputs.build_legacy_wheels }}
     env:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
@@ -261,6 +266,7 @@ jobs:
     name: Build Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
+    if: ${{ github.event.inputs.build_windows }}
     env:
       CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
