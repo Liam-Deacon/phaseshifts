@@ -39,7 +39,7 @@ on:
 
 env:
   CIBW_BEFORE_BUILD: pip install numpy
-  CIBW_BEFORE_BUILD_LINUX: yum install -y python3-devel || true && pip install numpy
+  CIBW_BEFORE_BUILD_LINUX: yum install -y python3-devel || { echo "ERROR: Failed to install python3-devel. Development headers are required."; exit 1; } && pip install numpy
   CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install numpy
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
