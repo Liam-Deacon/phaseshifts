@@ -38,12 +38,10 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD: pip install numpy
-  CIBW_BEFORE_BUILD_LINUX: >-
-    yum install -y python3-devel ||
-    { echo "ERROR: Failed to install python3-devel. Development headers are required."; exit 1; } &&
-    pip install numpy
-  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install numpy
+  CIBW_BEFORE_BUILD: pip install numpy scikit-build-core
+  CIBW_BEFORE_BUILD_LINUX: pip install numpy scikit-build-core
+  CIBW_BEFORE_BUILD_MUSLLINUX: >-
+    apk add --no-cache python3-dev && pip install numpy scikit-build-core
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
   CIBW_TEST_EXTRAS: ""
@@ -94,7 +92,8 @@ jobs:
           output-dir: dist/
         env:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
-          CIBW_BUILD: cp27-* cp35-*
+          CIBW_BUILD: cp27-* cp35-* cp36-* cp37-* cp38-*
+          CIBW_SKIP: cp38-* # Known issue with CPyton 3.8, see #67
       - uses: actions/upload-artifact@v4
         with:
           name: linux-legacy
@@ -116,8 +115,6 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: x86_64
-          # Known issue with linux CPython 3.8, see #67
           CIBW_SKIP: cp38-* cp*musl*
       - uses: actions/upload-artifact@v4
         with:
