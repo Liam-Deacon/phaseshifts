@@ -3,7 +3,12 @@ build/
 builddir/
 dist/
 doc/
+docs/
 tests/
+
+# local virtualenvs
+.venv*/
+venv*/
 
 # compiled objects
 *.so
