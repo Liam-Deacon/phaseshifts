@@ -77,13 +77,19 @@ test-extras = ["test"]
 test-requires = ["pytest"]
 
 [tool.cibuildwheel.macos]
-archs = "x86_64 arm64"
+archs = "arm64"
 skip = [
     # NOTE: Python <3.8 is not supported on macOS arm64 (m1 CPU architecture)
     "cp36-*arm64",
     "cp37-*arm64",
 ]
-environment = {CFLAGS="-std=c99 -fno-strict-aliasing", CC="clang", FC="gfortran", CXX="clang++"}
+
+[tool.cibuildwheel.macos.environment]
+CFLAGS="-std=c99 -fno-strict-aliasing"
+CC="clang"
+FC="gfortran"
+CXX="clang++"
+CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
 
 [tool.cibuildwheel.windows]
 before-build = [

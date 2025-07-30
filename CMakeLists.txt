@@ -149,7 +149,7 @@ if(NOT USE_OPENMP)
 endif()
 
 # --- phshift2007 binary build and packaging ---
-option(ENABLE_PHSHIFT2007_BINARIES "Build phshift2007 binaries" ON)
+option(ENABLE_PHSHIFT2007_BINARIES "Build phshift2007 binaries" OFF)
 
 if(ENABLE_PHSHIFT2007_BINARIES)
   set(PHSH2007_URL "https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip")
