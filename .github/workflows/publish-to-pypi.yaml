@@ -162,6 +162,7 @@ jobs:
         # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
+        continue-on-error: true
         with:
           output-dir: dist/
         env:
