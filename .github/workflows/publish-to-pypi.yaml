@@ -228,6 +228,21 @@ jobs:
         run: |
           echo "[build]`ncompiler=mingw32" | Out-File -Encoding ASCII ~/pydistutils.cfg
 
+      - name: Set up Fortran tool-chain
+        uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
+        with:
+          compiler: gcc
+          version: "13" # pick any released GCC you like
+
+      # make the compilers visible to scikit-build-core / CMake
+      - name: Export FC/CC/CXX
+        shell: bash
+        run: |
+          echo "FC=${{ env.FC }}"   >> "$GITHUB_ENV"
+          echo "CC=${{ env.CC }}"   >> "$GITHUB_ENV"
+          echo "CXX=${{ env.CXX }}" >> "$GITHUB_ENV"
+          echo "CMAKE_GENERATOR=Ninja" >> "$GITHUB_ENV"
+
       - name: Build legacy wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
@@ -251,6 +266,21 @@ jobs:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Fortran tool-chain
+        uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
+        with:
+          compiler: gcc
+          version: "13" # pick any released GCC you like
+
+      # make the compilers visible to scikit-build-core / CMake
+      - name: Export FC/CC/CXX
+        shell: bash
+        run: |
+          echo "FC=${{ env.FC }}"   >> "$GITHUB_ENV"
+          echo "CC=${{ env.CC }}"   >> "$GITHUB_ENV"
+          echo "CXX=${{ env.CXX }}" >> "$GITHUB_ENV"
+          echo "CMAKE_GENERATOR=Ninja" >> "$GITHUB_ENV"
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.18.0
