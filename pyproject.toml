@@ -161,3 +161,6 @@ sdist.exclude = [
     "htmlcov/**", "*.png", "*.pdf", "docs/_build/**",
     "test/**/__pycache__/**", "tests/**/__pycache__/**"
 ]
+
+[tool.scikit-build.editable]
+mode = "inplace"
