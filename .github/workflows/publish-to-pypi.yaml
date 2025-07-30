@@ -38,10 +38,10 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD: pip install numpy 'scikit-build-core; python_version > "3.7"'
   CIBW_BEFORE_BUILD_LINUX: pip install numpy 'scikit-build-core; python_version > "3.7"'
   CIBW_BEFORE_BUILD_MUSLLINUX: >-
-    apk add --no-cache python3-dev && pip install numpy 'scikit-build-core; python_version > "3.7"'
+    apk add --no-cache python3-dev && \
+    pip install numpy 'scikit-build-core; python_version > "3.7"'
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
@@ -215,6 +215,7 @@ jobs:
           output-dir: dist/
         env:
           CIBW_BUILD: cp27-* cp35-*
+          CIBW_BEFORE_BUILD: pip install delvewheel numpy
         continue-on-error: true
 
       - uses: actions/upload-artifact@v4
