@@ -46,6 +46,7 @@ env:
   CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
+  MACOSX_DEPLOYMENT_TARGET: "11.0"
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
 
 permissions:
