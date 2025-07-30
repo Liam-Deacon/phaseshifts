@@ -82,6 +82,7 @@ jobs:
     if: ${{ github.event.inputs.build_legacy || github.event_name != 'release' }}
     env:
       # Anything that prevents scikit-build being importable works
+      PIP_USE_PEP517: "0"
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
       SKBUILD_DISABLE: "1" # scikit-build honour this
     steps:
@@ -186,6 +187,9 @@ jobs:
     needs: build_sdist
     env:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
+      PIP_USE_PEP517: "0"
+      PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
+      SKBUILD_DISABLE: "1" # scikit-build honour this
     steps:
       - uses: actions/checkout@v4
 
