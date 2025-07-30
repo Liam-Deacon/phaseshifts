@@ -38,10 +38,10 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD: pip install numpy scikit-build-core
-  CIBW_BEFORE_BUILD_LINUX: pip install numpy scikit-build-core
+  CIBW_BEFORE_BUILD: pip install numpy 'scikit-build-core; python_version > "3.7"'
+  CIBW_BEFORE_BUILD_LINUX: pip install numpy 'scikit-build-core; python_version > "3.7"'
   CIBW_BEFORE_BUILD_MUSLLINUX: >-
-    apk add --no-cache python3-dev && pip install numpy scikit-build-core
+    apk add --no-cache python3-dev && pip install numpy 'scikit-build-core; python_version > "3.7"'
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
   CIBW_TEST_EXTRAS: ""
