@@ -53,6 +53,10 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Normalise paths for CMake include directories on Windows
+file(TO_CMAKE_PATH "${NumPy_INCLUDE_DIRS}" NumPy_INCLUDE_DIRS)
+file(TO_CMAKE_PATH "${F2PY_INCLUDE_DIR}" F2PY_INCLUDE_DIR)
+
 # Prepping the module
 set(f2py_module_name "libphsh")
 set(f2py_module_dirpath "phaseshifts/lib")
