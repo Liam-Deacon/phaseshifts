@@ -99,6 +99,11 @@ add_library("${f2py_module_name}" MODULE
             "${F2PY_INCLUDE_DIR}/fortranobject.c"
             "${fortran_src_file}")
 
+if(WIN32)
+  # On Windows, we need to link against the Python library explicitly
+  target_link_libraries("${f2py_module_name}" PRIVATE Python::Module)
+endif()
+
 target_include_directories("${f2py_module_name}" PUBLIC
                            ${F2PY_INCLUDE_DIR}
                            ${NumPy_INCLUDE_DIRS}
