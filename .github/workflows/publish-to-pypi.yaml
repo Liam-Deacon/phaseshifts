@@ -180,7 +180,7 @@ jobs:
           - cp310-*
           - cp311-*
           - cp312-*
-          - cp313-*
+          # - cp313-*  #? cibuildwheel does not support Python 3.13 yet?
     steps:
       - uses: actions/checkout@v4
       - name: Set Package Version
