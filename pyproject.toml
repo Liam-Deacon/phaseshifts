@@ -81,11 +81,11 @@ before-build = [
     "pip install 'pip<21; python_version <= \"3.8\"' 'pip; python_version > \"3.9\"'",
     "pip install 'setuptools<63; python_version <= \"3.8\"' 'setuptools; python_version > \"3.9\"'",
     "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
-    
+
     # build backends
     "pip install 'numpy>=1.16.6'",  # Legacy NumPy builds
     "pip install 'scikit-build-core>=0.11.5; python_version >= \"3.8\"'",  # Modern CMake builds
-    
+
     # -- Python 3 to 2 conversion -- #
     "python -c \"import sys; import platform; sys.exit(0) if sys.version_info >= (3, 8) else 1\" || (echo Legacy Python detected - attempting to transpile code to Python 2.x && pip install future strip-hints && python -m pasteurize -w phaseshifts/**/*.py tests/**/*.py setup.py && python -m strip_hints --inplace phaseshifts/**/*.py tests/**/*.py setup.py)"
 

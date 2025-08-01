@@ -44,7 +44,9 @@ def has_fortran_wrapper(wheel_path):
     with zipfile.ZipFile(wheel_path, "r") as zf:
         for name in zf.namelist():
             base = os.path.basename(name).lower()
-            if base.startswith(FORTRAN_WRAPPER_BASENAME) and base.endswith((".so", ".pyd", ".dll")):
+            if base.startswith(FORTRAN_WRAPPER_BASENAME) and base.endswith(
+                (".so", ".pyd", ".dll")
+            ):
                 return True
     return False
 
@@ -59,10 +61,16 @@ def run_in_venv(wheel_path, import_names):
             return False, "No python executable found"
         # Create venv
         subprocess.check_call([python_exe, "-m", "venv", venv_dir])
-        vpy = os.path.join(venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "python")
-        pip = os.path.join(venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "pip")
+        vpy = os.path.join(
+            venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "python"
+        )
+        pip = os.path.join(
+            venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "pip"
+        )
         # Upgrade pip
-        subprocess.check_call([vpy, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"])
+        subprocess.check_call(
+            [vpy, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"]
+        )
         # Install wheel
         subprocess.check_call([pip, "install", wheel_path])
         # Try imports
@@ -80,8 +88,15 @@ def run_in_venv(wheel_path, import_names):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Post-cibuildwheel wheel verification script.")
-    parser.add_argument("--wheelhouse", type=str, default=None, help="Directory containing built wheels.")
+    parser = argparse.ArgumentParser(
+        description="Post-cibuildwheel wheel verification script."
+    )
+    parser.add_argument(
+        "--wheelhouse",
+        type=str,
+        default=None,
+        help="Directory containing built wheels.",
+    )
     args = parser.parse_args()
 
     search_dirs = []
@@ -108,7 +123,9 @@ def main():
             has_wrapper = has_fortran_wrapper(wheel)
             print(f"  Fortran wrapper present: {'YES' if has_wrapper else 'NO'}")
             if not has_wrapper:
-                print(f"ERROR: Fortran wrapper {FORTRAN_WRAPPER_BASENAME} not found in wheel.")
+                print(
+                    f"ERROR: Fortran wrapper {FORTRAN_WRAPPER_BASENAME} not found in wheel."
+                )
                 all_ok = False
         # Install and import check
         import_names = [PACKAGE_IMPORT_NAME]
@@ -127,6 +144,7 @@ def main():
     else:
         print("Some checks failed.")
         sys.exit(2)
+
 
 if __name__ == "__main__":
     main()
