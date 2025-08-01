@@ -65,6 +65,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -101,6 +107,12 @@ jobs:
           # - cp38-*
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -133,6 +145,12 @@ jobs:
     needs: build_sdist
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Set up QEMU
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
@@ -165,6 +183,12 @@ jobs:
           - cp313-*
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Set up QEMU
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
@@ -190,6 +214,12 @@ jobs:
     if: ${{ github.event.inputs.build_wheels_macos }}
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       # https://github.com/AntoineD/pdfo/blob/f6a45b3921807ad99a438f65ee2b01fa193038bb/.github/workflows/build_wheels.yml#L14C1-L23C1
       - name: Setup Fortran (gfortran)
         uses: fortran-lang/setup-fortran@v1
@@ -262,7 +292,12 @@ jobs:
       SKBUILD_DISABLE: "1" # scikit-build honour this
     steps:
       - uses: actions/checkout@v4
-
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
@@ -320,6 +355,12 @@ jobs:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        run: |
+          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
 
       - name: Set up Fortran tool-chain
         uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
