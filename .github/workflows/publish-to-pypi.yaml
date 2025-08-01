@@ -188,7 +188,7 @@ jobs:
 
   build_wheels_linux_aarch64:
     name: Build Linux aarch64 Wheels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: build_sdist
     if: ${{ github.event.inputs.build_aarch64 }}
     strategy:
@@ -218,7 +218,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: aarch64
+          CIBW_ARCHS_LINUX: auto
           CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_SKIP: cp38-* cp*musl* cp37-musllinux_aarch64
       - name: Normalize cibw tag
