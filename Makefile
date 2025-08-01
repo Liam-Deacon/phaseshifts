@@ -4,10 +4,13 @@ SHELL = /bin/sh
 PYTHON_VERSION ?= 3.13
 PYTHON := $(shell command -v python$(PYTHON_VERSION) 2>/dev/null || command -v python3 2>/dev/null || echo python)
 DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
+PLATFORM ?= $(shell uname -s | tr '[:upper:]' '[:lower:]' 2>/dev/null || echo $${OS:-unknown})
+CIBW_BUILD_LEGACY ?= cp27-*
+
 
 PREFIX ?= /usr/local
 
-.PHONY: build-deps cbuildwheel check install install-deps libphsh sdist test wheel
+.PHONY: binfmt build-deps cbuildwheel check check-cibuildwheel check-legacy-wheels install install-deps libphsh sdist test wheel
 
 #: Quickly generate binary wheel
 wheel: install-deps
@@ -25,9 +28,82 @@ build: sdist
 		$(MAKE) wheel; \
 	fi
 
+#: Install binfmt for cross-platform builds (only on macOS)
+binfmt:
+	@if [ "$(PLATFORM)" = "darwin" ]; then \
+	  docker run --privileged --rm tonistiigi/binfmt --install amd64; \
+	fi
+
 #: Build a matrix of wheels for different OSs and CPU archs
 cibuildwheel: build-deps $(DOCKER)
 	$(PYTHON) -m cibuildwheel --platform=auto --output-dir=dist .
+
+#: Build Linux x86_64 wheels for CPython 3.11/3.12 (+ host‑specific extras)
+check-cibuildwheel: build-deps binfmt
+	@if [ "$(PLATFORM)" = "linux" ]; then \
+		CIBW_ARCHS_LINUX=x86_64 \
+		CIBW_BUILD="cp311-* cp312-*" \
+		$(PYTHON) -m cibuildwheel --platform linux --output-dir dist . ; \
+	elif [ "$(PLATFORM)" = "darwin" ]; then \
+		export TAR_OPTIONS="--warning=no-unknown-keyword"; \
+		CIBW_ARCHS_LINUX=x86_64 \
+		CIBW_BUILD="cp311-* cp312-*" \
+		$(PYTHON) -m cibuildwheel --platform linux --output-dir dist . && \
+		CIBW_ARCHS_MACOS=arm64 \
+		CIBW_BUILD="cp311-*arm64 cp312-*arm64" \
+		$(PYTHON) -m cibuildwheel --platform macos --output-dir dist . ; \
+	elif [ "$(OS)" = "Windows_NT" ]; then \
+		CIBW_ARCHS_LINUX=x86_64 \
+		CIBW_BUILD="cp311-* cp312-*" \
+		$(PYTHON) -m cibuildwheel --platform linux --output-dir dist . && \
+		CIBW_BUILD="cp311-* cp312-*" \
+		$(PYTHON) -m cibuildwheel --platform windows --output-dir dist . ; \
+	else \
+		echo "Unsupported host platform $(PLATFORM)"; \
+	fi
+
+###############################################################################
+# Build legacy Linux Py‑2.7 wheels inside an isolated venv running
+# cibuildwheel 1.12.0 so it never clashes with whatever cibuildwheel version
+# the main environment uses.
+#
+# * Creates .venv-cibw112 if missing
+# * Installs pip + cibuildwheel 1.12.0 (plus numpy for build)
+# * Runs the legacy build matrix just like `legacy-wheel27`, but through the
+#   venv’s python executable.
+###############################################################################
+check-legacy-wheels: binfmt
+	@VENV_DIR=.venv-cibw112; \
+	if [ "$(OS)" = "Windows_NT" ]; then \
+		if [ ! -d "$$VENV_DIR" ]; then python -m venv "$$VENV_DIR"; fi; \
+		PYEXEC="$$VENV_DIR\\Scripts\\python.exe"; \
+	else \
+		if [ ! -d "$$VENV_DIR" ]; then $(PYTHON) -m venv "$$VENV_DIR"; fi; \
+		PYEXEC="$$VENV_DIR/bin/python"; \
+	fi; \
+	"$$PYEXEC" -m pip install --upgrade pip >/dev/null; \
+	"$$PYEXEC" -m pip install --quiet 'cibuildwheel==1.12.0' 'numpy>=1.16.6'; \
+	if [ "$(OS)" = "Windows_NT" ]; then \
+		PIP_USE_PEP517=0 \
+		PIP_NO_BUILD_ISOLATION=1 \
+		SKBUILD_DISABLE=1 \
+		CIBW_ARCHS_LINUX=x86_64 \
+		CIBW_BEFORE_BUILD="rm pyproject.toml && python -m pip install 'pip<21' 'numpy>=1.16.6' 'setuptools<63'" \
+		CIBW_BUILD="$(CIBW_BUILD_LEGACY)" \
+		"$$PYEXEC" -m cibuildwheel --platform linux --output-dir dist . && \
+		PIP_NO_BUILD_ISOLATION=1 SKBUILD_DISABLE=1 \
+		CIBW_BUILD="$(CIBW_BUILD_LEGACY)" \
+		"$$PYEXEC" -m cibuildwheel --platform windows --output-dir dist .; \
+	else \
+		export TAR_OPTIONS="--warning=no-unknown-keyword"; \
+		PIP_USE_PEP517=0 \
+		PIP_NO_BUILD_ISOLATION=1 \
+		SKBUILD_DISABLE=1 \
+		CIBW_ARCHS_LINUX=x86_64 \
+		CIBW_BEFORE_BUILD="rm pyproject.toml; python -m pip install 'pip<21' 'numpy>=1.16.6' 'setuptools<=44' 'wheel<0.35'" \
+		CIBW_BUILD="$(CIBW_BUILD_LEGACY)" \
+		"$$PYEXEC" -m cibuildwheel --platform linux --output-dir dist .; \
+	fi
 
 #: Create source distributions
 sdist: build-deps
@@ -71,7 +147,7 @@ test: check
 
 #: Remove any artifacts
 clean:
-	rm -rf venv*
+	rm -rf venv* .venv-cibw112
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd

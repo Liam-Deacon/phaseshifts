@@ -76,6 +76,20 @@ requires = [
 build-backend = "scikit_build_core.build"
 
 [tool.cibuildwheel]
+before-build = [
+    "python -c \"import sys, os;\nif sys.version_info < (3, 8): os.remove('pyproject.toml')\"",
+    "pip install 'pip<21; python_version <= \"3.8\"' 'pip; python_version > \"3.9\"'",
+    "pip install 'setuptools<63; python_version <= \"3.8\"' 'setuptools; python_version > \"3.9\"'",
+    "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
+    
+    # build backends
+    "pip install 'numpy>=1.16.6'",  # Legacy NumPy builds
+    "pip install 'scikit-build-core>=0.11.5; python_version >= \"3.8\"'",  # Modern CMake builds
+    
+    # -- Python 3 to 2 conversion -- #
+    "python -c \"import sys; import platform; sys.exit(0) if sys.version_info >= (3, 8) else 1\" || (echo Legacy Python detected - attempting to transpile code to Python 2.x && pip install future strip-hints && python -m pasteurize -w phaseshifts/**/*.py tests/**/*.py setup.py && python -m strip_hints --inplace phaseshifts/**/*.py tests/**/*.py setup.py)"
+
+]
 build = [
     # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
     "cp39-*",
@@ -84,10 +98,12 @@ build = [
     "cp312-*",
     "cp313-*",
 ]
+# output-dir = "dist"  # NOTE: Not supported in config file
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
 test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
+# test-command = "python -m 'phaseshifts.tools.post_cibuildwheel_check'"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
@@ -160,3 +176,10 @@ sdist.exclude = [
     "htmlcov/**", "*.png", "*.pdf", "docs/_build/**",
     "test/**/__pycache__/**", "tests/**/__pycache__/**"
 ]
+
+[tool.phaseshifts.wheel_check]
+script = "python phaseshifts/tools/post_cibuildwheel_check.py"
+description = """
+After building wheels (e.g. with 'make wheel' or 'make build'), run the wheel check script to verify binary wheels contain the Fortran extension and are importable.
+This is the default check for all modern builds. Legacy wheel checks are handled separately in the Makefile and CI.
+"""
