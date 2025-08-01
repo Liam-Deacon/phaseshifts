@@ -30,7 +30,7 @@ on:
         type: boolean
       build_aarch64:
         description: Build aarch64 wheels
-        default: true
+        default: false
         type: boolean
       build_i686:
         description: Build i686 wheels
@@ -100,7 +100,7 @@ jobs:
       fail-fast: false
       matrix:
         cibw_build:
-          - cp27-* cp35-* cp36-* cp37-* cp38-* # TODO: Remove monolithic single job in favour of individual jobs
+          - cp27-* cp35-* cp36-* cp37-* cp38-*   # TODO: Remove monolithic single job in favour of individual jobs
           # - cp27-*
           # - cp35-*
           # - cp36-*
@@ -135,9 +135,13 @@ jobs:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
           CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_SKIP: cp38-* cp39-* cp312-* cp313-*
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-legacy-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: linux-legacy-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_linux_x86_64:
@@ -173,9 +177,13 @@ jobs:
         env:
           CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_SKIP: cp38-* cp*musl*
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-x86_64-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: linux-x86_64-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_linux_aarch64:
@@ -185,7 +193,7 @@ jobs:
     if: ${{ github.event.inputs.build_aarch64 }}
     strategy:
       fail-fast: false
-      matrix: # NOTE: Use matrix build as aarch64 builds are very slow
+      matrix:   # NOTE: Use matrix build as aarch64 builds are very slow
         cibw_build:
           - cp39-*
           - cp310-*
@@ -213,9 +221,13 @@ jobs:
           CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_SKIP: cp38-* cp*musl* cp37-musllinux_aarch64
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-aarch64-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: linux-aarch64-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_macos:
@@ -245,12 +257,12 @@ jobs:
         with:
           compiler: gcc
           version: 13
-        # This sets up gfortran and gcc for macOS runners
-        # FC, CC, and CXX environment variables will be set for subsequent steps
-        # See https://github.com/fortran-lang/setup-fortran for details
+          # This sets up gfortran and gcc for macOS runners
+          # FC, CC, and CXX environment variables will be set for subsequent steps
+          # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
         uses: pypa/cibuildwheel@v2.16.2
-        if: ${{ false && github.event.inputs.build_legacy_wheels }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
+        if: ${{ false && github.event.inputs.build_legacy_wheels }}   # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
         continue-on-error: true
         with:
           output-dir: dist/
@@ -296,9 +308,13 @@ jobs:
                 [print(f'  {f}') for f in files];
                 assert len(files) > 0, 'No libphsh compiled extensions found in wheel';
             "
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: macos-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_legacy_wheels_windows:
@@ -308,8 +324,8 @@ jobs:
     if: ${{ github.event.inputs.build_windows && github.event.inputs.build_legacy_wheels }}
     env:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
-      PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
-      SKBUILD_DISABLE: "1" # scikit-build honour this
+      PIP_NO_BUILD_ISOLATION: "1"   # skip auto-install of build back-ends
+      SKBUILD_DISABLE: "1"   # scikit-build honour this
     strategy:
       # NOTE: Split matrix build into individual jobs to avoid long build times and to allow some versions to complete
       fail-fast: false
@@ -352,7 +368,7 @@ jobs:
           compiler: gcc
           version: "13" # pick any released GCC you like
 
-      # make the compilers visible to scikit-build-core / CMake
+        # make the compilers visible to scikit-build-core / CMake
       - name: Export FC/CC/CXX
         shell: bash
         run: |
@@ -370,9 +386,13 @@ jobs:
           CIBW_BEFORE_BUILD: pip install delvewheel numpy
         continue-on-error: true
 
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-legacy-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: windows-legacy-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_windows:
@@ -407,7 +427,7 @@ jobs:
           compiler: gcc
           version: "13" # pick any released GCC you like
 
-      # make the compilers visible to scikit-build-core / CMake
+        # make the compilers visible to scikit-build-core / CMake
       - name: Export FC/CC/CXX
         shell: bash
         run: |
@@ -422,9 +442,13 @@ jobs:
           output-dir: dist/
         env:
           CIBW_BUILD: ${{ matrix.cibw_build }}
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-${{ replace(matrix.cibw_build, '*-', '') }}
+          name: windows-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   publish_to_testpypi:
