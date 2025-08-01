@@ -143,6 +143,14 @@ jobs:
     name: Build Linux x86_64 Wheels
     runs-on: ubuntu-latest
     needs: build_sdist
+    strategy:
+      matrix:
+        cibw_build:
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
       - name: Set Package Version
@@ -161,6 +169,7 @@ jobs:
         with:
           output-dir: dist/
         env:
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_SKIP: cp38-* cp*musl*
       - uses: actions/upload-artifact@v4
         with:
@@ -212,6 +221,14 @@ jobs:
     runs-on: macos-latest
     needs: build_sdist
     if: ${{ github.event.inputs.build_wheels_macos }}
+    strategy:
+      matrix:
+        cibw_build:
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
       - name: Set Package Version
@@ -220,7 +237,6 @@ jobs:
         run: |
           sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
           rm -f phaseshifts/__init__.py.bak
-      # https://github.com/AntoineD/pdfo/blob/f6a45b3921807ad99a438f65ee2b01fa193038bb/.github/workflows/build_wheels.yml#L14C1-L23C1
       - name: Setup Fortran (gfortran)
         uses: fortran-lang/setup-fortran@v1
         with:
@@ -237,12 +253,14 @@ jobs:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: x86_64
+          CIBW_BUILD: ${{ matrix.cibw_build }}
       - name: Build arm64 wheels
         uses: pypa/cibuildwheel@v2.16.2
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: arm64
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
           CIBW_TEST_COMMAND: | # FIXME: Cannot install on runner - unsure why
             python -c "import phaseshifts; print('Package imported successfully')"
@@ -275,7 +293,6 @@ jobs:
                 [print(f'  {f}') for f in files];
                 assert len(files) > 0, 'No libphsh compiled extensions found in wheel';
             "
-
       - uses: actions/upload-artifact@v4
         with:
           name: macos
@@ -290,6 +307,16 @@ jobs:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
       SKBUILD_DISABLE: "1" # scikit-build honour this
+    strategy:
+      # NOTE: Split matrix build into individual jobs to avoid long build times and to allow some versions to complete
+      fail-fast: false
+      matrix:
+        cibw_build:
+          - cp27-*
+          - cp35-*
+          - cp36-*
+          - cp37-*
+          - cp38-*
     steps:
       - uses: actions/checkout@v4
       - name: Set Package Version
@@ -336,7 +363,7 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_BUILD: cp27-* cp35-*
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_BEFORE_BUILD: pip install delvewheel numpy
         continue-on-error: true
 
@@ -353,6 +380,14 @@ jobs:
     env:
       CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
+    strategy:
+      matrix:
+        cibw_build:
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
       - name: Set Package Version
@@ -381,6 +416,8 @@ jobs:
         uses: pypa/cibuildwheel@v2.18.0
         with:
           output-dir: dist/
+        env:
+          CIBW_BUILD: ${{ matrix.cibw_build }}
       - uses: actions/upload-artifact@v4
         with:
           name: windows
