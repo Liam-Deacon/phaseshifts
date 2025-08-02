@@ -171,7 +171,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
@@ -214,7 +214,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
@@ -261,7 +261,7 @@ jobs:
           # FC, CC, and CXX environment variables will be set for subsequent steps
           # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.3
         if: ${{ false && github.event.inputs.build_legacy_wheels }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
         continue-on-error: true
         with:
@@ -270,7 +270,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64
           CIBW_BUILD: ${{ matrix.cibw_build }}
       - name: Build arm64 wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
@@ -437,7 +437,7 @@ jobs:
           echo "CMAKE_GENERATOR=Ninja" >> "$GITHUB_ENV"
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
