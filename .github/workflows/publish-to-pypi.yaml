@@ -361,6 +361,7 @@ jobs:
         run: |
           pip install strip-hints
           find -name '*.py' | xargs strip-hints --inplace
+        shell: bash
       - name: Transpile Python to 2.x
         if: ${{ false }} # FIXME: Issues with builtins in 2.x
         run: |
