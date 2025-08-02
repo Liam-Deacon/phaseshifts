@@ -25,7 +25,7 @@ if not is_module_importable(LIBPHSH_MODULE) and settings.COMPILE_MISSING:
         compile_f2py_shared_library(**FORTRAN_LIBS[LIBPHSH_MODULE])
     except Exception as err:  # pylint: disable=broad-except
         warnings.warn(
-            msg=_COMPILE_WARNING_TEMPLATE.format(LIBPHSH_MODULE, err),  # type: ignore[call-overload]
+            message=_COMPILE_WARNING_TEMPLATE.format(LIBPHSH_MODULE, err),
             category=UserWarning,
         )
 

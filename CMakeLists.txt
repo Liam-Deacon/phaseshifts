@@ -109,8 +109,22 @@ target_include_directories("${f2py_module_name}" PUBLIC
                            ${NumPy_INCLUDE_DIRS}
                            ${Python_INCLUDE_DIRS})
 
-set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
+if(WIN32)
+  # Windows Python extension modules use .pyd
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+elseif(APPLE)
+  # macOS Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+elseif(UNIX)
+  # Linux/Unix Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+else()
+  # Fallback: default to .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+endif()
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
+
+
 
 # Platform-specific linking and compiler flags
 if (UNIX)

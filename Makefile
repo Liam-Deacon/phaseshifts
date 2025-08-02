@@ -5,7 +5,7 @@ PYTHON_VERSION ?= 3.13
 PYTHON := $(shell command -v python$(PYTHON_VERSION) 2>/dev/null || command -v python3 2>/dev/null || echo python)
 DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 PLATFORM ?= $(shell uname -s | tr '[:upper:]' '[:lower:]' 2>/dev/null || echo $${OS:-unknown})
-CIBW_BUILD_LEGACY ?= cp27-*
+CIBW_PLATFORM ?= linux
 
 
 PREFIX ?= /usr/local
@@ -36,7 +36,7 @@ binfmt:
 
 #: Build a matrix of wheels for different OSs and CPU archs
 cibuildwheel: build-deps $(DOCKER)
-	$(PYTHON) -m cibuildwheel --platform=auto --output-dir=dist .
+	$(PYTHON) -m cibuildwheel --platform=$(PLATFORM) --output-dir=dist .
 
 #: Build Linux x86_64 wheels for CPython 3.11/3.12 (+ host‑specific extras)
 check-cibuildwheel: build-deps binfmt

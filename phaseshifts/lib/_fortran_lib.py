@@ -37,13 +37,14 @@ def print_package_tree(root_dir=None, prefix=""):
     if root_dir is None:
         root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     entries = sorted(os.listdir(root_dir))
+    print(prefix + os.path.basename(root_dir) + "/")
     for i, entry in enumerate(entries):
         path = os.path.join(root_dir, entry)
         connector = "└── " if i == len(entries) - 1 else "├── "
         print(prefix + connector + entry)
         if os.path.isdir(path) and not entry.startswith("."):
             extension = "    " if i == len(entries) - 1 else "│   "
-            print_package_tree(path, prefix + extension)
+            print_package_tree(path + "/", prefix + extension)
 
 
 def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwargs):  # type: ignore[syntax]
