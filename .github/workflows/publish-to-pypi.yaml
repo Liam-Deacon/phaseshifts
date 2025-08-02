@@ -358,6 +358,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Strip Type Hints
+        if: ${{ false }} # FIXME: charmap codec error on Windows
         run: |
           pip install strip-hints
           find . -name '*.py' -print0 | xargs -0 -n 1 strip-hints --inplace
@@ -386,8 +387,8 @@ jobs:
           msystem: MINGW64
           path-type: inherit
           install: >-
-            mingw-w64-x86_64-gcc-fortran   # 64-bit gfortran (plus gcc/g++)
-            mingw-w64-i686-gcc-fortran     # 32-bit gfortran (plus gcc/g++)
+            mingw-w64-x86_64-gcc-fortran
+            mingw-w64-i686-gcc-fortran
 
       - name: Build legacy wheels
         uses: pypa/cibuildwheel@v1.12.0
@@ -446,8 +447,8 @@ jobs:
           msystem: MINGW64
           path-type: inherit
           install: >-
-            mingw-w64-x86_64-gcc-fortran   # 64-bit gfortran (plus gcc/g++)
-            mingw-w64-i686-gcc-fortran     # 32-bit gfortran (plus gcc/g++)
+            mingw-w64-x86_64-gcc-fortran
+            mingw-w64-i686-gcc-fortran
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v3.1.3
