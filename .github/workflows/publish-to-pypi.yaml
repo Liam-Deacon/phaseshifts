@@ -329,7 +329,7 @@ jobs:
       CC: gcc
       CXX: g++
       FC: gfortran
-      CIBW_ARCHS_WINDOWS: x86_64
+      CIBW_ARCHS_WINDOWS: AMD64
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
       SKBUILD_DISABLE: "1" # scikit-build honour this
     strategy:
