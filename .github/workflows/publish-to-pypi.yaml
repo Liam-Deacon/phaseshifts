@@ -397,7 +397,6 @@ jobs:
         env:
           CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_BEFORE_BUILD: pip install delvewheel numpy
-        continue-on-error: true
 
       - name: Normalize cibw tag
         id: normalize_tag
