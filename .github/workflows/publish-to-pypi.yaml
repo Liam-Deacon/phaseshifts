@@ -321,7 +321,7 @@ jobs:
     name: Build Legacy Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
-    if: ${{ github.event.inputs.build_windows && github.event.inputs.build_legacy_wheels }}
+    if: ${{ github.event.inputs.build_windows && github.event.inputs.build_legacy }}
     env:
       CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
