@@ -128,7 +128,7 @@ CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
 MACOSX_DEPLOYMENT_TARGET = "11.0"  # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
-archs = "AMD64 x86"  # Use both 64-bit and 32-bit architectures, typically x86 based on windows-latest runners
+archs = "auto64 auto32"  # Use both 64-bit and 32-bit architectures, typically x86 based on windows-latest runners
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     # "delvewheel show {wheel} -vv",
