@@ -11,4 +11,10 @@ add_library(libphsh MODULE libphsh.f)
 set_target_properties(libphsh PROPERTIES
     PREFIX ""                         # drop the leading “lib”
     OUTPUT_NAME "libphsh")            # final file: libphsh.cpython-...so
-install(TARGETS libphsh DESTINATION ${SKBUILD_LIB_DIR})
+install(
+    TARGETS libphsh
+    COMPONENT Runtime
+    # DESTINATION "${SKBUILD_LIB_DIR}"  # <= previous location
+    LIBRARY DESTINATION "${SKBUILD_PLATLIB_DIR}/phaseshifts/lib"
+    RUNTIME DESTINATION "${SKBUILD_PLATLIB_DIR}/phaseshifts/lib"
+)

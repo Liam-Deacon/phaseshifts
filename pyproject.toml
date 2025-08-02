@@ -102,8 +102,8 @@ build = [
 skip = [
     "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
-# test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
-test-command = "python -m 'phaseshifts.tools.post_cibuildwheel_check'"
+test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
+# test-command = "python -m 'phaseshifts.tools.post_cibuildwheel_check'"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
@@ -155,7 +155,7 @@ line-length = 120
 [tool.scikit-build]
 cmake.build-type = "Release"
 cmake.args = []
-wheel.install-dir = "phaseshifts/lib"
+wheel.install-dir = "phaseshifts"  # previously "phaseshifts/lib"
 build.targets = ["libphsh"]
 # Only install CMake Runtime components (the compiled extension)
 install.components = ["Runtime"]
