@@ -125,6 +125,7 @@ jobs:
           pip install strip-hints
           find . -name '*.py' -print0 | xargs -0 -n 1 strip-hints --inplace
       - name: Transpile Python to 2.x
+        if: ${{ false }} # FIXME: Issues with builtins in 2.x
         run: |
           pip install future
           pasteurize -w tests/**/*.py phaseshifts/**/*.py setup.py
@@ -358,6 +359,7 @@ jobs:
           pip install strip-hints
           find -name '*.py' | xargs strip-hints --inplace
       - name: Transpile Python to 2.x
+        if: ${{ false }} # FIXME: Issues with builtins in 2.x
         run: |
           pip install future
           pasteurize -w tests/**/*.py phaseshifts/**/*.py setup.py
