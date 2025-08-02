@@ -9,6 +9,9 @@ project(phaseshifts
   LANGUAGES C Fortran
   )
 
+include(FortranCInterface)
+FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
