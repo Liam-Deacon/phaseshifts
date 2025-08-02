@@ -36,7 +36,7 @@ binfmt:
 
 #: Build a matrix of wheels for different OSs and CPU archs
 cibuildwheel: build-deps $(DOCKER)
-	$(PYTHON) -m cibuildwheel --platform=$(PLATFORM) --output-dir=dist .
+	$(PYTHON) -m cibuildwheel --platform=$(CIBW_PLATFORM) --output-dir=dist .
 
 #: Build Linux x86_64 wheels for CPython 3.11/3.12 (+ host‑specific extras)
 check-cibuildwheel: build-deps binfmt
