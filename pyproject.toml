@@ -137,7 +137,7 @@ repair-wheel-command = [
 ]
 
 [tool.cibuildwheel.windows.environment]
-# Only support fortran via GCC toolchain, so make explicit 
+# Only support fortran via GCC toolchain, so make explicit
 CC="gcc"
 CXX="g++"
 FC="gfortran"
