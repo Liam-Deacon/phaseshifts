@@ -18,7 +18,7 @@ LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 FORTRAN_LIBS = {
     LIBPHSH_MODULE: {
         "source": "libphsh.f",
-        "module_name": LIBPHSH_MODULE.split(".")[-1],
+        "module_name": LIBPHSH_MODULE.rsplit(".", maxsplit=1)[-1],
     },
 }
 
@@ -32,7 +32,21 @@ def is_module_importable(module):  # (str) -> bool
     return is_importable
 
 
-def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwargs):
+def print_package_tree(root_dir=None, prefix=""):
+    """Recursively print the directory tree of the top-level phaseshifts package."""
+    if root_dir is None:
+        root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    entries = sorted(os.listdir(root_dir))
+    for i, entry in enumerate(entries):
+        path = os.path.join(root_dir, entry)
+        connector = "└── " if i == len(entries) - 1 else "├── "
+        print(prefix + connector + entry)
+        if os.path.isdir(path) and not entry.startswith("."):
+            extension = "    " if i == len(entries) - 1 else "│   "
+            print_package_tree(path, prefix + extension)
+
+
+def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwargs):  # type: ignore[syntax]
     # type: (str, str|None, str|None, str) -> int
     """Compile `source` into f2py wrapped shared library given by `module_name`.
 
@@ -53,7 +67,10 @@ def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwarg
         module_name or os.path.basename(source),
         "-c",
     ]
-    args += ["--{}={!r}".format(key, val) for key, val in f2py_kwargs.items()]
+    args += [
+        "--{}={!r}".format(key, val)  # pylint: disable=consider-using-f-string
+        for key, val in f2py_kwargs.items()
+    ]
     return subprocess.check_call(
         args,
         cwd=cwd or os.path.dirname(__file__),
