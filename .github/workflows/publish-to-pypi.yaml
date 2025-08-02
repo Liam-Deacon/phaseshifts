@@ -329,7 +329,7 @@ jobs:
       CC: gcc
       CXX: g++
       FC: gfortran
-      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
+      CIBW_ARCHS_WINDOWS: x86_64
       PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
       SKBUILD_DISABLE: "1" # scikit-build honour this
     strategy:
@@ -389,11 +389,6 @@ jobs:
           install: >-
             mingw-w64-x86_64-gcc-fortran
             mingw-w64-i686-gcc-fortran
-
-      - name: Set CIBW_ARCHS_WINDOWS legacy
-        if: ${{ matrix.cibw_build == 'cp27-*' || matrix.cibw_build == 'cp35-*' }}
-        run: echo "CIBW_ARCHS_WINDOWS=x86_64" >> $GITHUB_ENV
-        shell: bash
 
       - name: Build legacy wheels
         uses: pypa/cibuildwheel@v1.12.0
