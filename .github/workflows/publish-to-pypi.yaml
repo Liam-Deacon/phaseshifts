@@ -396,7 +396,7 @@ jobs:
           output-dir: dist/
         env:
           CIBW_BEFORE_BUILD_WINDOWS: |-
-            choco install -y mingw && 
+            choco install -y mingw &&
             pip install 'pip<21' 'setuptools<63' 'wheel<0.35' 'numpy>=1.16.6'
           CIBW_BUILD: ${{ matrix.cibw_build }}
       - name: Normalize cibw tag
