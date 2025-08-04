@@ -395,8 +395,10 @@ jobs:
         with:
           output-dir: dist/
         env:
+          CIBW_BEFORE_BUILD_WINDOWS: |-
+            choco install -y mingw && 
+            pip install 'pip<21' 'setuptools<63' 'wheel<0.35' 'numpy>=1.16.6'
           CIBW_BUILD: ${{ matrix.cibw_build }}
-
       - name: Normalize cibw tag
         id: normalize_tag
         shell: bash
@@ -411,9 +413,6 @@ jobs:
     runs-on: windows-latest
     needs: build_sdist
     if: ${{ github.event.inputs.build_windows }}
-    env:
-      CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
-      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
     strategy:
       fail-fast: false
       matrix:
