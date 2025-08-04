@@ -396,7 +396,6 @@ jobs:
           output-dir: dist/
         env:
           CIBW_BUILD: ${{ matrix.cibw_build }}
-          CIBW_BEFORE_BUILD: pip install delvewheel numpy
 
       - name: Normalize cibw tag
         id: normalize_tag
