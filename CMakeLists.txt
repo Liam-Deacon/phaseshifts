@@ -9,6 +9,9 @@ project(phaseshifts
   LANGUAGES C Fortran
   )
 
+include(FortranCInterface)
+FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
@@ -35,7 +38,7 @@ if (NOT SKBUILD)
 endif()
 
 # Use modern scikit-build-core CMake modules
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
 # NumPy include directory
 execute_process(
@@ -52,6 +55,10 @@ execute_process(
   OUTPUT_VARIABLE F2PY_INCLUDE_DIR
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+
+# Normalise paths for CMake include directories on Windows
+file(TO_CMAKE_PATH "${NumPy_INCLUDE_DIRS}" NumPy_INCLUDE_DIRS)
+file(TO_CMAKE_PATH "${F2PY_INCLUDE_DIR}" F2PY_INCLUDE_DIR)
 
 # Prepping the module
 set(f2py_module_name "libphsh")
@@ -95,13 +102,53 @@ add_library("${f2py_module_name}" MODULE
             "${F2PY_INCLUDE_DIR}/fortranobject.c"
             "${fortran_src_file}")
 
+# --- Windows / MinGW-w64 specifics ------------------------------------------
+if(WIN32 AND MINGW)
+  # 1.  Make sure MinGW is the linker, not MSVC
+  set(CMAKE_SYSTEM_NAME Windows)
+  # 2.  Ask gfortran to link its own runtime statically
+  target_link_options(${f2py_module_name} PRIVATE
+        -static-libgfortran      # Fortran runtime
+        -static-libgcc           # GCC support library
+        -static                  # avoid external CRT DLLs
+  )
+  # 3.  Also link quadmath if your code uses REAL*16 or EXP/LN variants
+  find_library(QUADMATH_LIB quadmath)
+  if(QUADMATH_LIB)
+      target_link_libraries(${f2py_module_name} PRIVATE ${QUADMATH_LIB})
+  endif()
+  # 4.  Export all symbols so Python can find init routine
+  set_target_properties(${f2py_module_name} PROPERTIES
+        CXX_VISIBILITY_PRESET default
+        WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if(WIN32)
+  # On Windows, we need to link against the Python library explicitly
+  target_link_libraries("${f2py_module_name}" PRIVATE Python::Module)
+endif()
+
 target_include_directories("${f2py_module_name}" PUBLIC
                            ${F2PY_INCLUDE_DIR}
                            ${NumPy_INCLUDE_DIRS}
                            ${Python_INCLUDE_DIRS})
 
-set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
+if(WIN32)
+  # Windows Python extension modules use .pyd
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+elseif(APPLE)
+  # macOS Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+elseif(UNIX)
+  # Linux/Unix Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+else()
+  # Fallback: default to .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+endif()
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
+
+
 
 # Platform-specific linking and compiler flags
 if (UNIX)
