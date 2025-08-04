@@ -83,7 +83,7 @@ before-build = [
     "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
 
     # Windows fixes
-    "pip install 'delvewheel; sys_platform == \"win32\"'",  # Delvewheel used for Windows builds to vendor gfortran libraries
+    "pip install 'delvewheel; sys_platform == \"win32\" and python_version >= \"3.6\"'",  # Delvewheel used for Windows builds to vendor gfortran libraries
     # "python -c \"import sys, subprocess; sys.exit(0) if sys.platform == 'win32' else 1\" || (echo \"Windows detected - running build_libphsh.bat\" && build_libphsh.bat)",
     "python -c \"import sys, os; sys.exit(0) if sys.platform != 'win32' else os.system('choco install -y mingw')\"",
 
