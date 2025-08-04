@@ -85,7 +85,7 @@ before-build = [
     # Windows fixes
     "pip install 'delvewheel; sys_platform == \"win32\" and python_version >= \"3.6\"'",  # Delvewheel used for Windows builds to vendor gfortran libraries
     # "python -c \"import sys, subprocess; sys.exit(0) if sys.platform == 'win32' else 1\" || (echo \"Windows detected - running build_libphsh.bat\" && build_libphsh.bat)",
-    "python -c \"import sys, os; sys.exit(0) if sys.platform != 'win32' else os.system('choco install -y mingw')\"",
+    "python -c \"from __future__ import print_function;\nimport sys, subprocess;\nif sys.platform == 'win32':\n    print('Installing mingw...')\n    try:\n        print(subprocess.check_output('choco install -y mingw'), stderr=subprocess.STDOUT, shell=True);\n    except subprocess.CalledProcessError as e:\n        print('Failed to install mingw:', e.output)\"",
 
     # build backends
     "pip install 'numpy>=1.16.6'",  # Legacy NumPy builds
