@@ -337,7 +337,7 @@ jobs:
       fail-fast: false
       matrix:
         cibw_build:
-          - cp27-*
+          # - cp27-*  # NOTE: Not supported by cibuildwheel
           - cp35-*
           - cp36-*
           - cp37-*
