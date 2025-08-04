@@ -85,6 +85,7 @@ before-build = [
     # Windows fixes
     "pip install 'delvewheel; sys_platform == \"win32\"'",  # Delvewheel used for Windows builds to vendor gfortran libraries
     # "python -c \"import sys, subprocess; sys.exit(0) if sys.platform == 'win32' else 1\" || (echo \"Windows detected - running build_libphsh.bat\" && build_libphsh.bat)",
+    "python -c \"import sys, os; sys.exit(0) if sys.platform != 'win32' else os.system('choco install -y mingw')\"",
 
     # build backends
     "pip install 'numpy>=1.16.6'",  # Legacy NumPy builds
@@ -141,7 +142,9 @@ repair-wheel-command = [
 CC="gcc"
 CXX="g++"
 FC="gfortran"
-CMAKE_GENERATOR="Ninja"  # Use Ninja for faster builds
+CMAKE_GENERATOR="MinGW Makefiles"  # Use MinGW Makefiles for CMake
+DISTUTILS_USE_SDK="1"  # Use the SDK for building on Windows
+SETUPTOOLS_USE_DISTUTILS="stdlib"  # Use distutils for building on Windows
 
 [tool.flake8]
 max-line-length = 120

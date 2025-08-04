@@ -102,6 +102,27 @@ add_library("${f2py_module_name}" MODULE
             "${F2PY_INCLUDE_DIR}/fortranobject.c"
             "${fortran_src_file}")
 
+# --- Windows / MinGW-w64 specifics ------------------------------------------
+if(WIN32 AND MINGW)
+  # 1.  Make sure MinGW is the linker, not MSVC
+  set(CMAKE_SYSTEM_NAME Windows)
+  # 2.  Ask gfortran to link its own runtime statically
+  target_link_options(${f2py_module_name} PRIVATE
+        -static-libgfortran      # Fortran runtime
+        -static-libgcc           # GCC support library
+        -static                  # avoid external CRT DLLs
+  )
+  # 3.  Also link quadmath if your code uses REAL*16 or EXP/LN variants
+  find_library(QUADMATH_LIB quadmath)
+  if(QUADMATH_LIB)
+      target_link_libraries(${f2py_module_name} PRIVATE ${QUADMATH_LIB})
+  endif()
+  # 4.  Export all symbols so Python can find init routine
+  set_target_properties(${f2py_module_name} PROPERTIES
+        CXX_VISIBILITY_PRESET default
+        WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 if(WIN32)
   # On Windows, we need to link against the Python library explicitly
   target_link_libraries("${f2py_module_name}" PRIVATE Python::Module)
