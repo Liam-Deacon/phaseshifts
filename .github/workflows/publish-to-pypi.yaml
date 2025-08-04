@@ -343,10 +343,10 @@ jobs:
           - cp37-*
           # - cp38-*
     steps:
+      - uses: actions/checkout@v4
       - name: Remove pyproject.toml for legacy builds
         run: rm -f pyproject.toml
         shell: bash
-      - uses: actions/checkout@v4
       - name: Set Package Version
         if: ${{ github.event.inputs.version != '' }}
         shell: bash
