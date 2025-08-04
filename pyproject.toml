@@ -77,7 +77,7 @@ build-backend = "scikit_build_core.build"
 
 [tool.cibuildwheel]
 before-build = [
-    "python -c \"import sys, os;\nif sys.version_info < (3, 8): os.remove('pyproject.toml')\"",
+    "python -c \"from __future__ import print_function;\nimport sys, os;\nif sys.version_info < (3, 8): print('Removing pyproject.toml for legacy build...');\nos.remove('pyproject.toml');print('Removed pyproject.toml');\"",
     "pip install 'pip<21; python_version <= \"3.8\"' 'pip; python_version > \"3.9\"'",
     "pip install 'setuptools<63; python_version <= \"3.8\"' 'setuptools; python_version > \"3.9\"'",
     "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
