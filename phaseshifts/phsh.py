@@ -788,15 +788,16 @@ def main(argv=None):
             Wrapper._copy_files(phsh_files, dest, verbose)
 
         # create subprocess
-        leed_cmd = os.environ.get("PHASESHIFTS_LEED") or "cleed"
+        leed_cmd = [os.environ.get("PHASESHIFTS_LEED") or "cleed"]
         # check if using native Windows Python with cygwin
-        if platform.system() == "Windows" and leed_cmd.startswith("/cygdrive"):
-            leed_cmd = '"%s"' % (
-                leed_cmd.split("/")[2] + ":" + os.path.sep.join(leed_cmd.split("/")[3:])
+        if platform.system() == "Windows" and leed_cmd[0].startswith("/cygdrive"):
+            leed_cmd[0] = '"%s"' % (
+                leed_cmd[0].split("/")[2]
+                + ":"
+                + os.path.sep.join(leed_cmd[0].split("/")[3:])
             )
 
-        if argv:
-            leed_cmd += " " + " ".join(argv)
+        leed_cmd.extend(argv)
 
         if verbose:
             print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))
