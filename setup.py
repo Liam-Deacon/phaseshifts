@@ -1,6 +1,24 @@
 #!/usr/bin/env python
 from __future__ import print_function  # noqa
 
+"""Setup script for the phaseshifts package.
+
+Notes
+-----
+- This script is designed to be compatible with both Python 2.7 and Python <=3.8.
+- Possible future plans include keeping compatibility with Python 2.7 through pasteurize script and strip-hints.
+- For legacy python versions (<=3.11), it uses setuptools with numpy.distutils or numpy.f2py.
+- For modern Python versions (>=3.12), it uses scikit-build-core with CMake
+- `scikit-build-core` is required for building the CMake-based extensions and is not available for Python < 3.8
+- Future versions may forgo needing a compiler by using pre-built wheels for the Fortran extensions or using pure-python alternatives.
+- The fortran compilation is a headache, including linking to DLLs on Windows, so pure-python alternatives are preferred in time.
+
+Warnings
+--------
+- The source tarball can no longer be installed with python < 3.8 due including pyproject.toml, which uses PEP 517 to run scikit-build.
+
+"""
+
 import os
 import sys
 import sysconfig
@@ -38,7 +56,7 @@ try:
 except ImportError:
     # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
     try:
-        from distutils.core import find_packages
+        from distutils.core import find_packages  # type: ignore # pylance: ignore
     except ImportError:
         raise ImportError(
             "setuptools is required for building phaseshifts. Please install setuptools."
@@ -53,7 +71,10 @@ with suppress(ImportError):
     import skbuild  # noqa: F401
 
 # Select build backend. Modern builds require scikit-build and CMake (default)
-BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.f2py"]
+BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.f2py", "numpy.distutils"]
+
+# Define the set of backends that are considered legacy
+LEGACY_NUMPY_BACKENDS = {"numpy.distutils", "numpy.f2py"}
 
 # Build logic for legacy and modern Python
 if tuple(sys.version_info[:2]) <= (3, 11):
@@ -68,20 +89,38 @@ if tuple(sys.version_info[:2]) <= (3, 11):
             "WARNING: scikit-build not found; falling back to legacy numpy.f2py build.",
             file=sys.stderr,
         )
-        BUILD_BACKEND = "numpy.f2py"
-    except Exception as e:
+        BUILD_BACKEND = "numpy.distutils"
+    except Exception as err:
         print(
-            f"WARNING: scikit-build build failed ({e}); falling back to legacy numpy.f2py build.",
+            "WARNING: scikit-build build failed ({err}); falling back to legacy numpy.f2py build.".format(
+                err=err
+            ),
             file=sys.stderr,
         )
-        BUILD_BACKEND = "numpy.f2py"
-    if BUILD_BACKEND == "numpy.f2py":
-        from setuptools import find_packages, setup, Extension  # noqa: F811
+        BUILD_BACKEND = "numpy.distutils"
+    if BUILD_BACKEND in LEGACY_NUMPY_BACKENDS:
+        from setuptools import find_packages, setup, Extension  # type: ignore # noqa: F811
 
         try:
-            import numpy.f2py
+            from numpy.distutils.core import setup, Extension  # type: ignore # noqa: F811 # pylance: ignore
+        except ImportError:
+            print(
+                "WARNING: numpy.distutils not found; falling back to numpy.f2py build.",
+                file=sys.stderr,
+            )
+            BUILD_BACKEND = "numpy.f2py"
 
-            INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
+        try:
+            import numpy  # noqa: F401
+            import numpy.f2py  # noqa: F401
+
+            INCLUDE_DIRS.append(numpy.get_include())
+            INCLUDE_DIRS.append(numpy.f2py.get_include())
+        except AttributeError:
+            print(
+                "WARNING: numpy.f2py.get_include() not found; Fortran extension will not be built properly.",
+                file=sys.stderr,
+            )
         except ImportError:
             print(
                 "WARNING: numpy.f2py not found; Fortran extension will not be built.",
@@ -90,8 +129,13 @@ if tuple(sys.version_info[:2]) <= (3, 11):
         # Optionally, run f2py manually if needed
         # subprocess.check_call([...])
 
+BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
+
 if len(sys.argv) == 1:
-    sys.argv.append("install")
+    sys.argv.extend(
+        (BUILD_EXT_INPLACE_ARGS if BUILD_BACKEND in LEGACY_NUMPY_BACKENDS else [])
+        + ["install"]
+    )
 
 CMAKE_ARGS = {}
 
@@ -113,8 +157,6 @@ if BUILD_BACKEND == "skbuild":
             ),
         ]
     }
-
-BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
 
 # build f2py extensions
 f2py_exts_sources = {
@@ -145,13 +187,13 @@ f2py_exts = (
             sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
         )
     ]
-    if BUILD_BACKEND != "numpy.distutils"
+    if BUILD_BACKEND not in LEGACY_NUMPY_BACKENDS
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
             include_dirs=INCLUDE_DIRS,
-            extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
-            extra_link_args=f2py_platform_extra_args["extra_link_args"],
+            extra_compile_args=f2py_platform_extra_args["extra_compile_args"],  # type: ignore
+            extra_link_args=f2py_platform_extra_args["extra_link_args"],  # type: ignore
             sources=f2py_exts_sources["libphsh"],
         )
     ]
@@ -236,9 +278,14 @@ setup_args = dict(
 build_failed = False
 if BUILD_BACKEND == "skbuild":
     try:
-        dist = setup(**setup_args, **CMAKE_ARGS)
-    except Exception as e:
-        print(f"WARNING: skbuild/CMake build failed ({e})", file=sys.stderr)
+        setup_kwargs = setup_args.copy()
+        setup_kwargs.update(CMAKE_ARGS)  # added for python 2.7 compatibility
+        dist = setup(**setup_kwargs)
+    except Exception as err:
+        print(
+            "WARNING: skbuild/CMake build failed ({err})".format(err=err),
+            file=sys.stderr,
+        )
         build_failed = True
         # Fallback for Python <3.12
         if tuple(sys.version_info[:2]) <= (3, 11):
