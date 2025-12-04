@@ -1,7 +1,8 @@
 # Makefile for assisting with some common development activities
 
-PYTHON_VERSION ?= 3.11
-PYTHON ?= $(shell python$(PYTHON_VERSION) 2>/dev/null || which python3 2>/dev/null || echo python)
+SHELL = /bin/sh
+PYTHON_VERSION ?= 3.13
+PYTHON := $(shell command -v python$(PYTHON_VERSION) 2>/dev/null || command -v python3 2>/dev/null || echo python)
 DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
 PREFIX ?= /usr/local
@@ -38,12 +39,14 @@ sdist: build-deps
 
 #: Install build dependencies
 build-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install build cibuildwheel
 
 #: Install setup_requires dependencies
 install-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
-		'meson; python_version >= "3.5"' ninja pytest scikit-build
+		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
 
 #: Install library into current virtualenv
 pip-install:
@@ -74,7 +77,9 @@ clean:
 		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd \
 		phaseshifts/lib/libphsh \
 		atorb_C.txt
+	rm -rf phaseshifts/lib/_native_build*.so phaseshifts/lib/_native_build*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
+	rm -rf .cmake/ CMakeInit.txt CMakeCache.txt .skbuild-info.json CMakeFiles/
 
 #: Build docker image
 docker:

@@ -257,6 +257,76 @@ if(NOT USE_OPENMP)
   message(STATUS "Note: To enable OpenMP, use -DUSE_OPENMP=ON (may cause build failures due to EXIT statements in Fortran code)")
 endif()
 
+# --- phshift2007 binary build and packaging ---
+option(ENABLE_PHSHIFT2007_BINARIES "Build phshift2007 binaries" OFF)
+
+if(ENABLE_PHSHIFT2007_BINARIES)
+  set(PHSH2007_URL "https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip")
+  set(PHSH2007_ZIP "${CMAKE_BINARY_DIR}/phshift2007.zip")
+  set(PHSH2007_SRC_DIR "${CMAKE_BINARY_DIR}/phshift2007_src")
+  set(PHSH2007_BUILD_DIR "${CMAKE_BINARY_DIR}/phshift2007_build")
+
+  # Download phshift2007.zip if not present
+  if(NOT EXISTS "${PHSH2007_ZIP}")
+      file(DOWNLOAD "${PHSH2007_URL}" "${PHSH2007_ZIP}")
+  endif()
+
+  # Extract phshift2007.zip
+  file(MAKE_DIRECTORY "${PHSH2007_SRC_DIR}")
+  file(ARCHIVE_EXTRACT INPUT "${PHSH2007_ZIP}" DESTINATION "${PHSH2007_SRC_DIR}")
+
+  # Split .ab3 and .ab4 files into .for files using Python script
+  set(SPLIT_SCRIPT "${CMAKE_SOURCE_DIR}/phaseshifts/lib/helpers/split_ab.py")
+  add_custom_command(
+      OUTPUT "${PHSH2007_BUILD_DIR}/phsh0.for" "${PHSH2007_BUILD_DIR}/phsh1.for" "${PHSH2007_BUILD_DIR}/phsh2cav.for" "${PHSH2007_BUILD_DIR}/phsh2rel.for" "${PHSH2007_BUILD_DIR}/phsh2wil.for" "${PHSH2007_BUILD_DIR}/phsh3.for"
+      COMMAND ${Python_EXECUTABLE} "${SPLIT_SCRIPT}" "${PHSH2007_SRC_DIR}/psprog.ab3" "${PHSH2007_BUILD_DIR}"
+      COMMAND ${Python_EXECUTABLE} "${SPLIT_SCRIPT}" "${PHSH2007_SRC_DIR}/psprog.ab4" "${PHSH2007_BUILD_DIR}"
+      DEPENDS "${PHSH2007_SRC_DIR}/psprog.ab3" "${PHSH2007_SRC_DIR}/psprog.ab4" "${SPLIT_SCRIPT}"
+      COMMENT "Splitting .ab3/.ab4 files into .for files for phshift2007"
+      VERBATIM
+  )
+  add_custom_target(phsh_sources ALL DEPENDS
+      "${PHSH2007_BUILD_DIR}/phsh0.for" "${PHSH2007_BUILD_DIR}/phsh1.for" "${PHSH2007_BUILD_DIR}/phsh2cav.for" "${PHSH2007_BUILD_DIR}/phsh2rel.for" "${PHSH2007_BUILD_DIR}/phsh2wil.for" "${PHSH2007_BUILD_DIR}/phsh3.for"
+  )
+
+  # --- phshift2007 binary build ---
+  set(PHSH_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
+  file(MAKE_DIRECTORY "${PHSH_BIN_DIR}")
+
+  set(PHSH_BINARIES phsh0 phsh1 phsh2wil phsh2cav phsh2rel phsh3)
+  set(PHSH_SOURCES
+      "${PHSH2007_BUILD_DIR}/phsh0.for"
+      "${PHSH2007_BUILD_DIR}/phsh1.for"
+      "${PHSH2007_BUILD_DIR}/phsh2wil.for"
+      "${PHSH2007_BUILD_DIR}/phsh2cav.for"
+      "${PHSH2007_BUILD_DIR}/phsh2rel.for"
+      "${PHSH2007_BUILD_DIR}/phsh3.for"
+  )
+
+  foreach(bin IN LISTS PHSH_BINARIES)
+      add_executable(${bin} "${PHSH2007_BUILD_DIR}/${bin}.for")
+      set_target_properties(${bin} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PHSH_BIN_DIR}")
+      add_dependencies(${bin} phsh_sources)
+      # Platform-specific Fortran flags
+      if(MSVC)
+          # Windows: minimal flags
+          target_compile_options(${bin} PRIVATE /O2)
+      elseif(APPLE)
+          target_compile_options(${bin} PRIVATE -Wall -std=legacy)
+      else()
+          target_compile_options(${bin} PRIVATE -Wall -Wno-unused-label -Wno-tabs -Wno-unused-variable -Wno-unused-dummy-argument -fcheck=bounds -frecursive -std=legacy)
+          target_link_options(${bin} PRIVATE -static-libgcc -static-libgfortran)
+      endif()
+  endforeach()
+
+  add_custom_target(phshift2007 ALL DEPENDS ${PHSH_BINARIES})
+
+  # Install phshift2007 binaries to bin/
+  install(TARGETS ${PHSH_BINARIES}
+          RUNTIME DESTINATION bin
+          COMPONENT Runtime)
+endif()
+
 # Only install the compiled extension - no data files
 install(TARGETS "${f2py_module_name}"
         DESTINATION phaseshifts/lib/

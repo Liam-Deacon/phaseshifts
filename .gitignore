@@ -16,6 +16,7 @@ _skbuild/
 *.exe
 *.DLL
 *.pyd
+phaseshifts/lib/libphsh
 bin/phsh*
 
 # built files and test artifacts
@@ -31,7 +32,7 @@ docs/_build/
 # read-only
 **/phsh0.f
 **/phsh1.f
-**/phsh2.f
+**/phsh2*.f
 **/phshift2007/
 **/phshift2007.zip
 

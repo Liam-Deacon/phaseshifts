@@ -7,6 +7,26 @@ import sysconfig
 import subprocess  # nosec
 import shutil
 
+try:
+    from contextlib import suppress
+except ImportError:  # TODO: Remove when we drop support for python 2.7
+    # For Python <3.4, suppress is not available
+    def suppress(*exceptions):  # type: ignore[no-redef]
+        """Context manager that suppresses specified exceptions."""
+
+        class SuppressContext:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                return isinstance(exc_value, exceptions)
+
+        return SuppressContext()
+
+
+with suppress(ImportError):
+    from typing import Literal  # noqa: F401
+
 sys.path.append(os.path.dirname(__file__))
 
 try:
@@ -31,10 +51,11 @@ INCLUDE_DIRS = []
 # WARNING: numpy.distutils is completely removed in python 3.12 and deprecated for removal in python 3.11 by Oct 2025
 # The project will therefore need to be migrated to use a different build backend, see
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
-try:
-    import skbuild
-except ImportError:
-    skbuild = None  # type: ignore [assignment]
+with suppress(ImportError):
+    import skbuild  # noqa: F401
+
+# Select build backend. Modern builds require scikit-build and CMake (default)
+BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.f2py"]
 
 BUILD_BACKEND = None
 
@@ -174,10 +195,19 @@ if len(sys.argv) == 1:
 
 CMAKE_ARGS = {}
 
+#: True-like command line flags
+TRUE_OPTS = {"y", "yes", "on", "true", "1"}
+
+# Read environment variable to control phshift2007 binary build
+BUILD_PHSHIFT2007 = (
+    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
+)
+
 if BUILD_BACKEND == "skbuild":
     cmake_args = [
         '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
         '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+        "-DENABLE_PHSHIFT2007_BINARIES={}".format("ON" if BUILD_PHSHIFT2007 else "OFF"),
     ]
 
     # Windows-specific CMake configuration
@@ -230,7 +260,7 @@ f2py_exts_sources = {
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh" + (".f" if BUILD_BACKEND == "numpy.distutils" else "module.c"),
+            "libphsh.f",
         ),
     ]
 }
@@ -281,6 +311,7 @@ f2py_exts = (
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
+            include_dirs=INCLUDE_DIRS,
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
@@ -332,11 +363,11 @@ setup_args = dict(
             "numpy",
             "pre-commit",
             "ruff",
-            "scikit-build; python_version > '3.11'",
+            "scikit-build-core; python_version > '3.11'",
             "wheel",
         ],
         "test": ["pytest", "pytest-cov"],
-        "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
+        "docs": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
