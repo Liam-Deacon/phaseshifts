@@ -49,6 +49,7 @@ def _ensure_distutils():
 
     return True
 
+
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 FORTRAN_LIBS = {
