@@ -19,4 +19,6 @@ if use_source or _has_local_compiled_lib():
     sys.path.insert(0, PROJECT_ROOT)
 else:
     # Ensure the repo root does not shadow the installed wheel
-    sys.path[:] = [p for p in sys.path if os.path.abspath(p or os.curdir) != PROJECT_ROOT]
+    sys.path[:] = [
+        p for p in sys.path if os.path.abspath(p or os.curdir) != PROJECT_ROOT
+    ]
