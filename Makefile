@@ -40,13 +40,18 @@ sdist: build-deps
 #: Install build dependencies
 build-deps:
 	$(PYTHON) -m ensurepip && \
-	$(PYTHON) -m pip install build cibuildwheel
+	$(PYTHON) -m pip install \
+		'build; python_version >= "3.8"' \
+		'cibuildwheel; python_version >= "3.8"'
 
 #: Install setup_requires dependencies
 install-deps:
 	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
-		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
+		'build; python_version >= "3.8"' \
+		'scikit-build-core; python_version >= "3.8"' \
+		'scikit-build; python_version >= "3.8"' \
+		'meson; python_version >= "3.5"' ninja pytest
 
 #: Install library into current virtualenv
 pip-install:
