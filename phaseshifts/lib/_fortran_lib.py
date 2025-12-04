@@ -13,6 +13,42 @@ import os
 import subprocess
 import sys
 
+
+def _ensure_distutils():
+    """Ensure a ``distutils`` implementation is importable.
+
+    Python 3.12+ removes ``distutils`` from the stdlib, but ``numpy.f2py`` still
+    expects it. When missing, we fall back to the vendored copy shipped with
+    ``setuptools`` so that on-the-fly builds keep working in CI.
+    """
+
+    try:  # stdlib distutils (Py <3.12)
+        import distutils  # noqa: F401
+
+        return True
+    except ImportError:
+        pass
+
+    try:  # vendored fallback (Py >=3.12 or slim envs)
+        import setuptools._distutils as _du  # type: ignore
+    except Exception:
+        return False
+
+    sys.modules.setdefault("distutils", _du)
+    # Preload the submodules most commonly needed by numpy.f2py
+    for _mod in (
+        "distutils.ccompiler",
+        "distutils.sysconfig",
+        "distutils.unixccompiler",
+        "distutils.msvccompiler",
+    ):
+        try:
+            __import__(_mod)
+        except Exception:
+            pass
+
+    return True
+
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 FORTRAN_LIBS = {
@@ -44,6 +80,13 @@ def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwarg
     --------
     numpy.f2py
     """
+    # numpy.f2py relies on distutils; on Python 3.12+ ensure a vendored copy is
+    # available so the subprocess does not fail immediately.
+    if not _ensure_distutils():
+        raise ImportError(
+            "distutils is unavailable; install setuptools or enable build isolation."
+        )
+
     args = [
         sys.executable,
         "-m",

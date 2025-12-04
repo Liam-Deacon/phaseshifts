@@ -36,8 +36,9 @@ def load_bool_env_var(var_name, default="0"):  # type: (str, str) -> bool
 _READTHEDOCS = load_bool_env_var("READTHEDOCS")
 
 #: Whether to compile missing libraries on first import
-# Default is off to avoid runtime builds in environments without distutils/compilers
-COMPILE_MISSING = load_bool_env_var("PHASESHIFTS_COMPILE_MISSING", "0")
+# Default to on so legacy CI/users still get a compiled libphsh even when wheels
+# omit it; set PHASESHIFTS_COMPILE_MISSING=0 to disable.
+COMPILE_MISSING = load_bool_env_var("PHASESHIFTS_COMPILE_MISSING", "1")
 
 #: Whether to show debug messages
 DEBUG = load_bool_env_var("PHASESHIFTS_DEBUG")
