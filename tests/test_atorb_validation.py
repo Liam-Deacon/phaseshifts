@@ -17,9 +17,9 @@ def test_gen_input_cl_has_safe_comment_spacing(tmp_path):
     for line in orbital_lines:
         assert "!" in line
         bang_index = line.index("!")
-        assert (
-            line[bang_index - 1].isspace()
-        ), "Inline comments must be separated from data by whitespace"
+        assert line[
+            bang_index - 1
+        ].isspace(), "Inline comments must be separated from data by whitespace"
 
     validated = Atorb.validate_input_file(str(dest))
     assert validated.nlevels == len(validated.orbitals) == 7
