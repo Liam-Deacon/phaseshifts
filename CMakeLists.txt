@@ -33,7 +33,7 @@ if(WIN32)
     endif()
   endif()
 
-  # Find gcc on Windows if not already specified  
+  # Find gcc on Windows if not already specified
   if(NOT CMAKE_C_COMPILER)
     find_program(GCC_EXECUTABLE
       NAMES gcc gcc.exe
@@ -68,7 +68,7 @@ if(WIN32)
   message(STATUS "Windows build - CMake generator: ${CMAKE_GENERATOR}")
   message(STATUS "Windows build - C compiler: ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
   message(STATUS "Windows build - Fortran compiler: ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
-  
+
   # Check for mixed MSVC/gfortran toolchain (problematic)
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
     message(WARNING
