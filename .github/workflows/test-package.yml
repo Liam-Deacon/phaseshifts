@@ -127,6 +127,10 @@ jobs:
       - name: Install package with test extras
         run: |
           pip install '.[test]'
+        env:
+          FC: ${{ env.FC }}
+          CC: ${{ env.CC }}
+          CMAKE_GENERATOR: Ninja
 
       - name: Test with pytest
         run: |
