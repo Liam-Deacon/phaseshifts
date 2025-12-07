@@ -59,12 +59,6 @@ requires = [
 build-backend = "phaseshifts_build_backend"
 backend-path = ["."]
 
-[tool.scikit-build]
-# Force Ninja so we don't end up with the Visual Studio generator + gfortran
-# (which fails Fortran detection on Windows runners). Ninja is lightweight and
-# available via build-system requirements.
-generator = "Ninja"
-
 [tool.cibuildwheel]
 build = [
     # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
@@ -127,6 +121,10 @@ target-version = "py38" # 3.8 is minimum
 line-length = 120
 
 [tool.scikit-build]
+# Force Ninja so we don't end up with the Visual Studio generator + gfortran
+# (which fails Fortran detection on Windows runners). Ninja is lightweight and
+# available via build-system requirements.
+generator = "Ninja"
 cmake.build-type = "Release"
 cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
