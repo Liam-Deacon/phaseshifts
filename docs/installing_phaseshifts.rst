@@ -87,7 +87,33 @@ steps below.
 
 .. note:: On unix systems, setup the virtualenv on Python 3.10 or lower, activate it and run `make`.
 
-.. warning:: Python 3.12 compatibility is a work in progress due to the removal of ``numpy.distuils``
-             build backend for ``f2py`` preventing simple installation via ``pip install``,
-             `this github issue <https://github.com/Liam-Deacon/phaseshifts/issues/8>`_
-             tracks progress on fixing this known issue.
+.. note::
+   Python 3.12+ is now fully supported! The build system uses `scikit-build-core` and CMake for Fortran extensions.
+   - Always use a virtual environment for development and installation.
+   - Install CMake and a Fortran compiler (e.g., gfortran) before building.
+   - To install locally:
+
+     python3.12 -m venv .venv
+     source .venv/bin/activate
+     pip install .
+
+   - To install from PyPI:
+
+     pip install phaseshifts
+
+   For Python ≤3.11, the installer will first attempt a modern CMake/scikit-build build (if available), and will fallback to legacy numpy.f2py if CMake/scikit-build is not installed or fails. Just use:
+
+     pip install -e .  # will try CMake/scikit-build first, then fallback to f2py
+
+   A Fortran compiler is required for both build paths.
+
+.. tip::
+   If you encounter build errors, ensure you have CMake, scikit-build-core, and a working Fortran compiler installed. If the modern build fails, the installer will automatically fallback to the legacy build if possible.
+
+.. tip::
+   To optionally disable building the phshift2007 Fortran binaries (e.g., for minimal installs or CI), set the environment variable before installation:
+
+     export PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES=OFF
+     pip install .
+
+   By default, the binaries are built and included. Set to "OFF" to skip downloading, building, and packaging the phshift2007 binaries. This is useful for environments where Fortran compilers are unavailable or the binaries are not needed (typically useful for debugging).

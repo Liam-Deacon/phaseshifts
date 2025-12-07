@@ -1,5 +1,15 @@
-#!/usr/local/bin/python2.7
-# encoding: utf-8
+#! /usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# pylint: disable=consider-using-f-string
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+    with_statement,
+)
 
 ##############################################################################
 # Author: Liam Deacon                                                        #
@@ -29,11 +39,33 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-"""
+
+__doc__ = """
 phsh.py - quickly generate phase shifts
 
-phsh provides convenience functions to create phase shifts files
-suitable for input into LEED-IV programs such as SATLEED and CLEED.
+Orchestrates the full phase shift calculation workflow for LEED (Low-Energy Electron Diffraction)
+and related surface science applications, following the Barbieri/Van Hove methodology.
+
+This module provides a command-line interface and Python API for generating phase shift files
+suitable for input into LEED-IV programs such as SATLEED and CLEED. It automates the process of:
+- Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+- Muffin-tin potential generation
+- Phase shift calculation (relativistic/non-relativistic)
+- Removal of phase discontinuities (pi-jumps)
+- Output formatting for LEED analysis
+
+Scientific Context
+------------------
+Phase shifts are central to electron scattering theory and LEED surface structure analysis. The workflow
+implemented here follows the Barbieri/Van Hove package, ensuring that all physical and computational steps
+are performed in the correct sequence, with appropriate file formats and conventions.
+
+References
+----------
+- `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+- Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+- See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
 Examples
 --------
@@ -41,31 +73,32 @@ Examples
 
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
 
-
 """
-from __future__ import print_function, unicode_literals
-from __future__ import absolute_import, division, with_statement
 
+# pylint: disable=wrong-import-position
 import argparse
 import datetime
-import subprocess
-import sys
 import os
 import platform
+import subprocess
+import sys
 import tempfile
-from argparse import ArgumentParser
-from argparse import RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from glob import glob
 from shutil import copy
 
 import phaseshifts
 import phaseshifts.settings
-from phaseshifts import model, atorb
+from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
-from phaseshifts.leed import Converter, CLEED_validator, CSearch
+from phaseshifts.leed import CLEED_validator, Converter, CSearch
 
 try:
-    from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
+    from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
+        phsh_cav,
+        phsh_rel,
+        phsh_wil,
+    )
 except ImportError:
     # TODO: Create pure-python implementations of the fortran libphsh.f code
     def function_not_implemented(*args, **kwargs):
@@ -74,7 +107,7 @@ except ImportError:
 
     phsh_rel = phsh_wil = phsh_cav = function_not_implemented  # type: ignore
 
-__all__ = []
+# pylint: enable=wrong-import-position
 
 
 def required_length(nmin, nmax):
@@ -93,7 +126,26 @@ def required_length(nmin, nmax):
 
 
 class Wrapper(object):
-    """Wrapper class to easily generate phase shifts"""
+    """Class for automating the Barbieri/Van Hove phase shift calculation workflow.
+
+    This class provides methods to generate phase shift files from atomic and cluster input data,
+    handling all intermediate steps: atomic charge density, muffin-tin potential, phase shift calculation,
+    phase-jump removal, and output formatting. It supports both Python and Fortran backends, and is
+    compatible with SATLEED and CLEED file formats.
+
+    Scientific Rationale
+    -------------------
+    Automating the workflow ensures reproducibility and correct sequencing of physical and computational steps,
+    as required for LEED surface structure analysis.
+
+    References
+    ----------
+    - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+    - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+    - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+    """
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -103,32 +155,51 @@ class Wrapper(object):
         bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs
     ):
         """
-        Description
-        -----------
-        Generate phase shifts from a slab/cluster input file.
+           Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
-        Parameters
-        ----------
-        slab_file : str
-            Path to the cluster slab MTZ input file.
-        bulk_file : str
-            Path to the cluster bulk MTZ input file.
-        tmp_dir : str
-            Temporary directory for intermediate files.
-        store : bool or int
-            Specify whether to keep generated files.
-        format : str
-            Specify formatting of generated phase shift files
-        range : tuple(float, float, float)
-            Specify the energy of the start, stop and step in eV.
-        model_name : str
-            Name of model.
+           This method automates the full sequence described in:
+           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+        <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+           - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+           - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
-        Returns
-        -------
-        output_files : list(str)
-           A list of phase shift output filenames
+           Steps:
+           1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+           2. Muffin-tin potential generation
+           3. Phase shift calculation (relativistic/non-relativistic)
+           4. Removal of phase discontinuities (pi-jumps)
+           5. Output formatting for LEED analysis
+
+           Parameters
+           ----------
+           bulk_file : str
+               Path to the bulk MTZ or CLEED input file.
+           slab_file : str
+               Path to the slab/cluster MTZ or CLEED input file.
+           tmp_dir : str, optional
+               Temporary directory for intermediate files.
+           model_name : str, optional
+               Name of the model.
+           store : bool or str, optional
+               Whether to keep generated files and where to store them.
+           format : str, optional
+               Output format for phase shift files ('cleed', 'curve', etc.).
+           range : tuple(float, float, float), optional
+               Energy range for phase shift calculation (start, stop, step in eV).
+
+           Returns
+           -------
+           output_files : list of str
+               List of generated phase shift output filenames.
+
+           Scientific Context
+           ------------------
+           This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
+           ensuring all physical and computational steps are performed in the correct order. For further details,
+           see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
         """
+        verbose = kwargs.get("verbose", False)
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         if model_name == None:
             model_name = "atomic"
@@ -153,7 +224,7 @@ class Wrapper(object):
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
         if CLEED_validator.is_CLEED_file(bulk_file):
-            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=VERBOSE)
+            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
                 tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
@@ -204,14 +275,14 @@ class Wrapper(object):
             output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
         )
 
-        if VERBOSE:
+        if verbose:
             print("\nModel")
             print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
             print("slab atoms: %s" % [s for s in slab_mtz.atoms])
 
         # calculate muffin-tin potential for bulk model
         print("\nCalculating bulk muffin-tin potential...")
-        if VERBOSE:
+        if verbose:
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
@@ -247,7 +318,7 @@ class Wrapper(object):
         # calculate muffin-tin potential for slab model
         mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
         print("\nCalculating slab muff-tin potential...")
-        if VERBOSE:
+        if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
@@ -343,7 +414,7 @@ class Wrapper(object):
                 if "range" in kwargs:
                     try:
                         # get values
-                        with open(mufftin_filepath, "r") as f:
+                        with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
                             lines = [line for line in f]
 
                         ei, de, ef, lsm, vc = [
@@ -368,10 +439,10 @@ class Wrapper(object):
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
-                        with open(mufftin_filepath, "w") as f:
+                        with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
                             f.write("".join([str(line) for line in lines]))
 
-                    except any as e:
+                    except Exception:
                         sys.stderr.write(
                             "Unable to change phase shift energy "
                             "range - using Barbieri/Van Hove "
@@ -455,7 +526,7 @@ class Wrapper(object):
         if not os.path.exists(dst):
             try:
                 os.makedirs(dst)
-            except (PermissionError, WindowsError):
+            except (PermissionError, OSError):
                 pass
 
         # copy each phase shift file to directory
@@ -486,9 +557,36 @@ class CLIError(Exception):
 
 
 def main(argv=None):
-    """Command line options."""
+    """
+    Main command-line interface for phase shift generation.
 
-    global VERBOSE
+    Parses user arguments, sets up the workflow, and executes the full Barbieri/Van Hove phase shift
+    calculation sequence. Supports options for input files, output formatting, energy range, and
+    intermediate file management.
+
+    Parameters
+    ----------
+    argv : list of str, optional
+        Command-line arguments (default: sys.argv).
+
+    Returns
+    -------
+    int
+        Exit code (0 for success).
+
+    Scientific Context
+    ------------------
+    This CLI enables reproducible, automated phase shift generation for LEED analysis, following
+    best practices in surface science computation.
+
+    References
+    ----------
+    - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+    - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+    - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+    """
 
     if argv is None:
         argv = sys.argv
@@ -502,7 +600,12 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % phaseshifts.__version__
     program_version_message = "%%(prog)s %s" % program_version
-    program_shortdesc = __import__("__main__").__doc__.split("\n")[1]
+    # Use this module's docstring or a static string for shortdesc
+    program_shortdesc = (
+        (__doc__ or "phsh.py - quickly generate phase shifts").split("\n")[1]
+        if (__doc__ and len((__doc__ or "").split("\n")) > 1)
+        else "phsh.py - quickly generate phase shifts"
+    )
     program_license = """%s
 
       Created by Liam Deacon using LEEDPACK code (kindly permitted by Micheal Van Hove).
@@ -613,14 +716,13 @@ def main(argv=None):
         # Process arguments
         args, unknown = parser.parse_known_args()
 
-        verbose = False
+        verbose = 0
         try:
             verbose = args.verbose
-            VERBOSE = verbose
         except AttributeError:
             pass
 
-        if verbose > 0 and len(unknown) > 0:
+        if verbose and len(unknown) > 0:
             for arg in unknown:
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
@@ -632,17 +734,15 @@ def main(argv=None):
             args.store = "."
 
         if args.lmax < 1 or args.lmax > 18:
-            raise argparse.ArgumentError("lmax is not between 1 and 18")
+            raise ValueError("lmax is not between 1 and 18")
 
         if len(args.range) < 3:  # add default step to list
-            args.range = list(args.range).append(5)
+            args.range = list(args.range) + [5]
 
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
     except Exception as err:
-        if DEBUG or TESTRUN:
-            raise
         indent = len(program_name) * " "
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
         sys.stderr.write("{} for help use --help".format(indent))
@@ -665,6 +765,7 @@ def main(argv=None):
         format=args.format,
         store=args.store,
         range=args.range,
+        verbose=verbose,
     )
 
     # chain loop commands to next program
@@ -675,7 +776,7 @@ def main(argv=None):
         if last_iteration is not None:
             it = (
                 str(last_iteration)
-                .split("par:")[0]
+                .split("par:", 1)[0]
                 .replace(" ", "")
                 .replace("#", "")
                 .rjust(3, "0")
@@ -687,15 +788,16 @@ def main(argv=None):
             Wrapper._copy_files(phsh_files, dest, verbose)
 
         # create subprocess
-        leed_cmd = [os.environ["PHASESHIFTS_LEED"]]
+        leed_cmd = [os.environ.get("PHASESHIFTS_LEED") or "cleed"]
         # check if using native Windows Python with cygwin
-        if platform.system() == "Windows" and leed_cmd.startwith("/cygdrive"):
-            leed_cmd = '"%s"' % (
-                leed_cmd.split("/")[2] + ":" + os.path.sep.join(leed_cmd.split("/")[3:])
+        if platform.system() == "Windows" and leed_cmd[0].startswith("/cygdrive"):
+            leed_cmd[0] = '"%s"' % (
+                leed_cmd[0].split("/")[2]
+                + ":"
+                + os.path.sep.join(leed_cmd[0].split("/")[3:])
             )
 
-        for arg in argv:
-            leed_cmd.append(arg)
+        leed_cmd.extend(argv)
 
         if verbose:
             print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))

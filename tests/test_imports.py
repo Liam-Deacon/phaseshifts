@@ -34,7 +34,7 @@ def isimportable(package, module):
         return False
 
 
-imports = {"phaseshifts": ["libphsh", "conphas", "atorb"]}
+imports = {"phaseshifts.lib": ["libphsh"], "phaseshifts": ["conphas", "atorb"]}
 
 
 class Test(unittest.TestCase):
@@ -50,9 +50,12 @@ class Test(unittest.TestCase):
         for packages in imports:
             sys.stderr.write("Inspecting package: %s\n" % packages)
             successes = [
-                imp for imp in imports.get(packages) if isimportable("phaseshifts", imp)
+                imp for imp in imports.get(packages) if isimportable(packages, imp)
             ]
-            self.failIf(len(successes) < len(imports.get(packages)))
+            self.assertFalse(
+                len(successes) < len(imports.get(packages)),
+                "Failed to import some modules from package: %s" % packages,
+            )
             sys.stderr.write(
                 "Failed to import %i out of %i modules\n\n"
                 % (

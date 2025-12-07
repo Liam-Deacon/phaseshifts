@@ -1,6 +1,8 @@
 # Makefile for assisting with some common development activities
 
-PYTHON ?= $(shell pyenv which python 2>/dev/null || echo python)
+SHELL = /bin/sh
+PYTHON_VERSION ?= 3.13
+PYTHON := $(shell command -v python$(PYTHON_VERSION) 2>/dev/null || command -v python3 2>/dev/null || echo python)
 DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
 PREFIX ?= /usr/local
@@ -9,11 +11,19 @@ PREFIX ?= /usr/local
 
 #: Quickly generate binary wheel
 wheel: install-deps
-	$(PYTHON) setup.py build bdist_wheel
+	@if $(PYTHON) -m build --help >/dev/null 2>&1; then \
+		$(PYTHON) -m build --wheel --no-isolation; \
+	else \
+		$(PYTHON) setup.py build bdist_wheel; \
+	fi
 
 #: Meta target, will attempt to build all it can
 build: sdist
-	if command -v docker 1>/dev/null; then $(MAKE) cibuildwheel; else $(MAKE) wheel; fi
+	if command -v docker 1>/dev/null; then \
+		$(MAKE) cibuildwheel; \
+	else \
+		$(MAKE) wheel; \
+	fi
 
 #: Build a matrix of wheels for different OSs and CPU archs
 cibuildwheel: build-deps $(DOCKER)
@@ -21,16 +31,27 @@ cibuildwheel: build-deps $(DOCKER)
 
 #: Create source distributions
 sdist: build-deps
-	$(PYTHON) build --sdist --no-isolation --formats=zip,tar
+	@if $(PYTHON) -m build --help >/dev/null 2>&1; then \
+		$(PYTHON) -m build --sdist --no-isolation --formats=zip,tar; \
+	else \
+		$(PYTHON) setup.py sdist; \
+	fi
 
 #: Install build dependencies
 build-deps:
-	$(PYTHON) -m pip install build cibuildwheel
+	$(PYTHON) -m ensurepip && \
+	$(PYTHON) -m pip install \
+		'build; python_version >= "3.8"' \
+		'cibuildwheel; python_version >= "3.8"'
 
 #: Install setup_requires dependencies
 install-deps:
+	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
-		'meson; python_version >= "3.5"' ninja pytest scikit-build
+		'build; python_version >= "3.8"' \
+		'scikit-build-core; python_version >= "3.8"' \
+		'scikit-build; python_version >= "3.8"' \
+		'meson; python_version >= "3.5"' ninja pytest
 
 #: Install library into current virtualenv
 pip-install:
@@ -45,7 +66,7 @@ libphsh.cmake:
 
 #: Build the f2py wrapped libphsh shared library within source tree
 libphsh:
-	$(PYTHON) setup.py build_ext --inplace
+	PHASESHIFTS_COMPILE_MISSING=0 PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) setup.py build_ext --inplace
 
 #: Perform checks
 check: libphsh
@@ -55,10 +76,15 @@ test: check
 
 #: Remove any artifacts
 clean:
+	rm -rf venv*
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
-		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
+		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd \
+		phaseshifts/lib/libphsh \
+		atorb_C.txt
+	rm -rf phaseshifts/lib/_native_build*.so phaseshifts/lib/_native_build*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
+	rm -rf .cmake/ CMakeInit.txt CMakeCache.txt .skbuild-info.json CMakeFiles/
 
 #: Build docker image
 docker:
@@ -147,3 +173,15 @@ phshift2007: bin/phsh0 bin/phsh1 bin/phsh2wil bin/phsh2cav bin/phsh2rel bin/phsh
 #: Install the phshift2007 programs
 install: phshift2007
 	install -m 755 bin/phsh0 bin/phsh1 bin/phsh2wil bin/phsh2cav bin/phsh2rel bin/phsh3 "$(PREFIX)/bin"
+
+#: Create a virtual environment and install the package in editable mode
+venv:
+	@echo "Creating virtual environment..."
+	$(PYTHON) -m venv venv
+	source venv/bin/activate && \
+	python -m ensurepip && \
+	python -m pip install uv && \
+	uv pip install --upgrade pip setuptools wheel && \
+	uv pip install -e '.[dev,test,doc]'
+	@echo "Virtual environment created in 'venv/'"
+	@echo "Activate it with: source venv/bin/activate"
