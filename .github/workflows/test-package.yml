@@ -109,13 +109,41 @@ jobs:
           echo "DLLPATH=$DLLPATH" >> "$GITHUB_ENV"
         shell: bash
 
+      - name: Ensure pexports is available
+        if: matrix.os == 'windows-latest'
+        run: |
+          set -e
+          found=0
+          for path in /c/msys64/mingw64/bin /c/mingw64/bin "C:/msys64/mingw64/bin" "C:/mingw64/bin"; do
+            if [ -x "$path/pexports.exe" ]; then
+              echo "$path" >> "$GITHUB_PATH"
+              found=1
+              break
+            fi
+          done
+          if [ "$found" -eq 0 ] && command -v pacman >/dev/null 2>&1; then
+            /c/msys64/usr/bin/bash -lc "pacman -Sy --noconfirm mingw-w64-x86_64-pexports"
+            echo "/c/msys64/mingw64/bin" >> "$GITHUB_PATH"
+            echo "/c/mingw64/bin" >> "$GITHUB_PATH"
+          fi
+          if ! command -v pexports >/dev/null 2>&1; then
+            echo "::warning ::pexports not available; MinGW import lib generation may fail"
+          else
+            echo "Found pexports: $(command -v pexports)"
+          fi
+        shell: bash
+
       - name: Generate MinGW python defs
         if: matrix.os == 'windows-latest'
         id: mingw_setup
         run: |
-          python -m pip install pexports
           if [ -z "$DLLPATH" ]; then
             echo "::warning ::DLLPATH not set, skipping pexports/dlltool. MinGW setup failed."
+            echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          if ! command -v pexports >/dev/null 2>&1; then
+            echo "::warning ::pexports missing; cannot generate import library"
             echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
             exit 0
           fi
