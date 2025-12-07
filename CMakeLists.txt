@@ -342,8 +342,8 @@ if(ENABLE_PHSHIFT2007_BINARIES)
 endif()
 
 # Only install the compiled extension - no data files
-# NOTE: scikit-build-core handles the package path prefix, so we just use "lib/"
-# The final install location will be: <package>/lib/libphsh.<ext>
+# NOTE: scikit-build-core's wheel.install-dir in pyproject.toml is set to "phaseshifts/lib"
+# so we use "." here to install directly into that directory
 install(TARGETS "${f2py_module_name}"
-        DESTINATION lib/
+        DESTINATION .
         COMPONENT Runtime)
