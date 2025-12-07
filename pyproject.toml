@@ -121,10 +121,8 @@ target-version = "py38" # 3.8 is minimum
 line-length = 120
 
 [tool.scikit-build]
-# Force Ninja so we don't end up with the Visual Studio generator + gfortran
-# (which fails Fortran detection on Windows runners). Ninja is lightweight and
-# available via build-system requirements.
-generator = "Ninja"
+# scikit-build-core prefers Ninja automatically when available; Windows builds
+# also set CMAKE_GENERATOR=Ninja in cibuildwheel env to avoid MSVC+gfortran issues.
 cmake.build-type = "Release"
 cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
