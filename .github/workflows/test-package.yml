@@ -83,12 +83,13 @@ jobs:
           echo "C compiler: ${{ env.CC }}"
           ${{ env.CC }} --version
 
+      # NOTE: Install numpy first to ensure that numpy.f2py is available - allow numpy v2 for fast install in python 3.13+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
-          pip install "numpy<2"
+          pip install "numpy"
 
       - name: Install build dependencies
         run: |
