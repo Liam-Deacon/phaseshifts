@@ -66,7 +66,7 @@ libphsh.cmake:
 
 #: Build the f2py wrapped libphsh shared library within source tree
 libphsh:
-	$(PYTHON) setup.py build_ext --inplace
+	PHASESHIFTS_COMPILE_MISSING=0 PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) setup.py build_ext --inplace
 
 #: Perform checks
 check: libphsh

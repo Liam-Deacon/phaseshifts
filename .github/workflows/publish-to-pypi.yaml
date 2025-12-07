@@ -48,6 +48,8 @@ env:
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+  PHASESHIFTS_COMPILE_MISSING: "0"
+  PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
 
 permissions:
   contents: read
