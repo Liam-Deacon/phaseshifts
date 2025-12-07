@@ -7,6 +7,7 @@ def ensure_distutils():
     """Ensure a ``distutils`` implementation is importable."""
     try:  # stdlib distutils (Py <3.12)
         import distutils  # noqa: F401
+
         try:
             __import__("distutils.msvccompiler")
         except Exception:
