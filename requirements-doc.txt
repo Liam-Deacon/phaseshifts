@@ -1,8 +1,8 @@
 numpydoc==1.8.0
-requests>=2.32.0 # not directly required, pinned by Snyk to avoid a vulnerability
+requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
 # This file is used for readthedocs build
 # NOTE: This should be (manually) synched with setup.py/pyproject.toml requirements
 sphinx==8.1.3
 sphinx_rtd_theme==3.0.2
-urllib3>=2.5.0 # not directly required, pinned by Snyk to avoid a vulnerability
+urllib3>=2.6.0 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
