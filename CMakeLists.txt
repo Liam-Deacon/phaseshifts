@@ -121,6 +121,16 @@ endif()
 # Use modern scikit-build-core CMake modules
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
+# Get the proper Python extension module suffix (e.g., .cpython-39-x86_64-linux-gnu.so)
+# This is required for Python to find the extension module
+execute_process(
+  COMMAND "${Python_EXECUTABLE}"
+  -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.so')"
+  OUTPUT_VARIABLE PYTHON_EXTENSION_MODULE_SUFFIX
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+message(STATUS "Python extension suffix: ${PYTHON_EXTENSION_MODULE_SUFFIX}")
+
 # NumPy include directory
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}"
@@ -192,8 +202,11 @@ if (WIN32)
   # Windows-specific configuration
   message(STATUS "Configuring for Windows build")
 
-  # Set proper extension for Windows
-  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+  # Ensure proper extension for Windows (fallback to .pyd if EXT_SUFFIX was empty)
+  if(NOT PYTHON_EXTENSION_MODULE_SUFFIX OR PYTHON_EXTENSION_MODULE_SUFFIX STREQUAL ".so")
+    set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+    message(STATUS "Using fallback Windows extension suffix: .pyd")
+  endif()
 
   # Handle mixed toolchain issues
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
