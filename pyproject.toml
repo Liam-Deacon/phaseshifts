@@ -28,7 +28,7 @@ classifiers = [
 phaseshifts = "phaseshifts.cli:main"
 
 [project.optional-dependencies]
-atorb = ["mendeleev", "elementy"]
+atorb = ["mendeleev", "elementy", "pydantic; python_version >= '3.9'"]
 gui = [
     "six",
     "qtpy",
