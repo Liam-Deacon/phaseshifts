@@ -7,7 +7,11 @@ def ensure_distutils():
     """Ensure a ``distutils`` implementation is importable."""
     try:  # stdlib distutils (Py <3.12)
         import distutils  # noqa: F401
-
+        try:
+            __import__("distutils.msvccompiler")
+        except Exception:
+            # Continue to vendored fallback to ensure Windows submodules exist
+            raise ImportError
         return True
     except ImportError:
         pass
@@ -18,16 +22,23 @@ def ensure_distutils():
         return False
 
     sys.modules.setdefault("distutils", _du)
-    # Preload the submodules most commonly needed by numpy.f2py
-    for _mod in (
-        "distutils.ccompiler",
-        "distutils.sysconfig",
-        "distutils.unixccompiler",
-        "distutils.msvccompiler",
-    ):
-        try:
-            __import__(_mod)
-        except Exception:
-            pass
+    # Preload critical submodules and force-map them to the vendored copies so
+    # imports like ``distutils.msvccompiler`` succeed (numpy.f2py triggers
+    # this on Windows).
+    for _name in ("ccompiler", "sysconfig", "unixccompiler", "msvccompiler"):
+        dist_name = f"distutils.{_name}"
+        vend_name = f"setuptools._distutils.{_name}"
+        m = None
+        for candidate in (dist_name, vend_name):
+            try:
+                m = __import__(candidate)
+                break
+            except Exception:
+                continue
+        if m is None:
+            continue
+        # If the import came from setuptools._distutils, re-register it under
+        # the distutils.* namespace so downstream imports resolve.
+        sys.modules.setdefault(dist_name, m)
 
     return True

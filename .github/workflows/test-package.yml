@@ -42,6 +42,7 @@ jobs:
     env:
       PHASESHIFTS_COMPILE_MISSING: "0"
       PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
+      PYTHONPATH: ${{ github.workspace }}
     strategy:
       fail-fast: false
       matrix:
@@ -100,11 +101,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           echo "Building on Unix with FC=${{ env.FC }}"
-          make libphsh
+          cd phaseshifts/lib
+          python -m phaseshifts.lib._f2py_shim libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
+          ls -l libphsh*
         env:
           PYTHON: python
           FC: ${{ env.FC }}
           CC: ${{ env.CC }}
+          PYTHONPATH: ${{ github.workspace }}
 
       # Windows build - use f2py directly with the Fortran compiler from setup-fortran
       - name: Build package (Windows)
@@ -138,6 +142,8 @@ jobs:
         run: |
           python -c "import phaseshifts.lib.libphsh as phsh; print('libphsh imported successfully!')"
         shell: bash
+        env:
+          PYTHONPATH: ${{ github.workspace }}
       - name: Lint with flake8
         continue-on-error: true
         run: |
