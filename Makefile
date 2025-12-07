@@ -40,13 +40,18 @@ sdist: build-deps
 #: Install build dependencies
 build-deps:
 	$(PYTHON) -m ensurepip && \
-	$(PYTHON) -m pip install build cibuildwheel
+	$(PYTHON) -m pip install \
+		'build; python_version >= "3.8"' \
+		'cibuildwheel; python_version >= "3.8"'
 
 #: Install setup_requires dependencies
 install-deps:
 	$(PYTHON) -m ensurepip && \
 	$(PYTHON) -m pip install wheel numpy setuptools \
-		'meson; python_version >= "3.5"' ninja pytest scikit-build-core
+		'build; python_version >= "3.8"' \
+		'scikit-build-core; python_version >= "3.8"' \
+		'scikit-build; python_version >= "3.8"' \
+		'meson; python_version >= "3.5"' ninja pytest
 
 #: Install library into current virtualenv
 pip-install:
@@ -61,7 +66,7 @@ libphsh.cmake:
 
 #: Build the f2py wrapped libphsh shared library within source tree
 libphsh:
-	$(PYTHON) setup.py build_ext --inplace
+	PHASESHIFTS_COMPILE_MISSING=0 PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) setup.py build_ext --inplace
 
 #: Perform checks
 check: libphsh
@@ -74,7 +79,9 @@ clean:
 	rm -rf venv*
 	rm -rf build dist _skbuild \
 		phaseshifts/lib/libphshmodule.c phaseshifts/lib/libphsh-f2pywrappers.f \
-		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd
+		phaseshifts/lib/libphsh*.so phaseshifts/lib/libphsh*.pyd \
+		phaseshifts/lib/libphsh \
+		atorb_C.txt
 	rm -rf phaseshifts/lib/_native_build*.so phaseshifts/lib/_native_build*.pyd
 	rm -rf phaseshifts/lib/phshift2007 phaseshifts/lib/phshift2007.zip
 	rm -rf .cmake/ CMakeInit.txt CMakeCache.txt .skbuild-info.json CMakeFiles/

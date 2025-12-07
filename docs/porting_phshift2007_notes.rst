@@ -120,6 +120,43 @@ The following table compilers provides some summary information on compilers and
 .. [5] https://github.com/Liam-Deacon/phaseshifts/actions/workflows/publish-to-pypi.yaml
 .. [6] https://github.com/Liam-Deacon/phaseshifts/releases/tag/v0.1.8
 
+Phase Shift Workflow Summary
+---------------------------
+
+The following table summarizes the workflow and file dependencies for the Barbieri/Van Hove phase shift package:
+
++------+-------------------+-------------------------------+-------------------------------+-------------------------------------------------------------+
+| Step | Program           | Input Files                   | Output Files                  | Notes                                                       |
++======+===================+===============================+===============================+=============================================================+
+| 0    | PhSh0.for         | atorb                         | atelem.i                      | One per element                                             |
++------+-------------------+-------------------------------+-------------------------------+-------------------------------------------------------------+
+| 1    | PhSh1.for         | cluster.i, atomic.i           | mufftin.d, check.o            | atomic.i = concat of atelem.i for all inequivalent atoms    |
++------+-------------------+-------------------------------+-------------------------------+-------------------------------------------------------------+
+| 2    | PhSh2wil/rel/cav. | mufftin.d                     | phasout, dataph.d, inpdat,    | Use wil for non-rel, rel for relativistic;                 |
+|      | for               |                               | leedph.d (wil only)           | phasout is split for next step                              |
++------+-------------------+-------------------------------+-------------------------------+-------------------------------------------------------------+
+| 3    | PhSh3.for         | phJ (split from phasout)      | leedph.d, dataph.d            | One phJ per element                                         |
++------+-------------------+-------------------------------+-------------------------------+-------------------------------------------------------------+
+
+Workflow Steps
+~~~~~~~~~~~~~~
+
+1. **STEP 0: Atomic Orbitals Calculation (`PhSh0.for`)**
+   - Input: `atorb` (e.g., `atorbRh`)
+   - Output: `atelem.i` (e.g., `atelemRh.i`)
+
+2. **STEP 1: Muffin-Tin Potential Calculation (`PhSh1.for`)**
+   - Input: `cluster.i`, `atomic.i` (concatenation of all `atelemJ.i` files)
+   - Output: `mufftin.d`, `check.o`
+
+3. **STEP 2: Phase Shift Calculation (`PhSh2cav.for`, `PhSh2wil.for`, `PhSh2rel.for`)**
+   - Input: `mufftin.d`
+   - Output: `phasout`, `dataph.d`, `inpdat`, `leedph.d` (wil only)
+
+4. **STEP 3: Phase Shift Postprocessing (`PhSh3.for`)**
+   - Input: `phJ` (split from `phasout`)
+   - Output: `leedph.d`, `dataph.d`
+
 Known Issues
 ------------
 

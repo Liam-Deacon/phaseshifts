@@ -38,17 +38,19 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD: pip install numpy
+  # NOTE: Loosened numpy version to allow faster installs on Python 3.13+
+  CIBW_BEFORE_BUILD: pip install "numpy" scikit-build-core cmake ninja meson meson-python
   CIBW_BEFORE_BUILD_LINUX: >-
-    yum install -y python3-devel ||
-    { echo "ERROR: Failed to install python3-devel. Development headers are required."; exit 1; } &&
-    pip install numpy
-  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install numpy
+    (yum install -y python3-devel || echo "yum failed, continuing...") &&
+    pip install "numpy" scikit-build-core cmake ninja meson meson-python
+  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
-  CIBW_TEST_COMMAND: python -c "import phaseshifts.phsh" # most simple, yet effective sanity check
+  CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+  PHASESHIFTS_COMPILE_MISSING: "0"
+  PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
 
 permissions:
   contents: read
@@ -112,7 +114,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.21.3
         with:
           output-dir: dist/
         env:
@@ -137,7 +139,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.21.3
         with:
           output-dir: dist/
         env:
@@ -164,13 +166,13 @@ jobs:
         # FC, CC, and CXX environment variables will be set for subsequent steps
         # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.21.3
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: x86_64
       - name: Build arm64 wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.21.3
         with:
           output-dir: dist/
         env:
@@ -213,15 +215,41 @@ jobs:
     runs-on: windows-latest
     needs: build_sdist
     env:
-      CIBW_BEFORE_BUILD: pip install delvewheel numpy && build_libphsh.bat
-      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
+      CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
     steps:
       - uses: actions/checkout@v4
 
+      # Setup Fortran compiler for Windows
+      - name: Setup Fortran (gfortran)
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: gcc
+          version: 13
+
+      - name: Verify Fortran compiler
+        run: |
+          echo "FC=${{ env.FC }}"
+          gfortran --version
+          gcc --version
+        shell: bash
+
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.21.3
         with:
           output-dir: dist/
+        env:
+          # Use scikit-build-core with CMake for Windows builds
+          # This avoids the numpy.distutils deprecation issues
+          # Also install meson for f2py fallback on Python 3.12+
+          CIBW_BEFORE_BUILD_WINDOWS: >-
+            pip install numpy scikit-build-core cmake ninja meson meson-python
+          CIBW_ENVIRONMENT_WINDOWS: >-
+            FC=gfortran
+            CC=gcc
+            CMAKE_GENERATOR=Ninja
+          # Skip musllinux on Windows (not applicable)
+          CIBW_SKIP: "*-musllinux_*"
+
       - uses: actions/upload-artifact@v4
         with:
           name: windows
