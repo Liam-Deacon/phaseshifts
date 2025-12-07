@@ -14,17 +14,18 @@ def find_python_dll() -> pathlib.Path:
     libname = (
         sysconfig.get_config_var("LDLIBRARY")
         or sysconfig.get_config_var("DLLLIBRARY")
+        or sysconfig.get_config_var("PY3DLL")
         or ""
     )
     if not libname:
         raise RuntimeError("Python DLL name could not be determined from sysconfig")
 
-    bindir = sysconfig.get_config_var("BINDIR") or sys.exec_prefix
-    candidates = [
-        pathlib.Path(bindir) / libname,
-        pathlib.Path(sys.exec_prefix) / libname,
-        pathlib.Path(sys.base_prefix) / libname,
-    ]
+    bindir: str = sysconfig.get_config_var("BINDIR") or sys.exec_prefix
+    candidates: list[pathlib.Path] = []
+    for base in {bindir, sys.exec_prefix, sys.base_prefix, sys.prefix}:
+        basepath = pathlib.Path(base)
+        candidates.append(basepath / libname)
+        candidates.append(basepath / "DLLs" / libname)
 
     for candidate in candidates:
         if candidate.exists():
