@@ -88,7 +88,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           python -m pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
-          pip install numpy
+          pip install "numpy<2"
 
       - name: Install build dependencies
         run: |
