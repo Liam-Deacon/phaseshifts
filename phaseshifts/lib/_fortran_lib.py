@@ -63,8 +63,7 @@ def find_shared_library_path(module_name):  # (str) -> str|None
     for directory in search_roots:
         for filename in os.listdir(directory):
             if filename.startswith(module_basename) and (
-                filename.endswith((".so", ".pyd", ".dll"))
-                or ".cpython-" in filename
+                filename.endswith((".so", ".pyd", ".dll")) or ".cpython-" in filename
             ):
                 return os.path.join(directory, filename)
 
