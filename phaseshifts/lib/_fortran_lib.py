@@ -10,6 +10,7 @@ on the fly (useful when installing this package from source distribution).
 
 import importlib
 import os
+import site
 import subprocess
 import sys
 
@@ -24,6 +25,50 @@ FORTRAN_LIBS = {
         "module_name": LIBPHSH_MODULE.split(".")[-1],
     },
 }
+
+
+def find_shared_library_path(module_name):  # (str) -> str|None
+    """Locate a compiled extension for ``module_name`` across common paths.
+
+    In editable installs the pure-Python package is often imported from the
+    source tree while the compiled extension lands in site-packages. The
+    standard importer then misses the binary. This helper searches sys.path and
+    site-packages for any matching shared object.
+    """
+
+    try:
+        spec = importlib.util.find_spec(module_name)
+        if spec and spec.origin and spec.origin != "built-in":
+            return spec.origin
+    except ImportError:
+        pass
+
+    module_basename = module_name.split(".")[-1]
+    parent_parts = module_name.split(".")[:-1]
+    parent_rel = os.path.join(*parent_parts)
+
+    search_roots = []
+    for path_entry in sys.path:
+        candidate = os.path.join(path_entry or os.getcwd(), parent_rel)
+        if os.path.isdir(candidate):
+            search_roots.append(candidate)
+
+    for site_dir in site.getsitepackages() + [site.getusersitepackages()]:
+        if not site_dir:
+            continue
+        candidate = os.path.join(site_dir, parent_rel)
+        if os.path.isdir(candidate):
+            search_roots.append(candidate)
+
+    for directory in search_roots:
+        for filename in os.listdir(directory):
+            if filename.startswith(module_basename) and (
+                filename.endswith((".so", ".pyd", ".dll"))
+                or ".cpython-" in filename
+            ):
+                return os.path.join(directory, filename)
+
+    return None
 
 
 def is_module_importable(module):  # (str) -> bool
