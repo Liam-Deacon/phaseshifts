@@ -666,7 +666,7 @@ def main(argv=None):
             metavar="<format>",
             default="CLEED",
             help="Use specific phase shift format "
-            "i.e. 'cleed' or 'curve' "
+            "i.e. 'cleed', 'curve', or 'viper' "
             "[default: %(default)s]",
         )
         parser.add_argument(
