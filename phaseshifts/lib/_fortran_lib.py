@@ -65,7 +65,9 @@ def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwarg
     # Ensure the subprocess can import the package (for the shim) even when the
     # current working directory is inside phaseshifts/lib.
     env = os.environ.copy()
-    pkg_parent = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
+    pkg_parent = os.path.abspath(
+        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+    )
     pythonpath_parts = [pkg_parent]
     if env.get("PYTHONPATH"):
         pythonpath_parts.append(env["PYTHONPATH"])
