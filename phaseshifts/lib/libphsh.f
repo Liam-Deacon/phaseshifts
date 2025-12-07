@@ -3501,7 +3501,7 @@
        integer IA(NCON),NA(NCON)
        real AD(NCON)
        real ACC(NGRID),CHI(NGRID,NR),RX(NGRID)
-       real SUM
+       double precision SUM
 
        INDEX(X)=20.*(log(X)+8.8)+2.
        DX=0.05
