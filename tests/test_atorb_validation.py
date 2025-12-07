@@ -227,7 +227,9 @@ def test_parser_failure_modes(tmp_path):
     check_failure("i\n1 100\nd\n1\nx\n0.d0\nz", "Expected 'a' line")
 
     # Unexpected EOF before a
-    check_failure("i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'")
+    check_failure(
+        "i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'"
+    )
 
     # Bad SCF
     check_failure("i\n1 100\nd\n1\nx\n0.d0\na\nbad", "Unable to parse SCF")
@@ -243,7 +245,7 @@ def test_parser_failure_modes(tmp_path):
         "i\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nz",
         "Expected 'w' line",
     )
-    
+
     # Unexpected EOF before w
     check_failure(
         "i\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0",
@@ -303,7 +305,9 @@ def test_validate_comment_spacing_at_start(tmp_path):
 
 def test_clean_atorb_lines_ignores_comments(tmp_path):
     f = tmp_path / "comments.txt"
-    f.write_text("C comment\ni\nC another comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq")
+    f.write_text(
+        "C comment\ni\nC another comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq"
+    )
     model = validate_atorb_file(str(f))
     assert model.z == 1
 
@@ -311,12 +315,21 @@ def test_clean_atorb_lines_ignores_comments(tmp_path):
 def test_render_without_header(tmp_path):
     orb = AtorbElectron(n=1, l=0, m=0, j=0.5, s=1, occ=2.0)
     m = AtorbInputModel(
-        z=1, nr=100, rel=1, method="HF", relic=0.0, nlevels=1, 
-        mixing_scf=0.5, eigen_tol=1e-5, ech=100, orbitals=[orb], output="out.i",
-        header=""
+        z=1,
+        nr=100,
+        rel=1,
+        method="HF",
+        relic=0.0,
+        nlevels=1,
+        mixing_scf=0.5,
+        eigen_tol=1e-5,
+        ech=100,
+        orbitals=[orb],
+        output="out.i",
+        header="",
     )
     dest = tmp_path / "rendered_default.txt"
     render_atorb_file(m, str(dest))
-    
+
     content = dest.read_text()
     assert "atorb input file" in content
