@@ -5,11 +5,6 @@ import importlib.util
 import os
 import sys
 
-try:
-    from typing import List
-except ImportError:
-    pass  # No-op if typing is unavailable (e.g., Python <3.5)
-
 from ._fortran_lib import (
     is_module_importable,
     compile_f2py_shared_library,
