@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 import pytest
 
 from phaseshifts.atorb import Atorb, validate_atorb_file

@@ -18,12 +18,7 @@ from typing import List
 
 try:
     from pydantic import BaseModel, ValidationError
-
-    try:
-        from pydantic import model_validator
-    except ImportError:  # pragma: no cover - pydantic v1 fallback
-        from pydantic import root_validator as model_validator  # type: ignore
-except Exception:  # pragma: no cover - pydantic unavailable
+except ImportError:  # pragma: no cover - pydantic unavailable
 
     class ValidationError(ValueError):
         """Lightweight stand-in when pydantic is unavailable."""
@@ -41,12 +36,6 @@ except Exception:  # pragma: no cover - pydantic unavailable
 
         def model_dump(self):
             return self.__dict__
-
-    def model_validator(*args, **kwargs):  # type: ignore
-        def decorator(func):
-            return func
-
-        return decorator
 
 
 def coerce_model(model_cls, data):
@@ -304,6 +293,35 @@ def format_orbital_line(orbital):
     )
 
 
+def _parse_orbitals(lines, start_cursor, nlevels):
+    """Parse orbital definitions from the file lines."""
+    orbitals = []
+    for i in range(nlevels):
+        line_idx = start_cursor + i
+        try:
+            entry = lines[line_idx].split()
+            if len(entry) < 6:
+                raise ValueError
+            (n, l, m, j, s, occ) = entry[:6]
+            orbitals.append(
+                {
+                    "n": int(n),
+                    "l": int(l),
+                    "m": int(m),
+                    "j": float(j),
+                    "s": int(s),
+                    "occ": float(occ),
+                }
+            )
+        except Exception:
+            raise ValueError(
+                "Unable to parse orbital entry on line {0}: {1}".format(
+                    line_idx + 1, lines[line_idx]
+                )
+            )
+    return orbitals
+
+
 def _parse_atorb_file(filename):
     """
     Parse a raw text input file into an AtorbInputModel.
@@ -389,29 +407,7 @@ def _parse_atorb_file(filename):
         )
     cursor += 1
 
-    orbitals = []
-    for i in range(nlevels):
-        try:
-            entry = lines[cursor + i].split()
-            if len(entry) < 6:
-                raise ValueError
-            (n, l, m, j, s, occ) = entry[:6]
-            orbitals.append(
-                {
-                    "n": int(n),
-                    "l": int(l),
-                    "m": int(m),
-                    "j": float(j),
-                    "s": int(s),
-                    "occ": float(occ),
-                }
-            )
-        except Exception:
-            raise ValueError(
-                "Unable to parse orbital entry on line {0}: {1}".format(
-                    i + cursor + 1, lines[cursor + i]
-                )
-            )
+    orbitals = _parse_orbitals(lines, cursor, nlevels)
     cursor += nlevels
 
     if cursor >= len(lines):
