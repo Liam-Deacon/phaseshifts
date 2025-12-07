@@ -13,23 +13,29 @@ on:
   push:
     branches: ["master"]
     paths:
-      - phaseshifts/*
-      - tests/*
+      - phaseshifts/**
+      - tests/**
       - setup.py
       - requirements*.txt
       - Makefile
       - MANIFEST.in
       - "**/*.py"
+      - "**/*.f"
+      - CMakeLists.txt
+      - pyproject.toml
   pull_request:
     branches: ["master"]
     paths:
-      - phaseshifts/*
-      - tests/*
+      - phaseshifts/**
+      - tests/**
       - setup.py
       - requirements*.txt
       - Makefile
       - MANIFEST.in
       - "**/*.py"
+      - "**/*.f"
+      - CMakeLists.txt
+      - pyproject.toml
 
 jobs:
   build:
@@ -50,161 +56,84 @@ jobs:
           - "3.13"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      # Setup Fortran compiler - works on all platforms
+      - name: Setup Fortran compiler
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: gcc
+          version: 13
+
+      - name: Display Fortran compiler info
+        run: |
+          echo "Fortran compiler: ${{ env.FC }}"
+          ${{ env.FC }} --version
+          echo "C compiler: ${{ env.CC }}"
+          ${{ env.CC }} --version
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
           python -m pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
-          # Install build dependencies
-          pip install setuptools wheel numpy
+          pip install numpy
 
-      # Windows-specific dependencies
-      - name: Install Windows build dependencies
-        if: matrix.os == 'windows-latest'
+      - name: Install build dependencies
         run: |
-          # Install additional Windows-specific build tools
-          pip install setuptools-scm scikit-build scikit-build-core cmake
+          # Install scikit-build-core for modern builds
+          pip install "scikit-build-core>=0.5" cmake ninja
         shell: bash
 
-      # Windows-specific setup for Fortran compilation
-      - name: Setup Windows Fortran compiler
-        if: matrix.os == 'windows-latest'
+      # Unix build (Linux/macOS)
+      - name: Build package (Unix)
+        if: runner.os != 'Windows'
         run: |
-          # Install MinGW-w64 for consistent gcc/gfortran toolchain
-          choco install mingw --force
-          # Add to PATH (both possible locations)
-          echo "C:\tools\mingw64\bin" >> $GITHUB_PATH
-          echo "C:\mingw64\bin" >> $GITHUB_PATH
-          # Verify installation and PATH
-          echo "PATH: $PATH"
-          where gcc
-          where gfortran
-          gcc --version
-          gfortran --version
-        shell: bash
+          echo "Building on Unix with FC=${{ env.FC }}"
+          make libphsh
+        env:
+          PYTHON: python
+          FC: ${{ env.FC }}
+          CC: ${{ env.CC }}
 
-      # NOTE: There are some limitations with Windows builds needing to be visited in #32
-      - name: Install Microsoft Visual C++ Redistributables
-        if: matrix.os == 'windows-latest'
+      # Windows build - use f2py directly with the Fortran compiler from setup-fortran
+      - name: Build package (Windows)
+        if: runner.os == 'Windows'
         run: |
-          Install-Module -Name "VcRedist" -Force
-        shell: pwsh
+          echo "Building on Windows with gfortran"
+          echo "FC=${{ env.FC }}"
+          echo "CC=${{ env.CC }}"
 
-      - name: Find python DLL path for MinGW
-        if: matrix.os == 'windows-latest'
-        id: find_py_dll
-        run: |
-          DLLPATH=$(python .github/scripts/find_python_dll.py)
-          echo "Detected Python DLL: ${DLLPATH}"
-          if [ ! -f "$DLLPATH" ]; then
-            echo "::warning ::Python DLL not found at $DLLPATH"
-            echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
+          # Navigate to lib directory and build
+          cd phaseshifts/lib
+
+          # Verify source file exists
+          if (!(Test-Path "libphsh.f")) {
+            Write-Error "libphsh.f not found!"
             exit 1
-          fi
-          echo "DLLPATH=$DLLPATH" >> "$GITHUB_ENV"
-        shell: bash
-
-      - name: Ensure pexports is available
-        if: matrix.os == 'windows-latest'
-        run: |
-          set -e
-          found=0
-          for path in /c/msys64/mingw64/bin /c/mingw64/bin "C:/msys64/mingw64/bin" "C:/mingw64/bin"; do
-            if [ -x "$path/pexports.exe" ]; then
-              echo "$path" >> "$GITHUB_PATH"
-              found=1
-              break
-            fi
-          done
-          if [ "$found" -eq 0 ] && command -v pacman >/dev/null 2>&1; then
-            /c/msys64/usr/bin/bash -lc "pacman -Sy --noconfirm mingw-w64-x86_64-pexports"
-            echo "/c/msys64/mingw64/bin" >> "$GITHUB_PATH"
-            echo "/c/mingw64/bin" >> "$GITHUB_PATH"
-          fi
-          if ! command -v pexports >/dev/null 2>&1; then
-            echo "::warning ::pexports not available; MinGW import lib generation may fail"
-          else
-            echo "Found pexports: $(command -v pexports)"
-          fi
-        shell: bash
-
-      - name: Generate MinGW python defs
-        if: matrix.os == 'windows-latest'
-        id: mingw_setup
-        run: |
-          if [ -z "$DLLPATH" ]; then
-            echo "::warning ::DLLPATH not set, skipping pexports/dlltool. MinGW setup failed."
-            echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          if ! command -v pexports >/dev/null 2>&1; then
-            echo "::warning ::pexports missing; cannot generate import library"
-            echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          pexports "$DLLPATH" > python.def
-          dlltool -d python.def -l libpython.dll.a -k || {
-            echo "::warning ::Failed to generate libpython.dll.a"
-            echo "MINGW_SUCCESS=false" >> "$GITHUB_ENV"
-            exit 0
           }
-          # Place import library where MinGW looks for it
-          for target in /c/msys64/mingw64/lib /c/mingw64/lib "C:/msys64/mingw64/lib" "C:/mingw64/lib"; do
-            if [ -d "$target" ]; then
-              mv -f libpython.dll.a "$target"/libpython.dll.a && break
-            fi
-          done
-          echo "MINGW_SUCCESS=true" >> "$GITHUB_ENV"
-          echo "MinGW setup completed successfully"
-        shell: bash
 
-      - name: Setup MSVC if MinGW failed
-        if: matrix.os == 'windows-latest' && env.MINGW_SUCCESS == 'false'
-        uses: microsoft/setup-msbuild@v1.0.2
+          # Build using f2py with explicit Fortran flags
+          python -m numpy.f2py libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
 
-      - name: Build binaries (Windows)
-        if: matrix.os == 'windows-latest'
+          # Verify build output
+          Get-ChildItem libphsh*
+        shell: pwsh
+        env:
+          FC: ${{ env.FC }}
+          CC: ${{ env.CC }}
+
+      - name: Verify build
         run: |
-          echo "Python version: $(python --version)"
-
-          # Check if MinGW setup was successful
-          if [ "$MINGW_SUCCESS" = "true" ]; then
-            echo "Using MinGW/GCC toolchain for build..."
-            echo "GCC version: $(gcc --version | head -1)"
-            echo "Gfortran version: $(gfortran --version | head -1)"
-            echo "CMake version: $(cmake --version | head -1)"
-            # Set CMake generator and compilers for MinGW
-            export CMAKE_GENERATOR="MinGW Makefiles"
-            export CMAKE_C_COMPILER=gcc
-            export CMAKE_Fortran_COMPILER=gfortran
-            export CC=gcc
-            export FC=gfortran
-          else
-            echo "MinGW setup failed, falling back to MSVC toolchain..."
-            # Use MSVC compiler
-            export CMAKE_GENERATOR="Visual Studio 17 2022"
-            # Note: For Fortran, you might need Intel Fortran or other MSVC-compatible Fortran compiler
-            echo "Warning: MSVC doesn't include a Fortran compiler. Consider Intel Fortran or other alternatives."
-            unset CC
-            unset FC
-          fi
-
-          make
+          python -c "import phaseshifts.lib.libphsh as phsh; print('libphsh imported successfully!')"
         shell: bash
-        env:
-          PYTHON: python
-
-      - name: Build binaries (Unix)
-        if: matrix.os != 'windows-latest'
-        run: make
-        shell: bash
-        env:
-          PYTHON: python
       - name: Lint with flake8
         continue-on-error: true
         run: |
@@ -212,15 +141,26 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Install package with test extras
+        run: |
+          pip install '.[test]'
+
       - name: Test with pytest
         run: |
-          pip install '.[docs,test]'
-          pytest tests/
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+          pytest tests/ -v --cov=phaseshifts --cov-report=xml
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          PHASESHIFTS_TEST_USE_SOURCE: "1"
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false
+
       - name: Run codacy-coverage-reporter
+        if: always()
+        continue-on-error: true
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
