@@ -50,16 +50,6 @@ docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
 
 [build-system]
 requires = [
-    "scikit-build-core>=0.11.5; python_version >= '3.8'",
-    "setuptools",
-    "wheel",
-    "numpy",
-]
-test = ["pytest", "pytest-cov"]
-docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
-
-[build-system]
-requires = [
     "setuptools",
     "wheel",
     "numpy",
