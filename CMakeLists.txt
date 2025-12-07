@@ -213,6 +213,9 @@ if (WIN32)
     # as they can cause issues with Python extension modules
   endif()
 
+  # Link Python library on Windows (required - unlike Unix, Windows needs explicit linking)
+  target_link_libraries("${f2py_module_name}" PRIVATE ${Python_LIBRARIES})
+
 elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
@@ -339,6 +342,8 @@ if(ENABLE_PHSHIFT2007_BINARIES)
 endif()
 
 # Only install the compiled extension - no data files
+# NOTE: scikit-build-core handles the package path prefix, so we just use "lib/"
+# The final install location will be: <package>/lib/libphsh.<ext>
 install(TARGETS "${f2py_module_name}"
-        DESTINATION phaseshifts/lib/
+        DESTINATION lib/
         COMPONENT Runtime)
