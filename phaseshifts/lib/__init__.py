@@ -1,5 +1,7 @@
 """The subpackage is for library code, likely compiled from Fortran or C sources."""
 
+import os
+
 from ._fortran_lib import (
     is_module_importable,
     compile_f2py_shared_library,
@@ -10,5 +12,14 @@ from ._fortran_lib import (
 from .. import settings
 
 # NOTE: Attempt to compile libphsh library on import if not already available, useful when installing from source dist
-if not is_module_importable(LIBPHSH_MODULE) and settings.COMPILE_MISSING:
-    compile_f2py_shared_library(**FORTRAN_LIBS[LIBPHSH_MODULE])
+if (
+    settings.COMPILE_MISSING
+    and not os.environ.get("PHASESHIFTS_SKIP_COMPILE_ON_IMPORT")
+    and not is_module_importable(LIBPHSH_MODULE)
+):
+    try:
+        compile_f2py_shared_library(**FORTRAN_LIBS[LIBPHSH_MODULE])
+    except Exception:  # pragma: no cover - best-effort fallback
+        # Avoid failing import just because the optional auto-compile failed.
+        # Callers can inspect/log separately if needed.
+        pass
