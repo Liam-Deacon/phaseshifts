@@ -8,20 +8,29 @@ from __future__ import annotations
 import pathlib
 import sys
 import sysconfig
+from typing import List, Optional
 
 
 def find_python_dll() -> pathlib.Path:
-    libname = (
+    """Find the Python DLL on Windows.
+    
+    Returns:
+        pathlib.Path: The resolved path to the Python DLL.
+        
+    Raises:
+        FileNotFoundError: If the Python DLL cannot be located.
+    """
+    libname: Optional[str] = (
         sysconfig.get_config_var("LDLIBRARY")
         or sysconfig.get_config_var("DLLLIBRARY")
         or sysconfig.get_config_var("PY3DLL")
         or ""
     )
     if not libname:
-        libname = f"python{sys.version_info.major}{sys.version_info.minor}.dll"
+        libname = "python{}{}.dll".format(sys.version_info.major, sys.version_info.minor)
 
     bindir: str = sysconfig.get_config_var("BINDIR") or sys.exec_prefix
-    candidates: list[pathlib.Path] = []
+    candidates: List[pathlib.Path] = []
     roots = (
         bindir,
         sys.exec_prefix,
@@ -42,7 +51,7 @@ def find_python_dll() -> pathlib.Path:
         if candidate.exists():
             return candidate.resolve()
 
-    raise FileNotFoundError(f"Python DLL {libname!r} not found in {candidates}")
+    raise FileNotFoundError("Python DLL {!r} not found in {}".format(libname, candidates))
 
 
 def main() -> int:
