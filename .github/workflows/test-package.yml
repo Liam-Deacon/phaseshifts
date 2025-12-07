@@ -89,7 +89,7 @@ jobs:
       - name: Install build dependencies
         run: |
           # Install scikit-build-core for modern builds
-          pip install "scikit-build-core>=0.5" cmake ninja
+          pip install "scikit-build>=0.17" "scikit-build-core>=0.5" cmake ninja
         shell: bash
 
       # Unix build (Linux/macOS)
@@ -120,8 +120,8 @@ jobs:
             exit 1
           }
 
-          # Build using f2py with explicit Fortran flags
-          python -m numpy.f2py libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
+          # Build using f2py with explicit Fortran flags and distutils shim
+          python -m phaseshifts.lib._f2py_shim libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
 
           # Verify build output
           Get-ChildItem libphsh*
@@ -129,6 +129,7 @@ jobs:
         env:
           FC: ${{ env.FC }}
           CC: ${{ env.CC }}
+          PYTHONPATH: ${{ github.workspace }}
 
       - name: Verify build
         run: |

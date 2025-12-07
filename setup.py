@@ -29,6 +29,55 @@ with suppress(ImportError):
 
 sys.path.append(os.path.dirname(__file__))
 
+
+# Ensure distutils is importable even on slim/modern Python installs where it
+# is absent from the stdlib (e.g., Python 3.12+ or Debian/Ubuntu minimal
+# builds). numpy.f2py and numpy.distutils expect ``distutils`` to be present.
+try:
+    from phaseshifts.lib._distutils_compat import ensure_distutils
+except Exception:  # pragma: no cover - fallback for very early import failures
+
+    def ensure_distutils():
+        try:
+            import distutils  # noqa: F401
+
+            return True
+        except ImportError:
+            pass
+
+        try:
+            import setuptools._distutils as _du  # type: ignore
+        except Exception:
+            return False
+
+        sys.modules.setdefault("distutils", _du)
+        for _mod in (
+            "distutils.ccompiler",
+            "distutils.sysconfig",
+            "distutils.unixccompiler",
+            "distutils.msvccompiler",
+        ):
+            try:
+                __import__(_mod)
+            except Exception:
+                pass
+
+        return True
+
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
+def _pythonpath_env(extra_path):
+    env = os.environ.copy()
+    paths = [extra_path]
+    existing = env.get("PYTHONPATH")
+    if existing:
+        paths.append(existing)
+    env["PYTHONPATH"] = os.pathsep.join(paths)
+    return env
+
+
 try:
     import phaseshifts
     import phaseshifts.phshift2007
@@ -62,6 +111,7 @@ BUILD_BACKEND = None  # will be set below based on available tooling
 
 # Build logic for legacy and modern Python
 if tuple(sys.version_info[:2]) <= (3, 11):
+    ensure_distutils()
     # Try modern build first: scikit-build + CMake
     try:
         import skbuild
@@ -99,7 +149,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
             args = [
                 sys.executable,
                 "-m",
-                "numpy.f2py",
+                "phaseshifts.lib._f2py_shim",
                 "libphsh.f",
                 "-m",
                 "libphsh",
@@ -127,7 +177,11 @@ if tuple(sys.version_info[:2]) <= (3, 11):
             except (NameError, AttributeError, KeyError):
                 # Fallback if phaseshifts module or compiler flags not available
                 args.append("--f77flags=-frecursive")
-            subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
+            subprocess.check_call(
+                args,
+                cwd="./phaseshifts/lib",
+                env=_pythonpath_env(PROJECT_ROOT),
+            )  # nosec
 else:
     # Modern build: require scikit-build and CMake for Python 3.12+
     # NOTE: numpy.distutils is completely removed in Python 3.12
@@ -148,6 +202,8 @@ else:
         BUILD_BACKEND = "setuptools"
         from setuptools import setup, Extension  # type: ignore  # noqa: F811
 
+        ensure_distutils()
+
         # Try to pre-build the Fortran extension using f2py
         try:
             import numpy
@@ -160,7 +216,7 @@ else:
                 args = [
                     sys.executable,
                     "-m",
-                    "numpy.f2py",
+                    "phaseshifts.lib._f2py_shim",
                     "libphsh.f",
                     "-m",
                     "libphsh",
@@ -169,7 +225,11 @@ else:
                 ]
                 try:
                     print("Building libphsh extension with f2py...")
-                    subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
+                    subprocess.check_call(
+                        args,
+                        cwd="./phaseshifts/lib",
+                        env=_pythonpath_env(PROJECT_ROOT),
+                    )  # nosec
                 except subprocess.CalledProcessError as e:
                     print(
                         "WARNING: f2py build failed ({}); extension may not be available.".format(
