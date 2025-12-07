@@ -55,9 +55,9 @@ with suppress(ImportError):
     import skbuild  # noqa: F401
 
 # Select build backend. Modern builds require scikit-build and CMake (default)
-BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.f2py"]
+BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.distutils"]
 
-BUILD_BACKEND = None
+BUILD_BACKEND = None  # will be set below based on available tooling
 
 
 # Build logic for legacy and modern Python
@@ -70,20 +70,23 @@ if tuple(sys.version_info[:2]) <= (3, 11):
         BUILD_BACKEND = "skbuild"
     except ImportError:
         print(
-            "WARNING: scikit-build not found; falling back to legacy numpy.f2py build.",
+            "WARNING: scikit-build not found; falling back to legacy numpy.distutils build.",
             file=sys.stderr,
         )
-        BUILD_BACKEND = "numpy.f2py"
+        BUILD_BACKEND = "numpy.distutils"
+        from numpy.distutils.core import setup  # type: ignore  # noqa: F811
+        from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
     except Exception as e:
         print(
-            f"WARNING: scikit-build build failed ({e}); falling back to legacy numpy.f2py build.",
+            f"WARNING: scikit-build build failed ({e}); falling back to legacy numpy.distutils build.",
             file=sys.stderr,
         )
-        BUILD_BACKEND = "numpy.f2py"
-    if BUILD_BACKEND == "numpy.f2py":
-        from setuptools import find_packages, setup, Extension  # noqa: F811
-
+        BUILD_BACKEND = "numpy.distutils"
+        from numpy.distutils.core import setup  # type: ignore  # noqa: F811
+        from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
+    if BUILD_BACKEND == "numpy.distutils":
         try:
+            import numpy
             import numpy.f2py
 
             INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
@@ -135,13 +138,15 @@ else:
         # On Windows, fallback to numpy.f2py if scikit-build not available
         if os.name == "nt":
             print(
-                "WARNING: scikit-build not found on Windows; falling back to legacy numpy.f2py build.",
+                "WARNING: scikit-build not found on Windows; falling back to legacy numpy.distutils build.",
                 file=sys.stderr,
             )
-            BUILD_BACKEND = "numpy.f2py"
-            from setuptools import find_packages, setup, Extension  # noqa: F811
+            BUILD_BACKEND = "numpy.distutils"
+            from numpy.distutils.core import setup  # type: ignore  # noqa: F811
+            from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
 
             try:
+                import numpy
                 import numpy.f2py
 
                 INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
