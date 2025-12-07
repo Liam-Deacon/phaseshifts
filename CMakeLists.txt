@@ -4,12 +4,13 @@
 cmake_minimum_required(VERSION 3.15)
 
 #
-# Windows-specific configuration for mixed toolchains
+# Windows-specific configuration for finding compilers BEFORE project()
+# NOTE: We can only set compiler paths here, not check compiler IDs
+#       Compiler ID checks must happen AFTER project() is called
 if(WIN32)
-  # Retain the generator chosen by the user (MSVC, MinGW, or others) and simply report it.
-  message(STATUS "Windows detected - using CMake generator: ${CMAKE_GENERATOR}")
+  message(STATUS "Windows detected - configuring Fortran compiler search paths")
 
-  # Ensure gfortran is found on Windows - check multiple common paths
+  # Find gfortran on Windows if not already specified
   if(NOT CMAKE_Fortran_COMPILER)
     find_program(GFORTRAN_EXECUTABLE
       NAMES gfortran gfortran.exe
@@ -32,7 +33,7 @@ if(WIN32)
     endif()
   endif()
 
-  # Also look for gcc if not already set
+  # Find gcc on Windows if not already specified  
   if(NOT CMAKE_C_COMPILER)
     find_program(GCC_EXECUTABLE
       NAMES gcc gcc.exe
@@ -52,16 +53,30 @@ if(WIN32)
       message(STATUS "Found gcc: ${GCC_EXECUTABLE}")
     endif()
   endif()
+endif()
 
-  # On Windows, prefer all-MSVC or all-MinGW toolchain to avoid linking issues
+project(phaseshifts
+  VERSION 0.1.8
+  DESCRIPTION "LIBPHSH module"
+  LANGUAGES C Fortran
+)
+
+# Post-project() Windows toolchain validation
+# NOTE: These checks MUST be after project() since CMAKE_Fortran_COMPILER_ID
+#       and MSVC are only set after project() enables the languages
+if(WIN32)
+  message(STATUS "Windows build - CMake generator: ${CMAKE_GENERATOR}")
+  message(STATUS "Windows build - C compiler: ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
+  message(STATUS "Windows build - Fortran compiler: ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
+  
+  # Check for mixed MSVC/gfortran toolchain (problematic)
   if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    message(FATAL_ERROR
+    message(WARNING
       "Mixed MSVC/gfortran toolchain detected on Windows. "
-      "This causes linking failures. Please use one of:\n"
+      "This may cause linking failures. Consider using one of:\n"
       "1. All-MSVC with Intel Fortran\n"
-      "2. All-MinGW (gcc + gfortran)\n"
-      "3. Use setup.py instead of CMake for Windows builds\n"
-      "Suggestion: Set CMAKE_Fortran_COMPILER to use Intel Fortran or configure MinGW"
+      "2. All-MinGW (gcc + gfortran) with -G 'MinGW Makefiles'\n"
+      "3. Use setup.py instead of CMake for Windows builds"
     )
   endif()
 
@@ -70,17 +85,13 @@ if(WIN32)
     message(STATUS "MSVC detected - checking for compatible Fortran compiler")
     if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
       message(STATUS "Intel Fortran found - compatible with MSVC")
+    elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+      message(STATUS "GNU Fortran (gfortran) detected with MSVC - may have issues")
     else()
-      message(WARNING "Non-Intel Fortran with MSVC may cause issues")
+      message(STATUS "Fortran compiler: ${CMAKE_Fortran_COMPILER_ID}")
     endif()
   endif()
 endif()
-
-project(phaseshifts
-  VERSION 0.1.8
-  DESCRIPTION "LIBPHSH module"
-  LANGUAGES C Fortran
-  )
 
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
