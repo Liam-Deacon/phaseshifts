@@ -13,32 +13,42 @@ on:
   push:
     branches: ["master"]
     paths:
-      - phaseshifts/*
-      - tests/*
+      - phaseshifts/**
+      - tests/**
       - setup.py
       - requirements*.txt
       - Makefile
       - MANIFEST.in
       - "**/*.py"
+      - "**/*.f"
+      - CMakeLists.txt
+      - pyproject.toml
   pull_request:
     branches: ["master"]
     paths:
-      - phaseshifts/*
-      - tests/*
+      - phaseshifts/**
+      - tests/**
       - setup.py
       - requirements*.txt
       - Makefile
       - MANIFEST.in
       - "**/*.py"
+      - "**/*.f"
+      - CMakeLists.txt
+      - pyproject.toml
 
 jobs:
   build:
+    env:
+      PHASESHIFTS_COMPILE_MISSING: "0"
+      PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
+      PYTHONPATH: ${{ github.workspace }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os:
           - ubuntu-latest
-          # - windows-latest  # TODO: Needs #32 to be resolved
+          - windows-latest # TODO: Needs #32 to be resolved
           # - macos-latest
         python-version:
           # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
@@ -50,27 +60,63 @@ jobs:
           - "3.13"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      # Setup Fortran compiler - works on all platforms
+      - name: Setup Fortran compiler
+        uses: fortran-lang/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: gcc
+          version: 13
+
+      - name: Display Fortran compiler info
+        run: |
+          echo "Fortran compiler: ${{ env.FC }}"
+          ${{ env.FC }} --version
+          echo "C compiler: ${{ env.CC }}"
+          ${{ env.CC }} --version
+
+      # NOTE: Install numpy first to ensure that numpy.f2py is available - allow numpy v2 for fast install in python 3.13+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install --upgrade pip setuptools wheel
           python -m pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
-      # NOTE: There are some limitations with Windows builds needing to be visited in #32
-      - name: Install Microsoft Visual C++ Redistributables
-        if: matrix.os == 'windows-latest'
+          pip install "numpy"
+
+      - name: Install build dependencies
         run: |
-          Install-Module -Name "VcRedist" -Force
-        shell: pwsh
-      - name: Build binaries
-        run: make
+          # Install scikit-build-core for modern builds (CMake-based)
+          # Also install meson for f2py on Python 3.12+ as fallback
+          pip install "scikit-build-core>=0.5" cmake ninja meson meson-python
+        shell: bash
+
+      # Build the extension using pip install which uses scikit-build-core + CMake
+      # This is more reliable than calling f2py directly
+      - name: Build package via pip (all platforms)
+        run: |
+          echo "Building package using pip install (scikit-build-core + CMake)"
+          echo "FC=${{ env.FC }}"
+          echo "CC=${{ env.CC }}"
+
+          # Build in-place using pip with no-build-isolation to use installed deps
+          pip install -e . --no-build-isolation -v
+
+          # Verify the extension was built
+          python -c "import phaseshifts.lib.libphsh as phsh; print('Build successful!')"
         shell: bash
         env:
-          PYTHON: python
+          FC: ${{ env.FC }}
+          CC: ${{ env.CC }}
+          CMAKE_GENERATOR: Ninja
+
       - name: Lint with flake8
         continue-on-error: true
         run: |
@@ -78,15 +124,30 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Install package with test extras
+        run: |
+          pip install '.[test]'
+        env:
+          FC: ${{ env.FC }}
+          CC: ${{ env.CC }}
+          CMAKE_GENERATOR: Ninja
+
       - name: Test with pytest
         run: |
-          pip install '.[docs,test]'
-          pytest tests/
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
+          pytest tests/ -v --cov=phaseshifts --cov-report=xml
         env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          PHASESHIFTS_TEST_USE_SOURCE: "1"
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
+          fail_ci_if_error: false
+
       - name: Run codacy-coverage-reporter
+        if: always()
+        continue-on-error: true
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

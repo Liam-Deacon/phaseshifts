@@ -19,6 +19,10 @@ _skbuild/
 phaseshifts/lib/libphsh
 bin/phsh*
 
+# built files and test artifacts
+atorb_C.txt
+phaseshifts/lib/libphsh
+
 # log files
 *.log
 

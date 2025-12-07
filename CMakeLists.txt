@@ -3,11 +3,95 @@
 ### setup project ###
 cmake_minimum_required(VERSION 3.15)
 
+#
+# Windows-specific configuration for finding compilers BEFORE project()
+# NOTE: We can only set compiler paths here, not check compiler IDs
+#       Compiler ID checks must happen AFTER project() is called
+if(WIN32)
+  message(STATUS "Windows detected - configuring Fortran compiler search paths")
+
+  # Find gfortran on Windows if not already specified
+  if(NOT CMAKE_Fortran_COMPILER)
+    find_program(GFORTRAN_EXECUTABLE
+      NAMES gfortran gfortran.exe
+      PATHS
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin"
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
+      DOC "gfortran compiler"
+    )
+    if(GFORTRAN_EXECUTABLE)
+      set(CMAKE_Fortran_COMPILER "${GFORTRAN_EXECUTABLE}" CACHE FILEPATH "Fortran compiler" FORCE)
+      message(STATUS "Found gfortran: ${GFORTRAN_EXECUTABLE}")
+    else()
+      message(WARNING "gfortran not found. Please install MinGW-w64 or ensure gfortran is in PATH")
+    endif()
+  endif()
+
+  # Find gcc on Windows if not already specified
+  if(NOT CMAKE_C_COMPILER)
+    find_program(GCC_EXECUTABLE
+      NAMES gcc gcc.exe
+      PATHS
+        "C:/mingw64/bin"
+        "C:/tools/mingw64/bin"
+        "C:/msys64/mingw64/bin"
+        "C:/Program Files/mingw-w64/x86_64-*/mingw64/bin"
+        "C:/msys64/ucrt64/bin"
+        "C:/msys64/mingw32/bin"
+        "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin"
+        ENV PATH
+      DOC "gcc compiler"
+    )
+    if(GCC_EXECUTABLE)
+      set(CMAKE_C_COMPILER "${GCC_EXECUTABLE}" CACHE FILEPATH "C compiler" FORCE)
+      message(STATUS "Found gcc: ${GCC_EXECUTABLE}")
+    endif()
+  endif()
+endif()
+
 project(phaseshifts
   VERSION 0.1.8
   DESCRIPTION "LIBPHSH module"
   LANGUAGES C Fortran
-  )
+)
+
+# Post-project() Windows toolchain validation
+# NOTE: These checks MUST be after project() since CMAKE_Fortran_COMPILER_ID
+#       and MSVC are only set after project() enables the languages
+if(WIN32)
+  message(STATUS "Windows build - CMake generator: ${CMAKE_GENERATOR}")
+  message(STATUS "Windows build - C compiler: ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
+  message(STATUS "Windows build - Fortran compiler: ${CMAKE_Fortran_COMPILER} (${CMAKE_Fortran_COMPILER_ID})")
+
+  # Check for mixed MSVC/gfortran toolchain (problematic)
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(WARNING
+      "Mixed MSVC/gfortran toolchain detected on Windows. "
+      "This may cause linking failures. Consider using one of:\n"
+      "1. All-MSVC with Intel Fortran\n"
+      "2. All-MinGW (gcc + gfortran) with -G 'MinGW Makefiles'\n"
+      "3. Use setup.py instead of CMake for Windows builds"
+    )
+  endif()
+
+  # Check for Intel Fortran if using MSVC
+  if(MSVC)
+    message(STATUS "MSVC detected - checking for compatible Fortran compiler")
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel")
+      message(STATUS "Intel Fortran found - compatible with MSVC")
+    elseif(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+      message(STATUS "GNU Fortran (gfortran) detected with MSVC - may have issues")
+    else()
+      message(STATUS "Fortran compiler: ${CMAKE_Fortran_COMPILER_ID}")
+    endif()
+  endif()
+endif()
 
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
@@ -36,6 +120,28 @@ endif()
 
 # Use modern scikit-build-core CMake modules
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
+# Get the proper Python extension module suffix
+# When scikit-build-core is driving the build, use SKBUILD_SOABI (more reliable)
+# Otherwise, query Python's sysconfig for EXT_SUFFIX
+if(DEFINED SKBUILD_SOABI)
+  # scikit-build-core provides the correct SOABI
+  if(WIN32)
+    set(PYTHON_EXTENSION_MODULE_SUFFIX ".${SKBUILD_SOABI}.pyd")
+  else()
+    set(PYTHON_EXTENSION_MODULE_SUFFIX ".${SKBUILD_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}")
+  endif()
+  message(STATUS "Using SKBUILD_SOABI: ${SKBUILD_SOABI}")
+else()
+  # Fallback: query Python directly
+  execute_process(
+    COMMAND "${Python_EXECUTABLE}"
+    -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.so')"
+    OUTPUT_VARIABLE PYTHON_EXTENSION_MODULE_SUFFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+endif()
+message(STATUS "Python extension suffix: ${PYTHON_EXTENSION_MODULE_SUFFIX}")
 
 # NumPy include directory
 execute_process(
@@ -104,7 +210,42 @@ set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSIO
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
 
 # Platform-specific linking and compiler flags
-if (UNIX)
+if (WIN32)
+  # Windows-specific configuration
+  message(STATUS "Configuring for Windows build")
+
+  # Ensure proper extension for Windows (fallback to .pyd if EXT_SUFFIX was empty)
+  if(NOT PYTHON_EXTENSION_MODULE_SUFFIX OR PYTHON_EXTENSION_MODULE_SUFFIX STREQUAL ".so")
+    set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+    message(STATUS "Using fallback Windows extension suffix: .pyd")
+  endif()
+
+  # Handle mixed toolchain issues
+  if(MSVC AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(WARNING "Mixed MSVC/gfortran toolchain detected - this may cause linking issues")
+    message(STATUS "Consider using Intel Fortran or all-MinGW toolchain")
+    # Try to set compatible flags
+    set_target_properties("${f2py_module_name}" PROPERTIES
+      LINK_FLAGS "/NODEFAULTLIB:MSVCRT")
+  endif()
+
+  # Set Windows-specific compiler flags for gfortran
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    target_compile_options("${f2py_module_name}" PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:-Wall -frecursive -fcheck=bounds -std=legacy>
+    )
+    # Use static linking for MinGW runtime libraries to avoid DLL dependency issues
+    # This bundles libgfortran, libgcc, and libquadmath into the extension
+    target_link_options("${f2py_module_name}" PRIVATE
+      -static-libgfortran
+      -static-libgcc
+    )
+  endif()
+
+  # Link Python library on Windows (required - unlike Unix, Windows needs explicit linking)
+  target_link_libraries("${f2py_module_name}" PRIVATE ${Python_LIBRARIES})
+
+elseif (UNIX)
   if (APPLE)
     set_target_properties("${f2py_module_name}" PROPERTIES
     LINK_FLAGS  '-Wl,-dylib,-undefined,dynamic_lookup')
@@ -134,7 +275,18 @@ if (UNIX)
   endif()
 endif()
 
+
 add_dependencies("${f2py_module_name}" genpyf generate_f2py_files)
+
+# --- Optional on‑the‑fly generation of libphsh (disabled by default) ---
+option(GENERATE_LIBPHSH "Generate libphsh Fortran library automatically if missing" OFF)
+if(GENERATE_LIBPHSH)
+  add_custom_target(generate_libphsh
+    COMMAND ${CMAKE_COMMAND} -E echo "TODO: generate libphsh from source"
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating libphsh Fortran library")
+  add_dependencies("${f2py_module_name}" generate_libphsh)
+endif()
 
 # Debug output to help diagnose build issues
 message(STATUS "Building target: ${f2py_module_name}")
@@ -219,6 +371,9 @@ if(ENABLE_PHSHIFT2007_BINARIES)
 endif()
 
 # Only install the compiled extension - no data files
+# wheel.install-dir in pyproject.toml is set to "phaseshifts/lib"
+# so DESTINATION . installs into phaseshifts/lib/
+# For editable mode (inplace), extension is copied to source tree phaseshifts/lib/
 install(TARGETS "${f2py_module_name}"
-        DESTINATION phaseshifts/lib/
+        DESTINATION .
         COMPONENT Runtime)

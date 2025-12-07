@@ -16,6 +16,10 @@ import datetime
 import sys
 import os
 
+# Avoid expensive Fortran compilation during docs builds (e.g., CI, ReadTheDocs)
+# so autodoc imports don't try to compile libphsh on the fly.
+os.environ.setdefault("PHASESHIFTS_COMPILE_MISSING", "0")
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.

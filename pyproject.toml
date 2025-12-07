@@ -5,7 +5,7 @@ description = "Python-based version of the Barbieri/Van Hove phase shift calcula
 authors = [{ name = "Liam Deacon", email = "liam.m.deacon@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 dependencies = [
     "numpy>=1.3",
     "scipy>=0.7",
@@ -55,7 +55,19 @@ requires = [
     "wheel",
     "numpy",
 ]
-build-backend = "scikit_build_core.build"
+test = ["pytest", "pytest-cov"]
+docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
+
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+    "numpy",
+    "ninja>=1.11",
+    "scikit-build-core>=0.11.5; python_version >= '3.8'",
+]
+build-backend = "phaseshifts_build_backend"
+backend-path = ["."]
 
 [tool.cibuildwheel]
 build = [
@@ -90,7 +102,10 @@ CMAKE_OSX_ARCHITECTURES = "$CIBW_ARCH"   # Universal2 build
 MACOSX_DEPLOYMENT_TARGET = "15.0"        # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
-before-build = ["pip install numpy delvewheel", "build_linphsh.bat"]
+before-build = [
+    "pip install numpy scikit-build-core cmake ninja meson meson-python",
+]
+environment = { FC = "gfortran", CC = "gcc", CMAKE_GENERATOR = "Ninja" }
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     # "delvewheel show {wheel} -vv",
@@ -116,6 +131,8 @@ target-version = "py38" # 3.8 is minimum
 line-length = 120
 
 [tool.scikit-build]
+# scikit-build-core prefers Ninja automatically when available; Windows builds
+# also set CMAKE_GENERATOR=Ninja in cibuildwheel env to avoid MSVC+gfortran issues.
 cmake.build-type = "Release"
 cmake.args = []
 wheel.install-dir = "phaseshifts/lib"
@@ -126,7 +143,7 @@ install.components = ["Runtime"]
 experimental = true
 wheel.packages = ["phaseshifts"]
 # Override source discovery to ignore MANIFEST.in
-build-dir = "build"
+build-dir = "build/{wheel_tag}"
 # Exclude ALL non-essential files from wheels
 wheel.exclude = [
     "*.txt",

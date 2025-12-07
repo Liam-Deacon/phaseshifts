@@ -12,6 +12,25 @@ PHSHIFT2007_DOWNLOAD_URL = (
 )
 DEFAULT_DIRPATH = "."
 
+# Windows-incompatible flags that should be filtered out
+WINDOWS_INCOMPATIBLE_FLAGS = ["-pie", "-static-libgcc", "-static-libgfortran"]
+
+COMPILER_FLAGS = {
+    "gfortran": [
+        flag
+        for flag in [
+            "-pie",
+            "-Wall",
+            "-static-libgcc",
+            "-static-libgfortran",
+            "-frecursive",
+            "-fcheck=bounds",
+            "-std=legacy",
+        ]
+        if sys.platform != "win32" or flag not in WINDOWS_INCOMPATIBLE_FLAGS
+    ]
+}
+
 
 def download_phshift2007(dirpath=DEFAULT_DIRPATH):
     # type: (str) -> str
@@ -63,7 +82,7 @@ def extract_phshift2007(dirpath=DEFAULT_DIRPATH):
         print(_extract_fortran_programs_from_ab_file(filepath, dirpath))
 
 
-def _compile_fortran_program(source_filepath, output_filepath=None):
+def _compile_fortran_program(source_filepath, output_filepath=""):
     # type: (str, str) -> str
     """Compiles the Fortran program from the .for file in the phshift2007.zip archive."""
     if not output_filepath:
@@ -71,24 +90,22 @@ def _compile_fortran_program(source_filepath, output_filepath=None):
             os.path.dirname(source_filepath),
             os.path.basename(source_filepath).replace(".for", ""),
         )
-    args = [
-        "gfortran",
-        "-pie",
-        "-Wall",
-        "-static-libgcc",
-        "-static-libgfortran",
-        "-frecursive",
-        "-fcheck=bounds",
-        "-std=legacy",
-        "-o",
-        output_filepath,
-        source_filepath,
-    ]
+        if sys.platform == "win32":
+            output_filepath += ".exe"
+    args = (
+        ["gfortran"]
+        + COMPILER_FLAGS["gfortran"]
+        + [
+            "-o",
+            output_filepath,
+            source_filepath,
+        ]
+    )
     print(" ".join(args))
     with subprocess.Popen(args) as proc:  # nosec
         status = proc.wait()
         if status != 0:
-            raise subprocess.CalledProcessError(status, " ".join(proc.args))
+            raise subprocess.CalledProcessError(status, " ".join(proc.args or []))  # type: ignore
     return output_filepath
 
 
