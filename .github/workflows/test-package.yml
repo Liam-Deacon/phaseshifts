@@ -92,58 +92,30 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          # Install scikit-build-core for modern builds
-          pip install "scikit-build>=0.17" "scikit-build-core>=0.5" cmake ninja
+          # Install scikit-build-core for modern builds (CMake-based)
+          # Also install meson for f2py on Python 3.12+ as fallback
+          pip install "scikit-build-core>=0.5" cmake ninja meson meson-python
         shell: bash
 
-      # Unix build (Linux/macOS)
-      - name: Build package (Unix)
-        if: runner.os != 'Windows'
+      # Build the extension using pip install which uses scikit-build-core + CMake
+      # This is more reliable than calling f2py directly
+      - name: Build package via pip (all platforms)
         run: |
-          echo "Building on Unix with FC=${{ env.FC }}"
-          cd phaseshifts/lib
-          python -m phaseshifts.lib._f2py_shim libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
-          ls -l libphsh*
-        env:
-          PYTHON: python
-          FC: ${{ env.FC }}
-          CC: ${{ env.CC }}
-          PYTHONPATH: ${{ github.workspace }}
-
-      # Windows build - use f2py directly with the Fortran compiler from setup-fortran
-      - name: Build package (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          echo "Building on Windows with gfortran"
+          echo "Building package using pip install (scikit-build-core + CMake)"
           echo "FC=${{ env.FC }}"
           echo "CC=${{ env.CC }}"
 
-          # Navigate to lib directory and build
-          cd phaseshifts/lib
+          # Build in-place using pip with no-build-isolation to use installed deps
+          pip install -e . --no-build-isolation -v
 
-          # Verify source file exists
-          if (!(Test-Path "libphsh.f")) {
-            Write-Error "libphsh.f not found!"
-            exit 1
-          }
-
-          # Build using f2py with explicit Fortran flags and distutils shim
-          python -m phaseshifts.lib._f2py_shim libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy"
-
-          # Verify build output
-          Get-ChildItem libphsh*
-        shell: pwsh
+          # Verify the extension was built
+          python -c "import phaseshifts.lib.libphsh as phsh; print('Build successful!')"
+        shell: bash
         env:
           FC: ${{ env.FC }}
           CC: ${{ env.CC }}
-          PYTHONPATH: ${{ github.workspace }}
+          CMAKE_GENERATOR: Ninja
 
-      - name: Verify build
-        run: |
-          python -c "import phaseshifts.lib.libphsh as phsh; print('libphsh imported successfully!')"
-        shell: bash
-        env:
-          PYTHONPATH: ${{ github.workspace }}
       - name: Lint with flake8
         continue-on-error: true
         run: |

@@ -38,11 +38,11 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD: pip install "numpy<2"
+  CIBW_BEFORE_BUILD: pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
   CIBW_BEFORE_BUILD_LINUX: >-
     (yum install -y python3-devel || echo "yum failed, continuing...") &&
-    pip install "numpy<2"
-  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install "numpy<2"
+    pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
+  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
   CIBW_TEST_EXTRAS: ""
@@ -239,8 +239,9 @@ jobs:
         env:
           # Use scikit-build-core with CMake for Windows builds
           # This avoids the numpy.distutils deprecation issues
+          # Also install meson for f2py fallback on Python 3.12+
           CIBW_BEFORE_BUILD_WINDOWS: >-
-            pip install numpy scikit-build-core cmake ninja
+            pip install numpy scikit-build-core cmake ninja meson meson-python
           CIBW_ENVIRONMENT_WINDOWS: >-
             FC=gfortran
             CC=gcc

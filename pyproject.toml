@@ -91,7 +91,9 @@ CMAKE_OSX_ARCHITECTURES = "$CIBW_ARCH"   # Universal2 build
 MACOSX_DEPLOYMENT_TARGET = "15.0"        # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
-before-build = ["pip install numpy scikit-build-core cmake ninja"]
+before-build = [
+    "pip install numpy scikit-build-core cmake ninja meson meson-python",
+]
 environment = { FC = "gfortran", CC = "gcc", CMAKE_GENERATOR = "Ninja" }
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
