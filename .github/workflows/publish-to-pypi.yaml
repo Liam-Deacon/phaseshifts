@@ -214,7 +214,6 @@ jobs:
     runs-on: windows-latest
     needs: build_sdist
     env:
-      CIBW_BEFORE_BUILD: pip install numpy
       CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
     steps:
       - uses: actions/checkout@v4
@@ -238,13 +237,16 @@ jobs:
         with:
           output-dir: dist/
         env:
+          # Use scikit-build-core with CMake for Windows builds
+          # This avoids the numpy.distutils deprecation issues
           CIBW_BEFORE_BUILD_WINDOWS: >-
-            pip install numpy &&
-            set PYTHONPATH=%CD% &&
-            cd phaseshifts\lib &&
-            python -m phaseshifts.lib._f2py_shim libphsh.f -m libphsh -c --f77flags="-frecursive -fcheck=bounds -std=legacy" &&
-            cd ..\..
-          CIBW_ENVIRONMENT_WINDOWS: "FC=gfortran CC=gcc PYTHONPATH=."
+            pip install numpy scikit-build-core cmake ninja
+          CIBW_ENVIRONMENT_WINDOWS: >-
+            FC=gfortran
+            CC=gcc
+            CMAKE_GENERATOR=Ninja
+          # Skip musllinux on Windows (not applicable)
+          CIBW_SKIP: "*-musllinux_*"
 
       - uses: actions/upload-artifact@v4
         with:
