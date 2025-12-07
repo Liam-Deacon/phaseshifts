@@ -13,6 +13,7 @@ try:
     except ImportError:  # pragma: no cover - pydantic v1 fallback
         from pydantic import root_validator as model_validator  # type: ignore
 except Exception:  # pragma: no cover - pydantic unavailable
+
     class ValidationError(ValueError):
         """Lightweight stand-in when pydantic is unavailable."""
 
@@ -94,7 +95,9 @@ class AtorbInputModel(BaseModel):
         if self.nr <= 0:
             raise ValidationError("Radial grid points (NR) must be positive")
         if self.rel not in (0, 1):
-            raise ValidationError("rel must be 0 (non-relativistic) or 1 (relativistic)")
+            raise ValidationError(
+                "rel must be 0 (non-relativistic) or 1 (relativistic)"
+            )
         if self.nlevels != len(self.orbitals):
             raise ValidationError(
                 "nlevels ({0}) does not match number of orbital lines ({1})".format(
@@ -171,7 +174,9 @@ def _parse_atorb_file(filename):
     try:
         z, nr = [int(tok) for tok in lines[cursor].split()[:2]]
     except (ValueError, IndexError):
-        raise ValueError("Unable to parse Z and NR from line: {0}".format(lines[cursor]))
+        raise ValueError(
+            "Unable to parse Z and NR from line: {0}".format(lines[cursor])
+        )
     cursor += 1
 
     if lines[cursor].lower() != "d":
@@ -181,7 +186,9 @@ def _parse_atorb_file(filename):
     try:
         rel = int(lines[cursor].split()[0])
     except (ValueError, IndexError):
-        raise ValueError("Unable to parse relativistic flag from line: {0}".format(lines[cursor]))
+        raise ValueError(
+            "Unable to parse relativistic flag from line: {0}".format(lines[cursor])
+        )
     cursor += 1
 
     if lines[cursor].lower() != "x":
@@ -201,7 +208,9 @@ def _parse_atorb_file(filename):
         eigen_tol = float(eigen_tol)
         ech = int(ech)
     except (ValueError, IndexError):
-        raise ValueError("Unable to parse SCF parameters from line: {0}".format(lines[cursor]))
+        raise ValueError(
+            "Unable to parse SCF parameters from line: {0}".format(lines[cursor])
+        )
     cursor += 1
 
     orbitals = []
@@ -278,8 +287,7 @@ def render_atorb_file(model, header, filename):
     lines.append("{0}".format(model.rel).ljust(30) + " ! 1=rel, 0=n.r.")
     lines.append("x")
     lines.append(
-        "{0}".format(model.method).ljust(30)
-        + " ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa..."
+        "{0}".format(model.method).ljust(30) + " ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa..."
     )
     lines.append("a")
     lines.append(
@@ -290,9 +298,7 @@ def render_atorb_file(model, header, filename):
     )
     for orbital in model.orbitals:
         lines.append(
-            "{0}  ! n, l, l, -j, <1>, occupation".format(
-                format_orbital_line(orbital)
-            )
+            "{0}  ! n, l, l, -j, <1>, occupation".format(format_orbital_line(orbital))
         )
     lines.append("w")
     lines.append("{0}".format(model.output))
