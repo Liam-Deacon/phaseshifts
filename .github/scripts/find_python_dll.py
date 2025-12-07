@@ -22,7 +22,7 @@ def find_python_dll() -> pathlib.Path:
 
     bindir: str = sysconfig.get_config_var("BINDIR") or sys.exec_prefix
     candidates: list[pathlib.Path] = []
-    for base in {bindir, sys.exec_prefix, sys.base_prefix, sys.prefix}:
+    for base in (bindir, sys.exec_prefix, sys.base_prefix, sys.prefix):
         basepath = pathlib.Path(base)
         candidates.append(basepath / libname)
         candidates.append(basepath / "DLLs" / libname)
