@@ -592,7 +592,7 @@ class Atorb(object):
         )
         atorb_model.ensure_valid()
 
-        render_atorb_file(atorb_model, header=header, filename=filename)
+        render_atorb_file(atorb_model, filename=filename)
 
         return filename  # return output filename for further use
 

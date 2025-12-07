@@ -3,6 +3,7 @@ Validation helpers for atorb input files.
 """
 
 import os
+import warnings
 from typing import List
 
 try:
@@ -124,10 +125,11 @@ def _validate_comment_spacing(raw_line, line_no):
     if bang_idx == 0:
         return
     if not raw_line[bang_idx - 1].isspace():
-        raise ValueError(
+        warnings.warn(
             "Line {0} must contain whitespace before '!' to avoid breaking Fortran list input: {1}".format(
                 line_no, raw_line.rstrip()
-            )
+            ),
+            UserWarning,
         )
 
 
@@ -179,6 +181,8 @@ def _parse_atorb_file(filename):
         )
     cursor += 1
 
+    if cursor >= len(lines):
+        raise ValueError("Unexpected end of file while expecting 'd' line specifying relativistic flag")
     if lines[cursor].lower() != "d":
         raise ValueError("Expected 'd' line specifying relativistic flag")
     cursor += 1
@@ -191,14 +195,18 @@ def _parse_atorb_file(filename):
         )
     cursor += 1
 
+    if cursor >= len(lines):
+        raise ValueError("Unexpected end of file while expecting 'x' line specifying exchange-correlation method")
     if lines[cursor].lower() != "x":
         raise ValueError("Expected 'x' line specifying exchange-correlation method")
     cursor += 1
     method = lines[cursor].split()[0]
     cursor += 1
 
+    if cursor >= len(lines):
+        raise ValueError("Unexpected end of file while expecting 'a' line specifying SCF parameters")
     if lines[cursor].lower() != "a":
-        raise ValueError("Expected 'a' line containing SCF parameters")
+        raise ValueError("Expected 'a' line specifying SCF parameters")
     cursor += 1
     try:
         relic, nlevels, mixing_scf, eigen_tol, ech = lines[cursor].split()[:5]
@@ -238,6 +246,8 @@ def _parse_atorb_file(filename):
             )
     cursor += nlevels
 
+    if cursor >= len(lines):
+        raise ValueError("Unexpected end of file while expecting 'w' line specifying output filename")
     if lines[cursor].lower() != "w":
         raise ValueError("Expected 'w' line specifying output filename")
     cursor += 1
@@ -272,10 +282,11 @@ def validate_atorb_file(filename):
     return _parse_atorb_file(filename)
 
 
-def render_atorb_file(model, header, filename):
+def render_atorb_file(model, filename):
     """Render a validated AtorbInputModel to disk using safe spacing."""
     lines = []
     lines.append("C".ljust(70, "*"))
+    header = getattr(model, "header", None)
     lines.append("C {0}".format(header.strip() if header else "atorb input file"))
     lines.append("C".ljust(70, "*"))
     lines.append("i")

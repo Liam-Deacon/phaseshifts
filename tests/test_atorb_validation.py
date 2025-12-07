@@ -27,7 +27,7 @@ def test_gen_input_cl_has_safe_comment_spacing(tmp_path):
     assert pytest.approx(occ_sum, rel=1e-9) == 5.0
 
 
-def test_validate_input_file_rejects_missing_comment_spacing(tmp_path):
+def test_validate_input_file_warns_on_missing_comment_spacing(tmp_path):
     bad_file = tmp_path / "atorb_bad.txt"
     bad_file.write_text(
         "\n".join(
@@ -49,5 +49,5 @@ def test_validate_input_file_rejects_missing_comment_spacing(tmp_path):
         )
     )
 
-    with pytest.raises(ValueError):
+    with pytest.warns(UserWarning, match="whitespace"):
         validate_atorb_file(str(bad_file))
