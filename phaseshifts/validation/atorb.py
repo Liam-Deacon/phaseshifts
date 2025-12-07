@@ -182,7 +182,9 @@ def _parse_atorb_file(filename):
     cursor += 1
 
     if cursor >= len(lines):
-        raise ValueError("Unexpected end of file while expecting 'd' line specifying relativistic flag")
+        raise ValueError(
+            "Unexpected end of file while expecting 'd' line specifying relativistic flag"
+        )
     if lines[cursor].lower() != "d":
         raise ValueError("Expected 'd' line specifying relativistic flag")
     cursor += 1
@@ -196,7 +198,9 @@ def _parse_atorb_file(filename):
     cursor += 1
 
     if cursor >= len(lines):
-        raise ValueError("Unexpected end of file while expecting 'x' line specifying exchange-correlation method")
+        raise ValueError(
+            "Unexpected end of file while expecting 'x' line specifying exchange-correlation method"
+        )
     if lines[cursor].lower() != "x":
         raise ValueError("Expected 'x' line specifying exchange-correlation method")
     cursor += 1
@@ -204,7 +208,9 @@ def _parse_atorb_file(filename):
     cursor += 1
 
     if cursor >= len(lines):
-        raise ValueError("Unexpected end of file while expecting 'a' line specifying SCF parameters")
+        raise ValueError(
+            "Unexpected end of file while expecting 'a' line specifying SCF parameters"
+        )
     if lines[cursor].lower() != "a":
         raise ValueError("Expected 'a' line specifying SCF parameters")
     cursor += 1
@@ -247,7 +253,9 @@ def _parse_atorb_file(filename):
     cursor += nlevels
 
     if cursor >= len(lines):
-        raise ValueError("Unexpected end of file while expecting 'w' line specifying output filename")
+        raise ValueError(
+            "Unexpected end of file while expecting 'w' line specifying output filename"
+        )
     if lines[cursor].lower() != "w":
         raise ValueError("Expected 'w' line specifying output filename")
     cursor += 1
