@@ -1,6 +1,7 @@
 """A collection of utilities to assist with extracting phshift2007 in a cross-platform manner."""
 
 import argparse
+import os
 import os.path
 import sys
 import subprocess  # nosec
@@ -15,20 +16,37 @@ DEFAULT_DIRPATH = "."
 # Windows-incompatible flags that should be filtered out
 WINDOWS_INCOMPATIBLE_FLAGS = ["-pie", "-static-libgcc", "-static-libgfortran"]
 
+COVERAGE_ENV_VAR = "PHASESHIFTS_FORTRAN_COVERAGE"
+COVERAGE_FLAGS = ["-g", "-O0", "-fprofile-arcs", "-ftest-coverage"]
+
+
+def _with_optional_coverage(flags):
+    """Append GCC/gfortran coverage flags when requested via environment."""
+    if not os.environ.get(COVERAGE_ENV_VAR):
+        return flags
+    coverage_flags = [flag for flag in COVERAGE_FLAGS if flag not in flags]
+    return flags + coverage_flags
+
+
+BASE_GFORTRAN_FLAGS = [
+    "-pie",
+    "-Wall",
+    "-static-libgcc",
+    "-static-libgfortran",
+    "-frecursive",
+    "-fcheck=bounds",
+    "-std=legacy",
+]
+
+
 COMPILER_FLAGS = {
-    "gfortran": [
-        flag
-        for flag in [
-            "-pie",
-            "-Wall",
-            "-static-libgcc",
-            "-static-libgfortran",
-            "-frecursive",
-            "-fcheck=bounds",
-            "-std=legacy",
+    "gfortran": _with_optional_coverage(
+        [
+            flag
+            for flag in BASE_GFORTRAN_FLAGS
+            if sys.platform != "win32" or flag not in WINDOWS_INCOMPATIBLE_FLAGS
         ]
-        if sys.platform != "win32" or flag not in WINDOWS_INCOMPATIBLE_FLAGS
-    ]
+    )
 }
 
 
