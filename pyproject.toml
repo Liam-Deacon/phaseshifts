@@ -53,10 +53,17 @@ requires = [
     "setuptools",
     "wheel",
     "numpy",
+    "ninja>=1.11",
     "scikit-build-core>=0.11.5; python_version >= '3.8'",
 ]
 build-backend = "phaseshifts_build_backend"
 backend-path = ["."]
+
+[tool.scikit-build]
+# Force Ninja so we don't end up with the Visual Studio generator + gfortran
+# (which fails Fortran detection on Windows runners). Ninja is lightweight and
+# available via build-system requirements.
+generator = "Ninja"
 
 [tool.cibuildwheel]
 build = [
