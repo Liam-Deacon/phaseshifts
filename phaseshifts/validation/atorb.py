@@ -293,151 +293,513 @@ def format_orbital_line(orbital):
     )
 
 
+def _check_marker(lines, cursor, marker, description):
+
+
+    """
+
+
+    Verify the current line matches the expected marker.
+
+
+
+
+
+    Parameters
+
+
+    ----------
+
+
+    lines : list of str
+
+
+        The file content.
+
+
+    cursor : int
+
+
+        Current line index.
+
+
+    marker : str
+
+
+        Expected marker (e.g. 'd', 'x').
+
+
+    description : str
+
+
+        Description for error messages.
+
+
+
+
+
+    Returns
+
+
+    -------
+
+
+    int
+
+
+        The next cursor position.
+
+
+
+
+
+    Raises
+
+
+    ------
+
+
+    ValueError
+
+
+        If EOF is reached or marker doesn't match.
+
+
+    """
+
+
+    if cursor >= len(lines):
+
+
+        raise ValueError(
+
+
+            "Unexpected end of file while expecting '{0}' line {1}".format(
+
+
+                marker, description
+
+
+            )
+
+
+        )
+
+
+    if lines[cursor].lower() != marker.lower():
+
+
+        raise ValueError("Expected '{0}' line {1}".format(marker, description))
+
+
+    return cursor + 1
+
+
+
+
+
+
+
+
+def _parse_z_nr(line):
+
+
+    """Parse atomic number (Z) and radial grid points (NR)."""
+
+
+    try:
+
+
+        return [int(tok) for tok in line.split()[:2]]
+
+
+    except (ValueError, IndexError):
+
+
+        raise ValueError("Unable to parse Z and NR from line: {0}".format(line))
+
+
+
+
+
+
+
+
+def _parse_rel(line):
+
+
+    """Parse relativistic flag."""
+
+
+    try:
+
+
+        return int(line.split()[0])
+
+
+    except (ValueError, IndexError):
+
+
+        raise ValueError("Unable to parse relativistic flag from line: {0}".format(line))
+
+
+
+
+
+
+
+
+def _parse_scf_params(line):
+
+
+    """Parse Self-Consistent Field parameters."""
+
+
+    try:
+
+
+        parts = line.split()[:5]
+
+
+        return (
+
+
+            float(parts[0]),
+
+
+            int(parts[1]),
+
+
+            float(parts[2]),
+
+
+            float(parts[3]),
+
+
+            int(parts[4]),
+
+
+        )
+
+
+    except (ValueError, IndexError):
+
+
+        raise ValueError("Unable to parse SCF parameters from line: {0}".format(line))
+
+
+
+
+
+
+
+
 def _parse_orbitals(lines, start_cursor, nlevels):
+
+
     """Parse orbital definitions from the file lines."""
+
+
     orbitals = []
+
+
     for i in range(nlevels):
+
+
         line_idx = start_cursor + i
+
+
         try:
+
+
             entry = lines[line_idx].split()
+
+
             if len(entry) < 6:
+
+
                 raise ValueError
+
+
             (n, l, m, j, s, occ) = entry[:6]
+
+
             orbitals.append(
+
+
                 {
+
+
                     "n": int(n),
+
+
                     "l": int(l),
+
+
                     "m": int(m),
+
+
                     "j": float(j),
+
+
                     "s": int(s),
+
+
                     "occ": float(occ),
+
+
                 }
+
+
             )
+
+
         except Exception:
+
+
             raise ValueError(
+
+
                 "Unable to parse orbital entry on line {0}: {1}".format(
+
+
                     line_idx + 1, lines[line_idx]
+
+
                 )
+
+
             )
+
+
     return orbitals
 
 
+
+
+
+
+
+
 def _parse_atorb_file(filename):
+
+
     """
+
+
     Parse a raw text input file into an AtorbInputModel.
 
+
+
+
+
     Reads the strict line-based structure of the atorb input format,
+
+
     extracting global parameters and orbital definitions.
 
+
+
+
+
     Parameters
+
+
     ----------
+
+
     filename : str
+
+
         Path to the file to parse.
 
+
+
+
+
     Returns
+
+
     -------
+
+
     AtorbInputModel
+
+
         The parsed data model.
 
+
+
+
+
     Raises
+
+
     ------
+
+
     ValueError
+
+
         If the file structure does not match expected markers ('i', 'd', 'x', 'a', 'w').
+
+
     """
+
+
     lines = _clean_atorb_lines(filename)
+
+
     if not lines:
+
+
         raise ValueError("atorb input file {0} is empty".format(filename))
 
+
+
+
+
     cursor = 0
+
+
     if lines[cursor].lower() != "i":
+
+
         raise ValueError("atorb input must start with an 'i' line")
+
+
     cursor += 1
 
-    try:
-        z, nr = [int(tok) for tok in lines[cursor].split()[:2]]
-    except (ValueError, IndexError):
-        raise ValueError(
-            "Unable to parse Z and NR from line: {0}".format(lines[cursor])
-        )
+
+
+
+
+    z, nr = _parse_z_nr(lines[cursor])
+
+
     cursor += 1
 
-    if cursor >= len(lines):
-        raise ValueError(
-            "Unexpected end of file while expecting 'd' line specifying relativistic flag"
-        )
-    if lines[cursor].lower() != "d":
-        raise ValueError("Expected 'd' line specifying relativistic flag")
+
+
+
+
+    cursor = _check_marker(lines, cursor, "d", "specifying relativistic flag")
+
+
+    rel = _parse_rel(lines[cursor])
+
+
     cursor += 1
 
-    try:
-        rel = int(lines[cursor].split()[0])
-    except (ValueError, IndexError):
-        raise ValueError(
-            "Unable to parse relativistic flag from line: {0}".format(lines[cursor])
-        )
-    cursor += 1
 
-    if cursor >= len(lines):
-        raise ValueError(
-            "Unexpected end of file while expecting 'x' line specifying exchange-correlation method"
-        )
-    if lines[cursor].lower() != "x":
-        raise ValueError("Expected 'x' line specifying exchange-correlation method")
-    cursor += 1
+
+
+
+    cursor = _check_marker(
+
+
+        lines, cursor, "x", "specifying exchange-correlation method"
+
+
+    )
+
+
     method = lines[cursor].split()[0]
+
+
     cursor += 1
 
-    if cursor >= len(lines):
-        raise ValueError(
-            "Unexpected end of file while expecting 'a' line specifying SCF parameters"
-        )
-    if lines[cursor].lower() != "a":
-        raise ValueError("Expected 'a' line specifying SCF parameters")
+
+
+
+
+    cursor = _check_marker(lines, cursor, "a", "specifying SCF parameters")
+
+
+    relic, nlevels, mixing_scf, eigen_tol, ech = _parse_scf_params(lines[cursor])
+
+
     cursor += 1
-    try:
-        relic, nlevels, mixing_scf, eigen_tol, ech = lines[cursor].split()[:5]
-        relic = float(relic)
-        nlevels = int(nlevels)
-        mixing_scf = float(mixing_scf)
-        eigen_tol = float(eigen_tol)
-        ech = int(ech)
-    except (ValueError, IndexError):
-        raise ValueError(
-            "Unable to parse SCF parameters from line: {0}".format(lines[cursor])
-        )
-    cursor += 1
+
+
+
+
 
     orbitals = _parse_orbitals(lines, cursor, nlevels)
+
+
     cursor += nlevels
 
+
+
+
+
+    cursor = _check_marker(lines, cursor, "w", "specifying output filename")
+
+
     if cursor >= len(lines):
-        raise ValueError(
-            "Unexpected end of file while expecting 'w' line specifying output filename"
-        )
-    if lines[cursor].lower() != "w":
-        raise ValueError("Expected 'w' line specifying output filename")
-    cursor += 1
-    if cursor >= len(lines):
+
+
         raise ValueError("Output filename missing after 'w' line")
+
+
     output = lines[cursor].split()[0]
 
+
+
+
+
     data = {
+
+
         "z": z,
+
+
         "nr": nr,
+
+
         "rel": rel,
+
+
         "method": method,
+
+
         "relic": relic,
+
+
         "nlevels": nlevels,
+
+
         "mixing_scf": mixing_scf,
+
+
         "eigen_tol": eigen_tol,
+
+
         "ech": ech,
+
+
         "orbitals": orbitals,
+
+
         "output": output,
+
+
         "header": "",
+
+
     }
 
+
+
+
+
     model = coerce_model(AtorbInputModel, data)
+
+
     model.ensure_valid()
+
+
     return model
 
 
