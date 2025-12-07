@@ -124,7 +124,9 @@ def pytest_sessionfinish(session, exitstatus):
     for root in search_roots:
         cmd.extend(["--search-path", root])
 
-    result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
+    result = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )  # nosec
     stdout, stderr = result.communicate()
 
     if result.returncode != 0:
