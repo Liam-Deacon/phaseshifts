@@ -130,32 +130,33 @@ if tuple(sys.version_info[:2]) <= (3, 11):
             subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
 else:
     # Modern build: require scikit-build and CMake for Python 3.12+
+    # NOTE: numpy.distutils is completely removed in Python 3.12
     try:
         from skbuild import setup
 
         BUILD_BACKEND = "skbuild"
     except ImportError:
-        # On Windows, fallback to numpy.f2py if scikit-build not available
-        if os.name == "nt":
-            print(
-                "WARNING: scikit-build not found on Windows; falling back to legacy numpy.distutils build.",
-                file=sys.stderr,
-            )
-            BUILD_BACKEND = "numpy.distutils"
-            from numpy.distutils.core import setup  # type: ignore  # noqa: F811
-            from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
+        # Fallback to setuptools for Python 3.12+ (numpy.distutils is gone)
+        print(
+            "WARNING: scikit-build not found; falling back to setuptools build.",
+            file=sys.stderr,
+        )
+        print(
+            "NOTE: For best results, install scikit-build-core and cmake.",
+            file=sys.stderr,
+        )
+        BUILD_BACKEND = "setuptools"
+        from setuptools import setup, Extension  # type: ignore  # noqa: F811
 
-            try:
-                import numpy
-                import numpy.f2py
+        # Try to pre-build the Fortran extension using f2py
+        try:
+            import numpy
+            import numpy.f2py
 
-                INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
-            except ImportError:
-                print(
-                    "WARNING: numpy.f2py not found; Fortran extension will not be built.",
-                    file=sys.stderr,
-                )
-            if not any(x in sys.argv for x in ("sdist", "wheel")):
+            INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
+
+            # Build the extension if not doing sdist/wheel
+            if not any(x in sys.argv for x in ("sdist", "wheel", "--version", "-V")):
                 args = [
                     sys.executable,
                     "-m",
@@ -164,35 +165,22 @@ else:
                     "-m",
                     "libphsh",
                     "-c",
+                    "--f77flags=-frecursive -fcheck=bounds -std=legacy",
                 ]
                 try:
-                    if phaseshifts and hasattr(phaseshifts, "phshift2007"):
-                        # Use the platform-filtered flags directly from COMPILER_FLAGS
-                        fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS[
-                            "gfortran"
-                        ]
-                        # Filter out flags that f2py/numpy.distutils might not handle well
-                        f2py_safe_flags = [
-                            flag
-                            for flag in fortran_flags
-                            if flag
-                            not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
-                        ]
-                        if f2py_safe_flags:
-                            fortran_flags_str = " ".join(f2py_safe_flags)
-                            args.append(f"--f77flags={fortran_flags_str}")
-                        else:
-                            args.append("--f77flags=-frecursive")
-                    else:
-                        # Default fallback
-                        args.append("--f77flags=-frecursive")
-                except (NameError, AttributeError, KeyError):
-                    # Fallback if phaseshifts module or compiler flags not available
-                    args.append("--f77flags=-frecursive")
-                subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
-        else:
-            raise ImportError(
-                "scikit-build is required for building phaseshifts on Python 3.12+. Please install scikit-build and CMake."
+                    print("Building libphsh extension with f2py...")
+                    subprocess.check_call(args, cwd="./phaseshifts/lib")  # nosec
+                except subprocess.CalledProcessError as e:
+                    print(
+                        "WARNING: f2py build failed ({}); extension may not be available.".format(
+                            e
+                        ),
+                        file=sys.stderr,
+                    )
+        except ImportError:
+            print(
+                "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                file=sys.stderr,
             )
 
 if len(sys.argv) == 1:
@@ -312,7 +300,7 @@ f2py_exts = (
             sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
         )
     ]
-    if BUILD_BACKEND != "numpy.distutils"
+    if BUILD_BACKEND in ("skbuild", "setuptools")
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
