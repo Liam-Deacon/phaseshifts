@@ -85,6 +85,14 @@ try:
 except ImportError:
     mendeleev = None  # Need to install mendeleev
 
+from phaseshifts.validation.atorb import (
+    AtorbElectron,
+    AtorbInputModel,
+    coerce_model,
+    render_atorb_file,
+    validate_atorb_file,
+)
+
 from phaseshifts import elements
 
 elements_dict = OrderedDict(
@@ -209,7 +217,6 @@ elements_dict = OrderedDict(
         ("Uuo", "Ununoctium"),
     ]
 )
-
 
 def get_element(
     element, backend=None
@@ -549,40 +556,56 @@ class Atorb(object):
         else:
             ech = 100
 
-        # produce output file
-        with open(filename, "w") as f:
-            f.write("C".ljust(70, "*") + "\n")
-            f.write("C" + str(header) + "\n")
-            f.write("C".ljust(70, "*") + "\n")
-            f.write("i\n")
-            f.write(
-                "{0} {1}".format(Z, NR).ljust(30, " ")
-                + "! Z NR (number of points in radial grid)\n"
-            )
-            f.write("d\n")
-            f.write("{0}".format(rel).ljust(30) + "! 1=rel, 0=n.r.\n")
-            f.write("x\n")
-            f.write(
-                "{0}".format(method).ljust(30)
-                + "! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...\n"
-            )
-            f.write("a\n")
-            f.write(
-                "{0} {1} {2} {3} {4}".format(
-                    relic, nlevels, mixing_SCF, eigen_tol, ech
-                ).ljust(30)
-                + "! relic,levels,mixing SCF, eigen. tol,for ech.\n"
-            )
-            for i in range(0, nlevels):
-                f.write(
-                    "{0} {1} {2} {3} {4} {5}".format(*electrons[i]).ljust(30)
-                    + "! n, l, l, -j, <1>, occupation\n"
+        orbital_models = []
+        for entry in electrons:
+            orbital_models.append(
+                coerce_model(
+                    AtorbElectron,
+                    {
+                        "n": entry[0],
+                        "l": entry[1],
+                        "m": entry[2],
+                        "j": entry[3],
+                        "s": entry[4],
+                        "occ": entry[5],
+                    },
                 )
-            f.write("w\n")
-            f.write("{0}\n".format(output))
-            f.write("q\n")
+            )
+
+        atorb_model = coerce_model(
+            AtorbInputModel,
+            {
+                "z": Z,
+                "nr": NR,
+                "rel": rel,
+                "method": method,
+                "relic": relic,
+                "nlevels": nlevels,
+                "mixing_scf": mixing_SCF,
+                "eigen_tol": eigen_tol,
+                "ech": ech,
+                "orbitals": orbital_models,
+                "output": output,
+                "header": header,
+            },
+        )
+        atorb_model.ensure_valid()
+
+        render_atorb_file(atorb_model, header=header, filename=filename)
 
         return filename  # return output filename for further use
+
+    @staticmethod
+    def validate_input_file(input_path):
+        """
+        Validate a generated or user-supplied atorb input file.
+
+        Returns
+        -------
+        AtorbInputModel
+            Parsed and validated representation of the input file.
+        """
+        return validate_atorb_file(os.path.abspath(input_path))
 
     @staticmethod
     def calculate_Q_density(**kwargs):
@@ -667,6 +690,7 @@ class Atorb(object):
             )
 
         current_dir = os.path.curdir
+        output_dir = None
         if "output_dir" in kwargs:
             output_dir = kwargs.pop("output_dir")
             if os.path.isdir(output_dir):
@@ -683,6 +707,8 @@ class Atorb(object):
         if not inp:
             raise ValueError("Input file not specified")
 
+        validated = validate_atorb_file(inp)
+
         # do lazy loading due to documentation not needing compiled code
         import phaseshifts.lib.libphsh  # noqa
 
@@ -690,30 +716,7 @@ class Atorb(object):
             inp
         )  # calculates atomic orbital charge densities for atom
 
-        # get output filename
-        lines = []
-        output_filename = "atorb"
-
-        try:
-            with open(inp, "r") as f:
-                lines = [line for line in f]
-        except IOError:
-            raise IOError
-
-        lines = [
-            line.replace("\n", "")
-            .replace("\r", "")
-            .lstrip(" ")
-            .split("!")[0]
-            .split("#")[0]
-            .rstrip(" ")
-            for line in lines
-        ]
-
-        for i in range(len(lines)):
-            if lines[i].startswith("w"):
-                output_filename = lines[i + 1]
-                break
+        output_filename = validated.output
 
         os.chdir(current_dir)  # return to original directory
 
