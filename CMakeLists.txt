@@ -234,8 +234,12 @@ if (WIN32)
     target_compile_options("${f2py_module_name}" PRIVATE
       $<$<COMPILE_LANGUAGE:Fortran>:-Wall -frecursive -fcheck=bounds -std=legacy>
     )
-    # Note: Avoid -pie, -static-libgcc, -static-libgfortran on Windows
-    # as they can cause issues with Python extension modules
+    # Use static linking for MinGW runtime libraries to avoid DLL dependency issues
+    # This bundles libgfortran, libgcc, and libquadmath into the extension
+    target_link_options("${f2py_module_name}" PRIVATE
+      -static-libgfortran
+      -static-libgcc
+    )
   endif()
 
   # Link Python library on Windows (required - unlike Unix, Windows needs explicit linking)
