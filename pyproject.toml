@@ -131,6 +131,9 @@ experimental = true
 wheel.packages = ["phaseshifts"]
 # Override source discovery to ignore MANIFEST.in
 build-dir = "build"
+# Use inplace mode for editable installs so compiled extension is in source tree
+editable.mode = "inplace"
+editable.rebuild = true
 # Exclude ALL non-essential files from wheels
 wheel.exclude = [
     "*.txt",

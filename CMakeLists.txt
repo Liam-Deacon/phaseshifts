@@ -121,14 +121,26 @@ endif()
 # Use modern scikit-build-core CMake modules
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-# Get the proper Python extension module suffix (e.g., .cpython-39-x86_64-linux-gnu.so)
-# This is required for Python to find the extension module
-execute_process(
-  COMMAND "${Python_EXECUTABLE}"
-  -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.so')"
-  OUTPUT_VARIABLE PYTHON_EXTENSION_MODULE_SUFFIX
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# Get the proper Python extension module suffix
+# When scikit-build-core is driving the build, use SKBUILD_SOABI (more reliable)
+# Otherwise, query Python's sysconfig for EXT_SUFFIX
+if(DEFINED SKBUILD_SOABI)
+  # scikit-build-core provides the correct SOABI
+  if(WIN32)
+    set(PYTHON_EXTENSION_MODULE_SUFFIX ".${SKBUILD_SOABI}.pyd")
+  else()
+    set(PYTHON_EXTENSION_MODULE_SUFFIX ".${SKBUILD_SOABI}${CMAKE_SHARED_MODULE_SUFFIX}")
+  endif()
+  message(STATUS "Using SKBUILD_SOABI: ${SKBUILD_SOABI}")
+else()
+  # Fallback: query Python directly
+  execute_process(
+    COMMAND "${Python_EXECUTABLE}"
+    -c "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX') or '.so')"
+    OUTPUT_VARIABLE PYTHON_EXTENSION_MODULE_SUFFIX
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+endif()
 message(STATUS "Python extension suffix: ${PYTHON_EXTENSION_MODULE_SUFFIX}")
 
 # NumPy include directory
@@ -355,8 +367,9 @@ if(ENABLE_PHSHIFT2007_BINARIES)
 endif()
 
 # Only install the compiled extension - no data files
-# NOTE: scikit-build-core's wheel.install-dir in pyproject.toml is set to "phaseshifts/lib"
-# so we use "." here to install directly into that directory
+# wheel.install-dir in pyproject.toml is set to "phaseshifts/lib"
+# so DESTINATION . installs into phaseshifts/lib/
+# For editable mode (inplace), extension is copied to source tree phaseshifts/lib/
 install(TARGETS "${f2py_module_name}"
         DESTINATION .
         COMPONENT Runtime)
