@@ -104,7 +104,8 @@ repair-wheel-command = [
 
 [tool.flake8]
 max-line-length = 120
-extend-ignore = "E203, E501, W503"
+# Note: flake8 primarily reads from .flake8 file, not pyproject.toml
+extend-ignore = ["E203", "E501", "W503"]
 
 [tool.mypy]
 python_version = "3.9"
