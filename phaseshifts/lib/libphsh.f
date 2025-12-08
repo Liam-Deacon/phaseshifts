@@ -287,6 +287,7 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       parameter (rpmax=15)
        double precision etot, rel, alfa, dl, zorig, xntot
        integer nst, nr, nel, iuflag
        integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs), njrc(4)
@@ -301,7 +302,7 @@
 
        ! allocate on the heap to avoid the compiler moving this workspace
        ! to static storage when stack limits are low
-       allocate(rpower(nrmax,0:15))
+       allocate(rpower(nrmax,0:rpmax))
 
        do i=0,7
          xi=i
@@ -362,8 +363,6 @@
        write (6,132) 'TOTAL ENERGY =  ',etot,etot*27.2116d0
 132   format (1x,a16,2f14.6)
 
-       if (allocated(rpower)) deallocate(rpower)
-
        return
 
       end subroutine
@@ -378,6 +377,7 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       parameter (rpmax=15)
        double precision etot, rel, alfa, dl, eerror, ratio, xnum, etot2
        double precision zorig, xntot
        integer nst, nfc, nr, nel, iuflag
@@ -387,7 +387,7 @@
        double precision ek(iorbs), ev(iorbs), occ(iorbs)
        double precision phe(nrmax,iorbs), vi(nrmax,7)
        double precision q0(nrmax), xm1(nrmax), xm2(nrmax)
-       double precision orb(nrmax,iorbs), rpower(nrmax,0:15)
+       double precision orb(nrmax,iorbs), rpower(nrmax,0:rpmax)
 
        ! initialize eerror, the biggest change in an eigenvalue, and etot.
 
@@ -449,13 +449,14 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       parameter (rpmax=15)
        double precision etot, rel, alfa, dl, xntot, ratio, xnum, etot2
        integer nst, nr, nel, iuflag
        integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs)
        double precision xnj(iorbs)
        double precision dr(nrmax), r(nrmax), r2(nrmax)
        double precision phe(nrmax,iorbs), occ(iorbs)
-       double precision orb(nrmax,iorbs), rpower(nrmax,0:15)
+       double precision orb(nrmax,iorbs), rpower(nrmax,0:rpmax)
        dimension xq1(nrmax),xq2(nrmax),xq0(nrmax)
        dimension cg(0:6,0:6,0:12,-6:6,-6:6),pin(0:8,0:8,0:16)
        dimension xqj0(nrmax),xqj1(nrmax)
@@ -1256,6 +1257,7 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       parameter (rpmax=15)
        double precision etot, rel, alfa, rmin, rmax, dl, zorig, xntot
        integer nst, nr, nel, iuflag
        integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs), njrc(4)
@@ -1275,7 +1277,7 @@
        end do
 
        ! allocate on the heap to avoid static storage when large locals exceed stack limits
-       allocate(rpower(nrmax,0:15))
+       allocate(rpower(nrmax,0:rpmax))
 
        njrcdummy(1)=njrc(1)
        njrcdummy(2)=njrc(2)
@@ -1413,8 +1415,6 @@
        end do
 
        ! we got to the end
-
-       if (allocated(rpower)) deallocate(rpower)
 
        return
 
