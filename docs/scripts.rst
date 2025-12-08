@@ -45,7 +45,7 @@ will produce a list of command line options::
                           Use specific phase shift format i.e., 'cleed', 'curve',
                           'viper' or 'none'. Choose 'curve' if you wish to
                           produce XYY... data for easy plotting. <format> is
-                          case in-sensitive. [default: 'cleed']
+                          case-insensitive. [default: 'cleed']
     -r <energy> [<energy> ...], --range <energy> [<energy> ...]
                           Energy range in eV with the format:
                           '<start> <stop> [<step>]', where the <step> value is
