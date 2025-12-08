@@ -87,7 +87,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip setuptools wheel
-          python -m pip install flake8 pytest pytest-cov
+          python -m pip install flake8 pytest pytest-cov mypy pyright
           pip install -r requirements.txt
           pip install "numpy"
 
@@ -124,6 +124,17 @@ jobs:
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Run Pyright
+        run: |
+          pyright phaseshifts
+        shell: bash
+
+      - name: Run MyPy with stubtest
+        run: |
+          mypy phaseshifts --config-file pyproject.toml # Use pyproject.toml config
+          python -m mypy.stubtest phaseshifts
+        shell: bash
+
       - name: Install package with test extras
         run: |
           pip install '.[test]'
