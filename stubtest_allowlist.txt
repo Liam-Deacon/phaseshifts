@@ -48,3 +48,5 @@ phaseshifts.settings._compile_default
 phaseshifts.tools.debye.__contact__
 # Python 3.12+ adds 'intermixed' parameter to ArgumentParser._parse_known_args
 phaseshifts.tools.debye.ArgumentParser._parse_known_args
+# Stub may be out of sync with runtime (v0_params parameter)
+phaseshifts.conphas.Conphas.__init__
