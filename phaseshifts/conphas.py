@@ -336,15 +336,32 @@ class Conphas:
         -------
         tuple(float, float, float, float)
             c0-c3 parameters; defaults to ViPErLEED's documented values if
-            none are provided.
+            none are provided. Raises a ValueError if an invalid v0_params
+            configuration is supplied.
         """
-        if isinstance(self.v0_params, (list, tuple)) and len(self.v0_params) >= 4:
-            try:
-                return tuple(float(value) for value in self.v0_params[:4])
-            except (TypeError, ValueError):
-                pass
         # Default parameters taken from ViPErLEED documentation (Rundgren form)
-        return (-10.17, -0.08, -74.19, 19.18)
+        default_params = (-10.17, -0.08, -74.19, 19.18)
+
+        params = getattr(self, "v0_params", None)
+
+        # No user-specified parameters: use documented defaults
+        if params is None:
+            return default_params
+
+        # Surface invalid configurations instead of silently falling back
+        if not isinstance(params, (list, tuple)) or len(params) < 4:
+            raise ValueError(
+                "Invalid v0_params configuration: expected a list or tuple with at "
+                "least 4 numeric elements, got {!r}".format(params)
+            )
+
+        try:
+            return tuple(float(value) for value in params[:4])
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "Invalid v0_params configuration: all first four elements must be "
+                "numeric, got {!r}".format(params)
+            ) from exc
 
     def _write_viper_output(self, file_handle, conpha, energy, n_phases):
         """
