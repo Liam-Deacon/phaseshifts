@@ -3,9 +3,10 @@ engines:
   pylint:
     python_version: 3
     disable_checks:
-      - C0114 # Missing module docstring
-      - C0115 # Missing class docstring
-      - C0116 # Missing function or method docstring
+      # NOTE: Consider enabling these in future if codacy becomes too noisy
+      # - C0114 # Missing module docstring
+      # - C0115 # Missing class docstring
+      # - C0116 # Missing function or method docstring
       - C0103 # Invalid name
       - C0301 # Line too long
   flake8:
