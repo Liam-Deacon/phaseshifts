@@ -10,6 +10,7 @@ Environment variables will be prefixed with :code:`PHASESHIFTS_` to namespace th
 avoid conflicts with other packages.
 
 """
+
 def load_bool_env_var(var_name: str, default: str = ...) -> bool:
     """Load boolean value from environment variable.
 

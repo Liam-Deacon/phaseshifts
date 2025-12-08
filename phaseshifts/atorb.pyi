@@ -138,7 +138,7 @@ class Atorb:
             Arbitrary attributes to store on the instance.
         """
         ...
-    
+
     @staticmethod
     def get_quantum_info(shell: str) -> Tuple[int, int, List[float], List[float]]:
         r"""
@@ -178,7 +178,7 @@ class Atorb:
         and :math:`d_{5/2}` (occupancy 6).
         """
         ...
-    
+
     @staticmethod
     def replace_core_config(electron_config: str) -> str:
         """
@@ -205,7 +205,7 @@ class Atorb:
         '1s2 2s1'
         """
         ...
-    
+
     @staticmethod
     def gen_input(element: Union[str, int], **kwargs: Any) -> str:
         """
@@ -287,7 +287,7 @@ class Atorb:
         the potential.
         """
         ...
-    
+
     @staticmethod
     def validate_input_file(input_path: str) -> AtorbInputModel:
         """
@@ -308,7 +308,7 @@ class Atorb:
             Parsed and validated representation of the input file.
         """
         ...
-    
+
     @staticmethod
     def calculate_Q_density(**kwargs: Any) -> str:
         """

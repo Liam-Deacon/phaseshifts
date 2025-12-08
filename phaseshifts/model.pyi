@@ -10,11 +10,13 @@ atomic charge densities for use with the Barbieri/Van Hove phase
 shift calculation package.
 
 """
+
 class Atom:
     """
     Atom class for input into cluster model for muffin-tin potential
     calculations.
     """
+
     def __init__(self, element, coordinates=..., **kwargs) -> None:
         """
         Constructor for Atom class.
@@ -42,38 +44,33 @@ class Atom:
 
         """
         ...
-    
-    def __eq__(self, other) -> bool:
+
+    def __eq__(self, other) -> bool: ...
+    def __neq__(self, other):  # -> bool:
         ...
-    
-    def __neq__(self, other): # -> bool:
+
+    def __repr__(self):  # -> str:
         ...
-    
-    def __repr__(self): # -> str:
+
+    def __hash__(self) -> int: ...
+    def set_coordinates(self, coordinates):  # -> None:
         ...
-    
-    def __hash__(self) -> int:
-        ...
-    
-    def set_coordinates(self, coordinates): # -> None:
-        ...
-    
-    def set_valence(self, valency): # -> None:
+
+    def set_valence(self, valency):  # -> None:
         """Sets the valency of the atom"""
         ...
-    
-    def set_mufftin_radius(self, radius): # -> None:
+
+    def set_mufftin_radius(self, radius):  # -> None:
         """
         Sets the muffin-tin radius of the atom in Angstroms.
         """
         ...
-    
-
 
 class Unitcell:
     """
     Unitcell class
     """
+
     def __init__(self, a, c, matrix_3x3, **kwargs) -> None:
         """
         Constructor for the Unitcell class
@@ -98,23 +95,19 @@ class Unitcell:
 
         """
         ...
-    
-    def __eq__(self, other) -> bool:
+
+    def __eq__(self, other) -> bool: ...
+    def __neq__(self, other):  # -> bool:
         ...
-    
-    def __neq__(self, other): # -> bool:
+
+    def __repr__(self):  # -> str:
         ...
-    
-    def __repr__(self): # -> str:
+
+    def __hash__(self) -> int: ...
+    def set_vectors(self, m3x3):  # -> None:
         ...
-    
-    def __hash__(self) -> int:
-        ...
-    
-    def set_vectors(self, m3x3): # -> None:
-        ...
-    
-    def set_a(self, a): # -> None:
+
+    def set_a(self, a):  # -> None:
         """
         Description
         -----------
@@ -134,8 +127,8 @@ class Unitcell:
 
         """
         ...
-    
-    def set_c(self, c): # -> None:
+
+    def set_c(self, c):  # -> None:
         """
         Description
         -----------
@@ -155,35 +148,29 @@ class Unitcell:
 
         """
         ...
-    
-    def set_alpha(self, alpha): # -> None:
-        ...
-    
-    def set_beta(self, beta): # -> None:
-        ...
-    
-    def set_gamma(self, gamma): # -> None:
-        ...
-    
 
+    def set_alpha(self, alpha):  # -> None:
+        ...
+
+    def set_beta(self, beta):  # -> None:
+        ...
+
+    def set_gamma(self, gamma):  # -> None:
+        ...
 
 class CoordinatesError(Exception):
     """Coordinate exception to raise and log duplicate coordinates."""
-    def __init__(self, msg) -> None:
-        ...
-    
-    def __str__(self) -> str:
-        ...
-    
-    def __unicode__(self): # -> str:
-        ...
-    
 
+    def __init__(self, msg) -> None: ...
+    def __str__(self) -> str: ...
+    def __unicode__(self):  # -> str:
+        ...
 
 class Model:
     """
     Generic model class.
     """
+
     def __init__(self, unitcell, atoms, **kwargs) -> None:
         """
         Constructor for Model class.
@@ -197,20 +184,16 @@ class Model:
 
         """
         ...
-    
-    def __eq__(self, other) -> bool:
+
+    def __eq__(self, other) -> bool: ...
+    def __neq__(self, other):  # -> bool:
         ...
-    
-    def __neq__(self, other): # -> bool:
+
+    def __repr__(self):  # -> str:
         ...
-    
-    def __repr__(self): # -> str:
-        ...
-    
-    def __hash__(self) -> int:
-        ...
-    
-    def add_atom(self, element, position, **kwargs): # -> None:
+
+    def __hash__(self) -> int: ...
+    def add_atom(self, element, position, **kwargs):  # -> None:
         """
         Append an Atom instance to the model
 
@@ -224,8 +207,8 @@ class Model:
 
         """
         ...
-    
-    def check_coordinates(self): # -> None:
+
+    def check_coordinates(self):  # -> None:
         """
         Check for duplicate coordinates of different atoms in model.
 
@@ -236,8 +219,8 @@ class Model:
 
         """
         ...
-    
-    def set_atoms(self, atoms): # -> None:
+
+    def set_atoms(self, atoms):  # -> None:
         """
         Set the atoms for the model.
 
@@ -254,8 +237,8 @@ class Model:
 
         """
         ...
-    
-    def set_unitcell(self, unitcell): # -> None:
+
+    def set_unitcell(self, unitcell):  # -> None:
         """
         Set the unitcell for the model
 
@@ -271,8 +254,6 @@ class Model:
 
         """
         ...
-    
-
 
 class MTZ_model(Model):
     """
@@ -280,6 +261,7 @@ class MTZ_model(Model):
     for muffin-tin calculations in the Barbieri/Van Hove phase
     shift calculation package.
     """
+
     def __init__(self, unitcell, atoms, **kwargs) -> None:
         """
         Constructor for Model class.
@@ -308,15 +290,15 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def set_nh(self, nh): # -> None:
+
+    def set_nh(self, nh):  # -> None:
         """Sets the nh muffin-tin zero estimation parameter"""
         ...
-    
-    def set_exchange(self, alpha): # -> None:
+
+    def set_exchange(self, alpha):  # -> None:
         """Sets the alpha exchange term for muffin-tin calculation"""
         ...
-    
+
     def set_nform(self, nform):
         """
         Sets form of muffin-tin calculation
@@ -334,8 +316,8 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def set_slab_c(self, c): # -> None:
+
+    def set_slab_c(self, c):  # -> None:
         """
         Description
         -----------
@@ -351,8 +333,8 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def load_from_file(self, filename): # -> None:
+
+    def load_from_file(self, filename):  # -> None:
         """
         Description
         -----------
@@ -372,8 +354,8 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def create_atorbs(self, **kwargs): # -> dict[str, list[Any]]:
+
+    def create_atorbs(self, **kwargs):  # -> dict[str, list[Any]]:
         """
         Description
         -----------
@@ -400,8 +382,8 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def gen_atomic(self, **kwargs): # -> str:
+
+    def gen_atomic(self, **kwargs):  # -> str:
         """
         Description
         -----------
@@ -437,12 +419,12 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def get_MTZ(self, filename): # -> None:
+
+    def get_MTZ(self, filename):  # -> None:
         """Retrieves muffin-tin potential from file"""
         ...
-    
-    def calculate_MTZ(self, mtz_string=..., **kwargs): # -> LiteralString:
+
+    def calculate_MTZ(self, mtz_string=..., **kwargs):  # -> LiteralString:
         """
         Description
         -----------
@@ -471,8 +453,8 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def gen_input(self, **kwargs): # -> None:
+
+    def gen_input(self, **kwargs):  # -> None:
         """
         Description
         -----------
@@ -514,10 +496,7 @@ class MTZ_model(Model):
 
         """
         ...
-    
-    def get_elements(self): # -> set[Any]:
+
+    def get_elements(self):  # -> set[Any]:
         """Return the unique elements in model"""
         ...
-    
-
-

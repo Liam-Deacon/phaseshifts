@@ -13,7 +13,8 @@ on the fly (useful when installing this package from source distribution).
 """
 LIBPHSH_MODULE = ...
 FORTRAN_LIBS = ...
-def find_shared_library_path(module_name): # -> None:
+
+def find_shared_library_path(module_name):  # -> None:
     """Locate a compiled extension for ``module_name`` across common paths.
 
     In editable installs the pure-Python package is often imported from the
@@ -23,11 +24,16 @@ def find_shared_library_path(module_name): # -> None:
     """
     ...
 
-def is_module_importable(module): # -> bool:
+def is_module_importable(module):  # -> bool:
     """Determine whether `module` is importable."""
     ...
 
-def compile_f2py_shared_library(source: str, module_name: str | None = ..., cwd: str | None = ..., **f2py_kwargs: str) -> int:
+def compile_f2py_shared_library(
+    source: str,
+    module_name: str | None = ...,
+    cwd: str | None = ...,
+    **f2py_kwargs: str
+) -> int:
     """Compile `source` into f2py wrapped shared library given by `module_name`.
 
     Examples
@@ -39,4 +45,3 @@ def compile_f2py_shared_library(source: str, module_name: str | None = ..., cwd:
     numpy.f2py
     """
     ...
-

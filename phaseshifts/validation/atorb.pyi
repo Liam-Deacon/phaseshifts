@@ -18,6 +18,7 @@ quantum numbers, incorrect grid dimensions, or formatting issues (like
 inline comment spacing) that would otherwise cause the legacy Fortran binary
 to crash or produce non-physical results.
 """
+
 def coerce_model(model_cls, data):
     """Helper to support pydantic v1/v2 or fallback shim."""
     ...
@@ -46,13 +47,14 @@ class AtorbElectron(BaseModel):
         Orbital occupancy number. Can be fractional to represent spherically
         averaged open shells.
     """
+
     n: int
     l: int
     m: int
     j: float
     s: int
     occ: float
-    def ensure_valid(self): # -> Self:
+    def ensure_valid(self):  # -> Self:
         """
         Run lightweight semantic checks on quantum numbers.
 
@@ -74,8 +76,6 @@ class AtorbElectron(BaseModel):
             If any physical constraint is violated.
         """
         ...
-    
-
 
 class AtorbInputModel(BaseModel):
     """
@@ -113,6 +113,7 @@ class AtorbInputModel(BaseModel):
     header : str
         Header/Comment line for the input file.
     """
+
     z: int
     nr: int
     rel: int
@@ -125,7 +126,7 @@ class AtorbInputModel(BaseModel):
     orbitals: List[AtorbElectron]
     output: str
     header: str = ...
-    def ensure_valid(self): # -> Self:
+    def ensure_valid(self):  # -> Self:
         """
         Perform semantic validation on the full input model.
 
@@ -146,10 +147,8 @@ class AtorbInputModel(BaseModel):
             If configuration is invalid or inconsistent.
         """
         ...
-    
 
-
-def format_orbital_line(orbital): # -> str:
+def format_orbital_line(orbital):  # -> str:
     """
     Format a single orbital entry for the input file.
 
@@ -165,7 +164,7 @@ def format_orbital_line(orbital): # -> str:
     """
     ...
 
-def validate_atorb_file(filename): # -> AtorbInputModel:
+def validate_atorb_file(filename):  # -> AtorbInputModel:
     """
     Validate an existing atorb input file.
 
@@ -208,4 +207,3 @@ def render_atorb_file(model, filename):
         The path to the generated file.
     """
     ...
-

@@ -26,6 +26,7 @@ Examples
 """
 HARTREE = ...
 VERBOSE = ...
+
 class Conphas:
     """Class Conphas
 
@@ -44,7 +45,10 @@ class Conphas:
     leed/leedpack.html
 
     """
-    def __init__(self, input_files=..., output_file=..., formatting=..., lmax=..., **kwargs) -> None:
+
+    def __init__(
+        self, input_files=..., output_file=..., formatting=..., lmax=..., **kwargs
+    ) -> None:
         """
         Parameters
         ----------
@@ -61,8 +65,8 @@ class Conphas:
 
         """
         ...
-    
-    def read_datafile(self, filename): # -> None:
+
+    def read_datafile(self, filename):  # -> None:
         """
         Read in discontinuous phase shift file
 
@@ -73,8 +77,10 @@ class Conphas:
 
         """
         ...
-    
-    def load_data(self, filename): # -> tuple[float | int, float | int, float | int, float | int, list[float]]:
+
+    def load_data(
+        self, filename
+    ):  # -> tuple[float | int, float | int, float | int, float | int, list[float]]:
         """
         Load (discontinuous) phase shift data from file
 
@@ -98,21 +104,21 @@ class Conphas:
 
         """
         ...
-    
+
     @staticmethod
-    def split_phasout(filename, output_filenames=...): # -> list[Any] | list[str]:
+    def split_phasout(filename, output_filenames=...):  # -> list[Any] | list[str]:
         """split phasout input file into separate files"""
         ...
-    
-    def set_input_files(self, input_files=...): # -> None:
+
+    def set_input_files(self, input_files=...):  # -> None:
         """set list of input filenames"""
         ...
-    
-    def set_output_file(self, output_file): # -> None:
+
+    def set_output_file(self, output_file):  # -> None:
         """set output filename"""
         ...
-    
-    def set_lmax(self, lmax): # -> None:
+
+    def set_lmax(self, lmax):  # -> None:
         """
         Set max orbital angular momentum (azimuthal quantum number)
 
@@ -123,8 +129,8 @@ class Conphas:
 
         """
         ...
-    
-    def set_format(self, formatting=...): # -> None:
+
+    def set_format(self, formatting=...):  # -> None:
         """
         Set appropriate format from available options
 
@@ -136,8 +142,8 @@ class Conphas:
 
         """
         ...
-    
-    def calculate(self): # -> None:
+
+    def calculate(self):  # -> None:
         """
         Calculates continuous phase shifts from input file(s).
 
@@ -166,6 +172,3 @@ class Conphas:
 
         """
         ...
-    
-
-

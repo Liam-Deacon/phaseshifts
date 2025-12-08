@@ -10,12 +10,14 @@ the input files for errors, whereas the Converter.import_CLEED()
 method allows importing CLEED input files as a MTZ_model class
 
 """
+
 class CLEED_validator:
     """
     Class for validation of CLEED input files
     """
+
     @staticmethod
-    def is_CLEED_file(filename): # -> bool:
+    def is_CLEED_file(filename):  # -> bool:
         """
         Determine if file is a CLEED input file
 
@@ -28,7 +30,7 @@ class CLEED_validator:
             otherwise
         """
         ...
-    
+
     def validate(self, filename, aoi=...):
         r"""
         Checks CLEED input file for errors
@@ -42,14 +44,13 @@ class CLEED_validator:
 
         """
         ...
-    
-
 
 class Converter:
     """
     Convert different input into phaseshift compatible input
 
     """
+
     @staticmethod
     def import_CLEED(filename, **kwargs):
         """
@@ -112,26 +113,20 @@ class Converter:
 
         """
         ...
-    
-
 
 class CSearch:
     """class for csearch related data exchange"""
-    def __init__(self, model_name, leed_command=...) -> None:
-        ...
-    
-    def setModel(self, name): # -> None:
+
+    def __init__(self, model_name, leed_command=...) -> None: ...
+    def setModel(self, name):  # -> None:
         """sets the model name"""
         ...
-    
-    def getIteration(self, iteration): # -> str | None:
-        ...
-    
-    def getRFactor(self, iteration): # -> None:
-        ...
-    
-    def getTimeStamp(self, iteration): # -> None:
-        ...
-    
 
+    def getIteration(self, iteration):  # -> str | None:
+        ...
 
+    def getRFactor(self, iteration):  # -> None:
+        ...
+
+    def getTimeStamp(self, iteration):  # -> None:
+        ...

@@ -2,12 +2,13 @@
 Type stubs for the compiled Fortran extension `libphsh`.
 These are manually derived from `libphsh.pyf`.
 """
+
 from typing import Optional
 
 def hartfock(input_file: str) -> None:
     """
     Run the Hartree-Fock (or Dirac-Fock) atomic structure solver.
-    
+
     Parameters
     ----------
     input_file : str
@@ -22,7 +23,7 @@ def cavpot(
     cluster_file: str,
     mufftin_file: str,
     output_file: str,
-    info_file: str
+    info_file: str,
 ) -> float:
     """
     Calculate the cavity potential (muffin-tin zero).
