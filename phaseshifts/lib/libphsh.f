@@ -294,9 +294,14 @@
        double precision r(nrmax), dr(nrmax), r2(nrmax), v(nrmax)
        double precision ev(iorbs), occ(iorbs), ek(iorbs)
        double precision phe(nrmax,iorbs), vi(nrmax,7)
-       double precision orb(nrmax,iorbs), rpower(nrmax,0:15)
+       double precision orb(nrmax,iorbs)
+       double precision, allocatable :: rpower(:,:)
 
        ! note: this will be good for going up to and including l=3...
+
+       ! allocate on the heap to avoid the compiler moving this workspace
+       ! to static storage when stack limits are low
+       allocate(rpower(nrmax,0:15))
 
        do i=0,7
          xi=i
@@ -355,7 +360,9 @@
        end do
 
        write (6,132) 'TOTAL ENERGY =  ',etot,etot*27.2116d0
- 132   format (1x,a16,2f14.6)
+132   format (1x,a16,2f14.6)
+
+       if (allocated(rpower)) deallocate(rpower)
 
        return
 
@@ -1259,13 +1266,16 @@
        integer njrcdummy(4)
        double precision vi(nrmax,7),phe(nrmax,iorbs)
        double precision ek(iorbs),ev(iorbs),occ(iorbs)
-       ! FIXME: changed rpower dimension range from 0:7 -> 0:15 to be consistent and compile via meson
-       double precision rpower(nrmax,0:15),orb(nrmax,iorbs)
        double precision vctab(nrmax,0:3)
+       double precision orb(nrmax,iorbs)
+       double precision, allocatable :: rpower(:,:)
 
        do i=1,nel
          nm(i)=0
        end do
+
+       ! allocate on the heap to avoid static storage when large locals exceed stack limits
+       allocate(rpower(nrmax,0:15))
 
        njrcdummy(1)=njrc(1)
        njrcdummy(2)=njrc(2)
@@ -1403,6 +1413,8 @@
        end do
 
        ! we got to the end
+
+       if (allocated(rpower)) deallocate(rpower)
 
        return
 

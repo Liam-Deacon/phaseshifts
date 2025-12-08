@@ -388,9 +388,12 @@ module WK
        double precision, dimension(nrmax) :: r, dr, r2, v, ev, occ, ek
        double precision, dimension(nrmax,iorbs) :: phe, orb
        double precision, dimension(nrmax, 7) :: vi
-       double precision, dimension(nrmax,0:15) :: rpower
+       double precision, allocatable :: rpower(:,:)
 
        ! note: this will be good for going up to and including l=3...
+
+       ! allocate on the heap to avoid the compiler falling back to static storage
+       allocate(rpower(nrmax,0:15))
 
        do i=0,7
          xi=i
@@ -445,12 +448,14 @@ module WK
 
        do i=1,nel
          nj=xnj(i)+xnj(i)
-         write (6,122) no(i),nl(i),nm(i),nj,'/2',is(i),occ(i),ev(i)
- 122     format(1x,2i4,i2,i4,a2,i4,f10.4,f18.6)
-       end do
+       write (6,122) no(i),nl(i),nm(i),nj,'/2',is(i),occ(i),ev(i)
+122     format(1x,2i4,i2,i4,a2,i4,f10.4,f18.6)
+      end do
 
        write (6,132) 'TOTAL ENERGY =  ', etot, etot * 27.2116d0
- 132   format (1x,a16,2f14.6)
+132   format (1x,a16,2f14.6)
+
+       if (allocated(rpower)) deallocate(rpower)
 
        return
 
@@ -1375,13 +1380,16 @@ module WK
        integer, dimension(4) :: njrc, njrcdummy
        integer, dimension(iorbs) :: no, nl, nm, is
        double precision, dimension(iorbs) :: xnj, ek, ev, occ
-       double precision, dimension(nrmax,0:7) :: rpower
        double precision, dimension(nrmax,iorbs) :: orb
        double precision, dimension(nrmax,0:3) :: vctab
+       double precision, allocatable :: rpower(:,:)
 
        do i=1,nel
          nm(i) = 0
        end do
+
+       ! allocate on the heap to avoid static storage when stack limits are exceeded
+       allocate(rpower(nrmax,0:15))
 
        njrcdummy(1) = njrc(1)
        njrcdummy(2) = njrc(2)
@@ -1521,6 +1529,8 @@ module WK
        end do
 
        ! we got to the end
+
+       if (allocated(rpower)) deallocate(rpower)
 
        return
 
