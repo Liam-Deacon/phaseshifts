@@ -42,10 +42,10 @@ will produce a list of command line options::
     -l <lmax>, --lmax <lmax>
                           Maximum angular momentum quantum number. [default: 10]
     -f <format>, --format <format>
-                          Use specific phase shift format i.e. 'cleed', 'curve'
-                          or 'none'. Choose 'curve' if you wish to produce
-                          XYY... data for easy plotting. <format> is case
-                          in-sensitive. [default: 'cleed']
+                          Use specific phase shift format i.e., 'cleed', 'curve',
+                          'viperleed' or 'none'. Choose 'curve' if you wish to
+                          produce XYY... data for easy plotting. <format> is
+                          case-insensitive. [default: 'cleed']
     -r <energy> [<energy> ...], --range <energy> [<energy> ...]
                           Energy range in eV with the format:
                           '<start> <stop> [<step>]', where the <step> value is
