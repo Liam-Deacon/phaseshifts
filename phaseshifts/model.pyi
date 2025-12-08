@@ -424,7 +424,7 @@ class MTZ_model(Model):
         """Retrieves muffin-tin potential from file"""
         ...
 
-    def calculate_MTZ(self, mtz_string=..., **kwargs):  # -> LiteralString:
+    def calculate_MTZ(self, mtz_string=..., **kwargs) -> str:
         """
         Description
         -----------
