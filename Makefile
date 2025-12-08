@@ -7,7 +7,7 @@ DOCKER ?= $(shell command -v docker 2>/dev/null || docker)
 
 PREFIX ?= /usr/local
 
-.PHONY: build-deps cbuildwheel check install install-deps libphsh sdist test wheel
+.PHONY: build-deps cbuildwheel check check-types install install-deps libphsh sdist test wheel
 
 #: Quickly generate binary wheel
 wheel: install-deps
@@ -71,6 +71,12 @@ libphsh:
 #: Perform checks
 check: libphsh
 	$(PYTHON) -m pytest tests/ --verbose
+
+#: Run static type checks (Pyright + MyPy)
+check-types: libphsh
+	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m pyright phaseshifts
+	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m mypy phaseshifts --config-file pyproject.toml
+	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m mypy.stubtest phaseshifts --allowlist stubtest_allowlist.txt --mypy-config-file pyproject.toml --ignore-missing-stub
 
 test: check
 
