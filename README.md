@@ -521,6 +521,18 @@ Michel Van Hove who have kindly allowed the use of their code in the
 [libphsh.f](https://github.com/Liam-Deacon/phaseshifts/blob/master/phaseshifts/lib/libphsh.f) file needed for the underlying low-level functions in this
 package.
 
+## Fortran coverage
+
+You can generate gcov/gcovr coverage for the Fortran core:
+
+1. Install test dependencies: `pip install '.[test]'` (includes `gcovr`).
+2. Build with coverage flags by exporting `PHASESHIFTS_FORTRAN_COVERAGE=1`
+   (CMake automatically adds `-g -fprofile-arcs -ftest-coverage`; you can also set
+   `CMAKE_ARGS="-DENABLE_FORTRAN_COVERAGE=ON"` explicitly).
+3. Run tests with `pytest tests -v --fortran-coverage --cov=phaseshifts --cov-report=xml`.
+   When coverage data exists, `fortran-coverage.xml` is written at the repo root and
+   uploaded by CI on Linux runners.
+
 ## Contact
 
 This package is developed/maintained in my spare time so any bug

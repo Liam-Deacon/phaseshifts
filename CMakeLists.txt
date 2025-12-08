@@ -104,6 +104,15 @@ endif()
 # OpenMP option (default OFF due to EXIT statement conflicts in Fortran code)
 option(USE_OPENMP "Enable OpenMP support" OFF)
 
+# Fortran coverage (gcov/gcovr)
+option(ENABLE_FORTRAN_COVERAGE "Build Fortran sources with GCC coverage instrumentation" OFF)
+if(NOT ENABLE_FORTRAN_COVERAGE AND DEFINED ENV{PHASESHIFTS_FORTRAN_COVERAGE})
+  if(NOT "$ENV{PHASESHIFTS_FORTRAN_COVERAGE}" STREQUAL "")
+    set(ENABLE_FORTRAN_COVERAGE ON)
+    message(STATUS "PHASESHIFTS_FORTRAN_COVERAGE detected - enabling Fortran coverage flags")
+  endif()
+endif()
+
 # Ensure scikit-build modules
 if (NOT SKBUILD)
   find_package(PythonInterp 3.12 REQUIRED)
@@ -275,6 +284,18 @@ elseif (UNIX)
   endif()
 endif()
 
+if(ENABLE_FORTRAN_COVERAGE)
+  if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    message(STATUS "Fortran coverage enabled (gfortran --coverage)")
+    target_compile_options("${f2py_module_name}" PRIVATE
+      $<$<COMPILE_LANGUAGE:Fortran>:-g -O0 -fprofile-arcs -ftest-coverage>
+    )
+    target_link_options("${f2py_module_name}" PRIVATE --coverage)
+  else()
+    message(WARNING "Fortran coverage requested but compiler is ${CMAKE_Fortran_COMPILER_ID}; skipping coverage flags")
+  endif()
+endif()
+
 
 add_dependencies("${f2py_module_name}" genpyf generate_f2py_files)
 
@@ -359,6 +380,10 @@ if(ENABLE_PHSHIFT2007_BINARIES)
       else()
           target_compile_options(${bin} PRIVATE -Wall -Wno-unused-label -Wno-tabs -Wno-unused-variable -Wno-unused-dummy-argument -fcheck=bounds -frecursive -std=legacy)
           target_link_options(${bin} PRIVATE -static-libgcc -static-libgfortran)
+      endif()
+      if(ENABLE_FORTRAN_COVERAGE AND CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+          target_compile_options(${bin} PRIVATE -g -O0 -fprofile-arcs -ftest-coverage)
+          target_link_options(${bin} PRIVATE --coverage)
       endif()
   endforeach()
 

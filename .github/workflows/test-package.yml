@@ -43,6 +43,8 @@ jobs:
       PHASESHIFTS_COMPILE_MISSING: "0"
       PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
       PYTHONPATH: ${{ github.workspace }}
+      PHASESHIFTS_FORTRAN_COVERAGE: ${{ matrix.os == 'ubuntu-latest' && '1' || '' }}
+      CMAKE_ARGS: ${{ matrix.os == 'ubuntu-latest' && '-DENABLE_FORTRAN_COVERAGE=ON' || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -133,8 +135,13 @@ jobs:
           CMAKE_GENERATOR: Ninja
 
       - name: Test with pytest
+        shell: bash
         run: |
-          pytest tests/ -v --cov=phaseshifts --cov-report=xml
+          EXTRA_PYTEST_ARGS=""
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ] && [ -n "${PHASESHIFTS_FORTRAN_COVERAGE}" ]; then
+            EXTRA_PYTEST_ARGS="--fortran-coverage"
+          fi
+          pytest tests/ -v --cov=phaseshifts --cov-report=xml ${EXTRA_PYTEST_ARGS}
         env:
           PHASESHIFTS_TEST_USE_SOURCE: "1"
 
@@ -142,7 +149,7 @@ jobs:
         uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
+          files: ${{ runner.os == 'Linux' && 'coverage.xml,fortran-coverage.xml' || 'coverage.xml' }}
           fail_ci_if_error: false
 
       - name: Run codacy-coverage-reporter
@@ -151,4 +158,4 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: coverage.xml
+          coverage-reports: ${{ runner.os == 'Linux' && 'coverage.xml,fortran-coverage.xml' || 'coverage.xml' }}
