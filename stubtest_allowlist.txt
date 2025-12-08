@@ -46,3 +46,5 @@ phaseshifts.settings.TESTRUN
 phaseshifts.settings._READTHEDOCS
 phaseshifts.settings._compile_default
 phaseshifts.tools.debye.__contact__
+# Python 3.12+ adds 'intermixed' parameter to ArgumentParser._parse_known_args
+phaseshifts.tools.debye.ArgumentParser._parse_known_args
