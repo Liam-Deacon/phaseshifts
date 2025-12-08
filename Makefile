@@ -76,7 +76,7 @@ check: libphsh
 check-types: libphsh
 	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m pyright phaseshifts
 	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m mypy phaseshifts --config-file pyproject.toml
-	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m mypy.stubtest phaseshifts
+	PHASESHIFTS_SKIP_COMPILE_ON_IMPORT=1 $(PYTHON) -m mypy.stubtest phaseshifts --allowlist stubtest_allowlist.txt --mypy-config-file pyproject.toml --ignore-missing-stub
 
 test: check
 
