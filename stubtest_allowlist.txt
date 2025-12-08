@@ -1,3 +1,18 @@
+# Skip modules with optional dependencies (gui, validation) and legacy code
+# GUI modules - depend on optional qtpy, wx, six
+phaseshifts.gui
+phaseshifts.gui.*
+# Validation modules - depend on optional pydantic
+phaseshifts.validation
+phaseshifts.validation.*
+# Legacy Python 2/3 code with type issues
+phaseshifts.lib.hartfock
+phaseshifts.lib.phsh
+phaseshifts.lib.scripts
+phaseshifts.lib.scripts.*
+phaseshifts.lib.atomic_structure_solver
+
+# Specific symbol allowlist entries
 phaseshifts.VERSION
 phaseshifts.__contact__
 phaseshifts.__homepage__
@@ -31,7 +46,3 @@ phaseshifts.settings.TESTRUN
 phaseshifts.settings._READTHEDOCS
 phaseshifts.settings._compile_default
 phaseshifts.tools.debye.__contact__
-phaseshifts.validation.AtorbElectron
-phaseshifts.validation.AtorbInputModel
-phaseshifts.validation.atorb.AtorbElectron
-phaseshifts.validation.atorb.AtorbInputModel

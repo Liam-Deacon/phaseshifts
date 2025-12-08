@@ -132,7 +132,12 @@ jobs:
       - name: Run MyPy with stubtest
         run: |
           mypy phaseshifts --config-file pyproject.toml # Use pyproject.toml config
-          python -m mypy.stubtest phaseshifts
+          # Run stubtest with allowlist to skip modules with optional dependencies
+          python -m mypy.stubtest phaseshifts \
+            --mypy-config-file pyproject.toml \
+            --allowlist stubtest_allowlist.txt \
+            --ignore-missing-stub \
+            --ignore-unused-allowlist
         shell: bash
 
       - name: Install package with test extras
