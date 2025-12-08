@@ -128,6 +128,7 @@ class Atorb:
     The Breit interaction has been neglected altogether...it should not
     have a huge effect on the charge density you are concerned with...
     """
+
     def __init__(self, **kwargs: Any) -> None:
         """
         Initialize the Atorb wrapper.
@@ -254,7 +255,7 @@ class Atorb:
         Example
         -------
         >>> Atorb.gen_input('H',rel=False,filename="atorb.txt",output='at_H.i')
-        >>> with open('atorb_H.txt', 'r') as f: print(""".join(f.readlines()))
+        >>> with open('atorb_H.txt', 'r') as f: print("\"".join(f.readlines()))
          C*********************************************************************
          C  atorb input file: atorb_H.txt.
          C*********************************************************************
