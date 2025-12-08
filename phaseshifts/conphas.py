@@ -108,7 +108,7 @@ class Conphas:
             Maximum angular momentum quantum number to calculate and
             must be in the range 0 <= lmax <= 18 .
         formatting (optional) : str
-            output style - use either 'CLEED', 'curve', or 'viper'
+            output style - use either 'CLEED', 'curve', or 'viperleed'
             (default None)
 
         """
@@ -314,7 +314,7 @@ class Conphas:
         ----------
         format : str, optional
             The format identifier for different packages; can be 'cleed',
-            'curve', 'viper', or None.
+            'curve', 'viperleed', or None.
 
         """
         if str(formatting).lower() in ["cleed", "curve", "viper", "viperleed"]:
@@ -533,7 +533,7 @@ class Conphas:
 
         fmt = str(self.format).lower()
         with open(self.output_file, "w") as f:
-            if fmt in ["viper", "viperleed"]:
+            if fmt in {"viper", "viperleed"}:
                 self._write_viper_output(f, conpha, energy, n_phases)
             elif fmt == "curve":
                 # write output in "x y y ..." format
