@@ -51,10 +51,26 @@ will produce a list of command line options::
                           '<start> <stop> [<step>]', where the <step> value is
                           optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
+    -i <input>, --input <input>
+                          Optional cleedpy-style structured input (JSON or
+                          YAML). Converts input into bulk/slab ``.i`` files
+                          before running the normal workflow. PyYAML is needed
+                          for YAML; JSON works without it. If ``jsonschema`` is
+                          installed, the input will be validated.
+    -s <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
     -v, --verbose         set verbosity level [default: None].
     -V, --version         show program's version number and exit
+
+.. note::
+   To install the optional dependencies for structured input and validation,
+   use: ``pip install "phaseshifts[input]"``.
+
+.. warning::
+   Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is,
+   now ``-s``, previously ``-i``. Please update your scripts accordingly.
 
 CLEED compatibility
 -------------------

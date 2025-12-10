@@ -93,6 +93,11 @@ from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
 from phaseshifts.leed import CLEED_validator, Converter, CSearch
 
+try:  # optional dependency for structured input (YAML)
+    import yaml  # type: ignore  # noqa: F401
+except ImportError:
+    yaml = None
+
 try:
     from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
         phsh_cav,
@@ -637,11 +642,18 @@ def main(argv=None):
         )
         parser.add_argument(
             "-i",
+            "--input",
+            dest="input",
+            metavar="<input.json|input.yml>",
+            help="structured input (cleedpy-style) describing bulk and slab in JSON or YAML",
+        )
+        parser.add_argument(
+            "-s",
             "--slab",
             dest="slab",
             metavar="<slab_file>",
-            help="path to MTZ slab or CLEED *.inp input file",
-            required=True,
+            help="path to MTZ slab or CLEED *.inp input file (required unless --input is used)",
+            required=False,
         )
         parser.add_argument(
             "-t",
@@ -727,7 +739,26 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        if args.bulk is None:
+        # Structured input support: auto-generate bulk and slab inputs from geometry
+        if getattr(args, "input", None):
+            try:
+                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
+                    args.input, tmp_dir=args.tmpdir
+                )
+            except ImportError as exc:
+                raise CLIError(str(exc))
+            args.bulk = bulk_file
+            args.slab = slab_file
+            if (
+                metadata.get("maximum_angular_momentum")
+                and args.lmax == parser.get_default("lmax")
+            ):
+                args.lmax = int(metadata["maximum_angular_momentum"])
+
+        if not args.input and args.slab is None:
+            raise CLIError("slab input is required unless using --input.")
+
+        if args.bulk is None and not args.input:
             args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
         if args.store is False:

@@ -37,14 +37,23 @@ method allows importing CLEED input files as a MTZ_model class
 
 """
 
+import json
 import os
 import sys
+import math
+import warnings
 
 from phaseshifts import model
 from phaseshifts.elements import ELEMENTS
 
 from math import sqrt, pow
 from glob import glob
+import tempfile
+
+try:  # optional validation
+    import jsonschema  # type: ignore
+except ImportError:
+    jsonschema = None
 
 
 class CLEED_validator:
@@ -224,6 +233,64 @@ class CLEED_validator:
             ]
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
+
+
+_CLEEDPY_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "system_name": {"type": "string"},
+        "unit_cell": {
+            "type": "object",
+            "required": ["a1", "a2", "a3"],
+            "properties": {
+                "a1": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                "a2": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                "a3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+            },
+        },
+        "superstructure_matrix": {
+            "type": "object",
+            "properties": {
+                "m1": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+                "m2": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+            },
+        },
+        "overlayers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["phase_file", "position"],
+                "properties": {
+                    "phase_file": {"type": "string"},
+                    "position": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                },
+            },
+        },
+        "bulk_layers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": ["phase_file", "position"],
+                "properties": {
+                    "phase_file": {"type": "string"},
+                    "position": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                },
+            },
+        },
+        "minimum_radius": {"type": "object", "additionalProperties": {"type": "number"}},
+        "optical_potential": {"type": "array", "items": {"type": "number"}},
+        "energy_range": {
+            "type": "object",
+            "properties": {
+                "initial": {"type": "number"},
+                "final": {"type": "number"},
+                "step": {"type": "number"},
+            },
+        },
+        "maximum_angular_momentum": {"type": "integer"},
+    },
+    "required": ["unit_cell", "bulk_layers", "overlayers"],
+}
 
 
 class Converter:
@@ -703,6 +770,179 @@ class Converter:
 
         return mtz_model  # converted muffin-tin potential model
 
+    @staticmethod
+    def _load_structured_input(filename, yaml_loader=None):
+        """Load structured input (JSON or YAML)."""
+        ext = os.path.splitext(filename)[1].lower()
+        with open(filename, "r") as f:
+            content = f.read()
+
+        if ext == ".json":
+            return json.loads(content)
+
+        loader_func = None
+        if yaml_loader is not None:
+            loader_func = yaml_loader
+        else:
+            try:
+                import yaml  # type: ignore
+                loader_func = yaml.safe_load
+            except ImportError:
+                loader_func = None
+
+        if loader_func:
+            return loader_func(content)
+
+        # fallback: try JSON parsing even if extension not json
+        try:
+            return json.loads(content)
+        except ValueError:
+            raise ImportError(
+                "PyYAML is required to read YAML input. Install pyyaml or provide JSON."
+            )
+
+    @staticmethod
+    def _validate_structured_input(data):
+        """Validate cleedpy-style input if jsonschema is available."""
+        if jsonschema is None:
+            warnings.warn(
+                "jsonschema not installed; skipping structured input validation.",
+                RuntimeWarning,
+            )
+            return
+        try:
+            jsonschema.validate(instance=data, schema=_CLEEDPY_SCHEMA)
+        except jsonschema.exceptions.ValidationError as exc:  # type: ignore[attr-defined]
+            raise ValueError(f"Invalid input structure: {exc.message}") from exc
+
+    @staticmethod
+    def import_cleedpy_input(filename, superstructure=True, yaml_loader=None, **kwargs):
+        """
+        Parse a cleedpy-style structured input file (JSON or YAML) into bulk and slab MTZ models.
+
+        Parameters
+        ----------
+        filename : str
+            Path to cleedpy YAML input.
+        superstructure : bool, optional
+            If True, apply the superstructure_matrix (m1/m2) to the in-plane
+            basis vectors to construct the surface cell. Defaults to True.
+
+        Returns
+        -------
+        tuple(model.MTZ_model, model.MTZ_model, dict)
+            (bulk_model, slab_model, metadata)
+
+        Notes
+        -----
+        This provides a bridge from cleedpy's YAML geometry to the Barbieri/Van
+        Hove phase-shift workflow by constructing equivalent muffin-tin models.
+        """
+        data = Converter._load_structured_input(filename, yaml_loader=yaml_loader)
+        if not isinstance(data, dict):
+            raise ValueError("Structured input must be a mapping/object.")
+        Converter._validate_structured_input(data)
+
+        def _vector_length(vec):
+            return math.sqrt(sum(v ** 2 for v in vec))
+
+        def _resolve_element(tag):
+            """Extract element symbol from cleedpy phase_file."""
+            if tag is None:
+                raise NameError("Phase file tag is missing.")
+            cleaned = os.path.basename(str(tag))
+            element = "".join(ch for ch in cleaned if ch.isalpha()).title()
+            if element not in ELEMENTS:
+                raise NameError(
+                    "Unknown element '%s' derived from '%s'" % (element, tag)
+                )
+            return element
+
+        # Unit cell
+        a1 = data["unit_cell"]["a1"]
+        a2 = data["unit_cell"]["a2"]
+        a3 = data["unit_cell"]["a3"]
+
+        if superstructure and "superstructure_matrix" in data:
+            m1 = data["superstructure_matrix"].get("m1")
+            m2 = data["superstructure_matrix"].get("m2")
+            if m1 and m2:
+                base_a1 = list(a1)
+                base_a2 = list(a2)
+                a1 = [m1[0] * base_a1[i] + m1[1] * base_a2[i] for i in range(3)]
+                a2 = [m2[0] * base_a1[i] + m2[1] * base_a2[i] for i in range(3)]
+
+        a_mag = max(_vector_length(a1[:2] + [0]), _vector_length(a2[:2] + [0]))
+        c_mag = _vector_length(a3)
+        unitcell = model.Unitcell(a_mag, c_mag, [a1, a2, a3])
+
+        minimum_radius = {
+            str(k).title(): float(v) for k, v in data.get("minimum_radius", {}).items()
+        }
+        lmax_global = data.get("maximum_angular_momentum")
+
+        def _build_atoms(layers):
+            atoms = []
+            for layer in layers:
+                element = _resolve_element(layer.get("phase_file"))
+                radius = minimum_radius.get(element, None)
+                position = layer.get("position") or [0.0, 0.0, 0.0]
+                atom = model.Atom(element, coordinates=position, tag=layer.get("phase_file"))
+                if radius:
+                    atom.set_mufftin_radius(radius)
+                if lmax_global:
+                    atom.lmax = int(lmax_global)
+                atoms.append(atom)
+            return atoms
+
+        bulk_atoms = _build_atoms(data.get("bulk_layers", []))
+        slab_atoms = _build_atoms(data.get("overlayers", []) + data.get("bulk_layers", []))
+
+        bulk_model = model.MTZ_model(unitcell, bulk_atoms)
+        slab_model = model.MTZ_model(unitcell, slab_atoms)
+
+        metadata = {
+            "system_name": data.get("system_name"),
+            "optical_potential": data.get("optical_potential"),
+            "energy_range": data.get("energy_range"),
+            "maximum_angular_momentum": lmax_global,
+        }
+
+        return bulk_model, slab_model, metadata
+
+    @staticmethod
+    def cleedpy_to_inputs(filename, tmp_dir=None, yaml_loader=None, **kwargs):
+        """
+        Convert cleedpy YAML to temporary bulk/slab .i files for phase-shift generation.
+
+        Returns
+        -------
+        tuple(str, str, dict)
+            Paths to generated bulk and slab input files, plus parsed metadata.
+        """
+        if tmp_dir is None:
+            tmp_dir = tempfile.gettempdir()
+        if not os.path.exists(tmp_dir):
+            try:
+                os.makedirs(tmp_dir)
+            except OSError:
+                pass
+
+        bulk_model, slab_model, metadata = Converter.import_cleedpy_input(
+            filename, yaml_loader=yaml_loader, **kwargs
+        )
+
+        system_name = metadata.get("system_name") or os.path.splitext(
+            os.path.basename(filename)
+        )[0]
+        bulk_file = os.path.join(tmp_dir, "%s_bulk.i" % system_name)
+        slab_file = os.path.join(tmp_dir, "%s_slab.i" % system_name)
+
+        header = "Generated from cleedpy YAML: %s" % os.path.basename(filename)
+        bulk_model.gen_input(filename=bulk_file, header=header, bulk=True)
+        slab_model.gen_input(filename=slab_file, header=header, bulk=False)
+
+        return bulk_file, slab_file, metadata
 
 class CSearch:
     """class for csearch related data exchange"""
