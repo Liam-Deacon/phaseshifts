@@ -749,10 +749,9 @@ def main(argv=None):
                 raise CLIError(str(exc))
             args.bulk = bulk_file
             args.slab = slab_file
-            if (
-                metadata.get("maximum_angular_momentum")
-                and args.lmax == parser.get_default("lmax")
-            ):
+            if metadata.get(
+                "maximum_angular_momentum"
+            ) and args.lmax == parser.get_default("lmax"):
                 args.lmax = int(metadata["maximum_angular_momentum"])
 
         if not args.input and args.slab is None:

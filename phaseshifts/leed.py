@@ -243,16 +243,41 @@ _CLEEDPY_SCHEMA = {
             "type": "object",
             "required": ["a1", "a2", "a3"],
             "properties": {
-                "a1": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
-                "a2": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
-                "a3": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                "a1": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 3,
+                    "maxItems": 3,
+                },
+                "a2": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 3,
+                    "maxItems": 3,
+                },
+                "a3": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 3,
+                    "maxItems": 3,
+                },
             },
         },
         "superstructure_matrix": {
             "type": "object",
             "properties": {
-                "m1": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
-                "m2": {"type": "array", "items": {"type": "number"}, "minItems": 2, "maxItems": 2},
+                "m1": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 2,
+                    "maxItems": 2,
+                },
+                "m2": {
+                    "type": "array",
+                    "items": {"type": "number"},
+                    "minItems": 2,
+                    "maxItems": 2,
+                },
             },
         },
         "overlayers": {
@@ -262,7 +287,12 @@ _CLEEDPY_SCHEMA = {
                 "required": ["phase_file", "position"],
                 "properties": {
                     "phase_file": {"type": "string"},
-                    "position": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                    "position": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 3,
+                        "maxItems": 3,
+                    },
                 },
             },
         },
@@ -273,11 +303,19 @@ _CLEEDPY_SCHEMA = {
                 "required": ["phase_file", "position"],
                 "properties": {
                     "phase_file": {"type": "string"},
-                    "position": {"type": "array", "items": {"type": "number"}, "minItems": 3, "maxItems": 3},
+                    "position": {
+                        "type": "array",
+                        "items": {"type": "number"},
+                        "minItems": 3,
+                        "maxItems": 3,
+                    },
                 },
             },
         },
-        "minimum_radius": {"type": "object", "additionalProperties": {"type": "number"}},
+        "minimum_radius": {
+            "type": "object",
+            "additionalProperties": {"type": "number"},
+        },
         "optical_potential": {"type": "array", "items": {"type": "number"}},
         "energy_range": {
             "type": "object",
@@ -786,6 +824,7 @@ class Converter:
         else:
             try:
                 import yaml  # type: ignore
+
                 loader_func = yaml.safe_load
             except ImportError:
                 loader_func = None
@@ -844,7 +883,7 @@ class Converter:
         Converter._validate_structured_input(data)
 
         def _vector_length(vec):
-            return math.sqrt(sum(v ** 2 for v in vec))
+            return math.sqrt(sum(v**2 for v in vec))
 
         def _resolve_element(tag):
             """Extract element symbol from cleedpy phase_file."""
@@ -887,7 +926,9 @@ class Converter:
                 element = _resolve_element(layer.get("phase_file"))
                 radius = minimum_radius.get(element, None)
                 position = layer.get("position") or [0.0, 0.0, 0.0]
-                atom = model.Atom(element, coordinates=position, tag=layer.get("phase_file"))
+                atom = model.Atom(
+                    element, coordinates=position, tag=layer.get("phase_file")
+                )
                 if radius:
                     atom.set_mufftin_radius(radius)
                 if lmax_global:
@@ -896,7 +937,9 @@ class Converter:
             return atoms
 
         bulk_atoms = _build_atoms(data.get("bulk_layers", []))
-        slab_atoms = _build_atoms(data.get("overlayers", []) + data.get("bulk_layers", []))
+        slab_atoms = _build_atoms(
+            data.get("overlayers", []) + data.get("bulk_layers", [])
+        )
 
         bulk_model = model.MTZ_model(unitcell, bulk_atoms)
         slab_model = model.MTZ_model(unitcell, slab_atoms)
@@ -932,9 +975,10 @@ class Converter:
             filename, yaml_loader=yaml_loader, **kwargs
         )
 
-        system_name = metadata.get("system_name") or os.path.splitext(
-            os.path.basename(filename)
-        )[0]
+        system_name = (
+            metadata.get("system_name")
+            or os.path.splitext(os.path.basename(filename))[0]
+        )
         bulk_file = os.path.join(tmp_dir, "%s_bulk.i" % system_name)
         slab_file = os.path.join(tmp_dir, "%s_slab.i" % system_name)
 
@@ -943,6 +987,7 @@ class Converter:
         slab_model.gen_input(filename=slab_file, header=header, bulk=False)
 
         return bulk_file, slab_file, metadata
+
 
 class CSearch:
     """class for csearch related data exchange"""
