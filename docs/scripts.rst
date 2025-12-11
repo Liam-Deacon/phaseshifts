@@ -4,6 +4,8 @@
 Scripts
 *******
 
+.. _phsh:
+
 phsh.py
 =======
 
@@ -22,7 +24,7 @@ will produce a list of command line options::
   phsh - quickly generate phase shifts
 
         Created by Liam Deacon on 2013-11-15.
-        Copyright 2013-2014 Liam Deacon. All rights reserved.
+        Copyright 2013-2015 Liam Deacon. All rights reserved.
 
         Licensed under the MIT license (see LICENSE file for details)
 
@@ -33,10 +35,16 @@ will produce a list of command line options::
 
     optional arguments:
     -h, --help            show this help message and exit
+    -i <input>, --input <input>
+                      Optional cleedpy-style structured input (JSON or
+                      YAML). Converts input into bulk/slab ``.i`` files
+                      before running the normal workflow. PyYAML is needed
+                      for YAML; JSON works without it. If ``jsonschema`` is
+                      installed, the input will be validated.
     -b <bulk_file>, --bulk <bulk_file>
                           path to MTZ bulk or CLEED *.bul input file
-    -i <slab_file>, --slab <slab_file>
-                          path to MTZ slab or CLEED *.inp input file
+    -s <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
     -t <temp_dir>, --tmpdir <temp_dir>
                           temporary directory for intermediate file generation
     -l <lmax>, --lmax <lmax>
@@ -51,18 +59,23 @@ will produce a list of command line options::
                           '<start> <stop> [<step>]', where the <step> value is
                           optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
-    -i <input>, --input <input>
-                          Optional cleedpy-style structured input (JSON or
-                          YAML). Converts input into bulk/slab ``.i`` files
-                          before running the normal workflow. PyYAML is needed
-                          for YAML; JSON works without it. If ``jsonschema`` is
-                          installed, the input will be validated.
-    -s <slab_file>, --slab <slab_file>
-                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    -g, --generate-only
+                          Exit after generating phaseshifts; do not launch
+                          subprocess using PHASESHIFTS_LEED environment
+                          variable. [default: False]
+    -a, --atorbs-only
+                          Only generate atomic orbitals of elements found in
+                          the input files using Eric Shirley's hartfock
+                          routine, then exit. [default: False]
+    -p, --package
+                          Selects package to use for phase shift calculations.
+                          Choices are 'VHT' (van Hove-Tong) or 'Rundgren'
+                          (EEASiSSS). [default: 'VHT')
+
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
-    -v, --verbose         set verbosity level [default: None].
-    -V, --version         show program's version number and exit
+    -v, --verbose         Set verbosity level [default: None].
+    -V, --version         Show program's version number and exit
 
 .. note::
    To install the optional dependencies for structured input and validation,
@@ -101,19 +114,19 @@ after execution. When operating in this mode, the following assumptions are made
  5. The element and oxidation of each atom in a model is guessed by reading the phase
     shift tag from the CLEED input file. For example::
 
-        po:  O_2-_COOH ...
+        po:  O_-2_COOH ...
 
     will be interpreted as a Oxygen with a -2 oxidation state and with a unique name
-    tag of "O_2-_COOH" to show it is in a carboxylic group. Note the '-' may be at
-    the beginning or the end of the oxidation sub-string. If no oxidation state is
+    tag of "O_-2_COOH" to show it is in a carboxylic group. Note the '-' must
+    be at the beginning the oxidation sub-string. If no oxidation state is
     given then the atom is assumed to have zero charge.
  6. The muffin-tin radius of the phase shift species is guessed from lines with::
 
         rm:  <phase_shift> <radius>
 
     However, if no value is found the radius is guessed from the
-    ELEMENTS dictionary within :py:mod:`phaseshifts.elements` depending on the
-    valency of the given phase shift element.
+    ::code::`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
+    depending on the valency of the given phase shift element.
 
 A full list of additional syntax to customise the generation of the phase shifts
 when using CLEED input files can be found in

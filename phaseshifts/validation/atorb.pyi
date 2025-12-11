@@ -187,7 +187,7 @@ def validate_atorb_file(filename):  # -> AtorbInputModel:
     """
     ...
 
-def render_atorb_file(model, filename):
+def render_atorb_file(model, filename, file_handle=None):
     """
     Render a validated AtorbInputModel to a file on disk.
 
@@ -198,8 +198,10 @@ def render_atorb_file(model, filename):
     ----------
     model : AtorbInputModel
         The data model to serialize.
-    filename : str
-        The destination file path.
+    filename : str or file-like
+        The destination file path or file-like object.
+    file_handle : file-like, optional
+        Explicit file handle to write to.
 
     Returns
     -------

@@ -368,13 +368,25 @@ f2py_exts = (
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
-        )
+        ),
+        Extension(
+            name="phaseshifts.lib.libhartfock",
+            extra_compile_args=[],
+            sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
+        ),
     ]
 )
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
 
 README = "README.md"
+LONG_DESCRIPTION = ""
+
+try:
+    with open(README, mode="r", encoding="utf-8") as readme_file_ptr:
+        LONG_DESCRIPTION = readme_file_ptr.read()
+except IOError:
+    pass
 
 # --- Fallback logic for build ---
 setup_args = dict(
@@ -388,7 +400,7 @@ setup_args = dict(
     description=(
         "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
     ),
-    long_description=(None if not os.path.exists(README) else open(README).read()),
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",
