@@ -949,74 +949,49 @@ class Atorb(object):
                 nlevels += 1
 
         # test kwargs and generate output arguments
-        if "output" in kwargs:
-            output = kwargs.get("output")
-        else:
-            output = "at_{0}.i".format(ele.symbol)
+        output = str(kwargs.get("output", "at_{0}.i".format(ele.symbol)))
 
-        if "ngrid" in kwargs:
-            NR = kwargs.get("ngrid")
-        else:
-            NR = 1000  # default grid resolution
+        NR = int(kwargs.get("ngrid", 1000))  # default grid resolution
+        rel = int(kwargs.get("rel", 1))  # default is relativistic
 
-        if "rel" in kwargs:
-            rel = int(kwargs.get("rel"))
-        else:
-            rel = 1  # default is relativistic
-
-        if "filename" in kwargs:
-            filename = kwargs.get("filename")
-        else:
+        filename = kwargs.get("filename") or kwargs.get("atorb_file")
+        if filename is None:
             filename = "atorb_{0}.txt".format(ele.symbol)
 
-        if "header" in kwargs:
-            header = kwargs.value("header")
-        else:
+        file_handle = filename if hasattr(filename, "write") else None
+        if file_handle is not None:
+            filename = getattr(file_handle, "name", None) or "atorb_{0}.txt".format(
+                ele.symbol
+            )
+
+        if not hasattr(filename, "write"):
+            filename = expand_filepath(filename)
+
+        header = kwargs.get("header")
+        if header is None:
             header = "  atorb input file: {0}.".format(os.path.basename(filename))
 
-        if "method" in kwargs:
-            method = str(kwargs.value("method"))
-            methods_dict = {"HF": "0.d0", "LDA": "1.d0", "xalpha": "-alpha"}
-            if method in methods_dict:
-                method = methods_dict.get("method")
-            else:
-                method = "0.d0"
+        method_value = kwargs.get("method", "0.d0")
+        methods_dict = {"HF": "0.d0", "LDA": "1.d0", "XALPHA": "-alpha"}
+        if isinstance(method_value, str):
+            method = methods_dict.get(method_value.upper(), method_value)
         else:
-            method = "0.d0"
+            method = str(method_value)
 
-        if "relic" in kwargs:
-            relic = float(kwargs.get("relic"))
-        else:
-            relic = 0
-
-        if "mixing_SCF" in kwargs:
-            mixing_SCF = float(kwargs.get("mixing_SCF"))
-        else:
-            mixing_SCF = 0.5
-
-        if "tolerance" in kwargs:
-            eigen_tol = float(kwargs.get("tolerance"))
-        else:
-            eigen_tol = 0.0005
-
-        if "ech" in kwargs:
-            ech = int(kwargs.get("ech"))
-        else:
-            ech = 100
+        relic = float(kwargs.get("relic", 0))
+        mixing_SCF = float(kwargs.get("mixing_SCF", 0.5))
+        eigen_tol = float(kwargs.get("tolerance", 0.0005))
+        ech = int(kwargs.get("ech", 100))
 
         fmt = kwargs.get("fmt") or "vht"
         fmt_lower = str(fmt).lower()
-        xnum = float(kwargs.get("xnum")) if "xnum" in kwargs else 100
-        ifil = int(kwargs.get("ifil")) if "ifil" in kwargs else 0
-        atorb_file = kwargs.get("atorb_file")
+        xnum = float(kwargs.get("xnum", 100))
+        ifil = int(kwargs.get("ifil", 0))
 
         use_alt_format = fmt_lower in ("rundgren", "eeasisss")
-        use_stream = atorb_file is not None and not isinstance(atorb_file, str)
+        use_stream = file_handle is not None
 
         if not use_alt_format and not use_stream:
-            if isinstance(atorb_file, str):
-                filename = atorb_file
-
             orbital_models = []
             for entry in electrons:
                 orbital_models.append(
@@ -1069,7 +1044,6 @@ class Atorb(object):
             handle.write(comment_prefix.ljust(70, "*") + "\n")
             handle.write("{0} {1}\n".format(comment_prefix, header_text))
             handle.write(comment_prefix.ljust(70, "*") + "\n")
-
             handle.write("i\n")
             if use_alt_format:
                 handle.write("{0}\n".format(ele.symbol))
