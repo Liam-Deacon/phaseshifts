@@ -913,7 +913,9 @@ class Converter:
             element = Converter._resolve_element(layer.get("phase_file"))
             radius = minimum_radius.get(element, None)
             position = layer.get("position") or [0.0, 0.0, 0.0]
-            atom = model.Atom(element, coordinates=position, tag=layer.get("phase_file"))
+            atom = model.Atom(
+                element, coordinates=position, tag=layer.get("phase_file")
+            )
             if radius:
                 atom.set_mufftin_radius(radius)
             if lmax_global:
@@ -955,10 +957,13 @@ class Converter:
         }
         lmax_global = data.get("maximum_angular_momentum")
 
-        bulk_atoms = Converter._build_atoms(data.get("bulk_layers", []), minimum_radius, lmax_global)
+        bulk_atoms = Converter._build_atoms(
+            data.get("bulk_layers", []), minimum_radius, lmax_global
+        )
         slab_atoms = Converter._build_atoms(
-            data.get("overlayers", []) + data.get("bulk_layers", [])
-            , minimum_radius, lmax_global
+            data.get("overlayers", []) + data.get("bulk_layers", []),
+            minimum_radius,
+            lmax_global,
         )
 
         bulk_model = model.MTZ_model(unitcell, bulk_atoms)
