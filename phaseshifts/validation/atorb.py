@@ -626,7 +626,7 @@ def validate_atorb_file(filename):
     return _parse_atorb_file(filename)
 
 
-def render_atorb_file(model, filename):
+def render_atorb_file(model, filename, file_handle=None):
     """
     Render a validated AtorbInputModel to a file on disk.
 
@@ -637,8 +637,13 @@ def render_atorb_file(model, filename):
     ----------
     model : AtorbInputModel
         The data model to serialize.
-    filename : str
-        The destination file path.
+    filename : str or file-like
+        The destination file path or an open file-like object with a ``write``
+        method. If a file handle is provided, its ``name`` attribute (if
+        present) will be returned.
+    file_handle : file-like, optional
+        Explicit file handle to write to. Useful when the caller already has an
+        open buffer (e.g., StringIO) and still wants a filename returned.
 
     Returns
     -------
@@ -676,6 +681,16 @@ def render_atorb_file(model, filename):
     lines.append("{0}".format(model.output))
     lines.append("q")
 
+    payload = "\n".join(lines) + "\n"
+
+    handle = file_handle
+    if handle is None and hasattr(filename, "write"):
+        handle = filename
+
+    if handle is not None:
+        handle.write(payload)
+        return getattr(handle, "name", "") or filename
+
     with open(filename, "w") as handle:
-        handle.write("\n".join(lines) + "\n")
+        handle.write(payload)
     return filename
