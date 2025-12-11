@@ -14,7 +14,7 @@ The *phsh.py* script is placed into the system ``PATH`` during installation of t
 phaseshifts package. It can then be used from the command line, e.g. ``phsh.py --help``
 will produce a list of command line options::
 
-  usage: phsh.py [-h] -b <bulk_file> -i <slab_file> [-t <temp_dir>] [-l <lmax>]
+  usage: phsh.py [-h] -b <bulk_file> -s <slab_file> [-t <temp_dir>] [-l <lmax>]
                [-r <start_energy> <final_energy> <step>] [-f <format>]
                [-S <subdir>] [-v] [-V]
 
