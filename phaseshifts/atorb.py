@@ -678,9 +678,7 @@ class Atorb(object):
         """
         filenames = [
             os.path.join(directory, "hf.conf")
-            for directory in list(
-                self.atlib, self.userhome, self.datalib, os.path.curdir
-            )
+            for directory in [self.atlib, self.userhome, self.datalib, os.path.curdir]
         ]
         return [os.path.abspath(expand_filepath(f)) for f in filenames]
 
@@ -714,6 +712,12 @@ class Atorb(object):
         config.read([conf_file] + self._get_conf_lookup_dirs())
 
         return config.items("DEFAULT")
+
+    def get_conf_parameters(self, conf_file="hf.conf"):
+        """
+        Public wrapper to read Atorb configuration parameters.
+        """
+        return self._get_conf_parameters(conf_file)
 
     @staticmethod
     def get_quantum_info(shell):  # (str) -> Tuple[int|float|List[int|float], ...]
