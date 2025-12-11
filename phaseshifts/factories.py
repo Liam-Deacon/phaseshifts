@@ -32,15 +32,21 @@
 
 """Provides an abstract factory class for phase shift calculations"""
 
-from wrappers import BVHWrapper, EEASiSSSWrapper
 import sys
+
+try:
+    from typing import List
+except ImportError:
+    pass
+
+from wrappers import BVHWrapper, EEASiSSSWrapper
 
 
 class PhaseshiftFactory(object):
     """Class for backend selection"""
 
     backend = object
-    phsh_files = []
+    phsh_files = []  # type: List[str]
 
     def __init__(self, backend, **kwargs):
         package = str(backend).lower()

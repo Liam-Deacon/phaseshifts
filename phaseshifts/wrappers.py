@@ -197,9 +197,9 @@ class Wrapper(object):
         Parses a Fortran formatted string containing (multiple) decimal numbers
         and returns a Python-friendly line string to be processed further.
         """
-        regex = "[-+0-9]{1,5}\.\d{1,6}"  # basic decimal number
+        regex = r"[-+0-9]{1,5}\.\d{1,6}"  # basic decimal number
         decimal = compile("({})".format(regex))
-        decimal_and_exponent = compile("({}[eED][+-\d]\d{0,6})".format(regex))
+        decimal_and_exponent = compile(r"({}[eED][+-\d]\d{{0,6}})".format(regex))
 
         output = decimal.findall(line)
         output = output if output != [] else decimal_and_exponent.findall(line)
