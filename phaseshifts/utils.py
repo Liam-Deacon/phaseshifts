@@ -51,6 +51,11 @@ class FileUtils(object):
     """Class for performing phase shift related file operations."""
 
     @staticmethod
+    def expand_filepath(path):
+        """Backwards-compatible helper mirroring module-level expand_filepath."""
+        return expand_filepath(path)
+
+    @staticmethod
     def copy_files(files, dst, verbose=False):
         """copy list of files into destination directory"""
         # check if using native Windows Python with cygwin
