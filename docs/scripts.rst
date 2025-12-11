@@ -70,6 +70,10 @@ will produce a list of command line options::
 
 .. warning::
    Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
+   Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is
+   now ``-s``. The new ``-i`` flag is reserved for structured input (JSON/YAML).
+   When ``--input`` is provided, any ``--bulk``/``--slab`` arguments are ignored
+   (a warning is emitted). Update scripts accordingly.
 
 CLEED compatibility
 -------------------
