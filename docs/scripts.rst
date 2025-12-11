@@ -69,8 +69,7 @@ will produce a list of command line options::
    use: ``pip install "phaseshifts[input]"``.
 
 .. warning::
-   Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is,
-   now ``-s``, previously ``-i``. Please update your scripts accordingly.
+   Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
 
 CLEED compatibility
 -------------------
