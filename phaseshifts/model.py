@@ -41,6 +41,7 @@ shift calculation package.
 from __future__ import print_function
 from __future__ import division
 
+import errno
 import os
 from copy import deepcopy
 from shutil import move
@@ -773,8 +774,10 @@ class MTZ_model(Model):
             if not os.path.isdir(os.path.join(output_dir, "Atorb")):
                 try:
                     os.makedirs(os.path.join(output_dir, "Atorb"))
-                except WindowsError:
-                    pass  # directory already exists on Windows
+                except OSError as e:
+                    # Only ignore "directory already exists" errors, re-raise others
+                    if e.errno != getattr(errno, "EEXIST", 17):
+                        raise
 
             atorb_file = os.path.join(output_dir, "Atorb", "atorb_%s.i" % element)
             if not os.path.isfile(atorb_file):  # create new atorb input file

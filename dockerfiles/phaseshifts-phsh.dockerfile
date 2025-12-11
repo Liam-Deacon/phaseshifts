@@ -15,7 +15,7 @@ FROM base as builder
 WORKDIR /build
 
 # TODO: Remove the manual install_requires step when migrating to pyproject.toml PEP-517 builds (see #8)
-RUN pip install --no-cache-dir meson scikit-build
+RUN pip install --no-cache-dir meson scikit-build-core
 
 COPY . /build/
 

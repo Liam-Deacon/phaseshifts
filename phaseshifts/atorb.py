@@ -32,9 +32,20 @@
 """
 **atorb.py**
 
-Provides convenience functions for generating input and calculating
-atomic charge densities for use with the Barbieri/Van Hove phase
-shift calculation package.
+This module provides a high-level Python interface for generating input files and
+executing atomic structure calculations using the 'atorb' program (part of the
+Barbieri/Van Hove LEED phase shift package).
+
+The core functionality allows users to:
+1.  Determine the ground-state electronic configuration of elements.
+2.  Construct formatted input files for the `atorb` Fortran solver.
+3.  Calculate radial charge densities :math:`\\rho(r)` by solving the
+    Dirac-Fock (relativistic) or Hartree-Fock (non-relativistic) equations
+    for a free atom.
+
+These charge densities serve as the starting potential for calculating
+scattering phase shifts in Low-Energy Electron Diffraction (LEED) and
+photoelectron diffraction experiments.
 
 :See: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/
 
@@ -89,6 +100,14 @@ try:
     import mendeleev  # type: ignore [import-not-found]
 except ImportError:
     mendeleev = None  # Need to install mendeleev
+
+from phaseshifts.validation.atorb import (
+    AtorbElectron,
+    AtorbInputModel,
+    coerce_model,
+    render_atorb_file,
+    validate_atorb_file,
+)
 
 from phaseshifts import elements
 
@@ -219,7 +238,33 @@ elements_dict = OrderedDict(
 def get_element(
     element, backend=None
 ):  # type: (str, Optional[ElementBackendType]) -> object
-    """Obtain an element object for querying information using `backend`."""
+    """
+    Retrieve an element object from the specified chemical data backend.
+
+    This function abstracts the details of various chemistry libraries
+    (mendeleev, elementy, periodictable) to provide a unified interface
+    for accessing atomic properties like proton count (Z) and electronic
+    configurations.
+
+    Parameters
+    ----------
+    element : str or int
+        The symbol (e.g., 'Fe') or atomic number (e.g., 26) of the element.
+    backend : str, optional
+        The preferred backend library to use ('mendeleev', 'elementy', 'periodictable').
+        If None, tries available backends in order.
+
+    Returns
+    -------
+    object
+        An object containing element data (attributes vary by backend but usually
+        include `protons`, `symbol`, `name`).
+
+    Raises
+    ------
+    LookupError
+        If the element cannot be found in any available backend.
+    """
     ele_obj = elements.ELEMENTS.get(element)
     if mendeleev and not ele_obj and backend in ("mandeleev", None):
         elements_data = mendeleev.get_all_elements()
@@ -243,7 +288,22 @@ def get_element(
 
 
 def get_electron_config(element_obj):
-    """Obtain the electronic orbital configuration for the given `element_obj`."""
+    """
+    Extract the electronic configuration string from an element object.
+
+    Retrieves the standard ground-state configuration (e.g., '[Ar] 4s2 3d10 4p5')
+    from the backend-specific element object.
+
+    Parameters
+    ----------
+    element_obj : object
+        The element object returned by `get_element`.
+
+    Returns
+    -------
+    str
+        The electronic configuration string.
+    """
     electron_config = None
     if hasattr(element_obj, "orbitals"):
         electron_config = " ".join(
@@ -258,13 +318,47 @@ def get_electron_config(element_obj):
 
 class Atorb(object):
     r"""
-    Description
-    -----------
     A python wrapper for the `atorb` program by Eric Shirley for use in
     calculating atomic scattering for different elements
 
+
+    This class encapsulates the logic for interacting with the Barbieri/Van Hove
+    `atorb` program. It calculates atomic orbitals and radial charge densities
+    on a logarithmic grid.
+
+    The solver numerically integrates the radial Dirac equation (or Schrödinger
+    equation if relativistic effects are disabled) to find the eigenvalues
+    and eigenfunctions of the bound electrons.
+
+    Mathematical Context
+    --------------------
+    The calculations are performed on a logarithmic radial grid defined by:
+
+    .. math::
+        r_i = r_{min} \cdot \left(\frac{r_{max}}{r_{min}}\right)^{\frac{i}{N_R}}, \quad i=1, \dots, N_R
+
+    where :math:`N_R` is the number of grid points. Distances are in Bohr radii
+    (:math:`a_0 \simeq 0.529 \mathrm{\AA}`).
+
+    The total spherical charge density :math:`\rho(r)` (in electrons per cubic Bohr)
+    is constructed from the radial wavefunctions (stored in internal `phe` arrays):
+
+    .. math::
+        \rho(r_i) = \sum_{j=1}^{N_{orb}} \frac{occ_j \cdot |\phi_j(r_i)|^2}{4\pi r_i^2}
+
+    where :math:`occ_j` is the occupancy of the :math:`j`-th orbital.
+
+    For relativistic calculations (Dirac-Fock), the orbital density includes
+    both large (:math:`F`) and small (:math:`G`) components:
+
+    .. math::
+        |\phi(r)|^2 = F(r)^2 + G(r)^2
+
     Notes
     -----
+    The Breit interaction is neglected, which is a valid approximation for
+    valence states dominating the scattering potential in LEED.
+
     Original author: Eric Shirley
 
     There are nr grid points, and distances are in Bohr radii
@@ -298,7 +392,6 @@ class Atorb(object):
 
     The Breit interaction has been neglected altogether...it should not
     have a huge effect on the charge density you are concerned with...
-
     """
 
     atlib = "$ATLIB" if "ATLIB" in os.environ else "~/atlib/"
@@ -322,7 +415,12 @@ class Atorb(object):
         **kwargs,
     ):
         """
-        Constructor
+        Initialize the Atorb wrapper.
+
+        Parameters
+        ----------
+        **kwargs : dict
+            Arbitrary attributes to store on the instance.
         """
         # set private data members
         self.ngrid = ngrid if isinstance(ngrid, int) else 1000
@@ -597,31 +695,40 @@ class Atorb(object):
     @staticmethod
     def get_quantum_info(shell):  # (str) -> Tuple[int|float|List[int|float], ...]
         r"""
-        Description
-        -----------
-        Get a tuple of quantum information for a given orbital 's', 'p', 'd'
-        or 'f' from a given subshell string.
+        Parse quantum numbers from a subshell string (e.g., '3d6').
+
+        Decomposes a standard spectroscopic notation into the set of quantum
+        numbers required for the radial equation solver. Handles the splitting
+        of shells into spin-orbit coupled states (:math:`j = l \pm 1/2`).
+
+        Parameters
+        ----------
+        shell : str
+            Subshell string, e.g., '1s2', '4f14', '3d5'.
 
         Returns
         -------
-        tuple : (int, int, list[float, float], list[float, float])
-            (n, l, j=[l-s, l+s], occ=[:math:`n^-_r`, :math:`n^+_r`])
+        tuple
+            (n, l, j_list, occ_list)
 
-        Notes
-        -----
-        - *n* is the principle quantum number (:math:`n > 0`).
-        - *l* is the azimuthal quantum number (:math:`0 \leq l \leq n-1`).
-        - *s* is the spin quantum number (:math:`s \pm \frac{1}{2}`).
-        - *j* is the total angular momentum quantum numbers for both
-          :math:`l-s` or :math:`l+s`, respectively.
-        - :math:`n_r` is the occupancy of the spin-split :math:`l-s`
-          and :math:`l+s` levels, respectively.
+            - **n** (int): Principal quantum number.
+            - **l** (int): Azimuthal quantum number.
+            - **j_list** (list[float]): Total angular momentum values :math:`j`
+              associated with this shell. For :math:`l > 0`, this will be
+              [:math:`l-1/2`, :math:`l+1/2`].
+            - **occ_list** (list[float]): Occupancy for each :math:`j` level.
+              Electrons are distributed according to statistical weight
+              (:math:`2j+1`).
 
-        Example
-        -------
-        >>> Atorb.get_quantum_info('3d6')
-        (3, 2, [1.5, 2.5], [2.4, 3.6])
+        Examples
+        --------
+        For a full '3d10' shell:
 
+        >>> Atorb.get_quantum_info('3d10')
+        (3, 2, [1.5, 2.5], [4.0, 6.0])
+
+        Here, :math:`n=3`, :math:`l=2`. The states are :math:`d_{3/2}` (occupancy 4)
+        and :math:`d_{5/2}` (occupancy 6).
         """
 
         subshell = "".join([s for s in shell if s.isalpha()])
@@ -673,29 +780,27 @@ class Atorb(object):
     @staticmethod
     def replace_core_config(electron_config):
         """
-        Description
-        -----------
-        Replace nobel gas core with equivalent electronic shell configuration
+        Expand noble gas core abbreviations into full orbital strings.
+
+        The `atorb` solver requires explicit definitions for all orbitals
+        starting from 1s. This function replaces '[Ar]', '[Xe]', etc., with
+        their constituent subshells.
 
         Parameters
         ----------
         electron_config : str
-            String containing the electronic configuration of the given
-            element.
+            Electronic configuration string, potentially containing noble gas
+            cores (e.g., '[Ar] 4s2').
 
         Returns
         -------
-        str :
-            A substituted string where the nobel gas core has been replaced.
+        str
+            The fully expanded configuration string.
 
         Examples
         --------
-        >>> Atorb.replace_core_config('[Ar] 4s2')
-         '1s2 2s2 2p6 3s2 3p6 4s2'
-
-        >>> Atorb.replace_core_config('[Xe] 6s2 5d1')
-         '1s2 2s2 2p6 3s2 3p6 3d10 4s2 4p6 5s2 4d10 5p6 6s2 5d1'
-
+        >>> Atorb.replace_core_config('[He] 2s1')
+        '1s2 2s1'
         """
         cores = {
             "[He]": "1s2",
@@ -738,8 +843,6 @@ class Atorb(object):
     @staticmethod
     def gen_input(element, **kwargs):
         """
-        Description
-        -----------
         Generate hartfock atorb input file from <element> and optional **kwargs
         arguments. The generated input can then be inputted into
         :py:meth:`Atorb.calculate_Q_density()`.
@@ -806,7 +909,20 @@ class Atorb(object):
         at_H.i
         q
 
+        Returns
+        -------
+        str
+            The path to the generated input file.
 
+        Notes
+        -----
+        The resulting file allows `libphsh` to solve the radial Dirac equation:
+
+        .. math::
+            H \\Psi = E \\Psi
+
+        where density functional theory (DFT) or Hartree-Fock approximations define
+        the potential.
         """
         ele = get_element(element, backend=None)
         Z = ele.protons
@@ -880,93 +996,149 @@ class Atorb(object):
         else:
             ech = 100
 
-        fmt = kwargs.get("fmt") or "bvh"
+        # FIXME: Turn the following into correct form for rendering
+        if 0:
+          fmt = kwargs.get("fmt") or "bvh"
 
-        # produce output file
-        atorb_file = kwargs["atorb_file"]
-        if isinstance(atorb_file, str):
-            f = open(atorb_file, "w")
-        else:
-            f = atorb_file
+          # produce output file
+          atorb_file = kwargs["atorb_file"]
+          if isinstance(atorb_file, str):
+              f = open(atorb_file, "w")
+          else:
+              f = atorb_file
 
-        ifil_str = ", ifil"
-        if fmt.lower() not in ["rundgren", "eeasisss"]:
-            ifil = ""
-            ifil_str = ""
+          ifil_str = ", ifil"
+          if fmt.lower() not in ["rundgren", "eeasisss"]:
+              ifil = ""
+              ifil_str = ""
 
-        if header is not None:
-            f.write("!".ljust(70, "*") + "\n")
-            f.write("! " + str(header) + "\n")
-            f.write("!".ljust(70, "*") + "\n")
-        elif f.tell() == 0:
-            f.write("!".ljust(70, "*") + "\n")
-            f.write(
-                "! %s hartfock input auto-generated by phaseshifts\n"
-                % (fmt.upper() if fmt.lower() in ["vht", "eeasisss"] else fmt.title())
+          if header is not None:
+              f.write("!".ljust(70, "*") + "\n")
+              f.write("! " + str(header) + "\n")
+              f.write("!".ljust(70, "*") + "\n")
+          elif f.tell() == 0:
+              f.write("!".ljust(70, "*") + "\n")
+              f.write(
+                  "! %s hartfock input auto-generated by phaseshifts\n"
+                  % (fmt.upper() if fmt.lower() in ["vht", "eeasisss"] else fmt.title())
+              )
+              f.write("!".ljust(70, "*") + "\n")
+
+          f.write("i\n")
+          if fmt.lower() in ["rundgren", "eeasisss"]:
+              # add line for element symbol
+              f.write("{}\n".format(ele.symbol))
+          f.write(
+              "{0} {1}".format(Z, int(kwargs["ngrid"])).ljust(30, " ")
+              + "! Z NR (number of points in radial grid)\n"
+          )
+          f.write("d\n")
+          f.write("{0}".format(int(rel)).ljust(30) + "! 1=rel, 0=n.r.\n")
+          f.write("x\n")
+          f.write(
+              "{0}".format(method).ljust(30)
+              + "! 0.d0=HF, 1.d0=LDA, -(float) = xalfa...\n"
+          )
+          f.write("a\n")
+          f.write(
+              "{} {} {} {} {} {}".format(
+                  relic, nlevels, mixing_SCF, kwargs["tolerance"], kwargs["xnum"], ifil
+              ).ljust(30)
+              + "! relic, levels, mixing SCF, eigen. tolerance, xnum%s\n" % ifil_str
+          )
+          for i in range(0, nlevels):
+              f.write(
+                  "{0} {1} {2} {3} {4} {5}".format(*electrons[i]).ljust(30)
+                  + "! n, l, l, -j, <1>, occupation\n"
+              )
+          f.write("w\n")
+          f.write("{0}\n".format(output))
+          f.write("q\n")
+
+        orbital_models = []
+        for entry in electrons:
+            orbital_models.append(
+                coerce_model(
+                    AtorbElectron,
+                    {
+                        "n": entry[0],
+                        "l": entry[1],
+                        "m": entry[2],
+                        "j": entry[3],
+                        "s": entry[4],
+                        "occ": entry[5],
+                    },
+                )
             )
-            f.write("!".ljust(70, "*") + "\n")
 
-        f.write("i\n")
-        if fmt.lower() in ["rundgren", "eeasisss"]:
-            # add line for element symbol
-            f.write("{}\n".format(ele.symbol))
-        f.write(
-            "{0} {1}".format(Z, int(kwargs["ngrid"])).ljust(30, " ")
-            + "! Z NR (number of points in radial grid)\n"
+        atorb_model = coerce_model(
+            AtorbInputModel,
+            {
+                "z": Z,
+                "nr": NR,
+                "rel": rel,
+                "method": method,
+                "relic": relic,
+                "nlevels": nlevels,
+                "mixing_scf": mixing_SCF,
+                "eigen_tol": eigen_tol,
+                "ech": ech,
+                "orbitals": orbital_models,
+                "output": output,
+                "header": header,
+            },
         )
-        f.write("d\n")
-        f.write("{0}".format(int(rel)).ljust(30) + "! 1=rel, 0=n.r.\n")
-        f.write("x\n")
-        f.write(
-            "{0}".format(method).ljust(30)
-            + "! 0.d0=HF, 1.d0=LDA, -(float) = xalfa...\n"
-        )
-        f.write("a\n")
-        f.write(
-            "{} {} {} {} {} {}".format(
-                relic, nlevels, mixing_SCF, kwargs["tolerance"], kwargs["xnum"], ifil
-            ).ljust(30)
-            + "! relic, levels, mixing SCF, eigen. tolerance, xnum%s\n" % ifil_str
-        )
-        for i in range(0, nlevels):
-            f.write(
-                "{0} {1} {2} {3} {4} {5}".format(*electrons[i]).ljust(30)
-                + "! n, l, l, -j, <1>, occupation\n"
-            )
-        f.write("w\n")
-        f.write("{0}\n".format(output))
-        f.write("q\n")
+        atorb_model.ensure_valid()
+
+        render_atorb_file(atorb_model, filename=filename)
 
         return filename  # return output filename for further use
 
     @staticmethod
-    def calculate_Q_density(**kwargs):
+    def validate_input_file(input_path):
         """
-        Description
-        -----------
-        Calculate the radial charge density of a given element or atorb input
-        file.
+        Validate a generated or user-supplied atorb input file.
 
-        Usage
-        -----
-        Atorb.calculate_Q_density(**kwargs)
+        Parses the input file using the `phaseshifts.validation.atorb` logic
+        to ensure it meets the strict formatting and physical requirements of
+        the solver.
 
         Parameters
         ----------
-        kwargs may be any of the following.
+        input_path : str
+            Path to the file to validate.
 
-        element : int or str, optional
-            Generate element atorb input file on the fly. Additional
-            kwargs may be used to govern the structure of the input
-            file - please use ``help(phaseshifts.Atorb.gen_input)``
-            for more information.
-        input : str, optional
-            Specify atorb input file otherwise will use the class
-            instance value.
-        output_dir : str, optional
-            Specify the output directory for the `at_*.i` file
-            generated, otherwise the default current working directory
-            is used.
+        Returns
+        -------
+        AtorbInputModel
+            Parsed and validated representation of the input file.
+        """
+        return validate_atorb_file(os.path.abspath(input_path))
+
+    @staticmethod
+    def calculate_Q_density(**kwargs):
+        """
+        Execute the atomic structure calculation to obtain radial charge densities.
+
+        This method serves as the primary driver for the 'atorb' Fortran routine.
+        It either generates a new input file based on an element symbol or validates
+        an existing input file, then invokes the solver (`hartfock`) via `libphsh`.
+
+        The solver computes the radial wavefunctions :math:`\\phi_{n,l,j}(r)` and
+        constructs the total spherical charge density :math:`\\rho(r)`.
+
+        Parameters
+        ----------
+        **kwargs : dict, optional
+            Keyword arguments passed to :meth:`gen_input` if `element` is provided.
+
+            element : str or int
+                Target element. If provided, an input file is generated on-the-fly.
+            input : str
+                Path to an existing atorb input file. Ignored if `element` is provided.
+            output_dir : str
+                Directory where the output file (containing phase shifts or charge densities)
+                should be placed. Defaults to current directory.
 
         Returns
         -------
@@ -1023,6 +1195,7 @@ class Atorb(object):
             )
 
         current_dir = os.path.curdir
+        output_dir = None
         if "output_dir" in kwargs:
             output_dir = kwargs.pop("output_dir")
             if os.path.isdir(output_dir):
@@ -1039,6 +1212,8 @@ class Atorb(object):
         if not inp:
             raise ValueError("Input file not specified")
 
+        validated = validate_atorb_file(inp)
+
         # do lazy loading due to documentation not needing compiled code
         import phaseshifts.lib.libphsh  # noqa
 
@@ -1046,30 +1221,7 @@ class Atorb(object):
             inp
         )  # calculates atomic orbital charge densities for atom
 
-        # get output filename
-        lines = []
-        output_filename = "atorb"
-
-        try:
-            with open(inp, "r") as f:
-                lines = [line for line in f]
-        except IOError:
-            raise IOError
-
-        lines = [
-            line.replace("\n", "")
-            .replace("\r", "")
-            .lstrip(" ")
-            .split("!")[0]
-            .split("#")[0]
-            .rstrip(" ")
-            for line in lines
-        ]
-
-        for i in range(len(lines)):
-            if lines[i].startswith("w"):
-                output_filename = lines[i + 1]
-                break
+        output_filename = validated.output
 
         os.chdir(current_dir)  # return to original directory
 

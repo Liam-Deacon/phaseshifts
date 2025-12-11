@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 
 ##############################################################################
@@ -88,7 +88,13 @@ class Conphas:
     """
 
     def __init__(
-        self, input_files=[], output_file=[], formatting=None, lmax=10, **kwargs
+        self,
+        input_files=[],
+        output_file=[],
+        formatting=None,
+        lmax=10,
+        v0_params=None,
+        **kwargs
     ):
         """
         Parameters
@@ -102,15 +108,17 @@ class Conphas:
             Maximum angular momentum quantum number to calculate and
             must be in the range 0 <= lmax <= 18 .
         formatting (optional) : str
-            output style - use either 'CLEED' or None (default None)
+            output style - use either 'CLEED', 'curve', or 'viperleed'
+            (default None)
 
         """
         self.input_files = [
             filename for filename in input_files if os.path.isfile(filename)
         ]
-        self.output_file = ntpath.abspath(str(output_file))
+        self.output_file = os.path.abspath(str(output_file))
         if int(lmax) >= 0 and int(lmax) <= 18:
             self.lmax = int(lmax)
+        self.v0_params = v0_params
         self.set_format(formatting)
         self.__dict__.update(kwargs)
 
@@ -305,14 +313,86 @@ class Conphas:
         Parameters
         ----------
         format : str, optional
-            The format identifier for different packages; can be 'cleed'
-            or None.
+            The format identifier for different packages; can be 'cleed',
+            'curve', 'viperleed', or None.
 
         """
-        if str(formatting).lower() in ["cleed", "curve"]:
+        if str(formatting).lower() in ["cleed", "curve", "viper", "viperleed"]:
             self.format = str(formatting).lower()
         else:
             self.format = None
+
+    @staticmethod
+    def _chunked(sequence, size=10):
+        """Yield successive chunks from a sequence."""
+        for index in range(0, len(sequence), size):
+            yield sequence[index : index + size]
+
+    def _resolve_v0_params(self):
+        """
+        Resolve Rundgren inner potential parameters for ViPErLEED output.
+
+        Returns
+        -------
+        tuple(float, float, float, float)
+            c0-c3 parameters; defaults to ViPErLEED's documented values if
+            none are provided. Raises a ValueError if an invalid v0_params
+            configuration is supplied.
+        """
+        # Default parameters taken from ViPErLEED documentation (Rundgren form)
+        default_params = (-10.17, -0.08, -74.19, 19.18)
+
+        params = getattr(self, "v0_params", None)
+
+        # No user-specified parameters: use documented defaults
+        if params is None:
+            return default_params
+
+        # Surface invalid configurations instead of silently falling back
+        if not isinstance(params, (list, tuple)) or len(params) < 4:
+            raise ValueError(
+                "Invalid v0_params configuration: expected a list or tuple with at "
+                "least 4 numeric elements, got {!r}".format(params)
+            )
+
+        try:
+            return tuple(float(value) for value in params[:4])
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "Invalid v0_params configuration: all first four elements must be "
+                "numeric, got {!r}".format(params)
+            ) from exc
+
+    def _write_viper_output(self, file_handle, conpha, energy, n_phases):
+        """
+        Write phase shifts in ViPErLEED PHASESHIFTS format.
+
+        Parameters
+        ----------
+        file_handle : IO
+            Open file handle for writing.
+        conpha : list
+            Continuous phase shifts per atom/site.
+        energy : list
+            Energies in eV as parsed from phasout.
+        n_phases : int
+            Number of energy points to write.
+        """
+        n_blocks = len(self.input_files)
+        c0, c1, c2, c3 = self._resolve_v0_params()
+        timestamp = strftime("%y%m%d-%H%M%S", gmtime())
+        file_handle.write(
+            f"{n_blocks:d} {c0:8.2f} {c1:8.2f} {c2:8.2f} {c3:8.2f} phaseshifts {timestamp}\n"
+        )
+
+        for ie in range(n_phases):
+            file_handle.write(f"{energy[ie] / HARTREE:7.4f}\n")
+            for ii in range(len(self.input_files)):
+                block = [conpha[ii][ie][l] for l in range(self.lmax + 1)]
+                for chunk in self._chunked(block):
+                    file_handle.write(
+                        " ".join(f"{value:7.4f}" for value in chunk).rstrip() + "\n"
+                    )
 
     # process to create continuous phase shifts
     def calculate(self):
@@ -321,8 +401,8 @@ class Conphas:
 
         Examples
         --------
-        >>> con = Conphas(output_file=r'testing\leedph_py.d', lmax=10)
-        >>> con.set_input_files([r'testing\\ph1'])
+        >>> con = Conphas(output_file=r'testing/leedph_py.d', lmax=10)
+        >>> con.set_input_files([r'testing/ph1'])
         >>> con.set_format('cleed')
         >>> con.calculate()
          L = 0
@@ -415,16 +495,16 @@ class Conphas:
                     conpha[i][ie][l] = phas[i][ie][l] + (pi * ifak)
 
             # get root name of output
-            if ntpath.exists(self.input_files[i]):
-                root = ntpath.dirname(self.input_files[i])
-                name = ntpath.splitext(ntpath.basename(self.input_files[i]))[0]
-                dataph = ntpath.join(root, str("dataph_" + name + ".d"))
-                leedph = ntpath.join(root, str("leedph_" + name + ".d"))
+            if os.path.exists(self.input_files[i]):
+                root = os.path.dirname(self.input_files[i])
+                name = os.path.splitext(os.path.basename(self.input_files[i]))[0]
+                dataph = os.path.join(root, str("dataph_" + name + ".d"))
+                leedph = os.path.join(root, str("leedph_" + name + ".d"))
             else:
-                root = ntpath.dirname(self.output_file)
-                name = ntpath.splitext(ntpath.basename(self.output_file))[0]
-                dataph = ntpath.join(root, "dataph_{0}_{1}.d".format(name, i))
-                leedph = ntpath.join(root, "leedph_{0}_{1}.d".format(name, i))
+                root = os.path.dirname(self.output_file)
+                name = os.path.splitext(os.path.basename(self.output_file))[0]
+                dataph = os.path.join(root, "dataph_{0}_{1}.d".format(name, i))
+                leedph = os.path.join(root, "leedph_{0}_{1}.d".format(name, i))
 
             # write datafile 'dataph.d'
             try:
@@ -451,29 +531,12 @@ class Conphas:
                             )
                         f.write("\n")
 
-        # write final output
+        fmt = str(self.format).lower()
         with open(self.output_file, "w") as f:
-            if str(self.format).lower() == "cleed":
-                # add formatted header for Held CLEED package
-                f.write(
-                    "{0} {1} neng lmax (calculated by {2} on {3})\n".format(
-                        neng,
-                        self.lmax,
-                        getuser(),
-                        strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
-                    )
-                )
-            if str(self.format).lower() != "curve":
-                # data format is kept the same for compatibility reasons
-                for ie in range(n_phases):
-                    f.write("%7.4f\n" % (energy[ie] / HARTREE))
-                    # append phase shifts from all files
-                    for ii in range(len(self.input_files)):
-                        for l in range(self.lmax + 1):
-                            f.write("%7.4f" % (conpha[ii][ie][l]))
-                    f.write("\n")
-            else:  # write output in "x y y ..." format
-                # write header
+            if fmt in {"viper", "viperleed"}:
+                self._write_viper_output(f, conpha, energy, n_phases)
+            elif fmt == "curve":
+                # write output in "x y y ..." format
                 f.write(
                     "# phase shift curve: %s\n" % os.path.basename(self.output_file)
                 )
@@ -485,8 +548,25 @@ class Conphas:
                 # write data
                 for ie in range(n_phases):
                     f.write("%7.4f " % (energy[ie] / HARTREE))
-                    # append phase shifts from all files
                     for ii in range(len(self.input_files)):
                         for l in range(self.lmax + 1):
                             f.write("%7.4f " % (conpha[ii][ie][l]))
+                    f.write("\n")
+            else:
+                if fmt == "cleed":
+                    f.write(
+                        "{0} {1} neng lmax (calculated by {2} on {3})\n".format(
+                            neng,
+                            self.lmax,
+                            getuser(),
+                            strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
+                        )
+                    )
+
+                # data format is kept the same for compatibility reasons
+                for ie in range(n_phases):
+                    f.write("%7.4f\n" % (energy[ie] / HARTREE))
+                    for ii in range(len(self.input_files)):
+                        for l in range(self.lmax + 1):
+                            f.write("%7.4f" % (conpha[ii][ie][l]))
                     f.write("\n")

@@ -7,13 +7,14 @@
 ! http://www.icts.hkbu.edu.hk/vanhove/VanHove_files/leed/leedpack.html
 !
 !=======================================================================
-
-! NOTE: To view a rough comparison to (almost) the original source, run:
 !
-!       cat phaseshifts/lib/.phsh.orig/*.f > phsh.f
+! NOTE To view a rough comparison to (almost) the original source, run:
+!
+!       cd phaseshifts/lib/.phsh.orig
+!       cat phsh0.f phsh1.f phsh2.f > phsh.f
 !       code --diff phsh.f phaseshifts/lib/libphsh.f
 !
-
+!
 !-----------------------------------------------------------------------
 ! hartfock subroutine:
 !
@@ -286,13 +287,21 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
-       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
-       dimension ev(iorbs),occ(iorbs),is(iorbs),ek(iorbs)
-       dimension phe(nrmax,iorbs),njrc(4),vi(nrmax,7)
-       dimension orb(nrmax,iorbs),rpower(nrmax,0:15)
+       double precision etot, rel, alfa, dl, zorig, xntot
+       integer nst, nr, nel, iuflag
+       integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs), njrc(4)
+       double precision xnj(iorbs)
+       double precision r(nrmax), dr(nrmax), r2(nrmax), v(nrmax)
+       double precision ev(iorbs), occ(iorbs), ek(iorbs)
+       double precision phe(nrmax,iorbs), vi(nrmax,7)
+       double precision orb(nrmax,iorbs)
+       double precision, allocatable :: rpower(:,:)
 
        ! note: this will be good for going up to and including l=3...
+
+       ! allocate on the heap to avoid the compiler moving this workspace
+       ! to static storage when stack limits are low
+       allocate(rpower(nrmax,0:15))
 
        do i=0,7
          xi=i
@@ -351,7 +360,9 @@
        end do
 
        write (6,132) 'TOTAL ENERGY =  ',etot,etot*27.2116d0
- 132   format (1x,a16,2f14.6)
+132   format (1x,a16,2f14.6)
+
+       if (allocated(rpower)) deallocate(rpower)
 
        return
 
@@ -367,12 +378,16 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax),v(nrmax)
-       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
-       dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
-       dimension phe(nrmax,iorbs),njrc(4),vi(nrmax,7)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax),orb(nrmax,iorbs)
-       dimension rpower(nrmax,0:15)
+       double precision etot, rel, alfa, dl, eerror, ratio, xnum, etot2
+       double precision zorig, xntot
+       integer nst, nfc, nr, nel, iuflag
+       integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs), njrc(4)
+       double precision xnj(iorbs)
+       double precision r(nrmax), dr(nrmax), r2(nrmax), v(nrmax)
+       double precision ek(iorbs), ev(iorbs), occ(iorbs)
+       double precision phe(nrmax,iorbs), vi(nrmax,7)
+       double precision q0(nrmax), xm1(nrmax), xm2(nrmax)
+       double precision orb(nrmax,iorbs), rpower(nrmax,0:15)
 
        ! initialize eerror, the biggest change in an eigenvalue, and etot.
 
@@ -434,11 +449,13 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension dr(nrmax),r(nrmax),r2(nrmax)
-       dimension phe(nrmax,iorbs),occ(iorbs)
-       dimension is(iorbs),orb(nrmax,iorbs),nl(iorbs)
-       dimension nm(iorbs),xnj(iorbs),no(iorbs)
-       dimension rpower(nrmax,0:15)
+       double precision etot, rel, alfa, dl, xntot, ratio, xnum, etot2
+       integer nst, nr, nel, iuflag
+       integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs)
+       double precision xnj(iorbs)
+       double precision dr(nrmax), r(nrmax), r2(nrmax)
+       double precision phe(nrmax,iorbs), occ(iorbs)
+       double precision orb(nrmax,iorbs), rpower(nrmax,0:15)
        dimension xq1(nrmax),xq2(nrmax),xq0(nrmax)
        dimension cg(0:6,0:6,0:12,-6:6,-6:6),pin(0:8,0:8,0:16)
        dimension xqj0(nrmax),xqj1(nrmax)
@@ -730,9 +747,11 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension phi(nrmax),phi2(nrmax)
-       dimension v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
+       integer i, n, l, nr
+       double precision occ, xkappa, xj, zorig, zeff, e, dl, rel
+       double precision phi(nrmax),phi2(nrmax)
+       double precision v(nrmax),q0(nrmax),xm1(nrmax),xm2(nrmax)
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
 
        el=-zorig*zorig/dble(n*n)
        eh=0.d0
@@ -781,7 +800,9 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension phi(nrmax),phi2(nrmax),v(nrmax),r(nrmax)
+       double precision e, xj, dl
+       integer l, nr
+       double precision phi(nrmax),phi2(nrmax),v(nrmax),r(nrmax)
 
        c=137.038d0
        cc=c*c
@@ -828,8 +849,13 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension v(nrmax),r(nrmax),r2(nrmax),orb(nrmax,iorbs)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax),njrc(4),vi(nrmax,7)
+       integer i, l, ns, idoflag, nr
+       double precision rel, zeff, zorig, dl
+       integer njrc(4)
+       double precision v(nrmax),r(nrmax),r2(nrmax)
+       double precision orb(nrmax,iorbs)
+       double precision q0(nrmax),xm1(nrmax),xm2(nrmax)
+       double precision vi(nrmax,7)
 
        c=137.038d0
        alpha=rel/c
@@ -913,7 +939,10 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax),njrc(4)
+       double precision zorig, rmin, rmax, xntot, dl
+       integer nr, nel
+       integer njrc(4)
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
 
        ! enter Z, NR
        read (5,*) zorig,nr
@@ -940,7 +969,9 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
+       integer nr
+       double precision rmin, rmax, dl
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
 
        ratio=rmax/rmin
        dl=log(ratio)/dble(nr)
@@ -966,9 +997,11 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension phi(nrmax),v(nrmax)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
+       integer l, n, nn, istop, ief, nr
+       double precision e, xkappa, x0, z, dl, rel
+       double precision phi(nrmax),v(nrmax)
+       double precision q0(nrmax),xm1(nrmax),xm2(nrmax)
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
 
        dl2=dl*dl/12.d0
        dl5=10.d0*dl2
@@ -1145,8 +1178,9 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension nl(iorbs)
-       dimension cg(0:6,0:6,0:12,-6:6,-6:6),si(0:32),fa(0:32)
+       integer nel
+       integer nl(iorbs)
+       double precision cg(0:6,0:6,0:12,-6:6,-6:6),si(0:32),fa(0:32)
 
        lmx=0
        do i=1,nel
@@ -1222,18 +1256,26 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax),phi(nrmax),v(nrmax)
-       dimension njrc(4),njrcdummy(4),vi(nrmax,7),phe(nrmax,iorbs)
-       dimension no(iorbs),nl(iorbs),nm(iorbs),xnj(iorbs)
-       dimension ek(iorbs),ev(iorbs),occ(iorbs),is(iorbs)
-       ! FIXME: changed rpower dimension range from 0:7 -> 0:15 to be consistent and compile via meson
-       dimension rpower(nrmax,0:15),orb(nrmax,iorbs)
-       dimension vctab(nrmax,0:3)
+       double precision etot, rel, alfa, rmin, rmax, dl, zorig, xntot
+       integer nst, nr, nel, iuflag
+       integer no(iorbs), nl(iorbs), nm(iorbs), is(iorbs), njrc(4)
+       double precision xnj(iorbs)
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
+       double precision q0(nrmax),xm1(nrmax),xm2(nrmax)
+     +               ,phi(nrmax),v(nrmax)
+       integer njrcdummy(4)
+       double precision vi(nrmax,7),phe(nrmax,iorbs)
+       double precision ek(iorbs),ev(iorbs),occ(iorbs)
+       double precision vctab(nrmax,0:3)
+       double precision orb(nrmax,iorbs)
+       double precision, allocatable :: rpower(:,:)
 
        do i=1,nel
          nm(i)=0
        end do
+
+       ! allocate on the heap to avoid static storage when large locals exceed stack limits
+       allocate(rpower(nrmax,0:15))
 
        njrcdummy(1)=njrc(1)
        njrcdummy(2)=njrc(2)
@@ -1372,6 +1414,8 @@
 
        ! we got to the end
 
+       if (allocated(rpower)) deallocate(rpower)
+
        return
 
       end subroutine
@@ -1380,7 +1424,8 @@
       subroutine parabreg(f,fp,fpp,rf,vf)
 
        implicit double precision (a-h,o-z)
-       dimension rf(3),vf(3)
+       double precision f, fp, fpp
+       double precision rf(3),vf(3)
 
        f=vf(2)
        r21=rf(2)-rf(1)
@@ -1397,6 +1442,7 @@
 !----------------------------------------------------------------------
       double precision function hb(x,factor)
        implicit double precision (a-h,o-z)
+       double precision x, factor
 
        if (x.gt.3.d0) hb=0.d0
        if (x.le.3.d0) hb=0.01d0**((dsinh(x/factor)/1.1752d0)**2.d0)
@@ -1413,10 +1459,14 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
-       dimension njrc(4),orb(nrmax,iorbs)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
-       dimension phi(nrmax),v(nrmax)
+       integer i, n, jrt, l
+       double precision e, xj, xideal, zeff, rel, factor
+       double precision rcut
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
+       integer njrc(4)
+       double precision orb(nrmax,iorbs)
+       double precision q0(nrmax),xm1(nrmax),xm2(nrmax)
+       double precision phi(nrmax),v(nrmax)
        ! need this as an array not an implicit scalar
        dimension dummy(nrmax,7)
 
@@ -1475,16 +1525,19 @@
       subroutine pseudize(i,orb,ev,l,xj,n,njrc,zeff,v,
      +                      q0,xm1,xm2,nr,rmin,rmax,r,dr,r2,dl,rel)
 
-       implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax)
-       dimension phi(nrmax),v(nrmax),rf(3),vf(3)
-       dimension phi0(nrmax),yl(nrmax),vraw(nrmax)
-       dimension q0(nrmax),xm1(nrmax),xm2(nrmax)
-       dimension njrc(4),orb(nrmax,iorbs)
+      implicit double precision (a-h,o-z)
+      parameter (iorbs=33,iside=600)
+      parameter (io2=iorbs*(iorbs+1)/2)
+      parameter (ijive=io2*(io2+1)/2)
+      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       integer i, l, n, nr
+       double precision ev, xj, zeff, rmin, rmax, dl, rel
+       integer njrc(4)
+       double precision r(nrmax),dr(nrmax),r2(nrmax)
+       double precision phi(nrmax),v(nrmax),rf(3),vf(3)
+       double precision phi0(nrmax),yl(nrmax),vraw(nrmax)
+       double precision q0(nrmax),xm1(nrmax),xm2(nrmax)
+       double precision orb(nrmax,iorbs)
 
        lp=l+1
        xkappa=-1.d0
@@ -1690,12 +1743,13 @@
       subroutine fourier(nr,r,dr,r2,vi)
 
        implicit double precision (a-h,o-z)
-       parameter (iorbs=33,iside=600)
-       parameter (io2=iorbs*(iorbs+1)/2)
-       parameter (ijive=io2*(io2+1)/2)
-       parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension r(nrmax),dr(nrmax),r2(nrmax),vi(nrmax,7)
-       dimension a(nrmax),v1(nrmax),v2(nrmax)
+      parameter (iorbs=33,iside=600)
+      parameter (io2=iorbs*(iorbs+1)/2)
+      parameter (ijive=io2*(io2+1)/2)
+      parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
+       integer nr
+       double precision r(nrmax),dr(nrmax),r2(nrmax),vi(nrmax,7)
+       double precision a(nrmax),v1(nrmax),v2(nrmax)
 
        do l=0,2
          lp2=l+l+1
@@ -1739,7 +1793,8 @@
       subroutine GETILLLS(PIN)
 
        implicit double precision (A-H,O-Z)
-       dimension FA(0:40),SI(0:40),PIN(0:8,0:8,0:16)
+       double precision PIN(0:8,0:8,0:16)
+       double precision FA(0:40),SI(0:40)
 
        FA(0)=1.D0
        SI(0)=1.D0
@@ -1797,10 +1852,13 @@
        parameter (io2=iorbs*(iorbs+1)/2)
        parameter (ijive=io2*(io2+1)/2)
        parameter (lmax=4,ihmax=20,nrmax=4000,ntmax=10,npmax=60)
-       dimension no(iorbs),nl(iorbs),xnj(iorbs),is(iorbs)
-       dimension ev(iorbs),ek(iorbs),occ(iorbs),r(nrmax)
-       dimension phe(nrmax,iorbs),orb(nrmax,iorbs)
-       dimension njrc(4),vi(nrmax,7),rho(nrmax)
+       integer iu, ir, nst, nr, ixflag, nel
+       double precision etot, rel, rmin, rmax, zorig, xntot
+       integer no(iorbs),nl(iorbs),is(iorbs),njrc(4)
+       double precision xnj(iorbs)
+       double precision ev(iorbs),ek(iorbs),occ(iorbs),r(nrmax)
+       double precision phe(nrmax,iorbs),orb(nrmax,iorbs)
+       double precision vi(nrmax,7),rho(nrmax)
        character(len=255) filename, dummy
        integer pos, i
 
@@ -1865,6 +1923,8 @@
       subroutine exchcorr(nst,rel,rr,rh1,rh2,ex,ec,ux1,ux2,uc1,uc2)
 
        implicit double precision(a-h,o-z)
+       integer nst
+       double precision rel, rr, rh1, rh2, ex, ec, ux1, ux2, uc1, uc2
 
        trd=1.d0/3.d0
        ft=4.d0/3.d0
@@ -2007,14 +2067,13 @@
       end subroutine
 
 !---------------------------------------------------------------------
-      function CAVPOT(MTZ_STRING, SLAB_FLAG, ATOMIC_FILE,
+      real function CAVPOT(MTZ_STRING, SLAB_FLAG, ATOMIC_FILE,
      +   CLUSTER_FILE, MUFFTIN_FILE, OUTPUT_FILE, INFO_FILE)
 
        character(len=*), intent(IN) :: ATOMIC_FILE, MUFFTIN_FILE
        character(len=*), intent(IN) :: CLUSTER_FILE, OUTPUT_FILE
        character(len=*), intent(IN) :: MTZ_STRING, INFO_FILE
        integer, intent(IN)          :: SLAB_FLAG
-       real                         :: CAVPOT
        integer NIEQ, NTOT
        real RX(550),RS(550),POT(550),RC(3,3)
        real TITLE(20), SUM
@@ -2026,7 +2085,7 @@
        integer, allocatable :: NCON(:), NX(:), NA(:,:), IA(:,:)
        real, allocatable    :: NAME(:,:)
        character(len=4) WFN,WFN0,WFN1,WFN2,WFN3
-       common /WK/ WK1(250),WK2(250)
+       common /WK_CAV/ WK1(250),WK2(250)
        common /WF/ WF2(250,14),WC(14),LC(14)
        data NGRID,MC,PI/250,30,3.1415926536/
        data WFN0,WFN1,WFN2,WFN3/"RELA","HERM","CLEM","POTE"/
@@ -2498,7 +2557,9 @@
 
 !---------------------------------------------------------------------
       subroutine CHGRID(FX,X,NX,FY,Y,NY)
-       dimension FX(NX),X(NX),FY(NY),Y(NY)
+       implicit real (A-H,O-Z)
+       integer NX, NY
+       real FX(NX),X(NX),FY(NY),Y(NY)
 !     PIECEWISE QUADRATIC INTERPOLATION FROM GRID X TO GRID Y,  BY
 !     AITKEN'S DIVIDED DifFERENCE SCHEME.   NX,NY ARE ARRAY dimensionS?
 !     NOTE THAT NY IS RESET IN CHGRID
@@ -2540,9 +2601,10 @@
 !     WFC(IX,I) = WAVEFUNCTION X RADIUS AT GRID POINT IX
       subroutine CLEMIN(RHO,RX,NX,NGRID)
 
-       dimension RHO(NGRID),RX(NGRID)
+       integer NX, NGRID
+       real RHO(NGRID),RX(NGRID)
        real NAME(4),SUM
-       common /WK/ EX(20),FAC(20),FNT(20),NT(20)
+       common /WK_CLE/ EX(20),FAC(20),FNT(20),NT(20)
        common /WF/ WFC(250,14),WC(14),LC(14)
 
        read(4,100)NAME
@@ -2649,9 +2711,10 @@
 !    WFC(IX,I) = WAVEfunction X RADIUS AT GRID POINT IX
       subroutine Hsin(RHO,RX,NX,NGRID)
 
-       dimension RHO(NGRID),RX(NGRID)
+       integer NX, NGRID
+       real RHO(NGRID),RX(NGRID)
        real NAME(4),SUM
-       common /WK/ RR(250),RS(250)
+       common /WK_HSIN/ RR(250),RS(250)
        common /WF/ WFC(250,14),WC(14),LC(14)
 
        read(4,100)NAME,Z
@@ -2745,9 +2808,11 @@
 !  OUT TO THE MUFFIN-TIN RADIUS
       subroutine MAD(VMAD,RX,NGRID,RMT,NRR,NX,NR,RC,RK,ZM,N,AV)
 
-       dimension VMAD(NGRID,NR),RX(NGRID),RC(3,3),RK(3,N),ZM(N)
-       dimension RMT(NR),NRR(NR),NX(NR)
-       common /WK/ G(3,3),VMM(5),FR(5),RA(3),GA(3)
+       integer NGRID, NR, N
+       integer NRR(NR), NX(NR)
+       real VMAD(NGRID,NR),RX(NGRID),RC(3,3),RK(3,N),ZM(N)
+       real RMT(NR), AV
+       common /WK_MAD/ G(3,3),VMM(5),FR(5),RA(3),GA(3)
        data PI,TEST/3.1415926536,1.0E-4/
 
        RAD(A1,A2,A3)=sqrt(A1*A1+A2*A2+A3*A3)
@@ -2954,9 +3019,12 @@
       subroutine MTZ(SIG,RHO,RX,NGRID,RMT,NRR,NX,NR,
      + RC,RK,N,VHAR,VEX,ALPHA,AV,NH)
 
-       dimension SIG(NGRID,NR),RHO(NGRID,NR),RX(NGRID),RMT(NR),
-     + NRR(NR),NX(NR),VG(20),RC(3,3),RK(3,N)
-       common /WK/ X(3),RB(3)
+       integer NGRID, NR, N, NH
+       integer NRR(NR), NX(NR)
+       real SIG(NGRID,NR),RHO(NGRID,NR),RX(NGRID),RMT(NR)
+       real RC(3,3),RK(3,N),VHAR,VEX,ALPHA,AV
+       real VG(20)
+       common /WK_MTZ/ X(3),RB(3)
        data PI,NG/3.14159265358,20/
 
       ! GRID REFERENCE FOR RADIUS ON LOUCKS' MESH
@@ -3154,7 +3222,9 @@
 !  MUFFIN-TIN RADIUS AND WIGNER-SEITZ RADIUS RESPECTIVELY
       subroutine MTZM(VH,VS,RX,NGRID,RMT,RWS,JRMT,JRWS,VHAR,VEX)
 
-       dimension VH(NGRID),VS(NGRID),RX(NGRID)
+       integer NGRID, JRMT, JRWS
+       real VH(NGRID),VS(NGRID),RX(NGRID)
+       real RMT, RWS, VHAR, VEX
        double precision SUMH,SUME
 
        DX=0.05
@@ -3222,9 +3292,10 @@
 !  AD(J,IR)? THE RADIUS OF THE J'TH SHELL
       subroutine NBR(IA,NA,AD,NCON,NRR,NR,RC,RK,N,RMAX,MC)
 
-       dimension IA(MC,NR),NA(MC,NR),AD(MC,NR),NCON(NR),NRR(NR),
-     + RC(3,3),RK(3,N)
-       common /WK/ RJ(3)
+       integer NR, N, MC
+       integer IA(MC,NR),NA(MC,NR),NCON(NR),NRR(NR)
+       real AD(MC,NR),RC(3,3),RK(3,N),RMAX
+       common /WK_NBR/ RJ(3)
 
       ! INITIALISATION
        RAD(A1,A2,A3)=sqrt(A1*A1+A2*A2+A3*A3)
@@ -3327,7 +3398,8 @@
 ! TAKEN FROM LOUCKS' BOOK, APPENDIX 1
       subroutine POISON(PSQ,Z,J,W)
 
-       dimension PSQ(J),W(J)
+       integer J
+       real Z, PSQ(J),W(J)
        double precision E(250),F(250),ACC,A,B,C,D,C2
 
        A=1.0D0-0.0025D0/48.0D0
@@ -3387,9 +3459,10 @@
 ! FOR EACH ATOMIC STATE I?
       subroutine RELA(RHO,RX,NX,NGRID)
 
-       dimension RHO(NGRID),RX(NGRID)
+       integer NX, NGRID
+       real RHO(NGRID),RX(NGRID)
        real NAME(4),SUM
-       common /WK/ RR(2000),RS(2000)
+       common /WK_RELA/ RR(2000),RS(2000)
 
        read(4,100) NAME,IPRINT
        read(4,54) rmin,rmax,nr,z
@@ -3435,8 +3508,11 @@
 !  TRAPEZIUM RULE ON RADIAL GRID  RX(I)=EXP(-8.8+0.05(I-1))
       subroutine SUMAX(ACC,CHI,RX,NX,NCON,IA,NA,AD,IMAX,NGRID,NR)
 
-       dimension ACC(NGRID),CHI(NGRID,NR),RX(NGRID),NX(NR)
-       dimension IA(NCON),NA(NCON),AD(NCON)
+       integer IMAX, NGRID, NR
+       integer NX(NR), NCON
+       integer IA(NCON),NA(NCON)
+       real AD(NCON)
+       real ACC(NGRID),CHI(NGRID,NR),RX(NGRID)
        double precision SUM
 
        INDEX(X)=20.*(log(X)+8.8)+2.
@@ -3628,7 +3704,9 @@
       subroutine PS(V,RX,NGRID,RAD,E,PHS,NL,FILE_UNIT)
 
        integer, intent(in)    :: FILE_UNIT
-       dimension V(NGRID),RX(NGRID),PHS(NL)
+       integer NGRID, NL
+       real RAD, E
+       real V(NGRID),RX(NGRID),PHS(NL)
        dimension WF(250),BJ(25),BN(25),XR(10),FR(5)
        data PI,DX,DAC,DB/3.141592653589,0.05,2.083333E-04,2.083333E-03/
 
@@ -3728,7 +3806,9 @@
       subroutine CALCBF(BJ,BN,NL,X,FILE_UNIT)
 
        integer, intent(in)    :: FILE_UNIT
-       dimension BJ(NL),BN(NL)
+       integer NL
+       real X
+       real BJ(NL),BN(NL)
 
        if (abs(X) .lt. 1.0E-6) then
          write(FILE_UNIT,200)X
@@ -4102,8 +4182,10 @@
 !  F12 PERFORMS ITERATIVE INTERPOLATION IN A TABLE OF N VALUES OF
 !  X AND Y TO FIND THE VALUE OF Y AT Z
 !***********************************************************************
-      function F12(X, Y, Z, N)
+      real function F12(X, Y, Z, N)
 
+       integer N
+       real Z
        real X(10), Y(10), W(20)
 
        W(1) = Y(1)
@@ -4132,6 +4214,7 @@
 !***********************************************************************
       subroutine S5(E)
 
+       real E
        real EEST(30), VME(15)
        common / CMRV / R(201), V(201, 15), NR, NL, Z
        common / CM5 / Y(30, 4), F(30, 4), IP1
@@ -4194,6 +4277,7 @@
 !***********************************************************************
       subroutine S10(E)
 
+       real E
        integer TLP1
        real A(10), B(10), TR(4)
        common / CMRV / R(201), V(201, 15), NR, NL, Z
@@ -4260,8 +4344,10 @@
 !***********************************************************************
 !  F44  EVALUATES THE SPECIAL VERSION OF THE SPHERICAL BESSEL FUNCT.
 !***********************************************************************
-      function F44(L, X)
+      real function F44(L, X)
 
+       integer L
+       real X
        real S(20)
 
        JS = L + L + 1
@@ -4334,8 +4420,10 @@
 !***********************************************************************
 !  F45  EVALUATES SPECIAL VERSION OF THE SPHERICAL NEUMANN function
 !***********************************************************************
-      function F45(L, X)
+      real function F45(L, X)
 
+       integer L
+       real X
        real S(20)
 
        if (L .lt. 0) then
@@ -4416,8 +4504,10 @@
 !***********************************************************************
       subroutine S41(X, Y, N)
 
-       character B, C, O, D, P
-       dimension X(100), Y(100), P(97)
+       character B, C, O, D
+       integer N
+       real X(100), Y(100)
+       character P(97)
        data B, C, O, D / " ", "*", "0", "I" /
        Y1 = 0
        Y2 = 0
@@ -4567,7 +4657,7 @@ c$OMP END PARALLEL DO
 c$OMP PARALLEL DO
          do J=1,N
            DXAZ=0.0D0
-           TTR=DLGKAP(E,KAP)/(12.5663706)
+           TTR=DLGKAP(E,dble(KAP))/(12.5663706)
            call SBFIT(TTR,E,L-1,RMAXI,JFS)
            JF(J,L)=JFS
            E=E*13.6
@@ -4586,8 +4676,8 @@ c$OMP END PARALLEL DO
 
 c$OMP PARALLEL DO
            do J=1,N
-             DLU=DLGKAP (E,KAP)/(12.5663706)
-             DLD=DLGKAP(E,L)/(12.5663706)
+             DLU=DLGKAP (E,dble(KAP))/(12.5663706)
+             DLD=DLGKAP(E,dble(L))/(12.5663706)
              call SBFIT(DLD,E,L,RMAXI,JFD)
              call SBFIT(DLU,E,L,RMAXI,JFU)
              LK=0
@@ -4658,9 +4748,10 @@ c$OMP END PARALLEL DO
 ! E IS THE ENERGY TO BE USED (IN RYDBERGS)
 ! 4 PI R**2 INSERTED NOW. FOR COMPOUNDS ONLY.
 !***********************************************************************
-      function DLGKAP (E,KAPPA)
+      double precision function DLGKAP(E,KAPPA)
 
        implicit double precision(A-H,O-Z)
+       double precision E, KAPPA
        dimension POT(340),U(340),W(340),UP(340),WP(340),SXK(4),SXM(4)
        common /Z/ T
        common /RADFUN/ U,W

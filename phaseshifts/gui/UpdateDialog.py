@@ -28,11 +28,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from PyQt4 import QtGui, uic
-import res_rc
+# pylint: disable=invalid-name,super-with-arguments,consider-using-f-string
+
+import os
+import sys
+import subprocess  # nosec
+
+from qtpy import QtWidgets, uic
 
 
-class UpdateDialog(QtGui.QDialog):
+class UpdateDialog(QtWidgets.QDialog):
     """
     Dialog class for updating sequences
     """
@@ -47,13 +52,15 @@ class UpdateDialog(QtGui.QDialog):
         super(UpdateDialog, self).__init__(parent)
 
         # set dictionary
-        self.package = package
+        self.package = package or "phaseshifts"
         self.parent = parent
         self.server = server
         self.proxy = proxy
 
         # dynamically load ui
-        self.ui = uic.loadUi("gui/UpdateDialog.ui", self)
+        self.ui = uic.loadUi(
+            os.path.join(os.path.dirname(__file__), "UpdateDialog.ui"), self
+        )
         self.initUi()
 
         self.ui.show()
@@ -79,50 +86,24 @@ class UpdateDialog(QtGui.QDialog):
 
     def doUpdate(self):
         if self.package is None:
-            QtGui.QMessageBox.information(self, "Error", "No package name!")
+            QtWidgets.QMessageBox.information(self, "Error", "No package name!")
             self.ui.closeEvent()
-        import pip
 
         try:
-            dists = [
-                dist
-                for dist in pip.get_installed_distributions()
-                if dist.key == self.package
-            ]
-
-        except Exception:
-            QtGui.QMessageBox.information(
-                self, "Update %s" % self.package, "Failed to update!"
+            subprocess.check_call(  # nosec: B603
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "--upgrade",
+                    self.package,
+                ]
             )
 
-        from phaseshifts.contrib.xmlrpc_urllib2_transport import ProxyTransport
-
-        try:
-            pypi = xmlrpclib.ServerProxy(server, transport=ProxyTransport())
-            dist = dists[0]
-            available = pypi.package_releases(dist.project_name)
-            if not available:
-                # Try to capitalise package name
-                available = pypi.package_releases(dist.project_name.capitalize())
-
-            if not available:
-                msg = "no releases at pypi"
-            elif available[0] != dist.version:
-                msg = "{} available".format(available[0])
-            else:
-                msg = "up to date"
-            pkg_info = "{dist.project_name} {dist.version}".format(dist=dist)
-            print("{pkg_info:40} {msg}".format(pkg_info=pkg_info, msg=msg))
-
-        except Exception:
-            self.logger.error("Unable to contact PyPI server for updates")
-            QtGui.QMessageBox.information(
+        except subprocess.CalledProcessError as err:
+            QtWidgets.QMessageBox.information(
                 self,
                 "Update %s" % self.package,
-                "Unable to contact PyPI server for updates",
-            )
-
-            status = "No update available"
-            QtGui.QMessageBox.information(
-                self, "Update {package}".format(package=self.package), status
+                "Unable to update package %s due to: %s" % (self.package, str(err)),
             )

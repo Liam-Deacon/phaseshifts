@@ -16,7 +16,7 @@ The *phsh.py* script is placed into the system ``PATH`` during installation of t
 phaseshifts package. It can then be used from the command line, e.g. ``phsh.py --help``
 will produce a list of command line options::
 
-  usage: phsh.py [-h] -b <bulk_file> -i <slab_file> [-t <temp_dir>] [-l <lmax>]
+  usage: phsh.py [-h] -b <bulk_file> -s <slab_file> [-t <temp_dir>] [-l <lmax>]
                [-r <start_energy> <final_energy> <step>] [-f <format>]
                [-S <subdir>] [-v] [-V]
 
@@ -35,19 +35,25 @@ will produce a list of command line options::
 
     optional arguments:
     -h, --help            show this help message and exit
+    -i <input>, --input <input>
+                      Optional cleedpy-style structured input (JSON or
+                      YAML). Converts input into bulk/slab ``.i`` files
+                      before running the normal workflow. PyYAML is needed
+                      for YAML; JSON works without it. If ``jsonschema`` is
+                      installed, the input will be validated.
     -b <bulk_file>, --bulk <bulk_file>
                           path to MTZ bulk or CLEED *.bul input file
-    -i <slab_file>, --slab <slab_file>
-                          path to MTZ slab or CLEED *.inp input file
+    -s <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
     -t <temp_dir>, --tmpdir <temp_dir>
                           temporary directory for intermediate file generation
     -l <lmax>, --lmax <lmax>
                           Maximum angular momentum quantum number. [default: 10]
     -f <format>, --format <format>
-                          Use specific phase shift format i.e. 'cleed', 'curve'
-                          or 'none'. Choose 'curve' if you wish to produce
-                          XYY... data for easy plotting. <format> is case
-                          in-sensitive. [default: 'cleed']
+                          Use specific phase shift format i.e., 'cleed', 'curve',
+                          'viperleed' or 'none'. Choose 'curve' if you wish to
+                          produce XYY... data for easy plotting. <format> is
+                          case-insensitive. [default: 'cleed']
     -r <energy> [<energy> ...], --range <energy> [<energy> ...]
                           Energy range in eV with the format:
                           '<start> <stop> [<step>]', where the <step> value is
@@ -70,6 +76,17 @@ will produce a list of command line options::
                           Keep intermediate files in subdir when done
     -v, --verbose         Set verbosity level [default: None].
     -V, --version         Show program's version number and exit
+
+.. note::
+   To install the optional dependencies for structured input and validation,
+   use: ``pip install "phaseshifts[input]"``.
+
+.. warning::
+   Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
+   Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is
+   now ``-s``. The new ``-i`` flag is reserved for structured input (JSON/YAML).
+   When ``--input`` is provided, any ``--bulk``/``--slab`` arguments are ignored
+   (a warning is emitted). Update scripts accordingly.
 
 CLEED compatibility
 -------------------

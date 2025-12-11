@@ -62,7 +62,7 @@ class Settings(object):
         phsh_format="CLEED",
         logfile=join(DEFAULT_PATH, "log.txt"),
         logging=True,
-        **kwargs
+        **kwargs,
     ):
         """
         Constructor

@@ -4,107 +4,308 @@ from __future__ import print_function  # noqa
 import os
 import sys
 import sysconfig
+import subprocess  # nosec
+import shutil
+
+try:
+    from contextlib import suppress
+except ImportError:  # TODO: Remove when we drop support for python 2.7
+    # For Python <3.4, suppress is not available
+    def suppress(*exceptions):  # type: ignore[no-redef]
+        """Context manager that suppresses specified exceptions."""
+
+        class SuppressContext:
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_value, traceback):
+                return isinstance(exc_value, exceptions)
+
+        return SuppressContext()
+
+
+with suppress(ImportError):
+    from typing import Literal  # noqa: F401
 
 sys.path.append(os.path.dirname(__file__))
 
+
+# Ensure distutils is importable even on slim/modern Python installs where it
+# is absent from the stdlib (e.g., Python 3.12+ or Debian/Ubuntu minimal
+# builds). numpy.f2py and numpy.distutils expect ``distutils`` to be present.
+try:
+    from phaseshifts.lib._distutils_compat import ensure_distutils
+except Exception:  # pragma: no cover - fallback for very early import failures
+
+    def ensure_distutils():
+        try:
+            import distutils  # noqa: F401
+
+            return True
+        except ImportError:
+            pass
+
+        try:
+            import setuptools._distutils as _du  # type: ignore
+        except Exception:
+            return False
+
+        sys.modules.setdefault("distutils", _du)
+        for _mod in (
+            "distutils.ccompiler",
+            "distutils.sysconfig",
+            "distutils.unixccompiler",
+            "distutils.msvccompiler",
+        ):
+            try:
+                __import__(_mod)
+            except Exception:
+                pass
+
+        return True
+
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
+def _pythonpath_env(extra_path):
+    env = os.environ.copy()
+    paths = [extra_path]
+    existing = env.get("PYTHONPATH")
+    if existing:
+        paths.append(existing)
+    env["PYTHONPATH"] = os.pathsep.join(paths)
+    return env
+
+
 try:
     import phaseshifts
+    import phaseshifts.phshift2007
 except ModuleNotFoundError:
     phaseshifts = None  # type: ignore [assignment]
 
 try:
-    import setuptools  # type: ignore [import-untyped]
     from setuptools import find_packages, setup, Extension  # type: ignore [import-untyped]
 except ImportError:
-    from distutils.core import find_packages  # type: ignore [attr-defined]
+    # distutils is deprecated/removed in Python 3.12+. Use setuptools only.
+    try:
+        from distutils.core import find_packages
+    except ImportError:
+        raise ImportError(
+            "setuptools is required for building phaseshifts. Please install setuptools."
+        )
 
 INCLUDE_DIRS = []
 
 # WARNING: numpy.distutils is completely removed in python 3.12 and deprecated for removal in python 3.11 by Oct 2025
 # The project will therefore need to be migrated to use a different build backend, see
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
-try:
-    import skbuild
-except ImportError:
-    skbuild = None  # type: ignore [assignment]
+with suppress(ImportError):
+    import skbuild  # noqa: F401
 
-BUILD_BACKEND = None
-try:
-    from numpy.distutils.core import Extension, setup
+# Select build backend. Modern builds require scikit-build and CMake (default)
+BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.distutils"]
 
-    BUILD_BACKEND = "numpy.distutils"
-except ModuleNotFoundError as npy_err:
-    if skbuild and tuple(sys.version_info[:2]) >= (3, 11) and "bdist_wheel" in sys.argv:
-        # TODO: Need to use migrate to a new f2py build backend, but have issues with pyproject.toml PEP-517 install
-        # FIXME: Currently skbuild with CMakeLists.txt does not work, check with `make libphsh.cmake`
+BUILD_BACKEND = None  # will be set below based on available tooling
+
+
+# Build logic for legacy and modern Python
+if tuple(sys.version_info[:2]) <= (3, 11):
+    ensure_distutils()
+    # Try modern build first: scikit-build + CMake
+    try:
+        import skbuild
+        from skbuild import setup  # noqa: F811
+
+        BUILD_BACKEND = "skbuild"
+    except ImportError:
+        print(
+            "WARNING: scikit-build not found; falling back to legacy numpy.distutils build.",
+            file=sys.stderr,
+        )
+        BUILD_BACKEND = "numpy.distutils"
+        from numpy.distutils.core import setup  # type: ignore  # noqa: F811
+        from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
+    except Exception as e:
+        print(
+            f"WARNING: scikit-build build failed ({e}); falling back to legacy numpy.distutils build.",
+            file=sys.stderr,
+        )
+        BUILD_BACKEND = "numpy.distutils"
+        from numpy.distutils.core import setup  # type: ignore  # noqa: F811
+        from numpy.distutils.extension import Extension  # type: ignore  # noqa: F811
+    if BUILD_BACKEND == "numpy.distutils":
         try:
-            from skbuild import setup
+            import numpy
+            import numpy.f2py
 
-            BUILD_BACKEND = "skbuild"
+            INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
         except ImportError:
-            raise NotImplementedError(
-                "TODO: Generate binary wheels correctly using pyproject.toml, scikit-build and cmake"
+            print(
+                "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                file=sys.stderr,
             )
-    if tuple(sys.version_info[:2]) >= (3, 11):
-        # We can invoke f2py and compile manually
-        # HACK: Workaround missing distutils by invoking f2py directly
-        # FIXME: Generated wheels unaware of native extension & deemed universal; *.so must be included in MANIFEST.in
-        import subprocess
-
-        setup = setuptools.setup
-
-        BUILD_BACKEND = "numpy.f2py"
         if not any(x in sys.argv for x in ("sdist", "wheel")):
+            args = [
+                sys.executable,
+                "-m",
+                "phaseshifts.lib._f2py_shim",
+                "libphsh.f",
+                "-m",
+                "libphsh",
+                "-c",
+            ]
+            try:
+                if phaseshifts and hasattr(phaseshifts, "phshift2007"):
+                    # Use the platform-filtered flags directly from COMPILER_FLAGS
+                    fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+                    # Filter out flags that f2py/numpy.distutils might not handle well
+                    f2py_safe_flags = [
+                        flag
+                        for flag in fortran_flags
+                        if flag
+                        not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+                    ]
+                    if f2py_safe_flags:
+                        fortran_flags_str = " ".join(f2py_safe_flags)
+                        args.append(f"--f77flags={fortran_flags_str}")
+                    else:
+                        args.append("--f77flags=-frecursive")
+                else:
+                    # Default fallback
+                    args.append("--f77flags=-frecursive")
+            except (NameError, AttributeError, KeyError):
+                # Fallback if phaseshifts module or compiler flags not available
+                args.append("--f77flags=-frecursive")
             subprocess.check_call(
-                [
+                args,
+                cwd="./phaseshifts/lib",
+                env=_pythonpath_env(PROJECT_ROOT),
+            )  # nosec
+else:
+    # Modern build: require scikit-build and CMake for Python 3.12+
+    # NOTE: numpy.distutils is completely removed in Python 3.12
+    try:
+        from skbuild import setup
+
+        BUILD_BACKEND = "skbuild"
+    except ImportError:
+        # Fallback to setuptools for Python 3.12+ (numpy.distutils is gone)
+        print(
+            "WARNING: scikit-build not found; falling back to setuptools build.",
+            file=sys.stderr,
+        )
+        print(
+            "NOTE: For best results, install scikit-build-core and cmake.",
+            file=sys.stderr,
+        )
+        BUILD_BACKEND = "setuptools"
+        from setuptools import setup, Extension  # type: ignore  # noqa: F811
+
+        ensure_distutils()
+
+        # Try to pre-build the Fortran extension using f2py
+        try:
+            import numpy
+            import numpy.f2py
+
+            INCLUDE_DIRS += [numpy.get_include(), numpy.f2py.get_include()]
+
+            # Build the extension if not doing sdist/wheel
+            if not any(x in sys.argv for x in ("sdist", "wheel", "--version", "-V")):
+                args = [
                     sys.executable,
                     "-m",
-                    "numpy.f2py",
+                    "phaseshifts.lib._f2py_shim",
                     "libphsh.f",
                     "-m",
                     "libphsh",
                     "-c",
-                    "-f77flags='-frecursive'",
-                ],
-                cwd="./phaseshifts/lib",
-            )
-        try:
-            import numpy.f2py
-
-            INCLUDE_DIRS += [
-                "-I{}".format(x)
-                for x in (numpy.get_include(), numpy.f2py.get_include())
-            ]
+                    "--f77flags=-frecursive -fcheck=bounds -std=legacy",
+                ]
+                try:
+                    print("Building libphsh extension with f2py...")
+                    subprocess.check_call(
+                        args,
+                        cwd="./phaseshifts/lib",
+                        env=_pythonpath_env(PROJECT_ROOT),
+                    )  # nosec
+                except subprocess.CalledProcessError as e:
+                    print(
+                        "WARNING: f2py build failed ({}); extension may not be available.".format(
+                            e
+                        ),
+                        file=sys.stderr,
+                    )
         except ImportError:
             print(
-                "WARNING: Unable to import numpy.f2py module for build", file=sys.stderr
+                "WARNING: numpy.f2py not found; Fortran extension will not be built.",
+                file=sys.stderr,
             )
-    else:
-        raise npy_err
 
 if len(sys.argv) == 1:
     sys.argv.append("install")
 
 CMAKE_ARGS = {}
 
+#: True-like command line flags
+TRUE_OPTS = {"y", "yes", "on", "true", "1"}
+
+# Read environment variable to control phshift2007 binary build
+BUILD_PHSHIFT2007 = (
+    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
+)
+
 if BUILD_BACKEND == "skbuild":
-    CMAKE_ARGS = {
-        "cmake_args": [
-            '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
-            '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+    cmake_args = [
+        '-DPYTHON_INCLUDE_DIR="{}"'.format(sysconfig.get_path("include")),
+        '-DPYTHON_LIBRARY="{}"'.format(sysconfig.get_config_var("LIBDIR")),
+        "-DENABLE_PHSHIFT2007_BINARIES={}".format("ON" if BUILD_PHSHIFT2007 else "OFF"),
+    ]
+
+    # Windows-specific CMake configuration
+    if os.name == "nt":
+        # Force MinGW Makefiles generator on Windows
+        cmake_args.extend(
+            [
+                "-G",
+                "MinGW Makefiles",
+                "-DCMAKE_C_COMPILER=gcc",
+                "-DCMAKE_Fortran_COMPILER=gfortran",
+            ]
+        )
+
+        # Check if MinGW is available in common locations
+        mingw_paths = [
+            "C:/mingw64/bin/gfortran.exe",
+            "C:/tools/mingw64/bin/gfortran.exe",
+            "C:/msys64/mingw64/bin/gfortran.exe",
+            "C:/ProgramData/chocolatey/lib/mingw/tools/install/mingw64/bin/gfortran.exe",
         ]
-    }
+
+        gfortran_found = False
+        for path in mingw_paths:
+            if os.path.exists(path):
+                cmake_args.extend(
+                    [
+                        f"-DCMAKE_Fortran_COMPILER={path}",
+                        f"-DCMAKE_C_COMPILER={path.replace('gfortran.exe', 'gcc.exe')}",
+                    ]
+                )
+                gfortran_found = True
+                print(f"Found gfortran at: {path}")
+                break
+
+        if not gfortran_found:
+            print(
+                "WARNING: gfortran not found in common locations. "
+                "Please ensure MinGW-w64 is installed and in PATH.",
+                file=sys.stderr,
+            )
+
+    CMAKE_ARGS = {"cmake_args": cmake_args}
 
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
-if len(sys.argv) < 2 and BUILD_BACKEND == "numpy.distutils":
-    # add build_ext and --inplace flags when performing: `python setup.py`
-    sys.argv.extend(BUILD_EXT_INPLACE_ARGS)
-elif BUILD_BACKEND == "numpy.f2py":
-    # FIXME: The following is a crude workaround to build_ext to avoid compiled libphsh*.so with undefined symbols
-    for arg in filter(lambda x: x in sys.argv, BUILD_EXT_INPLACE_ARGS):
-        sys.argv.remove(arg)
-    if "build" not in sys.argv:
-        sys.argv.append("build")
 
 # build f2py extensions
 f2py_exts_sources = {
@@ -112,16 +313,43 @@ f2py_exts_sources = {
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh" + (".f" if BUILD_BACKEND == "numpy.distutils" else "module.c"),
+            "libphsh.f",
         ),
     ]
 }
+try:
+    # Detect MSVC toolchain; avoid GNU Fortran flags when it is active
+    is_msvc = os.name == "nt" and shutil.which("cl.exe") is not None
+    if (not is_msvc) and phaseshifts and hasattr(phaseshifts, "phshift2007"):
+        # Use the platform‑filtered flags directly from COMPILER_FLAGS
+        gfortran_compiler_args = [
+            flag
+            for flag in phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
+            if flag not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+        ]
+    else:
+        gfortran_compiler_args = []
+except (NameError, AttributeError, KeyError):
+    gfortran_compiler_args = []
+
+# Platform-specific extra arguments
 f2py_platform_extra_args = {
     "darwin": {"extra_link_args": [], "extra_compile_args": []},
-    "win32": {"extra_link_args": [], "extra_compile_args": []},
-    "linux": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-    "linux2": {"extra_link_args": ["-lgomp"], "extra_compile_args": ["-fopenmp"]},
-}[sys.platform]
+    "win32": {
+        "extra_link_args": ([] if shutil.which("cl.exe") else gfortran_compiler_args),
+        "extra_compile_args": (
+            [] if shutil.which("cl.exe") else gfortran_compiler_args
+        ),
+    },
+    "linux": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+    "linux2": {
+        "extra_link_args": gfortran_compiler_args + ["-lgomp"],
+        "extra_compile_args": gfortran_compiler_args + ["-fopenmp"],
+    },
+}.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
 f2py_exts = (
     [
@@ -132,10 +360,11 @@ f2py_exts = (
             sources=[os.path.join("phaseshifts", "lib", "_native_build.c")],
         )
     ]
-    if BUILD_BACKEND != "numpy.distutils"
+    if BUILD_BACKEND in ("skbuild", "setuptools")
     else [
         Extension(
             name="phaseshifts.lib.libphsh",
+            include_dirs=INCLUDE_DIRS,
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
@@ -159,7 +388,8 @@ try:
 except IOError:
     pass
 
-setup(
+# --- Fallback logic for build ---
+setup_args = dict(
     name="phaseshifts",
     packages=find_packages(),
     version=getattr(phaseshifts, "__version__", "0.1.8-dev"),
@@ -185,18 +415,24 @@ setup(
     ],
     extras_require={
         "atorb": ["mendeleev", "elementy"],
-        "gui": [],
+        "gui": [
+            "six",
+            "qtpy",
+            "pyqt5; python_version < '3.7'",
+            "pyside6; python_version >= '3.7'",
+            "pyqtgraph",
+        ],
         "dev": [
             "black",
             "isort",
             "numpy",
             "pre-commit",
             "ruff",
-            "scikit-build; python_version > '3.11'",
+            "scikit-build-core; python_version > '3.11'",
             "wheel",
         ],
         "test": ["pytest", "pytest-cov"],
-        "doc": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
+        "docs": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
@@ -223,3 +459,19 @@ setup(
     ext_modules=f2py_exts,
     console=[os.path.join("phaseshifts", "phsh.py")],
 )
+
+build_failed = False
+if BUILD_BACKEND == "skbuild":
+    try:
+        dist = setup(**setup_args, **CMAKE_ARGS)
+    except Exception as e:
+        print(f"WARNING: skbuild/CMake build failed ({e})", file=sys.stderr)
+        build_failed = True
+        # Fallback for Python <3.12
+        if tuple(sys.version_info[:2]) <= (3, 11):
+            print("Falling back to setuptools/numpy.f2py build.", file=sys.stderr)
+            dist = setup(**setup_args)
+        else:
+            raise
+else:
+    dist = setup(**setup_args)

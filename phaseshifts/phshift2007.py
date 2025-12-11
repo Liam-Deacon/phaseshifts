@@ -1,6 +1,7 @@
 """A collection of utilities to assist with extracting phshift2007 in a cross-platform manner."""
 
 import argparse
+import os
 import os.path
 import sys
 import subprocess  # nosec
@@ -11,6 +12,42 @@ PHSHIFT2007_DOWNLOAD_URL = (
     "https://www.icts.hkbu.edu.hk/VanHove_files/leed/phshift2007.zip"
 )
 DEFAULT_DIRPATH = "."
+
+# Windows-incompatible flags that should be filtered out
+WINDOWS_INCOMPATIBLE_FLAGS = ["-pie", "-static-libgcc", "-static-libgfortran"]
+
+COVERAGE_ENV_VAR = "PHASESHIFTS_FORTRAN_COVERAGE"
+COVERAGE_FLAGS = ["-g", "-O0", "-fprofile-arcs", "-ftest-coverage"]
+
+
+def _with_optional_coverage(flags):
+    """Append GCC/gfortran coverage flags when requested via environment."""
+    if not os.environ.get(COVERAGE_ENV_VAR):
+        return flags
+    coverage_flags = [flag for flag in COVERAGE_FLAGS if flag not in flags]
+    return flags + coverage_flags
+
+
+BASE_GFORTRAN_FLAGS = [
+    "-pie",
+    "-Wall",
+    "-static-libgcc",
+    "-static-libgfortran",
+    "-frecursive",
+    "-fcheck=bounds",
+    "-std=legacy",
+]
+
+
+COMPILER_FLAGS = {
+    "gfortran": _with_optional_coverage(
+        [
+            flag
+            for flag in BASE_GFORTRAN_FLAGS
+            if sys.platform != "win32" or flag not in WINDOWS_INCOMPATIBLE_FLAGS
+        ]
+    )
+}
 
 
 def download_phshift2007(dirpath=DEFAULT_DIRPATH):
@@ -63,7 +100,7 @@ def extract_phshift2007(dirpath=DEFAULT_DIRPATH):
         print(_extract_fortran_programs_from_ab_file(filepath, dirpath))
 
 
-def _compile_fortran_program(source_filepath, output_filepath=None):
+def _compile_fortran_program(source_filepath, output_filepath=""):
     # type: (str, str) -> str
     """Compiles the Fortran program from the .for file in the phshift2007.zip archive."""
     if not output_filepath:
@@ -71,24 +108,22 @@ def _compile_fortran_program(source_filepath, output_filepath=None):
             os.path.dirname(source_filepath),
             os.path.basename(source_filepath).replace(".for", ""),
         )
-    args = [
-        "gfortran",
-        "-pie",
-        "-Wall",
-        "-static-libgcc",
-        "-static-libgfortran",
-        "-frecursive",
-        "-fcheck=bounds",
-        "-std=legacy",
-        "-o",
-        output_filepath,
-        source_filepath,
-    ]
+        if sys.platform == "win32":
+            output_filepath += ".exe"
+    args = (
+        ["gfortran"]
+        + COMPILER_FLAGS["gfortran"]
+        + [
+            "-o",
+            output_filepath,
+            source_filepath,
+        ]
+    )
     print(" ".join(args))
     with subprocess.Popen(args) as proc:  # nosec
         status = proc.wait()
         if status != 0:
-            raise subprocess.CalledProcessError(status, " ".join(proc.args))
+            raise subprocess.CalledProcessError(status, " ".join(proc.args or []))  # type: ignore
     return output_filepath
 
 
