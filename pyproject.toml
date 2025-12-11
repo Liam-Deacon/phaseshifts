@@ -1,6 +1,6 @@
 [project]
 name = "phaseshifts"
-version = "0.1.8"
+version = "0.1.9"
 description = "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
 authors = [{ name = "Liam Deacon", email = "liam.m.deacon@gmail.com" }]
 license = { text = "MIT" }
@@ -47,6 +47,7 @@ dev = [
 ]
 test = ["pytest", "pytest-cov"]
 docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
+input = ["pyyaml>=6.0", "jsonschema>=4.0"]
 
 [build-system]
 requires = [

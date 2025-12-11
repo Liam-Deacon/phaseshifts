@@ -14,7 +14,7 @@ The *phsh.py* script is placed into the system ``PATH`` during installation of t
 phaseshifts package. It can then be used from the command line, e.g. ``phsh.py --help``
 will produce a list of command line options::
 
-  usage: phsh.py [-h] -b <bulk_file> -i <slab_file> [-t <temp_dir>] [-l <lmax>]
+  usage: phsh.py [-h] -b <bulk_file> -s <slab_file> [-t <temp_dir>] [-l <lmax>]
                [-r <start_energy> <final_energy> <step>] [-f <format>]
                [-S <subdir>] [-v] [-V]
 
@@ -51,10 +51,29 @@ will produce a list of command line options::
                           '<start> <stop> [<step>]', where the <step> value is
                           optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
+    -i <input>, --input <input>
+                          Optional cleedpy-style structured input (JSON or
+                          YAML). Converts input into bulk/slab ``.i`` files
+                          before running the normal workflow. PyYAML is needed
+                          for YAML; JSON works without it. If ``jsonschema`` is
+                          installed, the input will be validated.
+    -s <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
     -v, --verbose         set verbosity level [default: None].
     -V, --version         show program's version number and exit
+
+.. note::
+   To install the optional dependencies for structured input and validation,
+   use: ``pip install "phaseshifts[input]"``.
+
+.. warning::
+   Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
+   Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is
+   now ``-s``. The new ``-i`` flag is reserved for structured input (JSON/YAML).
+   When ``--input`` is provided, any ``--bulk``/``--slab`` arguments are ignored
+   (a warning is emitted). Update scripts accordingly.
 
 CLEED compatibility
 -------------------

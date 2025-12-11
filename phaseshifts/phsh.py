@@ -91,7 +91,7 @@ import phaseshifts
 import phaseshifts.settings
 from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
-from phaseshifts.leed import CLEED_validator, Converter, CSearch
+from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
 
 try:
     from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
@@ -223,7 +223,7 @@ class Wrapper(object):
 
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(bulk_file):
+        if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
@@ -235,7 +235,7 @@ class Wrapper(object):
 
         # Load slab model and calculate MTZ
         slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(slab_file):
+        if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
             slab_file = os.path.join(
@@ -251,8 +251,14 @@ class Wrapper(object):
 
         # get unique elements in bulk and slab
         atomic_dict = {}
-        bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
-        slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
+        bulk_elements = [
+            getattr(atom.element, "symbol", str(atom.element))
+            for atom in bulk_mtz.atoms
+        ]
+        slab_elements = [
+            getattr(atom.element, "symbol", str(atom.element))
+            for atom in slab_mtz.atoms
+        ]
         for elem in set(bulk_elements + slab_elements):
             at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
@@ -265,7 +271,8 @@ class Wrapper(object):
 
         # prepare at files for appending into atomic file
         bulk_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)
+            atomic_dict[getattr(atom.element, "symbol", str(atom.element))]
+            for atom in set(bulk_mtz.atoms)
         ]
 
         # create atomic.i input file from mtz model
@@ -637,11 +644,18 @@ def main(argv=None):
         )
         parser.add_argument(
             "-i",
+            "--input",
+            dest="input",
+            metavar="<input.json|input.yml>",
+            help="structured input (cleedpy-style) describing bulk and slab in JSON or YAML",
+        )
+        parser.add_argument(
+            "-s",
             "--slab",
             dest="slab",
             metavar="<slab_file>",
-            help="path to MTZ slab or CLEED *.inp input file",
-            required=True,
+            help="path to MTZ slab or CLEED *.inp input file (required unless --input is used)",
+            required=False,
         )
         parser.add_argument(
             "-t",
@@ -727,7 +741,30 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        if args.bulk is None:
+        # Structured input support: auto-generate bulk and slab inputs from geometry
+        if getattr(args, "input", None):
+            if args.bulk or args.slab:
+                sys.stderr.write(
+                    "phsh: --input provided; ignoring --bulk/--slab arguments\n"
+                )
+                sys.stderr.flush()
+            try:
+                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
+                    args.input, tmp_dir=args.tmpdir
+                )
+            except ImportError as exc:
+                raise CLIError(str(exc))
+            args.bulk = bulk_file
+            args.slab = slab_file
+            if metadata.get(
+                "maximum_angular_momentum"
+            ) and args.lmax == parser.get_default("lmax"):
+                args.lmax = int(metadata["maximum_angular_momentum"])
+
+        if not args.input and args.slab is None:
+            raise CLIError("slab input is required unless using --input.")
+
+        if args.bulk is None and not args.input:
             args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
         if args.store is False:
