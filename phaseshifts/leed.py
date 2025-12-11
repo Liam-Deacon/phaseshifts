@@ -31,7 +31,7 @@
 """
 Provides CLEED validator and Converter classes.
 
-The CLEED_validator() class provides a method for checking
+The CLEEDInputValidator() class provides a method for checking
 the input files for errors, whereas the Converter.import_CLEED()
 method allows importing CLEED input files as a MTZ_model class
 
@@ -41,14 +41,13 @@ import json
 import os
 import sys
 import math
+import tempfile
+import re
 import warnings
+from glob import glob
 
 from phaseshifts import model
 from phaseshifts.elements import ELEMENTS
-
-from math import sqrt, pow
-from glob import glob
-import tempfile
 
 try:  # optional validation
     import jsonschema  # type: ignore
@@ -56,13 +55,13 @@ except ImportError:
     jsonschema = None
 
 
-class CLEED_validator:
+class CLEEDInputValidator:
     """
     Class for validation of CLEED input files
     """
 
     @staticmethod
-    def is_CLEED_file(filename):
+    def is_cleed_file(filename):
         """
         Determine if file is a CLEED input file
 
@@ -487,7 +486,7 @@ class Converter:
         a = zmax = sys.float_info.min
         for vector in [a1, a2, a3]:
             # compare magnitude of xy components
-            len_a = sqrt(pow(vector[0], 2) + pow(vector[1], 2))
+            len_a = math.sqrt(math.pow(vector[0], 2) + math.pow(vector[1], 2))
             if len_a > a:
                 a = len_a
 
@@ -889,13 +888,22 @@ class Converter:
             """Extract element symbol from cleedpy phase_file."""
             if tag is None:
                 raise NameError("Phase file tag is missing.")
-            cleaned = os.path.basename(str(tag))
-            element = "".join(ch for ch in cleaned if ch.isalpha()).title()
-            if element not in ELEMENTS:
-                raise NameError(
-                    "Unknown element '%s' derived from '%s'" % (element, tag)
-                )
-            return element
+
+            basename = os.path.splitext(os.path.basename(str(tag)))[0]
+            for part in [p for p in re.split(r"[._-]", basename) if p]:
+                letters = []
+                for ch in part:
+                    if ch.isalpha():
+                        letters.append(ch)
+                    else:
+                        break
+                if not letters:
+                    continue
+                symbol = (letters[0].upper() + "".join(letters[1:]).lower())[:2]
+                if symbol in ELEMENTS:
+                    return symbol
+
+            raise NameError("Unknown element parsed from '%s'" % (tag,))
 
         # Unit cell
         a1 = data["unit_cell"]["a1"]
@@ -993,7 +1001,7 @@ class CSearch:
     """class for csearch related data exchange"""
 
     def __init__(self, model_name, leed_command=None):
-        self.set_Model(model_name)
+        self.setModel(model_name)
         self._getResults()
 
     def setModel(self, name):
