@@ -133,7 +133,8 @@ class Wrapper(object):
         estimate will be made from the input file given.
 
         """
-        if str(self.format).lower() == "cleed":
+        fmt = str(getattr(self, "format", "") or "")
+        if fmt.lower() == "cleed":
             # add formatted header for Held CLEED package
             header = ""
             neng = self.neng if "neng" in self.__dict__ else 0
