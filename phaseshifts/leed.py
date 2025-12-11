@@ -854,6 +854,74 @@ class Converter:
             raise ValueError(f"Invalid input structure: {exc.message}") from exc
 
     @staticmethod
+    def _resolve_element(tag):
+        """Extract element symbol from cleedpy phase_file."""
+        if tag is None:
+            raise NameError("Phase file tag is missing.")
+
+        basename = os.path.splitext(os.path.basename(str(tag)))[0]
+        for part in [p for p in re.split(r"[._-]", basename) if p]:
+            letters = []
+            for ch in part:
+                if ch.isalpha():
+                    letters.append(ch)
+                else:
+                    break
+            if not letters:
+                continue
+            symbol = (letters[0].upper() + "".join(letters[1:]).lower())[:2]
+            if symbol in ELEMENTS:
+                return symbol
+
+        raise NameError("Unknown element parsed from '%s'" % (tag,))
+
+    @staticmethod
+    def _vector_length(vec):
+        return math.sqrt(sum(v**2 for v in vec))
+
+    @staticmethod
+    def _apply_superstructure(a1, a2, m1, m2):
+        base_a1 = list(a1)
+        base_a2 = list(a2)
+        new_a1 = [m1[0] * base_a1[i] + m1[1] * base_a2[i] for i in range(3)]
+        new_a2 = [m2[0] * base_a1[i] + m2[1] * base_a2[i] for i in range(3)]
+        return new_a1, new_a2
+
+    @staticmethod
+    def _build_unitcell(data, superstructure):
+        a1 = data["unit_cell"]["a1"]
+        a2 = data["unit_cell"]["a2"]
+        a3 = data["unit_cell"]["a3"]
+
+        if superstructure and "superstructure_matrix" in data:
+            m1 = data["superstructure_matrix"].get("m1")
+            m2 = data["superstructure_matrix"].get("m2")
+            if m1 and m2:
+                a1, a2 = Converter._apply_superstructure(a1, a2, m1, m2)
+
+        a_mag = max(
+            Converter._vector_length(a1[:2] + [0]),
+            Converter._vector_length(a2[:2] + [0]),
+        )
+        c_mag = Converter._vector_length(a3)
+        return model.Unitcell(a_mag, c_mag, [a1, a2, a3])
+
+    @staticmethod
+    def _build_atoms(layers, minimum_radius, lmax_global):
+        atoms = []
+        for layer in layers:
+            element = Converter._resolve_element(layer.get("phase_file"))
+            radius = minimum_radius.get(element, None)
+            position = layer.get("position") or [0.0, 0.0, 0.0]
+            atom = model.Atom(element, coordinates=position, tag=layer.get("phase_file"))
+            if radius:
+                atom.set_mufftin_radius(radius)
+            if lmax_global:
+                atom.lmax = int(lmax_global)
+            atoms.append(atom)
+        return atoms
+
+    @staticmethod
     def import_cleedpy_input(filename, superstructure=True, yaml_loader=None, **kwargs):
         """
         Parse a cleedpy-style structured input file (JSON or YAML) into bulk and slab MTZ models.
@@ -880,73 +948,17 @@ class Converter:
         if not isinstance(data, dict):
             raise ValueError("Structured input must be a mapping/object.")
         Converter._validate_structured_input(data)
-
-        def _vector_length(vec):
-            return math.sqrt(sum(v**2 for v in vec))
-
-        def _resolve_element(tag):
-            """Extract element symbol from cleedpy phase_file."""
-            if tag is None:
-                raise NameError("Phase file tag is missing.")
-
-            basename = os.path.splitext(os.path.basename(str(tag)))[0]
-            for part in [p for p in re.split(r"[._-]", basename) if p]:
-                letters = []
-                for ch in part:
-                    if ch.isalpha():
-                        letters.append(ch)
-                    else:
-                        break
-                if not letters:
-                    continue
-                symbol = (letters[0].upper() + "".join(letters[1:]).lower())[:2]
-                if symbol in ELEMENTS:
-                    return symbol
-
-            raise NameError("Unknown element parsed from '%s'" % (tag,))
-
-        # Unit cell
-        a1 = data["unit_cell"]["a1"]
-        a2 = data["unit_cell"]["a2"]
-        a3 = data["unit_cell"]["a3"]
-
-        if superstructure and "superstructure_matrix" in data:
-            m1 = data["superstructure_matrix"].get("m1")
-            m2 = data["superstructure_matrix"].get("m2")
-            if m1 and m2:
-                base_a1 = list(a1)
-                base_a2 = list(a2)
-                a1 = [m1[0] * base_a1[i] + m1[1] * base_a2[i] for i in range(3)]
-                a2 = [m2[0] * base_a1[i] + m2[1] * base_a2[i] for i in range(3)]
-
-        a_mag = max(_vector_length(a1[:2] + [0]), _vector_length(a2[:2] + [0]))
-        c_mag = _vector_length(a3)
-        unitcell = model.Unitcell(a_mag, c_mag, [a1, a2, a3])
+        unitcell = Converter._build_unitcell(data, superstructure)
 
         minimum_radius = {
             str(k).title(): float(v) for k, v in data.get("minimum_radius", {}).items()
         }
         lmax_global = data.get("maximum_angular_momentum")
 
-        def _build_atoms(layers):
-            atoms = []
-            for layer in layers:
-                element = _resolve_element(layer.get("phase_file"))
-                radius = minimum_radius.get(element, None)
-                position = layer.get("position") or [0.0, 0.0, 0.0]
-                atom = model.Atom(
-                    element, coordinates=position, tag=layer.get("phase_file")
-                )
-                if radius:
-                    atom.set_mufftin_radius(radius)
-                if lmax_global:
-                    atom.lmax = int(lmax_global)
-                atoms.append(atom)
-            return atoms
-
-        bulk_atoms = _build_atoms(data.get("bulk_layers", []))
-        slab_atoms = _build_atoms(
+        bulk_atoms = Converter._build_atoms(data.get("bulk_layers", []), minimum_radius, lmax_global)
+        slab_atoms = Converter._build_atoms(
             data.get("overlayers", []) + data.get("bulk_layers", [])
+            , minimum_radius, lmax_global
         )
 
         bulk_model = model.MTZ_model(unitcell, bulk_atoms)
