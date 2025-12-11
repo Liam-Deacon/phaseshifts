@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from phaseshifts.utils import FileUtils
 
 ##############################################################################
 # Author: Liam Deacon                                                        #
@@ -34,22 +33,21 @@ from phaseshifts.utils import FileUtils
 Provides wrapper classes for phaseshift calculation backends
 """
 
-from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
+from __future__ import print_function, unicode_literals
 
 import sys
 import os
 import tempfile
 
 from glob import glob
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from getpass import getuser
 from time import gmtime, strftime
-from re import compile, findall
-from copy import deepcopy
+from re import compile
 
 from . import model, atorb
-from .leed import Converter, CLEED_validator
+from .leed import Converter, CLEEDInputValidator
 from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
 from .conphas import Conphas
 from .utils import FileUtils
@@ -75,7 +73,6 @@ class Wrapper(object):
         elements : set of elements.Element objects.
         output_dir : destination directory for generated files.
         """
-        pass
 
     @staticmethod
     def _copy_phsh_files(phsh_files, store=".", out_format=None):
@@ -215,7 +212,7 @@ class EEASiSSSWrapper(Wrapper):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def autogen_atorbs(self, elements=[], output_dir="."):
+    def autogen_atorbs(self, elements=(), output_dir="."):
         """
         Generates chgden input files for a set of elements and calculates their
         atomic charge densities using the EEASiSS variant of Eric Shirley's
@@ -235,6 +232,22 @@ class EEASiSSSWrapper(Wrapper):
         for symbol in [element.symbol for element in elements]:
             atomic_dict[symbol] = os.path.join(output_dir, "chgden%s" % symbol)
         return atomic_dict
+
+    @staticmethod
+    def calculate_Q_density(elements, output_dir="."):
+        """
+        Convenience passthrough to the EEASiSSS-specific Atorb helper.
+        """
+        return atorb.EEASiSSSAtorb.calculate_Q_density(
+            elements=elements, output_dir=output_dir
+        )
+
+    @staticmethod
+    def _copy_files(files, dst, verbose=False):
+        """Lightweight wrapper to copy generated files into a destination."""
+        dst = FileUtils.expand_filepath(str(dst))
+        dst = dst if os.path.isdir(dst) else os.path.dirname(dst) or "."
+        FileUtils.copy_files(files, dst, verbose=verbose)
 
     @staticmethod
     def autogen_from_input(
@@ -287,7 +300,7 @@ class EEASiSSSWrapper(Wrapper):
 
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(bulk_file):
+        if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
@@ -299,7 +312,7 @@ class EEASiSSSWrapper(Wrapper):
 
         # Load slab model and calculate MTZ
         slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(slab_file):
+        if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
             slab_file = os.path.join(
@@ -325,9 +338,21 @@ class EEASiSSSWrapper(Wrapper):
             print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
             print("slab atoms: %s" % [s for s in slab_mtz.atoms])
 
-        phsh_files = EEASiSSSWrapper.autogen_from_input(
-            inputX, tmp_dir=tmp_dir, **kwargs
-        )
+        inputX = kwargs.get("inputX", kwargs.get("input_file", "inputX"))
+        inputX = FileUtils.expand_filepath(str(inputX))
+
+        try:
+            from phaseshifts.lib.EEASiSSS.EEASiSSS import eeasisss
+        except ImportError:
+            raise ImportError("EEASiSSS library is not available")
+
+        eeasisss(input_file=inputX)
+
+        # Collect plausible phase shift outputs (fall back to the main log)
+        phsh_files = glob(os.path.join(os.path.dirname(inputX) or ".", "phs*"))
+        if not phsh_files:
+            log_file = os.path.join(os.path.dirname(inputX) or ".", "ilogA")
+            phsh_files = [log_file] if os.path.isfile(log_file) else [inputX]
 
         # copy files to storage location
         if "store" in kwargs and out_format != "cleed":
@@ -434,7 +459,7 @@ class BVHWrapper(object):
 
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(bulk_file):
+        if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
@@ -446,7 +471,7 @@ class BVHWrapper(object):
 
         # Load slab model and calculate MTZ
         slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(slab_file):
+        if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
             slab_file = os.path.join(
