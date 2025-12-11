@@ -30,7 +30,7 @@
 #                                                                            #
 ##############################################################################
 
-""" Provides an abstract factory class for phase shift calculations """
+"""Provides an abstract factory class for phase shift calculations"""
 
 from wrappers import BVHWrapper, EEASiSSSWrapper
 import sys

@@ -1022,15 +1022,15 @@ class Atorb(object):
                 orbital_models.append(
                     coerce_model(
                         AtorbElectron,
-                        {
-                            "n": entry[0],
-                            "l": entry[1],
-                            "m": entry[2],
-                            "j": entry[3],
-                            "s": entry[4],
-                            "occ": entry[5],
-                        },
-                    )
+                    {
+                        "n": entry[0],
+                        "l": entry[1],
+                        "m": entry[2],
+                        "j": entry[3],
+                        "s": entry[4],
+                        "occ": entry[5],
+                    },
+                )
                 )
 
             atorb_model = coerce_model(
@@ -1574,9 +1574,11 @@ class EEASiSSSAtorb(Atorb):
         ]
 
         return [
-            os.path.join(output_dir, "chgden" + element.symbol)
-            if output_dir != os.path.curdir
-            else "chgden" + element.symbol
+            (
+                os.path.join(output_dir, "chgden" + element.symbol)
+                if output_dir != os.path.curdir
+                else "chgden" + element.symbol
+            )
             for element in set(elements)
         ]
 
