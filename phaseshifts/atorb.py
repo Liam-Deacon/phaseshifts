@@ -68,12 +68,20 @@ photoelectron diffraction experiments.
 
 """
 
-from configparser import ConfigParser
 import os
 import re
-from collections import OrderedDict
 import sys
+from configparser import ConfigParser
+from collections import OrderedDict
+from tempfile import gettempdir
 
+try:
+    from io import StringIO
+except ImportError:  # pragma: no cover
+    # => python 2.7 fallback
+    from StringIO import StringIO  # type: ignore
+
+from phaseshifts import elements as elements_module
 from phaseshifts.utils import expand_filepath
 
 # TODO: Clean this up when the project officially drops support for Python 2.7
@@ -100,6 +108,21 @@ try:
     import mendeleev  # type: ignore [import-not-found]
 except ImportError:
     mendeleev = None  # Need to install mendeleev
+
+
+def eeasisss_hartfock(input_file):
+    """
+    Lightweight wrapper around the EEASiSSS hartfock routine.
+
+    The underlying Fortran expects optional log/output arguments; this wrapper
+    matches the single-argument call shape used by :meth:`Atorb.calculate_Q_density`.
+    """
+    try:
+        from phaseshifts.lib.EEASiSSS.hf import hartfock
+    except Exception as exc:  # pragma: no cover - import is environment-specific
+        raise ImportError("EEASiSSS hartfock routine is unavailable") from exc
+    return hartfock(input_file, None, None)
+
 
 from phaseshifts.validation.atorb import (
     AtorbElectron,
@@ -688,7 +711,7 @@ class Atorb(object):
         conf_file = expand_filepath(conf_file)
 
         config = ConfigParser()
-        config.read(list(conf_file) + self._get_conf_lookup_dirs())
+        config.read([conf_file] + self._get_conf_lookup_dirs())
 
         return config.items("DEFAULT")
 
@@ -824,13 +847,13 @@ class Atorb(object):
 
         Atorb.gen_input(
             element,
-            ngrid=self.ngrid(),
-            rel=self.rel(),
-            exchange_method=self.exchange(),
-            relic=self.relic(),
-            mixing_SCF=self.mixing_SCF(),
-            tolerance=self.tolerance(),
-            xnum=self.xnum(),
+            ngrid=self.ngrid,
+            rel=self.rel,
+            exchange_method=self.exchange,
+            relic=self.relic,
+            mixing_SCF=self.mixing_SCF,
+            tolerance=self.tolerance,
+            xnum=self.xnum,
             atorb_file=(
                 self.__dict__["atorb_file"] if "atorb_file" in self.__dict__ else None
             ),
@@ -1106,6 +1129,7 @@ class Atorb(object):
 
         """
         inp = None
+        subroutine = kwargs.pop("subroutine", None)
         if "input" in kwargs:
             inp = os.path.abspath(kwargs.pop("input"))
 
@@ -1134,12 +1158,13 @@ class Atorb(object):
 
         validated = validate_atorb_file(inp)
 
-        # do lazy loading due to documentation not needing compiled code
-        import phaseshifts.lib.libphsh  # noqa
+        if subroutine is None:
+            # do lazy loading due to documentation not needing compiled code
+            import phaseshifts.lib.libphsh  # noqa
 
-        phaseshifts.lib.libphsh.hartfock(
-            inp
-        )  # calculates atomic orbital charge densities for atom
+            subroutine = phaseshifts.lib.libphsh.hartfock
+
+        subroutine(inp)  # calculates atomic orbital charge densities for atom
 
         output_filename = validated.output
 
@@ -1241,12 +1266,18 @@ class EEASiSSSAtorb(Atorb):
         conf_file = expand_filepath(conf_file)
 
         config = ConfigParser()
-        config.read(list(conf_file) + self._get_conf_lookup_dirs())
+        config.read([conf_file] + self._get_conf_lookup_dirs())
 
         conf_dict = {}
         conf_dict.update(config.items("DEFAULT"))
         conf_dict.update(config.items("EEASiSSS"))
         return conf_dict
+
+    def get_conf_parameters(self, conf_file="~/atlib/hf.conf"):
+        """
+        Public wrapper to read EEASiSSS-specific configuration parameters.
+        """
+        return self._get_conf_parameters(conf_file)
 
     def _gen_input(self, element, conf_file=None):
         """Internal bound version of :py:meth:`EEEASiSSSAtorb.gen_input`"""
@@ -1255,14 +1286,14 @@ class EEASiSSSAtorb(Atorb):
 
         EEASiSSSAtorb.gen_input(
             element,
-            ngrid=self.ngrid(),
-            rel=self.rel(),
-            exchange_method=self.exchange(),
-            relic=self.relic(),
-            mixing_SCF=self.mixing_SCF(),
-            tolerance=self.tolerance(),
-            xnum=self.xnum(),
-            ifil=self.ifil(),
+            ngrid=self.ngrid,
+            rel=self.rel,
+            exchange_method=self.exchange,
+            relic=self.relic,
+            mixing_SCF=self.mixing_SCF,
+            tolerance=self.tolerance,
+            xnum=self.xnum,
+            ifil=self.ifil,
             atorb_file=(
                 "inputA"
                 if "atorb_file" in self.__dict__
@@ -1446,7 +1477,11 @@ class EEASiSSSAtorb(Atorb):
         else:
             elements = set(
                 [
-                    ELEMENTS[element] if not isinstance(element, Element) else element
+                    (
+                        elements_module.ELEMENTS[element]
+                        if not isinstance(element, elements_module.Element)
+                        else element
+                    )
                     for element in elements
                 ]
             )
@@ -1459,14 +1494,18 @@ class EEASiSSSAtorb(Atorb):
         EEASiSSSAtorb.gen_input(elements=elements, atorb_file=atorb_input, **kwargs)
 
         Atorb.calculate_Q_density(
-            atorb_input=atorb_input,
+            input=atorb_input,
             output_dir=output_dir,
             subroutine=eeasisss_hartfock,
             **kwargs,
         )
 
         elements = [
-            ELEMENTS[element] if not isinstance(element, Element) else element
+            (
+                elements_module.ELEMENTS[element]
+                if not isinstance(element, elements_module.Element)
+                else element
+            )
             for element in set(elements)
         ]
 
@@ -1484,7 +1523,7 @@ if __name__ == "__main__":
     atorb = EEASiSSSAtorb()
     atorb.gen_conf_file("~/atlib/hf.conf")
     for i in range(1, 112):
-        atorb.calculate_Q_density(elements=[ELEMENTS[i].symbol])
+        atorb.calculate_Q_density(elements=[elements_module.ELEMENTS[i].symbol])
 
 
 def get_substr_positions(string, substring="\n"):
