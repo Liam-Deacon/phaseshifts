@@ -67,6 +67,22 @@ def eeasisss(input_file="inputX"):
     libEEASiSSS.hartfock_(create_string_buffer(str(input_file)), size=255)
 
 
+def main(argv=None):
+    """CLI entry point for eeasisss."""
+    parser = argparse.ArgumentParser(
+        description="Call the EEASiSSS Fortran library using ctypes.",
+    )
+    parser.add_argument(
+        "-i",
+        "--input",
+        dest="input_file",
+        default="inputX",
+        help="Input file passed to the EEASiSSS library",
+    )
+    args = parser.parse_args(argv)
+    eeasisss(args.input_file)
+
+
 if __name__ == "__main__":
     # use this file as a script
     main()
