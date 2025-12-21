@@ -1248,7 +1248,6 @@ class Atorb(object):
 
         output_filename = validated.output
 
-        for i in range(len(lines)):
         os.chdir(current_dir)  # return to original directory
 
         return (
