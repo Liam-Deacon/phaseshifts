@@ -90,6 +90,7 @@ from shutil import copy
 import phaseshifts
 import phaseshifts.settings
 from phaseshifts import atorb, model
+from phaseshifts.backends import get_backend
 from phaseshifts.conphas import Conphas
 from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
 
@@ -684,6 +685,15 @@ def main(argv=None):
             "[default: %(default)s]",
         )
         parser.add_argument(
+            "--backend",
+            dest="backend",
+            metavar="<backend>",
+            default="vht",
+            help="Phase shift backend to use "
+            "(e.g. 'vht' or 'eeasisss') "
+            "[default: %(default)s]",
+        )
+        parser.add_argument(
             "-r",
             "--range",
             dest="range",
@@ -814,10 +824,12 @@ def main(argv=None):
         print("\tbulk input file: %s" % args.bulk)
         print("\tslab input file: %s" % args.slab)
         print("\tformat: %s" % args.format)
+        print("\tbackend: %s" % args.backend)
         print("\tlmax: %s" % args.lmax)
         print("\trange: %s eV" % [s for s in args.range])
 
-    phsh_files = Wrapper.autogen_from_input(
+    backend = get_backend(args.backend)
+    phsh_files = backend.autogen_from_input(
         args.bulk,
         args.slab,
         tmp_dir=args.tmpdir,

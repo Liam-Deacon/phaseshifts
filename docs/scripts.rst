@@ -61,6 +61,8 @@ will produce a list of command line options::
                           installed, the input will be validated.
     -s <slab_file>, --slab <slab_file>
                           path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    --backend <backend>
+                          Phase shift backend to use (e.g. 'vht' or 'eeasisss').
     -g, --generate-only
                           Exit after generating phaseshifts; do not launch
                           subprocess using PHASESHIFTS_LEED environment
