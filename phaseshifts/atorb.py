@@ -1055,7 +1055,7 @@ class Atorb(object):
             atorb_model.ensure_valid()
             render_atorb_file(atorb_model, filename=filename)
         else:
-            handle = atorb_file if use_stream else open(atorb_file or filename, "w")
+            handle = file_handle if use_stream else open(filename, "w")
             comment_prefix = "!" if use_alt_format else "C"
             if header is not None:
                 header_text = str(header)
