@@ -29,6 +29,7 @@ phaseshifts = "phaseshifts.cli:main"
 
 [project.optional-dependencies]
 atorb = ["mendeleev", "elementy", "pydantic; python_version >= '3.9'"]
+eeasisss = []
 gui = [
     "six",
     "qtpy",

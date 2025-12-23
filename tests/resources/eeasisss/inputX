@@ -1,0 +1,54 @@
+STRUCTURE:
+GaAs110
+$WIEN2kpath/GaAs110
+1.889726  |FactorDefiningBohrInside [1.889726, WhenUnitCell&PositionsAreIn(A)].
+        3.997980   0.000000   0.000000
+        0.000000   5.653998   0.000000
+        0.000000   0.000000  15.610722
+12   |#IneqAt
+1 33  1  1  0.0,0.0,0.0 'y' |#EqAt,id(1:3),rMTmin,rMTmax,cls(eV),BmSel
+    0.000000   0.000000   0.000000 |x y z AtPos
+1 31  2  8  0.0,0.0,0.0 'y'
+    1.998990   4.360516   0.686750
+1 31  3 12  0.0,0.0,0.0 'y'
+    0.000000   1.193521   2.159887
+1 33  4  2  0.0,0.0,0.0 'y'
+    1.998990   2.607020   2.189891
+1 31  5 10  0.0,0.0,0.0 'y'
+    1.998990   4.020520   4.173879
+1 33  6  3  0.0,0.0,0.0 'y'
+    0.000000   5.434019   4.173879
+1 31  7  7  0.0,0.0,0.0 'y'
+    0.000000   1.193521   6.172869
+1 33  8  4  0.0,0.0,0.0 'y'
+    1.998990   2.607020   6.172869
+1 31  9  9  0.0,0.0,0.0 'y'
+    1.998990   4.020520   8.171859
+1 33 10  5  0.0,0.0,0.0 'y'
+    0.000000   5.434019   8.171859
+1 31 11 11  0.0,0.0,0.0 'y'
+    0.000000   1.193521  10.170849
+1 33 12  6  0.0,0.0,0.0 'y'
+    1.998990   2.607020  10.170849
+OPTIONS:
+'S'  |VCoul :'S'=FreeAtomSuperpos/'W'=WIEN2k.
+'E'  |Vxc   :'E'=EnergyDependent V0(E)/'C'=constant V0.
+'n'  |VMadl : MadelungElectrostaticPotential? 'yes'/'no'.
+'D'  |MTrad :'D'=DEopt/'M'=MidptNNdist/'I'=IntersecNNpot.
+'n'  |SpinPS: print_SpinUp&DownPhaseShifts? 'yes'/no'.
+'nn' |print_RhoPot? 'yes'/'no' and 'yes'/'no' (ie=1 default).
+'n'  |print_WaveFunction? 'yes'/'no' (Einc fixed).
+'n'  |print_TotalCrossSection sigma? 'yes'/'no' (Einc varying).
+'n'  |print_log10(DsigmaDomega)? 'yes'/'no' (Einc fixed).
+'n'  |print_DsigmaDtheta? 'yes'/'no' (Einc fixed).
+'n'  |print_Sherman? 'yes'/'no' (Einc fixed).
+2.,4.,2.    |energy grid: E1,E2,DE (start, end, mesh at start).
+06      |lmax
+0.625d0 |rMTweight in interval (0.,1.), weight of rerr vs verr (see README).
+0.075   |maximum verr (eV), accuracy of Vtot continuity at rMT(:).
+DIFFERENTIAL EVOLUTION METHOD:
+1.d-06            | VTR (pot. step in eV).
+9  0.8d0 0.5d0    | NPfac,F_XC,CR_XC
+0  1  0           | method
+2  0.8d0          | strategy,F_CR
+10000  0          | itermax,refresh

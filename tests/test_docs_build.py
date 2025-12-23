@@ -1,6 +1,7 @@
 import os
 import subprocess
 import pytest
+import importlib
 
 DOCS_DIR = os.path.join(os.path.dirname(__file__), "..", "docs")
 HTML_INDEX = os.path.join(DOCS_DIR, "_build", "html", "index.html")
@@ -19,7 +20,21 @@ def sphinx_installed():
         return False
 
 
-@pytest.mark.skipif(not sphinx_installed(), reason="Sphinx is not installed")
+def numpydoc_installed():
+    try:
+        importlib.import_module("numpydoc")
+        return True
+    except ImportError:
+        return False
+
+
+def docs_build_available():
+    return sphinx_installed() and numpydoc_installed()
+
+
+@pytest.mark.skipif(
+    not docs_build_available(), reason="Sphinx/numpydoc is not installed"
+)
 def test_docs_html_build():
     result = subprocess.run(
         ["make", "html"], cwd=DOCS_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE

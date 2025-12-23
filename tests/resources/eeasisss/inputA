@@ -1,0 +1,54 @@
+!*********************************************************************
+!   atorb input file: atorb_As.txt.
+!*********************************************************************
+i
+As
+33 1000                        ! Z NR (number of points in radial grid)
+d
+1                              ! 1=rel, 0=n.r.
+x
+0.d0                           ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...
+a
+0.0 12 0.5 0.0005 100.0 0      ! relic, levels, mixing SCF, eigen. tolerance, xnum, ifil
+1 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 1 1 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 1 1 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+3 1 1 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+3 1 1 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 2 2 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 2 2 -2.5 1 6.0               ! n, l, l, -j, <1>, occupation
+4 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+4 1 1 -0.5 1 1.0               ! n, l, l, -j, <1>, occupation
+4 1 1 -1.5 1 2.0               ! n, l, l, -j, <1>, occupation
+w
+at_As.i
+q
+!*********************************************************************
+!   atorb input file: atorb_Ga.txt.
+!*********************************************************************
+i
+Ga
+31 1000                        ! Z NR (number of points in radial grid)
+d
+1                              ! 1=rel, 0=n.r.
+x
+0.d0                           ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...
+a
+0.0 12 0.5 0.0005 100.0 0      ! relic, levels, mixing SCF, eigen. tolerance, xnum, ifil
+1 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 1 1 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+2 1 1 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+3 1 1 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+3 1 1 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 2 2 -1.5 1 4.0               ! n, l, l, -j, <1>, occupation
+3 2 2 -2.5 1 6.0               ! n, l, l, -j, <1>, occupation
+4 0 0 -0.5 1 2.0               ! n, l, l, -j, <1>, occupation
+4 1 1 -0.5 1 0.3333333333333333 ! n, l, l, -j, <1>, occupation
+4 1 1 -1.5 1 0.6666666666666666 ! n, l, l, -j, <1>, occupation
+w
+at_Ga.i
+q
