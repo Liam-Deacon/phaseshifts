@@ -198,6 +198,7 @@ class Model:
     """
 
     atoms: List[Atom]
+    name: str
     unitcell: Unitcell
 
     def __init__(self, unitcell: Unitcell, atoms: List[Atom], **kwargs: Any) -> None:
@@ -247,6 +248,10 @@ class Model:
           If duplicate positions found.
 
         """
+        ...
+
+    @property
+    def elements(self) -> Set[Any]:
         ...
 
     def set_atoms(self, atoms):  # -> None:

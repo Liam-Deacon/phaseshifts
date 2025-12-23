@@ -39,7 +39,7 @@ try:
 except ImportError:
     pass
 
-from wrappers import BVHWrapper, EEASiSSSWrapper
+from .wrappers import BVHWrapper, EEASiSSSWrapper
 
 
 class PhaseshiftFactory(object):

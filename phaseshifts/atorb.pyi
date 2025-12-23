@@ -129,7 +129,18 @@ class Atorb:
     have a huge effect on the charge density you are concerned with...
     """
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        ngrid: int = ...,
+        rel: bool = ...,
+        exchange: float = ...,
+        relic: int = ...,
+        mixing_SCF: float = ...,
+        tolerance: float = ...,
+        xnum: int = ...,
+        ifil: int = ...,
+        **kwargs: Any
+    ) -> None:
         """
         Initialize the Atorb wrapper.
 
