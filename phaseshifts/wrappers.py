@@ -59,7 +59,16 @@ class Wrapper(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def autogen_from_input(self, *args, **kwargs):
+    def autogen_from_input(
+        self,
+        bulk_file,
+        slab_file,
+        tmp_dir=None,
+        model_name=None,
+        lmax=10,
+        verbose=False,
+        **kwargs
+    ):
         pass
 
     @abstractmethod
@@ -417,7 +426,7 @@ class BVHWrapper(object):
         return atomic_dict
 
     @staticmethod
-    def autogen_from_input(
+    def autogen_from_input(  # noqa: MC0001
         bulk_file, slab_file, tmp_dir=None, model_name=None, verbose=False, **kwargs
     ):
         """
