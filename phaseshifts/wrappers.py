@@ -63,8 +63,7 @@ class Wrapper(object):
         pass
 
     @abstractmethod
-    @staticmethod
-    def autogen_atorbs(elements=None, output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Abstract base method for generating atomic orbital input for
         Eric Shirley's hartfock program.
@@ -214,7 +213,7 @@ class EEASiSSSWrapper(Wrapper):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def autogen_atorbs(self, elements=(), output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Generates chgden input files for a set of elements and calculates their
         atomic charge densities using the EEASiSS variant of Eric Shirley's
@@ -229,6 +228,7 @@ class EEASiSSSWrapper(Wrapper):
         -------
         dictionary of atorb filepaths for all elements
         """
+        elements = elements or ()
         elements = elements or ()
         EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
         atomic_dict = {}
@@ -332,7 +332,7 @@ class EEASiSSSWrapper(Wrapper):
         # get unique elements in bulk and slab
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        EEASiSSSWrapper.autogen_atorbs(
+        EEASiSSSWrapper().autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
@@ -388,8 +388,7 @@ class BVHWrapper(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    @staticmethod
-    def autogen_atorbs(elements=None, output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Generates atomic orbital input files for a set of elements and
         calculates their atomic charge densities according to the Barbieri /
@@ -494,7 +493,7 @@ class BVHWrapper(object):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = BVHWrapper.autogen_atorbs(
+        atomic_dict = BVHWrapper().autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
