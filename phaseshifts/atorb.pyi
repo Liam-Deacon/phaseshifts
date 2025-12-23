@@ -4,7 +4,6 @@ from typing import Optional, Union, List, Tuple, Any
 from phaseshifts.elements import Element
 from phaseshifts.validation.atorb import AtorbInputModel
 
-
 def get_element(element: Union[str, int], backend: Optional[str] = ...) -> Element:
     """
     Retrieve an element object from the specified chemical data backend.
@@ -35,7 +34,6 @@ def get_element(element: Union[str, int], backend: Optional[str] = ...) -> Eleme
     """
     ...
 
-
 def get_electron_config(element_obj: Element) -> str:
     """
     Extract the electronic configuration string from an element object.
@@ -54,7 +52,6 @@ def get_electron_config(element_obj: Element) -> str:
         The electronic configuration string.
     """
     ...
-
 
 class Atorb:
     r"""

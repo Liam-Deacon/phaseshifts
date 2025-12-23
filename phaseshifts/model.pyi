@@ -13,7 +13,6 @@ shift calculation package.
 
 """
 
-
 class Atom:
     """
     Atom class for input into cluster model for muffin-tin potential
@@ -64,7 +63,6 @@ class Atom:
         ...
 
     def __eq__(self, other) -> bool: ...
-
     def __neq__(self, other):  # -> bool:
         ...
 
@@ -72,7 +70,6 @@ class Atom:
         ...
 
     def __hash__(self) -> int: ...
-
     def set_coordinates(self, coordinates):  # -> None:
         ...
 
@@ -85,7 +82,6 @@ class Atom:
         Sets the muffin-tin radius of the atom in Angstroms.
         """
         ...
-
 
 class Unitcell:
     """
@@ -127,7 +123,6 @@ class Unitcell:
         ...
 
     def __eq__(self, other) -> bool: ...
-
     def __neq__(self, other):  # -> bool:
         ...
 
@@ -135,7 +130,6 @@ class Unitcell:
         ...
 
     def __hash__(self) -> int: ...
-
     def set_vectors(self, m3x3):  # -> None:
         ...
 
@@ -190,17 +184,13 @@ class Unitcell:
     def set_gamma(self, gamma):  # -> None:
         ...
 
-
 class CoordinatesError(Exception):
     """Coordinate exception to raise and log duplicate coordinates."""
 
     def __init__(self, msg) -> None: ...
-
     def __str__(self) -> str: ...
-
     def __unicode__(self):  # -> str:
         ...
-
 
 class Model:
     """
@@ -226,7 +216,6 @@ class Model:
         ...
 
     def __eq__(self, other) -> bool: ...
-
     def __neq__(self, other):  # -> bool:
         ...
 
@@ -234,7 +223,6 @@ class Model:
         ...
 
     def __hash__(self) -> int: ...
-
     def add_atom(self, element, position, **kwargs):  # -> None:
         """
         Append an Atom instance to the model
@@ -263,9 +251,7 @@ class Model:
         ...
 
     @property
-    def elements(self) -> Set[Any]:
-        ...
-
+    def elements(self) -> Set[Any]: ...
     def set_atoms(self, atoms):  # -> None:
         """
         Set the atoms for the model.
@@ -300,7 +286,6 @@ class Model:
 
         """
         ...
-
 
 class MTZ_model(Model):
     """
