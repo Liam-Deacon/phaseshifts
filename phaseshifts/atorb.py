@@ -1385,7 +1385,7 @@ class EEASiSSSAtorb(Atorb):
         )
 
     @staticmethod
-    def gen_input(elements=[], atorb_file="inputA", **kwargs):
+    def gen_input(elements=None, atorb_file="inputA", **kwargs):
         """
         Description
         -----------
@@ -1450,6 +1450,7 @@ class EEASiSSSAtorb(Atorb):
         >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == 'Nonmetals']
         >>> EEASiSSS.gen_input(non_metals, atorb_file='./nonmetals.hf')
         """
+        elements = elements or []
         io = StringIO()
         successful = False
         try:
@@ -1470,7 +1471,7 @@ class EEASiSSSAtorb(Atorb):
 
     @staticmethod
     def calculate_Q_density(
-        elements=[],
+        elements=None,
         atorb_input="inputA",
         output_dir=(
             expand_filepath("ATLIB")
@@ -1551,6 +1552,7 @@ class EEASiSSSAtorb(Atorb):
         >>> input = './nonmetals.hf'
         >>> EEASiSSSAtorb.calculate_Q_density(non_metals, atorb_file=input)
         """
+        elements = elements or []
         # do not do anything if no elements given, otherwise get the set
         if elements == []:
             return []

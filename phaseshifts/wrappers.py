@@ -44,7 +44,7 @@ from glob import glob
 from abc import ABCMeta, abstractmethod
 from getpass import getuser
 from time import gmtime, strftime
-from re import compile
+import re
 
 from . import model, atorb
 from .leed import Converter, CLEEDInputValidator
@@ -59,11 +59,12 @@ class Wrapper(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def autogen_from_input(self):
+    def autogen_from_input(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def autogen_atorbs(self, elements=(), output_dir="."):
+    @staticmethod
+    def autogen_atorbs(elements=None, output_dir="."):
         """
         Abstract base method for generating atomic orbital input for
         Eric Shirley's hartfock program.
@@ -157,7 +158,7 @@ class Wrapper(object):
                 stripped_lines = [
                     s
                     for s in lines
-                    if s != "\n" and s not in compile("[a-zA-Z]").findall(lines)
+                    if s != "\n" and s not in re.compile("[a-zA-Z]").findall(lines)
                 ]
 
                 if lmax == 0:
@@ -198,8 +199,8 @@ class Wrapper(object):
         and returns a Python-friendly line string to be processed further.
         """
         regex = r"[-+0-9]{1,5}\.\d{1,6}"  # basic decimal number
-        decimal = compile("({})".format(regex))
-        decimal_and_exponent = compile(r"({}[eED][+-\d]\d{{0,6}})".format(regex))
+        decimal = re.compile("({})".format(regex))
+        decimal_and_exponent = re.compile(r"({}[eED][+-\d]\d{{0,6}})".format(regex))
 
         output = decimal.findall(line)
         output = output if output != [] else decimal_and_exponent.findall(line)
@@ -228,6 +229,7 @@ class EEASiSSSWrapper(Wrapper):
         -------
         dictionary of atorb filepaths for all elements
         """
+        elements = elements or ()
         EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
         atomic_dict = {}
         for symbol in [element.symbol for element in elements]:
@@ -251,7 +253,7 @@ class EEASiSSSWrapper(Wrapper):
         FileUtils.copy_files(files, dst, verbose=verbose)
 
     @staticmethod
-    def autogen_from_input(
+    def autogen_from_input(  # noqa: MC0001
         bulk_file,
         slab_file,
         tmp_dir=None,
@@ -330,7 +332,7 @@ class EEASiSSSWrapper(Wrapper):
         # get unique elements in bulk and slab
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = EEASiSSSWrapper.autogen_atorbs(
+        EEASiSSSWrapper.autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
@@ -386,7 +388,8 @@ class BVHWrapper(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def autogen_atorbs(self, elements=[], output_dir="."):
+    @staticmethod
+    def autogen_atorbs(elements=None, output_dir="."):
         """
         Generates atomic orbital input files for a set of elements and
         calculates their atomic charge densities according to the Barbieri /
@@ -401,6 +404,7 @@ class BVHWrapper(object):
         -------
         dictionary of atorb filepaths for all elements
         """
+        elements = elements or []
         atomic_dict = {}
         for elem in [element.symbol for element in elements]:
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
@@ -525,7 +529,7 @@ class BVHWrapper(object):
                 % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
             )
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
@@ -559,7 +563,7 @@ class BVHWrapper(object):
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
-        slab_mtz_file = slab_mtz.calculate_MTZ(
+        slab_mtz.calculate_MTZ(
             cluster_file=slab_file,
             output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
             atomic_file=slab_atomic_file,

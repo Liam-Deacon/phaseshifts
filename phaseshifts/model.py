@@ -730,11 +730,14 @@ class MTZ_model(Model):
 
         """
 
+        from phaseshifts.leed import Converter, CLEEDInputValidator
+
         filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
-        if CLEED_validator.is_CLEED_file(filename):
-            self = Converter.import_CLEED(filename)
-        else:
-            self._load_input_file(filename)
+        if CLEEDInputValidator.is_cleed_file(filename):
+            cleed_model = Converter.import_CLEED(filename)
+            self.__dict__.update(cleed_model.__dict__)
+            return
+        self._load_input_file(filename)
 
     def create_atorbs(self, **kwargs):
         """

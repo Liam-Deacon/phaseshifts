@@ -59,12 +59,12 @@ _lib = os.path.join(os.path.dirname(__file__), "lib")
 
 os.environ["PATH"] = _lib + ";" + os.environ["PATH"]
 _library_path = find_library("EEASiSSS") or os.path.join(_lib, "libEEASiSSS" + _ext)
-libEEASiSSS = cdll.LoadLibrary(_library_path)
+lib_eeasisss = cdll.LoadLibrary(_library_path)
 
 
 def eeasisss(input_file="inputX"):
     """Wrapper function to call EEASiSSS Fortran library using ctypes"""
-    libEEASiSSS.hartfock_(create_string_buffer(str(input_file)), size=255)
+    lib_eeasisss.hartfock_(create_string_buffer(str(input_file)), size=255)
 
 
 def main(argv=None):

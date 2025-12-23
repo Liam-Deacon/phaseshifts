@@ -81,7 +81,9 @@ during the 1970's & 1980's. To quote the authors' site:
 
 <!--lint enable no-unused-definitions-->
 
-Please contact [Michel Van Hove <vanhove@hkbu.edu.hk>](mailto://vanhove@hkbu.edu.hk) regarding this package.
+Please contact
+[Michel Van Hove <vanhove@hkbu.edu.hk>](mailto://vanhove@hkbu.edu.hk)
+regarding this package.
 
 ### EEASiSSS backend
 
@@ -127,7 +129,6 @@ author, John Rundgren, the main qualifications of the program are:
 
 Please contact John Rundgren <jru@kth.se> for queries, comments or suggestions
 related to this package.
-
 
 ## Running
 
