@@ -1024,15 +1024,15 @@ class Atorb(object):
                 orbital_models.append(
                     coerce_model(
                         AtorbElectron,
-                    {
-                        "n": entry[0],
-                        "l": entry[1],
-                        "m": entry[2],
-                        "j": entry[3],
-                        "s": entry[4],
-                        "occ": entry[5],
-                    },
-                )
+                        {
+                            "n": entry[0],
+                            "l": entry[1],
+                            "m": entry[2],
+                            "j": entry[3],
+                            "s": entry[4],
+                            "occ": entry[5],
+                        },
+                    )
                 )
 
             atorb_model = coerce_model(
