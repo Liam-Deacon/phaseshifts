@@ -445,12 +445,12 @@ class Model(object):
     @property
     def name(self):
         """Returns the model name"""
-        return self.name or ""
+        return getattr(self, "_name", "")
 
     @name.setter
     def name(self, name):
         """Sets the name of the model"""
-        self.name = str(name) if not isinstance(name, str) else name
+        self._name = str(name) if not isinstance(name, str) else name
 
     @property
     def elements(self):
@@ -460,7 +460,9 @@ class Model(object):
     @property
     def atoms(self):
         """Returns a list of atoms within this model"""
-        return self.atoms or []
+        if not hasattr(self, "_atoms"):
+            self._atoms = []
+        return self._atoms
 
     @atoms.setter
     def atoms(self, atoms):
@@ -480,9 +482,13 @@ class Model(object):
 
         """
         if isinstance(atoms, list):
-            self.atoms = [atom for atom in atoms if isinstance(atom, Atom)]
+            self._atoms = [atom for atom in atoms if isinstance(atom, Atom)]
         else:
             raise TypeError
+
+    def set_atoms(self, atoms):
+        """Set atoms via the property setter for backwards compatibility."""
+        self.atoms = atoms
 
     def set_unitcell(self, unitcell):
         """
