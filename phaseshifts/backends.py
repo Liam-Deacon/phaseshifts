@@ -35,7 +35,7 @@ class EEASiSSSBackend(PhaseShiftBackend):
                 "and ensure the Fortran build is present."
             ) from err
 
-        return EEASiSSSWrapper.autogen_from_input(*args, **kwargs)
+        return EEASiSSSWrapper().autogen_from_input(*args, **kwargs)
 
 
 DEFAULT_BACKENDS = {

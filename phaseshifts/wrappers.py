@@ -238,7 +238,6 @@ class EEASiSSSWrapper(Wrapper):
         dictionary of atorb filepaths for all elements
         """
         elements = elements or ()
-        elements = elements or ()
         EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
         atomic_dict = {}
         for symbol in [element.symbol for element in elements]:
@@ -261,8 +260,8 @@ class EEASiSSSWrapper(Wrapper):
         dst = dst if os.path.isdir(dst) else os.path.dirname(dst) or "."
         FileUtils.copy_files(files, dst, verbose=verbose)
 
-    @staticmethod
     def autogen_from_input(  # noqa: MC0001
+        self,
         bulk_file,
         slab_file,
         tmp_dir=None,

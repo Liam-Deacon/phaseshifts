@@ -36,7 +36,7 @@ def test_eeasisss_integration(tmp_path):
             "and PHASESHIFTS_EEASISSS_SLAB to run this test."
         )
 
-    output = EEASiSSSWrapper.autogen_from_input(
+    output = EEASiSSSWrapper().autogen_from_input(
         bulk,
         slab,
         tmp_dir=str(tmp_path),
