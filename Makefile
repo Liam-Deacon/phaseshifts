@@ -10,7 +10,7 @@ CIBW_PLATFORM ?= linux
 
 PREFIX ?= /usr/local
 
-.PHONY: binfmt build-deps cbuildwheel check check-cibuildwheel check-legacy-wheels install install-deps libphsh sdist test wheel
+.PHONY: binfmt build-deps cbuildwheel check check-cibuildwheel check-legacy-wheels check-types install install-deps libphsh sdist test wheel
 
 #: Quickly generate binary wheel
 wheel: install-deps

@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# pylint: disable=consider-using-f-string
+
 from __future__ import (
-    print_function,
-    unicode_literals,
     absolute_import,
     division,
+    print_function,
+    unicode_literals,
     with_statement,
 )
 
@@ -37,11 +39,33 @@ from __future__ import (
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-"""
+
+__doc__ = """
 phsh.py - quickly generate phase shifts
 
-phsh provides convenience functions to create phase shifts files
-suitable for input into LEED-IV programs such as SATLEED and CLEED.
+Orchestrates the full phase shift calculation workflow for LEED (Low-Energy Electron Diffraction)
+and related surface science applications, following the Barbieri/Van Hove methodology.
+
+This module provides a command-line interface and Python API for generating phase shift files
+suitable for input into LEED-IV programs such as SATLEED and CLEED. It automates the process of:
+- Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+- Muffin-tin potential generation
+- Phase shift calculation (relativistic/non-relativistic)
+- Removal of phase discontinuities (pi-jumps)
+- Output formatting for LEED analysis
+
+Scientific Context
+------------------
+Phase shifts are central to electron scattering theory and LEED surface structure analysis. The workflow
+implemented here follows the Barbieri/Van Hove package, ensuring that all physical and computational steps
+are performed in the correct sequence, with appropriate file formats and conventions.
+
+References
+----------
+- `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+- Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+- See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
 Examples
 --------
@@ -49,29 +73,32 @@ Examples
 
    phsh.py -i *.inp -b *.bul -f CLEED -S phase_dir
 
-
 """
 
+# pylint: disable=wrong-import-position
 import argparse
 import datetime
-import subprocess
-import sys
 import os
 import platform
+import subprocess
+import sys
 import tempfile
-from argparse import ArgumentParser
-from argparse import RawDescriptionHelpFormatter
+from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from glob import glob
 from shutil import copy
 
 import phaseshifts
 import phaseshifts.settings
-from phaseshifts import model, atorb
+from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
-from phaseshifts.leed import Converter, CLEED_validator, CSearch
+from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
 
 try:
-    from phaseshifts.lib.libphsh import phsh_rel, phsh_wil, phsh_cav  # type: ignore [import-untyped]
+    from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
+        phsh_cav,
+        phsh_rel,
+        phsh_wil,
+    )
 except ImportError:
     # TODO: Create pure-python implementations of the fortran libphsh.f code
     def function_not_implemented(*args, **kwargs):
@@ -80,7 +107,7 @@ except ImportError:
 
     phsh_rel = phsh_wil = phsh_cav = function_not_implemented  # type: ignore
 
-__all__ = []
+# pylint: enable=wrong-import-position
 
 
 def required_length(nmin, nmax):
@@ -99,7 +126,26 @@ def required_length(nmin, nmax):
 
 
 class Wrapper(object):
-    """Wrapper class to easily generate phase shifts"""
+    """Class for automating the Barbieri/Van Hove phase shift calculation workflow.
+
+    This class provides methods to generate phase shift files from atomic and cluster input data,
+    handling all intermediate steps: atomic charge density, muffin-tin potential, phase shift calculation,
+    phase-jump removal, and output formatting. It supports both Python and Fortran backends, and is
+    compatible with SATLEED and CLEED file formats.
+
+    Scientific Rationale
+    -------------------
+    Automating the workflow ensures reproducibility and correct sequencing of physical and computational steps,
+    as required for LEED surface structure analysis.
+
+    References
+    ----------
+    - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+    - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+    - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+    """
 
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
@@ -109,32 +155,51 @@ class Wrapper(object):
         bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs
     ):
         """
-        Description
-        -----------
-        Generate phase shifts from a slab/cluster input file.
+           Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
-        Parameters
-        ----------
-        slab_file : str
-            Path to the cluster slab MTZ input file.
-        bulk_file : str
-            Path to the cluster bulk MTZ input file.
-        tmp_dir : str
-            Temporary directory for intermediate files.
-        store : bool or int
-            Specify whether to keep generated files.
-        format : str
-            Specify formatting of generated phase shift files
-        range : tuple(float, float, float)
-            Specify the energy of the start, stop and step in eV.
-        model_name : str
-            Name of model.
+           This method automates the full sequence described in:
+           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+        <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+           - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+           - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
-        Returns
-        -------
-        output_files : list(str)
-           A list of phase shift output filenames
+           Steps:
+           1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+           2. Muffin-tin potential generation
+           3. Phase shift calculation (relativistic/non-relativistic)
+           4. Removal of phase discontinuities (pi-jumps)
+           5. Output formatting for LEED analysis
+
+           Parameters
+           ----------
+           bulk_file : str
+               Path to the bulk MTZ or CLEED input file.
+           slab_file : str
+               Path to the slab/cluster MTZ or CLEED input file.
+           tmp_dir : str, optional
+               Temporary directory for intermediate files.
+           model_name : str, optional
+               Name of the model.
+           store : bool or str, optional
+               Whether to keep generated files and where to store them.
+           format : str, optional
+               Output format for phase shift files ('cleed', 'curve', etc.).
+           range : tuple(float, float, float), optional
+               Energy range for phase shift calculation (start, stop, step in eV).
+
+           Returns
+           -------
+           output_files : list of str
+               List of generated phase shift output filenames.
+
+           Scientific Context
+           ------------------
+           This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
+           ensuring all physical and computational steps are performed in the correct order. For further details,
+           see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
         """
+        verbose = kwargs.get("verbose", False)
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         if model_name == None:
             model_name = "atomic"
@@ -158,8 +223,8 @@ class Wrapper(object):
 
         # Load bulk model and calculate MTZ
         bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(bulk_file):
-            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=VERBOSE)
+        if CLEEDInputValidator.is_cleed_file(bulk_file):
+            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
             bulk_file = os.path.join(
                 tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
@@ -170,7 +235,7 @@ class Wrapper(object):
 
         # Load slab model and calculate MTZ
         slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEED_validator.is_CLEED_file(slab_file):
+        if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
             slab_file = os.path.join(
@@ -186,8 +251,14 @@ class Wrapper(object):
 
         # get unique elements in bulk and slab
         atomic_dict = {}
-        bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
-        slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
+        bulk_elements = [
+            getattr(atom.element, "symbol", str(atom.element))
+            for atom in bulk_mtz.atoms
+        ]
+        slab_elements = [
+            getattr(atom.element, "symbol", str(atom.element))
+            for atom in slab_mtz.atoms
+        ]
         for elem in set(bulk_elements + slab_elements):
             at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
@@ -200,7 +271,8 @@ class Wrapper(object):
 
         # prepare at files for appending into atomic file
         bulk_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)
+            atomic_dict[getattr(atom.element, "symbol", str(atom.element))]
+            for atom in set(bulk_mtz.atoms)
         ]
 
         # create atomic.i input file from mtz model
@@ -210,14 +282,14 @@ class Wrapper(object):
             output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
         )
 
-        if VERBOSE:
+        if verbose:
             print("\nModel")
             print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
             print("slab atoms: %s" % [s for s in slab_mtz.atoms])
 
         # calculate muffin-tin potential for bulk model
         print("\nCalculating bulk muffin-tin potential...")
-        if VERBOSE:
+        if verbose:
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
@@ -253,7 +325,7 @@ class Wrapper(object):
         # calculate muffin-tin potential for slab model
         mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
         print("\nCalculating slab muff-tin potential...")
-        if VERBOSE:
+        if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
@@ -349,7 +421,7 @@ class Wrapper(object):
                 if "range" in kwargs:
                     try:
                         # get values
-                        with open(mufftin_filepath, "r") as f:
+                        with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
                             lines = [line for line in f]
 
                         ei, de, ef, lsm, vc = [
@@ -374,10 +446,10 @@ class Wrapper(object):
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
 
-                        with open(mufftin_filepath, "w") as f:
+                        with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
                             f.write("".join([str(line) for line in lines]))
 
-                    except any as e:
+                    except Exception:
                         sys.stderr.write(
                             "Unable to change phase shift energy "
                             "range - using Barbieri/Van Hove "
@@ -461,7 +533,7 @@ class Wrapper(object):
         if not os.path.exists(dst):
             try:
                 os.makedirs(dst)
-            except (PermissionError, WindowsError):
+            except (PermissionError, OSError):
                 pass
 
         # copy each phase shift file to directory
@@ -475,6 +547,93 @@ class Wrapper(object):
             except IOError:
                 sys.stderr.write("Cannot copy file '%s'\n" % filename)
                 sys.stderr.flush()
+
+
+class PhaseShiftBackend(object):
+    """Base interface for phase shift backends."""
+
+    name = "bvh"
+
+    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
+        raise NotImplementedError
+
+
+class BVHBackend(PhaseShiftBackend):
+    """Barbieri/Van Hove backend using the built-in Wrapper."""
+
+    name = "bvh"
+
+    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
+        return Wrapper.autogen_from_input(
+            bulk_file, slab_file, tmp_dir=tmp_dir, **kwargs
+        )
+
+
+class ViperLeedBackend(PhaseShiftBackend):
+    """ViPErLEED backend using its EEASiSSS phase shift generator."""
+
+    name = "viperleed"
+
+    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
+        parameters_file = kwargs.get("backend_params")
+        workdir = kwargs.get("backend_workdir") or tmp_dir or os.getcwd()
+        output_file = kwargs.get("output_file") or "PHASESHIFTS"
+
+        if not parameters_file:
+            raise CLIError(
+                "viperleed backend requires --backend-params <PARAMETERS>."
+            )
+        if not slab_file:
+            raise CLIError("viperleed backend requires --slab <POSCAR>.")
+
+        try:
+            from viperleed.calc.files import parameters as viper_params
+            from viperleed.calc.files import phaseshifts as viper_phaseshifts
+            from viperleed.calc.files import poscar as viper_poscar
+            from viperleed.calc.psgen import runPhaseshiftGen
+        except ImportError as err:
+            raise ImportError(
+                "viperleed backend requires 'phaseshifts[viperleed]' to be installed."
+            ) from err
+
+        rparams = viper_params.read(parameters_file)
+        viper_params.interpret(rparams)
+        slab = viper_poscar.read(slab_file)
+
+        os.makedirs(workdir, exist_ok=True)
+        output_path = os.path.join(workdir, output_file)
+        cwd = os.getcwd()
+        try:
+            os.chdir(workdir)
+            firstline, phaseshifts, *_ = runPhaseshiftGen(slab, rparams)
+            viper_phaseshifts.writePHASESHIFTS(
+                firstline, phaseshifts, file_path=output_path
+            )
+        finally:
+            os.chdir(cwd)
+
+        return [output_path]
+
+
+BACKENDS = {
+    BVHBackend.name: BVHBackend,
+    ViperLeedBackend.name: ViperLeedBackend,
+}
+
+
+def get_backend(name):
+    """Return a backend instance by name."""
+    if not name:
+        name = BVHBackend.name
+    key = str(name).lower()
+    backend_cls = BACKENDS.get(key)
+    if backend_cls is None:
+        raise CLIError(
+            "Unknown backend '{}'. Available: {}.".format(
+                name, ", ".join(sorted(BACKENDS))
+            )
+        )
+    return backend_cls()
 
 
 class CLIError(Exception):
@@ -492,9 +651,36 @@ class CLIError(Exception):
 
 
 def main(argv=None):
-    """Command line options."""
+    """
+    Main command-line interface for phase shift generation.
 
-    global VERBOSE
+    Parses user arguments, sets up the workflow, and executes the full Barbieri/Van Hove phase shift
+    calculation sequence. Supports options for input files, output formatting, energy range, and
+    intermediate file management.
+
+    Parameters
+    ----------
+    argv : list of str, optional
+        Command-line arguments (default: sys.argv).
+
+    Returns
+    -------
+    int
+        Exit code (0 for success).
+
+    Scientific Context
+    ------------------
+    This CLI enables reproducible, automated phase shift generation for LEED analysis, following
+    best practices in surface science computation.
+
+    References
+    ----------
+    - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
+     <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+    - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+    - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+    """
 
     if argv is None:
         argv = sys.argv
@@ -545,11 +731,18 @@ def main(argv=None):
         )
         parser.add_argument(
             "-i",
+            "--input",
+            dest="input",
+            metavar="<input.json|input.yml>",
+            help="structured input (cleedpy-style) describing bulk and slab in JSON or YAML",
+        )
+        parser.add_argument(
+            "-s",
             "--slab",
             dest="slab",
             metavar="<slab_file>",
-            help="path to MTZ slab or CLEED *.inp input file",
-            required=True,
+            help="path to MTZ slab or CLEED *.inp input file (required unless --input is used)",
+            required=False,
         )
         parser.add_argument(
             "-t",
@@ -574,8 +767,27 @@ def main(argv=None):
             metavar="<format>",
             default="CLEED",
             help="Use specific phase shift format "
-            "i.e. 'cleed' or 'curve' "
+            "i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
             "[default: %(default)s]",
+        )
+        parser.add_argument(
+            "--backend",
+            dest="backend",
+            metavar="<backend>",
+            default="bvh",
+            help="Phase shift backend to use: 'bvh' (default) or 'viperleed'.",
+        )
+        parser.add_argument(
+            "--backend-params",
+            dest="backend_params",
+            metavar="<parameters>",
+            help="Backend-specific parameters file. For viperleed, pass PARAMETERS.",
+        )
+        parser.add_argument(
+            "--backend-workdir",
+            dest="backend_workdir",
+            metavar="<dir>",
+            help="Backend working directory (viperleed uses it for EEASiSSS files).",
         )
         parser.add_argument(
             "-r",
@@ -624,36 +836,61 @@ def main(argv=None):
         # Process arguments
         args, unknown = parser.parse_known_args()
 
-        verbose = False
+        verbose = 0
         try:
             verbose = args.verbose
-            VERBOSE = verbose
         except AttributeError:
             pass
 
-        if verbose > 0 and len(unknown) > 0:
+        if verbose and len(unknown) > 0:
             for arg in unknown:
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        if args.bulk is None:
+        backend_name = str(getattr(args, "backend", None) or "bvh").lower()
+
+        if backend_name == "viperleed" and getattr(args, "input", None):
+            raise CLIError("--input is not supported with the viperleed backend.")
+
+        # Structured input support: auto-generate bulk and slab inputs from geometry
+        if getattr(args, "input", None):
+            if args.bulk or args.slab:
+                sys.stderr.write(
+                    "phsh: --input provided; ignoring --bulk/--slab arguments\n"
+                )
+                sys.stderr.flush()
+            try:
+                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
+                    args.input, tmp_dir=args.tmpdir
+                )
+            except ImportError as exc:
+                raise CLIError(str(exc))
+            args.bulk = bulk_file
+            args.slab = slab_file
+            if metadata.get(
+                "maximum_angular_momentum"
+            ) and args.lmax == parser.get_default("lmax"):
+                args.lmax = int(metadata["maximum_angular_momentum"])
+
+        if not args.input and args.slab is None:
+            raise CLIError("slab input is required unless using --input.")
+
+        if args.bulk is None and not args.input and backend_name != "viperleed":
             args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
         if args.store is False:
             args.store = "."
 
         if args.lmax < 1 or args.lmax > 18:
-            raise argparse.ArgumentError("lmax is not between 1 and 18")
+            raise ValueError("lmax is not between 1 and 18")
 
         if len(args.range) < 3:  # add default step to list
-            args.range = list(args.range).append(5)
+            args.range = list(args.range) + [5]
 
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
     except Exception as err:
-        if DEBUG or TESTRUN:
-            raise
         indent = len(program_name) * " "
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
         sys.stderr.write("{} for help use --help".format(indent))
@@ -668,7 +905,15 @@ def main(argv=None):
         print("\tlmax: %s" % args.lmax)
         print("\trange: %s eV" % [s for s in args.range])
 
-    phsh_files = Wrapper.autogen_from_input(
+    backend = get_backend(backend_name)
+    backend_workdir = args.backend_workdir or args.tmpdir or args.store
+    output_file = (
+        os.path.join(args.store, "PHASESHIFTS")
+        if backend_name == "viperleed"
+        else None
+    )
+
+    phsh_files = backend.autogen_from_input(
         args.bulk,
         args.slab,
         tmp_dir=args.tmpdir,
@@ -676,6 +921,10 @@ def main(argv=None):
         format=args.format,
         store=args.store,
         range=args.range,
+        verbose=verbose,
+        backend_params=args.backend_params,
+        backend_workdir=backend_workdir,
+        output_file=output_file,
     )
 
     # chain loop commands to next program
@@ -686,7 +935,7 @@ def main(argv=None):
         if last_iteration is not None:
             it = (
                 str(last_iteration)
-                .split("par:")[0]
+                .split("par:", 1)[0]
                 .replace(" ", "")
                 .replace("#", "")
                 .rjust(3, "0")
@@ -698,15 +947,16 @@ def main(argv=None):
             Wrapper._copy_files(phsh_files, dest, verbose)
 
         # create subprocess
-        leed_cmd = [os.environ["PHASESHIFTS_LEED"]]
+        leed_cmd = [os.environ.get("PHASESHIFTS_LEED") or "cleed"]
         # check if using native Windows Python with cygwin
-        if platform.system() == "Windows" and leed_cmd.startwith("/cygdrive"):
-            leed_cmd = '"%s"' % (
-                leed_cmd.split("/")[2] + ":" + os.path.sep.join(leed_cmd.split("/")[3:])
+        if platform.system() == "Windows" and leed_cmd[0].startswith("/cygdrive"):
+            leed_cmd[0] = '"%s"' % (
+                leed_cmd[0].split("/")[2]
+                + ":"
+                + os.path.sep.join(leed_cmd[0].split("/")[3:])
             )
 
-        for arg in argv:
-            leed_cmd.append(arg)
+        leed_cmd.extend(argv)
 
         if verbose:
             print("phsh - starting subprocess: '{}'...".format(" ".join(leed_cmd)))

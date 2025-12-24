@@ -19,6 +19,10 @@ _skbuild/
 phaseshifts/lib/libphsh
 bin/phsh*
 
+# built files and test artifacts
+atorb_C.txt
+phaseshifts/lib/libphsh
+
 # log files
 *.log
 
@@ -36,3 +40,7 @@ docs/_build/
 .coverage
 **/coverage.xml
 htmlcov/
+
+# other
+monkeytype.sqlite3
+.hypothesis/**/charmap.json.gz

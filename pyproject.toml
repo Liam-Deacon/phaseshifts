@@ -1,25 +1,18 @@
 [project]
 name = "phaseshifts"
-version = "0.1.8"
+version = "0.1.9"
 description = "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
-authors = [
-    { name = "Liam Deacon", email = "liam.m.deacon@gmail.com" }
-]
+authors = [{ name = "Liam Deacon", email = "liam.m.deacon@gmail.com" }]
 license = { text = "MIT" }
 readme = "README.md"
-requires-python = ">=2.7"  # TODO: Update to >=3.8 when dropping Python 2 support
+requires-python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 dependencies = [
     "numpy>=1.3",
     "scipy>=0.7",
     "periodictable",
-    "typing_extensions"
+    "typing_extensions",
 ]
-keywords = [
-    "phaseshifts",
-    "atomic scattering",
-    "muffin-tin",
-    "diffraction"
-]
+keywords = ["phaseshifts", "atomic scattering", "muffin-tin", "diffraction"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -28,23 +21,20 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Chemistry",
-    "Topic :: Scientific/Engineering :: Physics"
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 
 [project.scripts]
 phaseshifts = "phaseshifts.cli:main"
 
 [project.optional-dependencies]
-atorb = [
-    "mendeleev",
-    "elementy"
-]
+atorb = ["mendeleev", "elementy", "pydantic; python_version >= '3.9'"]
 gui = [
     "six",
     "qtpy",
     "pyqt5; python_version < '3.7'",
     "pyside6; python_version >= '3.7'",
-    "pyqtgraph"
+    "pyqtgraph",
 ]
 dev = [
     "black",
@@ -53,27 +43,23 @@ dev = [
     "pre-commit",
     "ruff",
     "scikit-build-core; python_version > '3.11'",
-    "wheel"
+    "wheel",
 ]
-test = [
-    "pytest",
-    "pytest-cov"
-]
-docs = [
-    "sphinx>=7,<8",
-    "sphinx_rtd_theme",
-    "numpydoc",
-    "ipykernel"
-]
+test = ["pytest", "pytest-cov"]
+docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
+input = ["pyyaml>=6.0", "jsonschema>=4.0"]
+viperleed = ["viperleed>=0.14.1"]
 
 [build-system]
 requires = [
-    "scikit-build-core>=0.11.5; python_version >= '3.8'",
     "setuptools",
     "wheel",
-    "numpy"
+    "numpy",
+    "ninja>=1.11",
+    "scikit-build-core>=0.11.5; python_version >= '3.8'",
 ]
-build-backend = "scikit_build_core.build"
+build-backend = "phaseshifts_build_backend"
+backend-path = ["."]
 
 [tool.cibuildwheel]
 before-build = [
@@ -81,34 +67,21 @@ before-build = [
     "pip install 'pip<21; python_version <= \"3.8\"' 'pip; python_version > \"3.9\"'",
     "pip install 'setuptools<63; python_version <= \"3.8\"' 'setuptools; python_version > \"3.9\"'",
     "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
-
-    # Windows fixes
-    "pip install 'delvewheel; sys_platform == \"win32\" and python_version >= \"3.6\"'",  # Delvewheel used for Windows builds to vendor gfortran libraries
-    # "python -c \"import sys, subprocess; sys.exit(0) if sys.platform == 'win32' else 1\" || (echo \"Windows detected - running build_libphsh.bat\" && build_libphsh.bat)",
+    "pip install 'delvewheel; sys_platform == \"win32\" and python_version >= \"3.6\"'",
     "python -c \"from __future__ import print_function;\nimport sys, subprocess;\nif sys.platform == 'win32':\n    print('Installing mingw...')\n    try:\n        print(subprocess.check_output('choco install -y mingw'), stderr=subprocess.STDOUT, shell=True);\n    except subprocess.CalledProcessError as e:\n        print('Failed to install mingw:', e.output)\"",
-
-    # build backends
-    "pip install 'numpy>=1.16.6'",  # Legacy NumPy builds
-    "pip install 'scikit-build-core>=0.11.5; python_version >= \"3.8\"'",  # Modern CMake builds
-
-    # -- Python 3 to 2 conversion -- #
-    # "python -c \"import sys; import platform; sys.exit(0) if sys.version_info >= (3, 8) else 1\" || (echo Legacy Python detected - attempting to transpile code to Python 2.x && pip install future strip-hints && python -m pasteurize -w phaseshifts/**/*.py tests/**/*.py setup.py && python -m strip_hints --inplace phaseshifts/**/*.py tests/**/*.py setup.py)"
-
+    "pip install 'numpy>=1.16.6'",
+    "pip install 'scikit-build-core>=0.11.5; python_version >= \"3.8\"'",
 ]
 build = [
     # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
+    "cp38-*",
     "cp39-*",
     "cp310-*",
     "cp311-*",
     "cp312-*",
     "cp313-*",
 ]
-# output-dir = "dist"  # NOTE: Not supported in config file
-skip = [
-    "cp38-*",  # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
-]
 test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
-# test-command = "python -m 'phaseshifts.tools.post_cibuildwheel_check'"
 test-extras = ["test"]
 test-requires = ["pytest"]
 
@@ -121,53 +94,97 @@ skip = [
 ]
 
 [tool.cibuildwheel.macos.environment]
-CFLAGS="-std=c99 -fno-strict-aliasing"
-CC="clang"
-FC="gfortran"
-CXX="clang++"
-CMAKE_OSX_ARCHITECTURES="$CIBW_ARCH"  # Universal2 build
-MACOSX_DEPLOYMENT_TARGET = "11.0"  # Minimum supported macOS version for CIBW
+CFLAGS = "-std=c99 -fno-strict-aliasing"
+CC = "clang"
+FC = "gfortran"
+CXX = "clang++"
+CMAKE_OSX_ARCHITECTURES = "$CIBW_ARCH"  # Universal2 build
+MACOSX_DEPLOYMENT_TARGET = "11.0"       # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
 archs = "auto64 auto32"  # Use both 64-bit and 32-bit architectures, typically x86 based on windows-latest runners
+before-build = [
+    "pip install numpy scikit-build-core cmake ninja meson meson-python",
+]
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     # "delvewheel show {wheel} -vv",
     "delvewheel repair -vv -w {dest_dir} {wheel}",
-    # "delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel"
 ]
 
 [tool.cibuildwheel.windows.environment]
 # Only support fortran via GCC toolchain, so make explicit
-CC="gcc"
-CXX="g++"
-FC="gfortran"
-CMAKE_GENERATOR="MinGW Makefiles"  # Use MinGW Makefiles for CMake
-DISTUTILS_USE_SDK="1"  # Use the SDK for building on Windows
-SETUPTOOLS_USE_DISTUTILS="stdlib"  # Use distutils for building on Windows
+CC = "gcc"
+CXX = "g++"
+FC = "gfortran"
+CMAKE_GENERATOR = "MinGW Makefiles"  # Use MinGW Makefiles for CMake
+DISTUTILS_USE_SDK = "1"  # Use the SDK for building on Windows
+SETUPTOOLS_USE_DISTUTILS = "stdlib"  # Use distutils for building on Windows
 
 [tool.flake8]
 max-line-length = 120
-extend-ignore = "E203, E501, W503"
+# Note: flake8 primarily reads from .flake8 file, not pyproject.toml
+extend-ignore = ["E203", "E501", "W503"]
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 ignore_missing_imports = true
 follow_imports = "skip"
 show_column_numbers = true
+# Use [/\\] to match both Unix (/) and Windows (\\) path separators
+exclude = [
+    # GUI has optional dependencies (qtpy, wx, six)
+    "phaseshifts[/\\]gui[/\\]",
+    # Legacy Python 2/3 compat code with many type issues
+    "phaseshifts[/\\]lib[/\\]hartfock\\.py",
+    "phaseshifts[/\\]lib[/\\]phsh\\.py",
+    "phaseshifts[/\\]lib[/\\]scripts[/\\]",
+    # Validation uses optional pydantic dependency
+    "phaseshifts[/\\]validation[/\\]",
+]
+
+[tool.pyright]
+pythonVersion = "3.8"
+typeCheckingMode = "basic"
+include = ["phaseshifts"]
+exclude = [
+    "phaseshifts/gui/**",          # GUI code has optional dependencies (qtpy, wx)
+    "phaseshifts/lib/hartfock.py", # Legacy Python 2 code with many type issues
+    "phaseshifts/lib/phsh.py",     # Legacy Python 2 code with many type issues
+    "phaseshifts/lib/scripts/**",  # Legacy scripts with type issues
+    "phaseshifts/validation/**",   # Pydantic validation with complex types
+]
+# Ignore missing imports for optional dependencies
+reportMissingImports = "warning"
+reportMissingTypeStubs = false
+# Allow some flexibility for legacy code
+reportAttributeAccessIssue = "warning"
+reportOptionalMemberAccess = "warning"
+reportOptionalSubscript = "warning"
+reportOptionalIterable = "warning"
+reportPossiblyUnboundVariable = "warning"
+reportArgumentType = "warning"
+# Additional settings to reduce noise on legacy code
+reportUndefinedVariable = "warning"
+reportCallIssue = "warning"
+reportOperatorIssue = "warning"
+reportInvalidTypeForm = "warning"
+reportAssignmentType = "warning"
 
 [tool.pylint]
 disable = "C0114, C0115, C0116"
 max-line-length = 120
 
 [tool.ruff]
-target-version = "py38"  # 3.8 is minimum
+target-version = "py38" # 3.8 is minimum
 line-length = 120
 
 [tool.scikit-build]
+# scikit-build-core prefers Ninja automatically when available; Windows builds
+# also set CMAKE_GENERATOR=Ninja in cibuildwheel env to avoid MSVC+gfortran issues.
 cmake.build-type = "Release"
 cmake.args = []
-# wheel.install-dir = "phaseshifts"  # previously "phaseshifts/lib"
+wheel.install-dir = "phaseshifts/lib"
 build.targets = ["libphsh"]
 # Only install CMake Runtime components (the compiled extension)
 install.components = ["Runtime"]
@@ -175,18 +192,45 @@ install.components = ["Runtime"]
 experimental = true
 wheel.packages = ["phaseshifts"]
 # Override source discovery to ignore MANIFEST.in
-build-dir = "build"
+build-dir = "build/{wheel_tag}"
 # Exclude ALL non-essential files from wheels
 wheel.exclude = [
-    "*.txt", "*.md", "*.rst", "*.yaml", "*.yml", "*.png", "*.pdf",
-    "docs/**", "htmlcov/**", "test/**", "tests/**",
-    "dockerfiles/**", "*.ipynb", "*.json", "*.xml", "*.bat", "*.sh",
-    "MANIFEST.in", "*.cfg", "Makefile", "CMakeLists.txt", "setup.py", "setup.cfg",
-    "ChangeLog", "LICENSE.txt", "TODO.rst", "requirements*.txt", "*.lock"
+    "*.txt",
+    "*.md",
+    "*.rst",
+    "*.yaml",
+    "*.yml",
+    "*.png",
+    "*.pdf",
+    "docs/**",
+    "htmlcov/**",
+    "test/**",
+    "tests/**",
+    "dockerfiles/**",
+    "*.ipynb",
+    "*.json",
+    "*.xml",
+    "*.bat",
+    "*.sh",
+    "MANIFEST.in",
+    "*.cfg",
+    "Makefile",
+    "CMakeLists.txt",
+    "setup.py",
+    "setup.cfg",
+    "ChangeLog",
+    "LICENSE.txt",
+    "TODO.rst",
+    "requirements*.txt",
+    "*.lock",
 ]
 sdist.exclude = [
-    "htmlcov/**", "*.png", "*.pdf", "docs/_build/**",
-    "test/**/__pycache__/**", "tests/**/__pycache__/**"
+    "htmlcov/**",
+    "*.png",
+    "*.pdf",
+    "docs/_build/**",
+    "test/**/__pycache__/**",
+    "tests/**/__pycache__/**",
 ]
 
 [tool.phaseshifts.wheel_check]

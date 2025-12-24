@@ -25,6 +25,9 @@ A number of alternatives are available, notably the following:
              As such `John Rundgren <https://www.researchgate.net/profile/John-Rundgren-2>`_ should be contacted to see if
              he would be happy to collaborate on making this possible. This is being tracked by
              `this item <https://github.com/Liam-Deacon/phaseshifts/issues/92>`_.
+             An experimental pathway exists via the optional ``viperleed`` backend
+             (see :doc:`/scripts` for CLI usage), which runs EEASiSSS through the
+             ViPErLEED toolchain.
 
 3. A fortran program is described in "`McGreevy, E., & Stewart, A.L. (- Apr 1978). <https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501>`_
    A program for calculating elastic scattering phase shifts for an electron colliding with a one-electron target using perturbation theory.

@@ -1,0 +1,52 @@
+# Skip modules with optional dependencies (gui, validation) and legacy code
+# GUI modules - depend on optional qtpy, wx, six
+phaseshifts.gui
+phaseshifts.gui.*
+# Validation modules - depend on optional pydantic
+phaseshifts.validation
+phaseshifts.validation.*
+# Legacy Python 2/3 code with type issues
+phaseshifts.lib.hartfock
+phaseshifts.lib.phsh
+phaseshifts.lib.scripts
+phaseshifts.lib.scripts.*
+phaseshifts.lib.atomic_structure_solver
+
+# Specific symbol allowlist entries
+phaseshifts.VERSION
+phaseshifts.__contact__
+phaseshifts.__homepage__
+phaseshifts.__project__
+phaseshifts.conphas.HARTREE
+phaseshifts.conphas.VERBOSE
+phaseshifts.elements.Element.description
+phaseshifts.elements.Element.eleconfig_dict
+phaseshifts.elements.Element.eleshells
+phaseshifts.elements.Element.exactmass
+phaseshifts.elements.Element.neutrons
+phaseshifts.elements.Element.nominalmass
+phaseshifts.elements.ElementsDict
+phaseshifts.lib._WIN_DLL_DIRS
+phaseshifts.lib._fortran_lib.FORTRAN_LIBS
+phaseshifts.lib._fortran_lib.LIBPHSH_MODULE
+phaseshifts.lib.helpers.split_ab.input_path
+phaseshifts.lib.helpers.split_ab.output_dir
+phaseshifts.lib.libphsh.cavpot
+phaseshifts.lib.libphsh.hartfock
+phaseshifts.lib.libphsh.hb
+phaseshifts.lib.libphsh.phsh_cav
+phaseshifts.lib.libphsh.phsh_rel
+phaseshifts.lib.libphsh.phsh_wil
+phaseshifts.phsh.RequiredLength@13
+phaseshifts.phshift2007.COMPILER_FLAGS
+phaseshifts.settings.COMPILE_MISSING
+phaseshifts.settings.DEBUG
+phaseshifts.settings.PROFILE
+phaseshifts.settings.TESTRUN
+phaseshifts.settings._READTHEDOCS
+phaseshifts.settings._compile_default
+phaseshifts.tools.debye.__contact__
+# Python 3.12+ adds 'intermixed' parameter to ArgumentParser._parse_known_args
+phaseshifts.tools.debye.ArgumentParser._parse_known_args
+# Stub may be out of sync with runtime (v0_params parameter)
+phaseshifts.conphas.Conphas.__init__

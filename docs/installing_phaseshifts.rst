@@ -110,6 +110,11 @@ steps below.
 .. tip::
    If you encounter build errors, ensure you have CMake, scikit-build-core, and a working Fortran compiler installed. If the modern build fails, the installer will automatically fallback to the legacy build if possible.
 
+.. note::
+   Optional extras can be installed with:
+   - ``pip install "phaseshifts[input]"`` for structured input + validation.
+   - ``pip install "phaseshifts[viperleed]"`` to enable the experimental ViPErLEED backend.
+
 .. tip::
    To optionally disable building the phshift2007 Fortran binaries (e.g., for minimal installs or CI), set the environment variable before installation:
 

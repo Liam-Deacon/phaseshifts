@@ -30,7 +30,7 @@ on:
         type: boolean
       build_aarch64:
         description: Build aarch64 wheels
-        default: false
+        default: true
         type: boolean
       build_i686:
         description: Build i686 wheels
@@ -46,15 +46,20 @@ on:
         type: boolean
 
 env:
-  CIBW_BEFORE_BUILD_LINUX: pip install numpy 'scikit-build-core; python_version > "3.7"'
-  CIBW_BEFORE_BUILD_MUSLLINUX: >-
-    apk add --no-cache python3-dev && \
-    pip install numpy 'scikit-build-core; python_version > "3.7"'
+  # NOTE: Loosened numpy version to allow faster installs on Python 3.13+
+  CIBW_BEFORE_BUILD: pip install "numpy" scikit-build-core cmake ninja meson meson-python
+  CIBW_BEFORE_BUILD_LINUX: >-
+    (yum install -y python3-devel || echo "yum failed, continuing...") &&
+    pip install "numpy" scikit-build-core cmake ninja meson meson-python
+  CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
+  CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
   MACOSX_DEPLOYMENT_TARGET: "11.0"
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+  PHASESHIFTS_COMPILE_MISSING: "0"
+  PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
 
 permissions:
   contents: read
@@ -178,8 +183,9 @@ jobs:
         with:
           output-dir: dist/
         env:
+          CIBW_ARCHS_LINUX: x86_64
           CIBW_BUILD: ${{ matrix.cibw_build }}
-          CIBW_SKIP: cp38-* cp*musl*
+          CIBW_SKIP: cp*musl*
       - name: Normalize cibw tag
         id: normalize_tag
         shell: bash
@@ -198,6 +204,7 @@ jobs:
       fail-fast: false
       matrix: # NOTE: Use matrix build as aarch64 builds are very slow
         cibw_build:
+          - cp38-*
           - cp39-*
           - cp310-*
           - cp311-*
@@ -221,9 +228,9 @@ jobs:
         with:
           output-dir: dist/
         env:
-          CIBW_ARCHS_LINUX: auto
+          CIBW_ARCHS_LINUX: aarch64
           CIBW_BUILD: ${{ matrix.cibw_build }}
-          CIBW_SKIP: cp38-* cp*musl* cp37-musllinux_aarch64
+          CIBW_SKIP: cp*musl* cp37-musllinux_aarch64
       - name: Normalize cibw tag
         id: normalize_tag
         shell: bash
@@ -242,6 +249,7 @@ jobs:
       fail-fast: false
       matrix:
         cibw_build:
+          - cp38-*
           - cp39-*
           - cp310-*
           - cp311-*
@@ -417,6 +425,7 @@ jobs:
       fail-fast: false
       matrix:
         cibw_build:
+          - cp38-*
           - cp39-*
           - cp310-*
           - cp311-*
