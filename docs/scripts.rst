@@ -48,7 +48,7 @@ will produce a list of command line options::
                           case-insensitive. [default: 'cleed']
     --backend <backend>
                           Phase shift backend to use: 'bvh' (default) or
-                          'viperleed'.
+                          'eeasisss' (alias: viperleed).
     --backend-params <parameters>
                           Backend-specific parameters file. For viperleed,
                           pass the ViPErLEED PARAMETERS file.
@@ -78,15 +78,16 @@ will produce a list of command line options::
    use: ``pip install "phaseshifts[input]"``.
 
 .. note::
-   To use the experimental ViPErLEED backend, install:
-   ``pip install "phaseshifts[viperleed]"`` and pass ``--backend viperleed``
-   with a POSCAR slab file and ``--backend-params PARAMETERS``.
+   To use the experimental EEASiSSS backend (via ViPErLEED), install:
+   ``pip install "phaseshifts[viperleed]"`` and pass ``--backend eeasisss``
+   (or ``--backend viperleed``) with a POSCAR slab file and
+   ``--backend-params PARAMETERS``.
 
    Example::
 
-      phsh.py --backend viperleed --backend-params PARAMETERS --slab POSCAR --format viperleed
+      phsh.py --backend eeasisss --backend-params PARAMETERS --slab POSCAR --format viperleed
 
-   The ViPErLEED backend uses EEASiSSS internally (``--backend eeasisss`` is an alias).
+   The EEASiSSS backend uses ViPErLEED internally (``--backend viperleed`` is an alias).
    To control where EEASiSSS input/output files are written, pass ``--backend-workdir`` (defaults to the
    temp directory or ``--store`` when set). The resulting ``PHASESHIFTS`` file
    is placed in the backend work directory (or ``--store`` when provided).

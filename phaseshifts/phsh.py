@@ -690,19 +690,22 @@ def main(argv=None):
             dest="backend",
             metavar="<backend>",
             default="bvh",
-            help="Phase shift backend to use: 'bvh' (default) or 'viperleed'.",
+            help="Phase shift backend to use: 'bvh' (default) or "
+            "'eeasisss' (alias: viperleed).",
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For viperleed, pass PARAMETERS.",
+            help="Backend-specific parameters file. For eeasisss/viperleed, "
+            "pass the ViPErLEED PARAMETERS file.",
         )
         parser.add_argument(
             "--backend-workdir",
             dest="backend_workdir",
             metavar="<dir>",
-            help="Backend working directory (viperleed uses it for EEASiSSS files).",
+            help="Backend working directory (eeasisss/viperleed uses it for "
+            "EEASiSSS files).",
         )
         parser.add_argument(
             "-r",
@@ -816,10 +819,12 @@ def main(argv=None):
 
     backend_name = getattr(backend, "name", backend_name)
 
-    if backend_name == "viperleed" and getattr(args, "input", None):
-        return _fatal(CLIError("--input is not supported with the viperleed backend."))
+    if backend_name == "eeasisss" and getattr(args, "input", None):
+        return _fatal(
+            CLIError("--input is not supported with the eeasisss backend.")
+        )
 
-    if args.bulk is None and not args.input and backend_name != "viperleed":
+    if args.bulk is None and not args.input and backend_name != "eeasisss":
         args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
     # create phase shifts (warning: black magic within - needs testing)
@@ -833,7 +838,7 @@ def main(argv=None):
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (
-        os.path.join(args.store, "PHASESHIFTS") if backend_name == "viperleed" else None
+        os.path.join(args.store, "PHASESHIFTS") if backend_name == "eeasisss" else None
     )
 
     try:

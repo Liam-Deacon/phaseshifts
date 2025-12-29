@@ -30,9 +30,9 @@ class BVHBackend(PhaseShiftBackend):
 
 
 class ViperLeedBackend(PhaseShiftBackend):
-    """ViPErLEED backend using its EEASiSSS phase shift generator."""
+    """EEASiSSS backend using the ViPErLEED toolchain."""
 
-    name = "viperleed"
+    name = "eeasisss"
 
     def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
         parameters_file = kwargs.get("backend_params")
@@ -41,10 +41,10 @@ class ViperLeedBackend(PhaseShiftBackend):
 
         if not parameters_file:
             raise BackendError(
-                "viperleed backend requires --backend-params <PARAMETERS>."
+                "eeasisss backend requires --backend-params <PARAMETERS>."
             )
         if not slab_file:
-            raise BackendError("viperleed backend requires --slab <POSCAR>.")
+            raise BackendError("eeasisss backend requires --slab <POSCAR>.")
 
         try:
             from viperleed.calc.files import parameters as viper_params
@@ -53,7 +53,7 @@ class ViperLeedBackend(PhaseShiftBackend):
             from viperleed.calc.psgen import runPhaseshiftGen
         except ImportError:
             raise BackendError(
-                "viperleed backend requires 'phaseshifts[viperleed]' to be installed."
+                "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
             )
 
         rparams = viper_params.read(parameters_file)
@@ -91,10 +91,11 @@ ALIASES = {
     "vht": "bvh",
     "vanhove": "bvh",
     "barbieri": "bvh",
-    "eeasisss": "viperleed",
-    "easisss": "viperleed",
-    "easiss": "viperleed",
-    "viper": "viperleed",
+    "bvt": "bvh",
+    "easisss": "eeasisss",
+    "easiss": "eeasisss",
+    "viperleed": "eeasisss",
+    "viper": "eeasisss",
 }
 
 
