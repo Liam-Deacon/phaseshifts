@@ -91,6 +91,10 @@ ALIASES = {
     "vht": "bvh",
     "vanhove": "bvh",
     "barbieri": "bvh",
+    "eeasisss": "viperleed",
+    "easisss": "viperleed",
+    "easiss": "viperleed",
+    "viper": "viperleed",
 }
 
 

@@ -115,6 +115,24 @@ steps below.
    - ``pip install "phaseshifts[input]"`` for structured input + validation.
    - ``pip install "phaseshifts[viperleed]"`` to enable the experimental ViPErLEED backend.
 
+Build distributions
+-------------------
+
+To build source distributions and wheels locally, use the standard ``build``
+module or the Makefile targets::
+
+  # With build
+  python -m pip install build
+  python -m build --sdist --wheel --no-isolation
+
+  # Or via Makefile
+  make sdist
+  make wheel
+
+The ViPErLEED backend is an optional runtime dependency; install the extra
+(``phaseshifts[viperleed]``) on systems where you want to run EEASiSSS through
+ViPErLEED.
+
 .. tip::
    To optionally disable building the phshift2007 Fortran binaries (e.g., for minimal installs or CI), set the environment variable before installation:
 
