@@ -193,7 +193,7 @@ STRINGPADN(to, N, PADDING, NULLVALUE) is an inverse operation.
         sprintf(errstring, "%s: "show, "("tcheck") failed for "name, var);\
         PyErr_SetString(libphsh_error,errstring);\
         /*goto capi_fail;*/\
-    } else 
+    } else
 
 /*
 STRINGCOPYN copies N bytes.
@@ -10412,7 +10412,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
 
 
@@ -10430,7 +10430,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
 
 
@@ -10457,7 +10457,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
 
 
@@ -10471,7 +10471,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
     {
       extern float F_FUNC(f45,F45)(void);
@@ -10483,7 +10483,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
 
 
@@ -10497,7 +10497,7 @@ PyMODINIT_FUNC PyInit_libphsh(void) {
       PyObject_SetAttrString(o,"__name__", s);
       Py_DECREF(s);
     }
-    
+
 
 /*eof initf2pywraphooks*/
 /*eof initf90modhooks*/

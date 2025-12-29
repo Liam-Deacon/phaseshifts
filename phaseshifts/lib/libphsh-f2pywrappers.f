@@ -25,7 +25,7 @@ C     It contains Fortran 77 wrappers to fortran functions.
       character*(*) info_file
       real cavpotf2pywrap
       real  cavpot
-      cavpotf2pywrap = cavpot(mtz_string, slab_flag, atomic_file, 
+      cavpotf2pywrap = cavpot(mtz_string, slab_flag, atomic_file,
      &cluster_file, mufftin_file, output_file, info_file)
       end
 
@@ -196,5 +196,3 @@ C     It contains Fortran 77 wrappers to fortran functions.
       common /radfun/ u,w
       call setupfunc(u,w)
       end
-
-
