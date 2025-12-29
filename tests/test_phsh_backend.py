@@ -1,6 +1,11 @@
 import pytest
 
-from phaseshifts.phsh import BVHBackend, CLIError, ViperLeedBackend, get_backend
+from phaseshifts.backends import (
+    BVHBackend,
+    BackendError,
+    ViperLeedBackend,
+    get_backend,
+)
 
 
 def test_get_backend_default():
@@ -14,17 +19,17 @@ def test_get_backend_case_insensitive():
 
 
 def test_get_backend_invalid():
-    with pytest.raises(CLIError):
+    with pytest.raises(BackendError):
         get_backend("unknown")
 
 
 def test_viperleed_backend_requires_params():
     backend = get_backend("viperleed")
-    with pytest.raises(CLIError):
+    with pytest.raises(BackendError):
         backend.autogen_from_input("bulk", "POSCAR")
 
 
 def test_viperleed_backend_requires_slab():
     backend = get_backend("viperleed")
-    with pytest.raises(CLIError):
+    with pytest.raises(BackendError):
         backend.autogen_from_input("bulk", None, backend_params="PARAMETERS")

@@ -82,6 +82,10 @@ will produce a list of command line options::
    ``pip install "phaseshifts[viperleed]"`` and pass ``--backend viperleed``
    with a POSCAR slab file and ``--backend-params PARAMETERS``.
 
+   Example::
+
+      phsh.py --backend viperleed --backend-params PARAMETERS --slab POSCAR --format viperleed
+
 .. warning::
    Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
    Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is

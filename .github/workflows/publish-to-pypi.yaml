@@ -160,6 +160,7 @@ jobs:
       fail-fast: false
       matrix:
         cibw_build:
+          - cp38-*
           - cp39-*
           - cp310-*
           - cp311-*

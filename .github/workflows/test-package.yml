@@ -97,7 +97,7 @@ jobs:
         run: |
           # Install scikit-build-core for modern builds (CMake-based)
           # Also install meson for f2py on Python 3.12+ as fallback
-          pip install "scikit-build-core>=0.5" cmake ninja meson meson-python
+          pip install "scikit-build-core>=0.11.5" cmake ninja meson meson-python
         shell: bash
 
       # Build the extension using pip install which uses scikit-build-core + CMake

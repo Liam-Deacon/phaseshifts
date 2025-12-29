@@ -87,10 +87,11 @@ def print_package_tree(root_dir=None, prefix=""):
     print(prefix + os.path.basename(root_dir) + "/")
     for i, entry in enumerate(entries):
         path = os.path.join(root_dir, entry)
-        connector = "└── " if i == len(entries) - 1 else "├── "
+        is_last = i == len(entries) - 1
+        connector = "`-- " if is_last else "|-- "
         print(prefix + connector + entry)
         if os.path.isdir(path) and not entry.startswith("."):
-            extension = "    " if i == len(entries) - 1 else "│   "
+            extension = "    " if is_last else "|   "
             print_package_tree(path + "/", prefix + extension)
 
 

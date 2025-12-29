@@ -88,6 +88,7 @@ from glob import glob
 from shutil import copy
 
 import phaseshifts
+import phaseshifts.backends as _backend_registry
 import phaseshifts.settings
 from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
@@ -549,93 +550,6 @@ class Wrapper(object):
                 sys.stderr.flush()
 
 
-class PhaseShiftBackend(object):
-    """Base interface for phase shift backends."""
-
-    name = "bvh"
-
-    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
-        raise NotImplementedError
-
-
-class BVHBackend(PhaseShiftBackend):
-    """Barbieri/Van Hove backend using the built-in Wrapper."""
-
-    name = "bvh"
-
-    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
-        return Wrapper.autogen_from_input(
-            bulk_file, slab_file, tmp_dir=tmp_dir, **kwargs
-        )
-
-
-class ViperLeedBackend(PhaseShiftBackend):
-    """ViPErLEED backend using its EEASiSSS phase shift generator."""
-
-    name = "viperleed"
-
-    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
-        parameters_file = kwargs.get("backend_params")
-        workdir = kwargs.get("backend_workdir") or tmp_dir or os.getcwd()
-        output_file = kwargs.get("output_file") or "PHASESHIFTS"
-
-        if not parameters_file:
-            raise CLIError(
-                "viperleed backend requires --backend-params <PARAMETERS>."
-            )
-        if not slab_file:
-            raise CLIError("viperleed backend requires --slab <POSCAR>.")
-
-        try:
-            from viperleed.calc.files import parameters as viper_params
-            from viperleed.calc.files import phaseshifts as viper_phaseshifts
-            from viperleed.calc.files import poscar as viper_poscar
-            from viperleed.calc.psgen import runPhaseshiftGen
-        except ImportError as err:
-            raise ImportError(
-                "viperleed backend requires 'phaseshifts[viperleed]' to be installed."
-            ) from err
-
-        rparams = viper_params.read(parameters_file)
-        viper_params.interpret(rparams)
-        slab = viper_poscar.read(slab_file)
-
-        os.makedirs(workdir, exist_ok=True)
-        output_path = os.path.join(workdir, output_file)
-        cwd = os.getcwd()
-        try:
-            os.chdir(workdir)
-            firstline, phaseshifts, *_ = runPhaseshiftGen(slab, rparams)
-            viper_phaseshifts.writePHASESHIFTS(
-                firstline, phaseshifts, file_path=output_path
-            )
-        finally:
-            os.chdir(cwd)
-
-        return [output_path]
-
-
-BACKENDS = {
-    BVHBackend.name: BVHBackend,
-    ViperLeedBackend.name: ViperLeedBackend,
-}
-
-
-def get_backend(name):
-    """Return a backend instance by name."""
-    if not name:
-        name = BVHBackend.name
-    key = str(name).lower()
-    backend_cls = BACKENDS.get(key)
-    if backend_cls is None:
-        raise CLIError(
-            "Unknown backend '{}'. Available: {}.".format(
-                name, ", ".join(sorted(BACKENDS))
-            )
-        )
-    return backend_cls()
-
-
 class CLIError(Exception):
     """Generic exception to raise and log different fatal errors."""
 
@@ -694,6 +608,7 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % phaseshifts.__version__
     program_version_message = "%%(prog)s %s" % program_version
+    indent = len(program_name) * " "
     # Use this module's docstring or a static string for shortdesc
     program_shortdesc = (
         (__doc__ or "phsh.py - quickly generate phase shifts").split("\n")[1]
@@ -849,9 +764,6 @@ def main(argv=None):
 
         backend_name = str(getattr(args, "backend", None) or "bvh").lower()
 
-        if backend_name == "viperleed" and getattr(args, "input", None):
-            raise CLIError("--input is not supported with the viperleed backend.")
-
         # Structured input support: auto-generate bulk and slab inputs from geometry
         if getattr(args, "input", None):
             if args.bulk or args.slab:
@@ -875,9 +787,6 @@ def main(argv=None):
         if not args.input and args.slab is None:
             raise CLIError("slab input is required unless using --input.")
 
-        if args.bulk is None and not args.input and backend_name != "viperleed":
-            args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
-
         if args.store is False:
             args.store = "."
 
@@ -891,10 +800,27 @@ def main(argv=None):
         ### handle keyboard interrupt ###
         return 0
     except Exception as err:
-        indent = len(program_name) * " "
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
         sys.stderr.write("{} for help use --help".format(indent))
         return 2
+
+    def _fatal(err):
+        sys.stderr.write("{}: '{}'\n".format(program_name, err))
+        sys.stderr.write("{} for help use --help".format(indent))
+        return 2
+
+    try:
+        backend = _backend_registry.get_backend(backend_name)
+    except _backend_registry.BackendError as err:
+        return _fatal(err)
+
+    backend_name = getattr(backend, "name", backend_name)
+
+    if backend_name == "viperleed" and getattr(args, "input", None):
+        return _fatal(CLIError("--input is not supported with the viperleed backend."))
+
+    if args.bulk is None and not args.input and backend_name != "viperleed":
+        args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
@@ -905,7 +831,6 @@ def main(argv=None):
         print("\tlmax: %s" % args.lmax)
         print("\trange: %s eV" % [s for s in args.range])
 
-    backend = get_backend(backend_name)
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (
         os.path.join(args.store, "PHASESHIFTS")
@@ -913,19 +838,22 @@ def main(argv=None):
         else None
     )
 
-    phsh_files = backend.autogen_from_input(
-        args.bulk,
-        args.slab,
-        tmp_dir=args.tmpdir,
-        lmax=int(args.lmax),
-        format=args.format,
-        store=args.store,
-        range=args.range,
-        verbose=verbose,
-        backend_params=args.backend_params,
-        backend_workdir=backend_workdir,
-        output_file=output_file,
-    )
+    try:
+        phsh_files = backend.autogen_from_input(
+            args.bulk,
+            args.slab,
+            tmp_dir=args.tmpdir,
+            lmax=int(args.lmax),
+            format=args.format,
+            store=args.store,
+            range=args.range,
+            verbose=verbose,
+            backend_params=args.backend_params,
+            backend_workdir=backend_workdir,
+            output_file=output_file,
+        )
+    except _backend_registry.BackendError as err:
+        return _fatal(err)
 
     # chain loop commands to next program
     if "PHASESHIFTS_LEED" in os.environ and not args.generate:
