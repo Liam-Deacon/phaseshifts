@@ -16,9 +16,6 @@ Created on 26 Feb 2014
 import sys
 import os
 
-from argparse import ArgumentParser as _ArgumentParser
-from argparse import RawDescriptionHelpFormatter as _RawDescriptionHelpFormatter
-
 import phaseshifts
 
 __version__ = phaseshifts.__version__
@@ -86,8 +83,11 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = _ArgumentParser(
-            description=program_license, formatter_class=_RawDescriptionHelpFormatter
+        import argparse
+
+        parser = argparse.ArgumentParser(
+            description=program_license,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
         )
         parser.add_argument(
             "-b",
