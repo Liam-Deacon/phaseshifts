@@ -186,8 +186,17 @@ if(EXISTS "${f2py_signature_file}")
   list(PREPEND f2py_source_args "${f2py_signature_file}")
   list(APPEND f2py_depends "${f2py_signature_file}")
 endif()
-set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
-set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
+set(f2py_generated_c "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}module.c")
+set(f2py_generated_f "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}-f2pywrappers.f")
+set(use_pre_generated_f2py FALSE)
+if(Python_VERSION VERSION_LESS "3.9" AND EXISTS "${f2py_generated_c}" AND EXISTS "${f2py_generated_f}")
+  set(use_pre_generated_f2py TRUE)
+  set(f2py_module_c "${f2py_generated_c}")
+  set(f2py_wrapper_f "${f2py_generated_f}")
+else()
+  set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
+  set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
+endif()
 
 # Check if source file exists
 if(NOT EXISTS "${fortran_src_file}")
@@ -200,17 +209,19 @@ message(STATUS "Fortran source exists: ${fortran_src_file}")
 add_custom_target(genpyf
   DEPENDS ${f2py_depends}
 )
-add_custom_command(
-  OUTPUT "${f2py_module_c}" "${f2py_wrapper_f}"
-  COMMAND ${PYTHON_EXECUTABLE} -m "numpy.f2py"
-      -m "${f2py_module_name}"
-      --lower # Important
-      ${f2py_source_args}
-  DEPENDS ${f2py_depends} # Fortran/signature source
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating f2py wrappers for ${f2py_module_name}"
-  VERBATIM
-)
+if(NOT use_pre_generated_f2py)
+  add_custom_command(
+    OUTPUT "${f2py_module_c}" "${f2py_wrapper_f}"
+    COMMAND ${PYTHON_EXECUTABLE} -m "numpy.f2py"
+        -m "${f2py_module_name}"
+        --lower # Important
+        ${f2py_source_args}
+    DEPENDS ${f2py_depends} # Fortran/signature source
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating f2py wrappers for ${f2py_module_name}"
+    VERBATIM
+  )
+endif()
 
 # Ensure f2py files are generated before building the module
 add_custom_target(generate_f2py_files
