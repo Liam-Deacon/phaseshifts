@@ -131,16 +131,15 @@ python_version = "3.9"
 ignore_missing_imports = true
 follow_imports = "skip"
 show_column_numbers = true
-# Use [/\\] to match both Unix (/) and Windows (\\) path separators
 exclude = [
     # GUI has optional dependencies (qtpy, wx, six)
-    "phaseshifts[/\\]gui[/\\]",
+    "phaseshifts/gui/",
     # Legacy Python 2/3 compat code with many type issues
-    "phaseshifts[/\\]lib[/\\]hartfock\\.py",
-    "phaseshifts[/\\]lib[/\\]phsh\\.py",
-    "phaseshifts[/\\]lib[/\\]scripts[/\\]",
+    "phaseshifts/lib/hartfock.py",
+    "phaseshifts/lib/phsh.py",
+    "phaseshifts/lib/scripts/",
     # Validation uses optional pydantic dependency
-    "phaseshifts[/\\]validation[/\\]",
+    "phaseshifts/validation/",
 ]
 
 [tool.pyright]

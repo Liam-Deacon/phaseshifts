@@ -66,6 +66,11 @@ except Exception:  # pragma: no cover - fallback for very early import failures
 
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+F2PY_SOURCE = "libphsh.f"
+if sys.version_info < (3, 9):
+    alt_source = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", "libphsh.f90")
+    if os.path.exists(alt_source):
+        F2PY_SOURCE = "libphsh.f90"
 
 
 def _pythonpath_env(extra_path):
@@ -150,7 +155,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 sys.executable,
                 "-m",
                 "phaseshifts.lib._f2py_shim",
-                "libphsh.f",
+                F2PY_SOURCE,
                 "-m",
                 "libphsh",
                 "-c",
@@ -217,7 +222,7 @@ else:
                     sys.executable,
                     "-m",
                     "phaseshifts.lib._f2py_shim",
-                    "libphsh.f",
+                    F2PY_SOURCE,
                     "-m",
                     "libphsh",
                     "-c",
@@ -313,7 +318,7 @@ f2py_exts_sources = {
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh.f",
+            F2PY_SOURCE,
         ),
     ]
 }

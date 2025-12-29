@@ -178,7 +178,13 @@ file(TO_CMAKE_PATH "${F2PY_INCLUDE_DIR}" F2PY_INCLUDE_DIR)
 # Prepping the module
 set(f2py_module_name "libphsh")
 set(f2py_module_dirpath "phaseshifts/lib")
-set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
+# NumPy <2.0 f2py on Python 3.8 struggles with fixed-format Fortran that
+# includes modern syntax. Use the free-format .f90 source for Python 3.8.
+if(Python_VERSION VERSION_LESS "3.9")
+  set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f90")
+else()
+  set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
+endif()
 set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
 set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
 

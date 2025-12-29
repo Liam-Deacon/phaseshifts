@@ -19,9 +19,15 @@ from ._distutils_compat import ensure_distutils
 
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
+_F2PY_SOURCE = "libphsh.f"
+if sys.version_info < (3, 9):
+    _alt_source = os.path.join(os.path.dirname(__file__), "libphsh.f90")
+    if os.path.exists(_alt_source):
+        _F2PY_SOURCE = "libphsh.f90"
+
 FORTRAN_LIBS = {
     LIBPHSH_MODULE: {
-        "source": "libphsh.f",
+        "source": _F2PY_SOURCE,
         "module_name": LIBPHSH_MODULE.split(".")[-1],
     },
 }
