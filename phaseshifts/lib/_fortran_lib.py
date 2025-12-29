@@ -20,14 +20,14 @@ from ._distutils_compat import ensure_distutils
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 _F2PY_SOURCE = "libphsh.f"
-if sys.version_info < (3, 9):
-    _alt_source = os.path.join(os.path.dirname(__file__), "libphsh.f90")
-    if os.path.exists(_alt_source):
-        _F2PY_SOURCE = "libphsh.f90"
+_F2PY_SIGNATURE = os.path.join(os.path.dirname(__file__), "libphsh.pyf")
+if not os.path.exists(_F2PY_SIGNATURE):
+    _F2PY_SIGNATURE = None
 
 FORTRAN_LIBS = {
     LIBPHSH_MODULE: {
         "source": _F2PY_SOURCE,
+        "signature": _F2PY_SIGNATURE,
         "module_name": LIBPHSH_MODULE.split(".")[-1],
     },
 }
@@ -101,8 +101,14 @@ def print_package_tree(root_dir=None, prefix=""):
             print_package_tree(path + "/", prefix + extension)
 
 
-def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwargs):
-    # type: (str, str|None, str|None, str) -> int
+def compile_f2py_shared_library(
+    source,
+    module_name=None,
+    cwd=None,
+    signature=None,
+    **f2py_kwargs,
+):
+    # type: (str, str|None, str|None, str|None, str) -> int
     """Compile `source` into f2py wrapped shared library given by `module_name`.
 
     Examples
@@ -121,12 +127,14 @@ def compile_f2py_shared_library(source, module_name=None, cwd=None, **f2py_kwarg
         )
 
     f2py_args = [
-        source,
         "-m",
         module_name or os.path.basename(source),
         "-c",
     ]
     f2py_args += ["--{}={!r}".format(key, val) for key, val in f2py_kwargs.items()]
+    if signature:
+        f2py_args.append(signature)
+    f2py_args.append(source)
 
     # Ensure the subprocess can import the package (for the shim) even when the
     # current working directory is inside phaseshifts/lib.

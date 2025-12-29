@@ -178,12 +178,13 @@ file(TO_CMAKE_PATH "${F2PY_INCLUDE_DIR}" F2PY_INCLUDE_DIR)
 # Prepping the module
 set(f2py_module_name "libphsh")
 set(f2py_module_dirpath "phaseshifts/lib")
-# NumPy <2.0 f2py on Python 3.8 struggles with fixed-format Fortran that
-# includes modern syntax. Use the free-format .f90 source for Python 3.8.
-if(Python_VERSION VERSION_LESS "3.9")
-  set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f90")
-else()
-  set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
+set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
+set(f2py_signature_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.pyf")
+set(f2py_source_args "${fortran_src_file}")
+set(f2py_depends "${fortran_src_file}")
+if(EXISTS "${f2py_signature_file}")
+  list(PREPEND f2py_source_args "${f2py_signature_file}")
+  list(APPEND f2py_depends "${f2py_signature_file}")
 endif()
 set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
 set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
@@ -197,15 +198,15 @@ message(STATUS "Fortran source exists: ${fortran_src_file}")
 
 # Target for enforcing dependencies
 add_custom_target(genpyf
-  DEPENDS "${fortran_src_file}"
+  DEPENDS ${f2py_depends}
 )
 add_custom_command(
   OUTPUT "${f2py_module_c}" "${f2py_wrapper_f}"
   COMMAND ${PYTHON_EXECUTABLE} -m "numpy.f2py"
       -m "${f2py_module_name}"
       --lower # Important
-      "${fortran_src_file}"
-  DEPENDS "${fortran_src_file}" # Fortran source
+      ${f2py_source_args}
+  DEPENDS ${f2py_depends} # Fortran/signature source
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
   COMMENT "Generating f2py wrappers for ${f2py_module_name}"
   VERBATIM

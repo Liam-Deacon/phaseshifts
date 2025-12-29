@@ -67,10 +67,8 @@ except Exception:  # pragma: no cover - fallback for very early import failures
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 F2PY_SOURCE = "libphsh.f"
-if sys.version_info < (3, 9):
-    alt_source = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", "libphsh.f90")
-    if os.path.exists(alt_source):
-        F2PY_SOURCE = "libphsh.f90"
+F2PY_SIGNATURE = "libphsh.pyf"
+F2PY_SIGNATURE_PATH = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", F2PY_SIGNATURE)
 
 
 def _pythonpath_env(extra_path):
@@ -313,15 +311,23 @@ if BUILD_BACKEND == "skbuild":
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
 
 # build f2py extensions
-f2py_exts_sources = {
-    "libphsh": [
+libphsh_sources = [
+    os.path.join(
+        "phaseshifts",
+        "lib",
+        F2PY_SOURCE,
+    ),
+]
+if os.path.exists(F2PY_SIGNATURE_PATH):
+    libphsh_sources.insert(
+        0,
         os.path.join(
             "phaseshifts",
             "lib",
-            F2PY_SOURCE,
+            F2PY_SIGNATURE,
         ),
-    ]
-}
+    )
+f2py_exts_sources = {"libphsh": libphsh_sources}
 try:
     # Detect MSVC toolchain; avoid GNU Fortran flags when it is active
     is_msvc = os.name == "nt" and shutil.which("cl.exe") is not None
