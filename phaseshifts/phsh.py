@@ -833,9 +833,7 @@ def main(argv=None):
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (
-        os.path.join(args.store, "PHASESHIFTS")
-        if backend_name == "viperleed"
-        else None
+        os.path.join(args.store, "PHASESHIFTS") if backend_name == "viperleed" else None
     )
 
     try:
