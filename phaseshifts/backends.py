@@ -34,7 +34,8 @@ class ViperLeedBackend(PhaseShiftBackend):
 
     name = "eeasisss"
 
-    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
+    def autogen_from_input(self, _bulk_file, slab_file, tmp_dir=None, **kwargs):
+        # ViPErLEED only needs the slab POSCAR input.
         parameters_file = kwargs.get("backend_params")
         workdir = kwargs.get("backend_workdir") or tmp_dir or os.getcwd()
         output_file = kwargs.get("output_file") or "PHASESHIFTS"

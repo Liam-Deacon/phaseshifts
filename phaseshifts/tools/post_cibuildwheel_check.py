@@ -16,13 +16,18 @@ import sys
 import zipfile
 import tempfile
 import shutil
-import subprocess
+import subprocess  # nosec B404
 import glob
 import platform
 
 # Configurable
 FORTRAN_WRAPPER_BASENAME = "libphsh"
 PACKAGE_IMPORT_NAME = "phaseshifts.lib.phsh"  # Update if needed
+
+
+def run_checked(args):
+    """Run a subprocess with vetted local inputs."""
+    subprocess.check_call(args)  # nosec B603
 
 
 def is_binary_wheel(wheel_path):
@@ -60,7 +65,7 @@ def run_in_venv(wheel_path, import_names):
             print("ERROR: No python executable found.")
             return False, "No python executable found"
         # Create venv
-        subprocess.check_call([python_exe, "-m", "venv", venv_dir])
+        run_checked([python_exe, "-m", "venv", venv_dir])
         vpy = os.path.join(
             venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "python"
         )
@@ -68,16 +73,16 @@ def run_in_venv(wheel_path, import_names):
             venv_dir, "Scripts" if platform.system() == "Windows" else "bin", "pip"
         )
         # Upgrade pip
-        subprocess.check_call(
+        run_checked(
             [vpy, "-m", "pip", "install", "--upgrade", "pip", "setuptools", "wheel"]
         )
         # Install wheel
-        subprocess.check_call([pip, "install", wheel_path])
+        run_checked([pip, "install", wheel_path])
         # Try imports
         for modname in import_names:
             code = f"import {modname}"
             try:
-                subprocess.check_call([vpy, "-c", code])
+                run_checked([vpy, "-c", code])
             except subprocess.CalledProcessError:
                 return False, f"Failed to import {modname}"
         return True, ""

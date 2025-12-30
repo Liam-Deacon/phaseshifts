@@ -73,8 +73,10 @@ jobs:
       - name: Set Package Version
         if: ${{ github.event.inputs.version != '' }}
         shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
         run: |
-          sed -i.bak 's/^__version__ = .*/__version__ = "${{ github.event.inputs.version }}"/' phaseshifts/__init__.py
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
           rm -f phaseshifts/__init__.py.bak
       - uses: actions/setup-python@v5
         with:
