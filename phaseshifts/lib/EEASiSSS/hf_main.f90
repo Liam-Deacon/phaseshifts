@@ -6,7 +6,8 @@ program hartfock_main
   character(len=255) :: prefix(2)
   interface
     subroutine hartfock(inpfile, logfile, outdir, atdir)
-      character(len=255) :: inpfile, logfile, outdir, atdir
+      implicit none
+      character(len=255), intent(in) :: inpfile, logfile, outdir, atdir
     end subroutine
   end interface
 

@@ -155,8 +155,10 @@ class Wrapper(object):
                 with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
                     lines = file_ptr.readlines()
 
-                if lines.count("\n") == 0:
-                    raise IOError("phase shift file '%s' is empty" % phsh_file)
+                if not lines:
+                    raise OSError(
+                        "phase shift file '{}' is empty".format(phsh_file)
+                    )
 
                 # remove trailing lines
                 while lines[-1] == "\n":
@@ -364,8 +366,8 @@ class EEASiSSSWrapper(Wrapper):
 
         try:
             from phaseshifts.lib.EEASiSSS.EEASiSSS import eeasisss
-        except ImportError:
-            raise ImportError("EEASiSSS library is not available")
+        except ImportError as err:
+            raise ImportError("EEASiSSS library is not available") from err
 
         eeasisss(input_file=inputX)
 
@@ -484,8 +486,8 @@ class BVHWrapper(Wrapper):
         lmax = kwargs["lmax"] if "lmax" in kwargs else 10
 
         # check for intermediate storage directory, temp folder otherwise
-        tmp_dir = str(tmp_dir)  # ensure string does not have escape chars
-        if os.path.isdir(str(tmp_dir)):
+        tmp_dir = str(tmp_dir) if tmp_dir is not None else ""
+        if not tmp_dir or not os.path.isdir(tmp_dir):
             tmp_dir = tempfile.gettempdir()
 
         # Load bulk model and calculate MTZ
@@ -615,7 +617,7 @@ class BVHWrapper(Wrapper):
         phsh_files = []
 
         # assign phase shift specific lmax values
-        lmax_dict = {}  # FIXME: artifact from cherry-pick?
+        lmax_dict = {}  # per-element lmax overrides
         for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
             try:
                 lmax_dict[atom.tag] = atom.lmax
@@ -743,8 +745,8 @@ class BVHWrapper(Wrapper):
                     )
                     phsh.calculate()
 
-        except AttributeError:
-            raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
+        except AttributeError as err:
+            raise AttributeError("MTZ_model has no NFORM (0-2) specified!") from err
 
         # copy files to storage location
         Wrapper._copy_phsh_files(phsh_files, store, out_format)

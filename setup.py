@@ -362,7 +362,9 @@ f2py_platform_extra_args = {
     },
 }.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
-build_eeasisss = os.environ.get("PHASESHIFTS_BUILD_EEASISSS")
+build_eeasisss = (
+    os.environ.get("PHASESHIFTS_BUILD_EEASISSS", "OFF").lower() in TRUE_OPTS
+)
 eeasisss_ext = Extension(
     name="phaseshifts.lib.libhartfock",
     extra_compile_args=[],
@@ -397,9 +399,9 @@ README = "README.md"
 LONG_DESCRIPTION = ""
 
 try:
-    with open(README, mode="r", encoding="utf-8") as readme_file_ptr:
+    with open(README, encoding="utf-8") as readme_file_ptr:
         LONG_DESCRIPTION = readme_file_ptr.read()
-except IOError:
+except OSError:
     pass
 
 # --- Fallback logic for build ---

@@ -52,14 +52,16 @@ class PhaseshiftFactory(object):
         self.__dict__.update(kwargs)
         self.phsh_files = []  # type: List[str]
         try:
-            if package not in ["vht", "eeasisss"]:
-                sys.stderr.write("Invalid package selected - " "using default (BVH)\n")
+            valid_bvh = ["vht", "bvh", "van hove", "barbieri", "bvt"]
+            valid_eeasisss = ["eeasisss", "rundgren", "viperleed", "viper"]
+            if package not in valid_bvh + valid_eeasisss:
+                sys.stderr.write("Invalid package selected - using default (BVH)\n")
                 sys.stderr.flush()
                 self.backend = BVHWrapper()
             else:
-                if package == "bvh" or package == "van hove" or package == "barbieri":
+                if package in valid_bvh:
                     self.backend = BVHWrapper()
-                elif package == "eeasisss" or package == "rundgren":
+                elif package in valid_eeasisss:
                     self.backend = EEASiSSSWrapper()
         except KeyError:
             sys.stderr.write("Invalid phaseshifts backend\n")

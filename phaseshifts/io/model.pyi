@@ -2,7 +2,9 @@
 Type stubs for phaseshifts.io.model.
 """
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple, Union
+
+VectorLike = Union[Tuple[float, float, float], Sequence[float]]
 
 class Position(object):
     x: float
@@ -17,14 +19,14 @@ class UnitCell(object):
     a2: Tuple[float, float, float]
     a3: Tuple[float, float, float]
 
-    def __init__(self, a1: Any, a2: Any, a3: Any) -> None: ...
+    def __init__(self, a1: VectorLike, a2: VectorLike, a3: VectorLike) -> None: ...
     def to_dict(self) -> Dict[str, Any]: ...
 
 class SuperstructureMatrix(object):
     m1: Tuple[float, float, float]
     m2: Tuple[float, float, float]
 
-    def __init__(self, m1: Any, m2: Any) -> None: ...
+    def __init__(self, m1: VectorLike, m2: VectorLike) -> None: ...
     def to_dict(self) -> Dict[str, Any]: ...
 
 class AtomParameters(object):

@@ -35,6 +35,22 @@ class CleedpyYamlAdapter(IOAdapter):
         return path
 
     def to_model(self, data):
+        if not isinstance(data, dict):
+            raise ValueError("Expected mapping data for cleedpy YAML input")
+        required_keys = [
+            "unit_cell",
+            "superstructure_matrix",
+            "overlayers",
+            "bulk_layers",
+            "energy_range",
+            "system_name",
+            "minimum_radius",
+        ]
+        missing = [key for key in required_keys if key not in data]
+        if missing:
+            raise ValueError(
+                "Missing required keys in YAML: {}".format(", ".join(missing))
+            )
         unit_cell = UnitCell(
             data["unit_cell"]["a1"],
             data["unit_cell"]["a2"],

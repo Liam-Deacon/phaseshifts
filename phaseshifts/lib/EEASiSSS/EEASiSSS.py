@@ -57,9 +57,16 @@ from ctypes.util import find_library
 _ext = ".dll" if str(sys.platform).startswith("win") else ".so"
 _lib = os.path.join(os.path.dirname(__file__), "lib")
 
-os.environ["PATH"] = _lib + ";" + os.environ["PATH"]
+os.environ["PATH"] = _lib + os.pathsep + os.environ.get("PATH", "")
 _library_path = find_library("EEASiSSS") or os.path.join(_lib, "libEEASiSSS" + _ext)
-lib_eeasisss = cdll.LoadLibrary(_library_path)
+try:
+    lib_eeasisss = cdll.LoadLibrary(_library_path)
+except OSError as err:
+    raise ImportError(
+        "EEASiSSS library not found. Expected at: {} ({})".format(
+            _library_path, err
+        )
+    ) from err
 
 
 def eeasisss(input_file="inputX"):
@@ -81,7 +88,17 @@ def main(argv=None):
         help="Input file passed to the EEASiSSS library",
     )
     args = parser.parse_args(argv)
-    eeasisss(args.input_file)
+    if not os.path.isfile(args.input_file):
+        sys.stderr.write(
+            "Error: Input file '{}' not found\n".format(args.input_file)
+        )
+        return 1
+    try:
+        eeasisss(args.input_file)
+    except Exception as err:  # pylint: disable=broad-except
+        sys.stderr.write("Error calling EEASiSSS: {}\n".format(err))
+        return 1
+    return 0
 
 
 if __name__ == "__main__":

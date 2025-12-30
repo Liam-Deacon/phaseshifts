@@ -17,7 +17,7 @@ class IOAdapter(object):
         raise NotImplementedError
 
 
-from .model import (  # noqa: E402  # isort:skip
+from .model import (  # isort:skip
     AtomParameters,
     EnergyRange,
     InputParameters,
