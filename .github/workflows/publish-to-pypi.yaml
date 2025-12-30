@@ -201,7 +201,7 @@ jobs:
     name: Build Linux aarch64 Wheels
     runs-on: ubuntu-24.04-arm
     needs: build_sdist
-    if: ${{ github.event.inputs.build_aarch64 }}
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_aarch64 }}
     strategy:
       fail-fast: false
       matrix: # NOTE: Use matrix build as aarch64 builds are very slow
@@ -248,7 +248,7 @@ jobs:
     name: Build Mac Wheels
     runs-on: macos-latest
     needs: build_sdist
-    if: ${{ github.event.inputs.build_wheels_macos }}
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_wheels_macos }}
     strategy:
       fail-fast: false
       matrix:
@@ -428,7 +428,7 @@ jobs:
     name: Build Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
-    if: ${{ github.event.inputs.build_windows }}
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_windows }}
     strategy:
       fail-fast: false
       matrix:
