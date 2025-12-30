@@ -439,7 +439,13 @@ class BVHWrapper(Wrapper):
         return atomic_dict
 
     def autogen_from_input(  # noqa: MC0001
-        self, bulk_file, slab_file, tmp_dir=None, model_name=None, verbose=False, **kwargs
+        self,
+        bulk_file,
+        slab_file,
+        tmp_dir=None,
+        model_name=None,
+        verbose=False,
+        **kwargs
     ):
         """
         Description
