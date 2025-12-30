@@ -60,7 +60,7 @@ author, John Rundgren, the main qualifications of the program are:
 
 + The program accepts three sources of atomic potentials:
 
-    1. E. L. Shirley�s atomic program [#]_ applied together with Mattheiss�s
+    1. E. L. Shirley's atomic program [#]_ applied together with Mattheiss's
     superposition method.
 
     2. The DFT-SCF program of V. Eyert using the full-potential
@@ -70,14 +70,14 @@ author, John Rundgren, the main qualifications of the program are:
     full-potential Augmented Plane Wave method.
 
 + The exchange-correlation interaction between the scattered electron and the
-  crystal�s electron gas generates an energy-dependent inner potential.
+  crystal's electron gas generates an energy-dependent inner potential.
   The phase shifts are referred to the in-crystal kinetic energy, and it is
   supposed that an associated LEED code uses the same standard.
 + The crystal potential is everywhere continuous so as to exclude fortuitous
   standing-wave electron resonances in the muffin-tin spheres and pertaining
   fortuitous wobblings in the phase shift versus energy curves.
 + The optimization of the muffin-tin radii is made using the method of
-  `Differential Evolution <http://www.physik.uni-augsburg.de/~eyert/ASWhome.shtml/>`_
+  `Differential Evolution <https://en.wikipedia.org/wiki/Differential_evolution>`_
   , an extremely efficient minimizer.
 
 .. note:: Please refer to the short :ref:`EEASiSSS_Phase_Shift_Package_Guide` for more information
