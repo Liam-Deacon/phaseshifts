@@ -553,6 +553,7 @@ Regeneration steps:
    python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf \
      phaseshifts/lib/libphsh.f --build-dir /tmp/libphsh-f2py
    ```
+
 4. Copy the generated files into the repo:
    - `/tmp/libphsh-f2py/libphshmodule.c` -> `phaseshifts/lib/libphshmodule.c`
    - `/tmp/libphsh-f2py/libphsh-f2pywrappers.f` -> `phaseshifts/lib/libphsh-f2pywrappers.f`
