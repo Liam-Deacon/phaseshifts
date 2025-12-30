@@ -54,8 +54,9 @@ A local copy of the source files can be found under ``phaseshifts/lib/.phsh.orig
 EEASiSSS backend
 ----------------
 
-package [#]_ [#]_ [#]_ can also calculate phase shifts and is used
-in a number of recent works on oxides [#]_ [#]_. In the words of the package's
+package [#]_ [#]_ [#]_ can also calculate phase shifts and has been used
+in several works on oxides from the mid-2000s to early-2010s [#]_ [#]_. In the
+words of the package's
 author, John Rundgren, the main qualifications of the program are:
 
 + The program accepts three sources of atomic potentials:

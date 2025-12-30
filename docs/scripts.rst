@@ -76,6 +76,9 @@ will produce a list of command line options::
    To install the optional dependencies for structured input and validation,
    use: ``pip install "phaseshifts[input]"``.
 
+.. note::
+   To use the optional EEASiSSS backend, install: ``pip install "phaseshifts[eeasisss]"``.
+
 .. warning::
    Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
    Breaking change in ``0.1.9``: the ``-i`` option for specifying the slab file is

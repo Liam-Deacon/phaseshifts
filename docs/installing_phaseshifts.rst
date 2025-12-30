@@ -58,6 +58,16 @@ To perform a setup follow the steps below.
 
       pip install phaseshifts
 
+    Optional extras can be installed as needed::
+
+      pip install "phaseshifts[eeasisss]"  # EEASiSSS backend support
+      pip install "phaseshifts[input]"     # structured input (YAML/JSON) + validation
+      pip install "phaseshifts[atorb]"     # extra element helpers for atorb
+      pip install "phaseshifts[gui]"       # Qt GUI dependencies
+      pip install "phaseshifts[docs]"      # documentation build deps
+      pip install "phaseshifts[test]"      # test deps (pytest, pytest-cov)
+      pip install "phaseshifts[dev]"       # dev tooling (black/isort/ruff, etc.)
+
     .. note:: Until a ``pyproject.toml`` with a working PEP-517 build backend
               is implemented then the user will first need to run
               :code:`pip install numpy setuptools wheel` in order to have the necessary

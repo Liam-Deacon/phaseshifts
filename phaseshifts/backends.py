@@ -18,7 +18,7 @@ class VHTBackend(PhaseShiftBackend):
     def autogen_from_input(self, *args, **kwargs):
         from phaseshifts.wrappers import BVHWrapper
 
-        return BVHWrapper.autogen_from_input(*args, **kwargs)
+        return BVHWrapper().autogen_from_input(*args, **kwargs)
 
 
 class EEASiSSSBackend(PhaseShiftBackend):

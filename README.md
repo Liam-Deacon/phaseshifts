@@ -88,8 +88,9 @@ regarding this package.
 ### EEASiSSS backend
 
 The Elastic Electron-Atom Scattering in Solids and Surface Slabs (EEASiSSS)
-package [^1] [^2] [^3] can also calculate phase shifts and is used
-in a number of recent works on oxides [^4] [^5]. In the words of the package's
+package [^1] [^2] [^3] can also calculate phase shifts and has been used
+in several works on oxides from the mid-2000s to early-2010s [^4] [^5]. In the
+words of the package's
 author, John Rundgren, the main qualifications of the program are:
 
 + The program accepts three sources of atomic potentials:
@@ -108,7 +109,7 @@ author, John Rundgren, the main qualifications of the program are:
   standing-wave electron resonances in the muffin-tin spheres and pertaining
   fortuitous wobblings in the phase shift versus energy curves.
 + The optimization of the muffin-tin radii is made using the method of
-  [Differential Evolution](https://serp.ai/differential-evolution/),
+  [Differential Evolution](https://en.wikipedia.org/wiki/Differential_evolution),
   an extremely efficient minimizer.
 
 >[!NOTE]
@@ -235,6 +236,15 @@ For python 3.11 or older:
 ```bash
 #  install latest release
 pip install phaseshifts
+
+# optional extras
+pip install "phaseshifts[eeasisss]"  # EEASiSSS backend support
+pip install "phaseshifts[input]"     # structured input (YAML/JSON) + validation
+pip install "phaseshifts[atorb]"     # extra element helpers for atorb
+pip install "phaseshifts[gui]"       # Qt GUI dependencies
+pip install "phaseshifts[docs]"      # documentation build deps
+pip install "phaseshifts[test]"      # test deps (pytest, pytest-cov)
+pip install "phaseshifts[dev]"       # dev tooling (black/isort/ruff, etc.)
 
 # development install
 uv --python=3.11 venv # create a virtual environment using uv (optional)
@@ -521,19 +531,24 @@ A number of alternatives are available, notably the following:
    calculations](https://physics.mff.cuni.cz/kfpp/povrchy/files/1179-Poster.pdf)).
    This is an officially mentioned piece of software on Michel Van
    Hove's [LEED Calculation Homepage](https://www.icts.hkbu.edu.hk/VanHove_files/leed/leedpack.html). Although the
-   poster mentions that the software is written in python, this
-   software is not (currently) distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/)) and
+   poster mentions that the software is written in python, as of 2025 this
+   software is not distributed on <https://PyPI.org> (or via alternative means such as a docker image on [DockerHub](https://www.docker.com/products/docker-hub/)) and
    therefore harder to integrate with other python LEED-related
    projects such as [CLEED](https://github.com/Liam-Deacon/CLEED) and
    [cleedpy](https://github.com/empa-scientific-it/cleedpy).
-2. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
+2. [ViPErLEED](https://github.com/viperleed/viperleed) is a modern LEED I(V)
+   workflow covering spot tracking, extraction, and structural optimization.
+   See the 2025 package papers in *Phys. Rev. Research*:
+   [Package I](https://doi.org/10.1103/PhysRevResearch.7.013005) and
+   [Package II](https://doi.org/10.1103/PhysRevResearch.7.013006).
+3. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
    [(EEASiSSS)](https://www.researchgate.net/profile/John-Rundgren-2/publication/235583683_Optimized_surface-slab_excited-state_muffin-tin_potential_and_surface_core_level_shifts/links/5a266f89a6fdcc8e866bd7e5/Optimized-surface-slab-excited-state-muffin-tin-potential-and-surface-core-level-shifts.pdf)
    is authored by John Rundgren and first described in the paper: _"J. Rundgren Phys. Rev. B 68 125405 (2003)"_.
    This program takes a different approach to calculating phase shifts by using optimised muffin-tin potentials
    for surface slabs with preassigned surface core-level shifts.
    Whilst the source code is not publicly available online (to this author's best knowledge), John Rundgren
    has been more than happy to assist when approached in the past.
-3. A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
+4. A fortran program is described in "[McGreevy, E., & Stewart, A.L. (-Apr
    1978).](https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501)
    A program for calculating elastic scattering phase shifts for an
    electron colliding with a one-electron target using perturbation
@@ -543,11 +558,9 @@ A number of alternatives are available, notably the following:
 <!--lint disable no-unused-definitions-->
 
 > [!NOTE]
-> It would be fantastic to include this software (and document its use) as part of the phaseshifts python package
-> allowing the user to choose the backend they wish to use for calculating phase shifts (e.g. `EEASiSSS` or `phshift2007`).
-> As such [John Rundgren](https://www.researchgate.net/profile/John-Rundgren-2) should be contacted to see if
-> he would be happy to collaborate on making this possible. This is being tracked by
-> [this item](https://github.com/Liam-Deacon/phaseshifts/issues/92).
+> A pre-alpha EEASiSSS backend is now included in phaseshifts as an optional extra.
+> See https://phaseshifts.readthedocs.io/en/latest/eeasisss_package.html for usage details.
+> Ongoing work is tracked in [issue #92](https://github.com/Liam-Deacon/phaseshifts/issues/92).
 
 <!--lint enable no-unused-definitions-->
 

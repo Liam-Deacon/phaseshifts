@@ -64,7 +64,8 @@ lib_eeasisss = cdll.LoadLibrary(_library_path)
 
 def eeasisss(input_file="inputX"):
     """Wrapper function to call EEASiSSS Fortran library using ctypes"""
-    lib_eeasisss.hartfock_(create_string_buffer(str(input_file)), size=255)
+    input_bytes = str(input_file).encode("utf-8")
+    lib_eeasisss.hartfock_(create_string_buffer(input_bytes, 255))
 
 
 def main(argv=None):

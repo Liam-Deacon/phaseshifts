@@ -46,21 +46,21 @@ class PhaseshiftFactory(object):
     """Class for backend selection"""
 
     backend = object
-    phsh_files = []  # type: List[str]
 
     def __init__(self, backend, **kwargs):
         package = str(backend).lower()
         self.__dict__.update(kwargs)
+        self.phsh_files = []  # type: List[str]
         try:
             if package not in ["vht", "eeasisss"]:
                 sys.stderr.write("Invalid package selected - " "using default (BVH)\n")
                 sys.stderr.flush()
-                self.backend = BVHWrapper
+                self.backend = BVHWrapper()
             else:
                 if package == "bvh" or package == "van hove" or package == "barbieri":
-                    self.backend = BVHWrapper
+                    self.backend = BVHWrapper()
                 elif package == "eeasisss" or package == "rundgren":
-                    self.backend = EEASiSSSWrapper
+                    self.backend = EEASiSSSWrapper()
         except KeyError:
             sys.stderr.write("Invalid phaseshifts backend\n")
             sys.stderr.flush()

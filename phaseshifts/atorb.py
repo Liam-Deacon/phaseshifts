@@ -1260,10 +1260,10 @@ class Atorb(object):
 class EEASiSSSAtorb(Atorb):
     def __init__(self, ifil=0, **kwargs):
         # set higher default number of grid points for EEASiSSS
-        kwargs["ngrid"] = 2000 if "ngrid" not in kwargs else kwargs
+        kwargs.setdefault("ngrid", 2000)
         kwargs["fmt"] = "eeasisss"
-        Atorb.__init__(self, kwargs)
-        self.ifil = int(ifil) if isinstance(ifil, bool) or isinstance(ifil, int) else 0
+        Atorb.__init__(self, **kwargs)
+        self.ifil = int(ifil) if isinstance(ifil, (bool, int)) else 0
 
     @property
     def ifil(self):
@@ -1374,11 +1374,7 @@ class EEASiSSSAtorb(Atorb):
             tolerance=self.tolerance,
             xnum=self.xnum,
             ifil=self.ifil,
-            atorb_file=(
-                "inputA"
-                if "atorb_file" in self.__dict__
-                else self.__dict__["atorb_file"]
-            ),
+            atorb_file=self.__dict__.get("atorb_file", "inputA"),
             output=(self.__dict__["output"] if "output" in self.__dict__ else None),
             header=(self.__dict__["header"] if "header" in self.__dict__ else None),
             fmt=("eeasisss" if "fmt" not in self.__dict__ else self.__dict__["fmt"]),
@@ -1452,32 +1448,24 @@ class EEASiSSSAtorb(Atorb):
         """
         elements = elements or []
         io = StringIO()
-        successful = False
         try:
-            kwargs = kwargs.pop("fmt") if "fmt" in kwargs else kwargs
+            kwargs.pop("fmt", None)
             # generate buffer string of input for each element
             for element in set(elements):
                 Atorb.gen_input(element, atorb_file=io, fmt="eeasisss", **kwargs)
             # write buffered string to disk
             with open(atorb_file, "w") as f:
                 f.write(io.getvalue())
-            successful = True
-        except Exception as e:
-            raise e
         finally:
             # clean up
             io.close()
-        return atorb_file if successful else None
+        return atorb_file
 
     @staticmethod
     def calculate_Q_density(
         elements=None,
         atorb_input="inputA",
-        output_dir=(
-            expand_filepath("ATLIB")
-            if "ATLIB" in os.environ
-            else expand_filepath("~/atlib/")
-        ),
+        output_dir=None,
         **kwargs,
     ):
         """
@@ -1553,6 +1541,12 @@ class EEASiSSSAtorb(Atorb):
         >>> EEASiSSSAtorb.calculate_Q_density(non_metals, atorb_file=input)
         """
         elements = elements or []
+        if output_dir is None:
+            output_dir = (
+                expand_filepath("ATLIB")
+                if "ATLIB" in os.environ
+                else expand_filepath("~/atlib/")
+            )
         # do not do anything if no elements given, otherwise get the set
         if elements == []:
             return []

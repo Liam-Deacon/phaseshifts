@@ -163,11 +163,17 @@ class Wrapper(object):
                     lines.pop(-1)  # removes last element
 
                 # remove comments and empty lines for input
-                stripped_lines = [
-                    s
-                    for s in lines
-                    if s != "\n" and s not in re.compile("[a-zA-Z]").findall(lines)
-                ]
+                stripped_lines = []
+                for line in lines:
+                    stripped = line.strip()
+                    if not stripped:
+                        continue
+                    if stripped.startswith(("#", "!")):
+                        continue
+                    first = stripped[0]
+                    if not (first.isdigit() or first in "+-."):
+                        continue
+                    stripped_lines.append(line)
 
                 if lmax == 0:
                     # very crude count of l elements in input line
@@ -189,7 +195,7 @@ class Wrapper(object):
                     getuser(),
                     strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
                 )
-                lines = lines.insert(0, header)
+                lines.insert(0, header)
 
                 # write new contents to file
                 with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
@@ -238,9 +244,13 @@ class EEASiSSSWrapper(Wrapper):
         dictionary of atorb filepaths for all elements
         """
         elements = elements or ()
-        EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
+        symbols = []
+        for element in elements:
+            symbol = getattr(element, "symbol", None)
+            symbols.append(symbol if symbol is not None else str(element))
+        EEASiSSSWrapper.calculate_Q_density(symbols, output_dir=output_dir)
         atomic_dict = {}
-        for symbol in [element.symbol for element in elements]:
+        for symbol in set(symbols):
             atomic_dict[symbol] = os.path.join(output_dir, "chgden%s" % symbol)
         return atomic_dict
 
@@ -387,7 +397,7 @@ class EEASiSSSWrapper(Wrapper):
         return phsh_files
 
 
-class BVHWrapper(object):
+class BVHWrapper(Wrapper):
     """
     Wrapper class to easily generate phase shifts
     using the Barbieri - Van Hove backend.
@@ -412,8 +422,12 @@ class BVHWrapper(object):
         dictionary of atorb filepaths for all elements
         """
         elements = elements or []
+        symbols = []
+        for element in elements:
+            symbol = getattr(element, "symbol", None)
+            symbols.append(symbol if symbol is not None else str(element))
         atomic_dict = {}
-        for elem in [element.symbol for element in elements]:
+        for elem in set(symbols):
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
@@ -424,9 +438,8 @@ class BVHWrapper(object):
                 atomic_dict[elem] = at_file
         return atomic_dict
 
-    @staticmethod
     def autogen_from_input(  # noqa: MC0001
-        bulk_file, slab_file, tmp_dir=None, model_name=None, verbose=False, **kwargs
+        self, bulk_file, slab_file, tmp_dir=None, model_name=None, verbose=False, **kwargs
     ):
         """
         Description
@@ -501,7 +514,7 @@ class BVHWrapper(object):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = BVHWrapper().autogen_atorbs(
+        atomic_dict = self.autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
@@ -682,7 +695,7 @@ class BVHWrapper(object):
                         with open(mufftin_filepath, "w") as f:
                             f.write("".join([str(line) for line in lines]))
 
-                    except Exception as err:
+                    except (IOError, OSError, ValueError, IndexError) as err:
                         sys.stderr.write(
                             "Unable to change phase shift energy "
                             "range (due to '{}') - using Barbieri/Van Hove "
