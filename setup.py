@@ -66,6 +66,9 @@ except Exception:  # pragma: no cover - fallback for very early import failures
 
 
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
+F2PY_SOURCE = "libphsh.f"
+F2PY_SIGNATURE = "libphsh.pyf"
+F2PY_SIGNATURE_PATH = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", F2PY_SIGNATURE)
 
 
 def _pythonpath_env(extra_path):
@@ -150,7 +153,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                 sys.executable,
                 "-m",
                 "phaseshifts.lib._f2py_shim",
-                "libphsh.f",
+                F2PY_SOURCE,
                 "-m",
                 "libphsh",
                 "-c",
@@ -217,7 +220,7 @@ else:
                     sys.executable,
                     "-m",
                     "phaseshifts.lib._f2py_shim",
-                    "libphsh.f",
+                    F2PY_SOURCE,
                     "-m",
                     "libphsh",
                     "-c",
@@ -308,15 +311,23 @@ if BUILD_BACKEND == "skbuild":
 BUILD_EXT_INPLACE_ARGS = ["build_ext", "--inplace"]
 
 # build f2py extensions
-f2py_exts_sources = {
-    "libphsh": [
+libphsh_sources = [
+    os.path.join(
+        "phaseshifts",
+        "lib",
+        F2PY_SOURCE,
+    ),
+]
+if os.path.exists(F2PY_SIGNATURE_PATH):
+    libphsh_sources.insert(
+        0,
         os.path.join(
             "phaseshifts",
             "lib",
-            "libphsh.f",
+            F2PY_SIGNATURE,
         ),
-    ]
-}
+    )
+f2py_exts_sources = {"libphsh": libphsh_sources}
 try:
     # Detect MSVC toolchain; avoid GNU Fortran flags when it is active
     is_msvc = os.name == "nt" and shutil.which("cl.exe") is not None
@@ -402,7 +413,7 @@ setup_args = dict(
         "Topic :: Scientific/Engineering :: Physics",
     ],
     extras_require={
-        "atorb": ["mendeleev", "elementy"],
+        "atorb": ["mendeleev", "elementy", "pydantic; python_version >= '3.9'"],
         "gui": [
             "six",
             "qtpy",
@@ -421,6 +432,8 @@ setup_args = dict(
         ],
         "test": ["pytest", "pytest-cov"],
         "docs": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
+        "input": ["pyyaml>=6.0", "jsonschema>=4.0"],
+        "viperleed": ["viperleed>=0.14.1"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,

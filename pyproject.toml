@@ -48,6 +48,7 @@ dev = [
 test = ["pytest", "pytest-cov"]
 docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
 input = ["pyyaml>=6.0", "jsonschema>=4.0"]
+viperleed = ["viperleed>=0.14.1"]
 
 [build-system]
 requires = [
@@ -61,16 +62,24 @@ build-backend = "phaseshifts_build_backend"
 backend-path = ["."]
 
 [tool.cibuildwheel]
+before-build = [
+    "python -c \"from __future__ import print_function;\nimport sys, os;\nif sys.version_info < (3, 8):\n    print('Removing pyproject.toml for legacy build...');\n    os.remove('pyproject.toml');\n    print('Removed pyproject.toml');\"",
+    "pip install 'pip<21; python_version <= \"3.8\"' 'pip; python_version > \"3.9\"'",
+    "pip install 'setuptools<63; python_version <= \"3.8\"' 'setuptools; python_version > \"3.9\"'",
+    "pip install 'wheel<0.35; python_version <= \"3.8\"' 'wheel; python_version > \"3.9\"'",
+    "pip install 'delvewheel; sys_platform == \"win32\" and python_version >= \"3.6\"'",
+    "python -c \"from __future__ import print_function;\nimport sys, subprocess;\nif sys.platform == 'win32':\n    print('Installing mingw...')\n    try:\n        print(subprocess.check_output('choco install -y mingw'), stderr=subprocess.STDOUT, shell=True);\n    except subprocess.CalledProcessError as e:\n        print('Failed to install mingw:', e.output)\"",
+    "pip install 'numpy>=1.16.6'",
+    "pip install 'scikit-build-core>=0.11.5; python_version >= \"3.8\"'",
+]
 build = [
     # NOTE: Python 3.9 is the minimum supported version for cibuildwheel v2
+    "cp38-*",
     "cp39-*",
     "cp310-*",
     "cp311-*",
     "cp312-*",
     "cp313-*",
-]
-skip = [
-    "cp38-*", # FIXME: CPython 3.8 builds fail due to crackfortran issue, see #67
 ]
 test-command = "python -c 'import phaseshifts.lib.libphsh as phsh'"
 test-extras = ["test"]
@@ -89,19 +98,28 @@ CFLAGS = "-std=c99 -fno-strict-aliasing"
 CC = "clang"
 FC = "gfortran"
 CXX = "clang++"
-CMAKE_OSX_ARCHITECTURES = "$CIBW_ARCH"   # Universal2 build
-MACOSX_DEPLOYMENT_TARGET = "15.0"        # Minimum supported macOS version for CIBW
+CMAKE_OSX_ARCHITECTURES = "$CIBW_ARCH"  # Universal2 build
+MACOSX_DEPLOYMENT_TARGET = "11.0"       # Minimum supported macOS version for CIBW
 
 [tool.cibuildwheel.windows]
+archs = "auto64 auto32"  # Use both 64-bit and 32-bit architectures, typically x86 based on windows-latest runners
 before-build = [
     "pip install numpy scikit-build-core cmake ninja meson meson-python",
 ]
-environment = { FC = "gfortran", CC = "gcc", CMAKE_GENERATOR = "Ninja" }
 repair-wheel-command = [
     # NOTE: delvewheel cannot mangle the libraries, stripping does not work
     # "delvewheel show {wheel} -vv",
-    # "delvewheel repair -vv -w {dest_dir} {wheel} --no-mangle-all --ignore-in-wheel"
+    "delvewheel repair -vv -w {dest_dir} {wheel}",
 ]
+
+[tool.cibuildwheel.windows.environment]
+# Only support fortran via GCC toolchain, so make explicit
+CC = "gcc"
+CXX = "g++"
+FC = "gfortran"
+CMAKE_GENERATOR = "MinGW Makefiles"  # Use MinGW Makefiles for CMake
+DISTUTILS_USE_SDK = "1"  # Use the SDK for building on Windows
+SETUPTOOLS_USE_DISTUTILS = "stdlib"  # Use distutils for building on Windows
 
 [tool.flake8]
 max-line-length = 120
@@ -113,16 +131,15 @@ python_version = "3.9"
 ignore_missing_imports = true
 follow_imports = "skip"
 show_column_numbers = true
-# Use [/\\\\] to match both Unix (/) and Windows (\\) path separators
 exclude = [
     # GUI has optional dependencies (qtpy, wx, six)
-    "phaseshifts[/\\\\]gui[/\\\\]",
+    "phaseshifts/gui/",
     # Legacy Python 2/3 compat code with many type issues
-    "phaseshifts[/\\\\]lib[/\\\\]hartfock\\.py",
-    "phaseshifts[/\\\\]lib[/\\\\]phsh\\.py",
-    "phaseshifts[/\\\\]lib[/\\\\]scripts[/\\\\]",
+    "phaseshifts/lib/hartfock.py",
+    "phaseshifts/lib/phsh.py",
+    "phaseshifts/lib/scripts/",
     # Validation uses optional pydantic dependency
-    "phaseshifts[/\\\\]validation[/\\\\]",
+    "phaseshifts/validation/",
 ]
 
 [tool.pyright]
@@ -214,3 +231,10 @@ sdist.exclude = [
     "test/**/__pycache__/**",
     "tests/**/__pycache__/**",
 ]
+
+[tool.phaseshifts.wheel_check]
+script = "python phaseshifts/tools/post_cibuildwheel_check.py"
+description = """
+After building wheels (e.g. with 'make wheel' or 'make build'), run the wheel check script to verify binary wheels contain the Fortran extension and are importable.
+This is the default check for all modern builds. Legacy wheel checks are handled separately in the Makefile and CI.
+"""

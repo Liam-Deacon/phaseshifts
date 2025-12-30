@@ -88,6 +88,7 @@ from glob import glob
 from shutil import copy
 
 import phaseshifts
+import phaseshifts.backends as _backend_registry
 import phaseshifts.settings
 from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
@@ -607,6 +608,7 @@ def main(argv=None):
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % phaseshifts.__version__
     program_version_message = "%%(prog)s %s" % program_version
+    indent = len(program_name) * " "
     # Use this module's docstring or a static string for shortdesc
     program_shortdesc = (
         (__doc__ or "phsh.py - quickly generate phase shifts").split("\n")[1]
@@ -680,8 +682,30 @@ def main(argv=None):
             metavar="<format>",
             default="CLEED",
             help="Use specific phase shift format "
-            "i.e. 'cleed', 'curve', or 'viper' "
+            "i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
             "[default: %(default)s]",
+        )
+        parser.add_argument(
+            "--backend",
+            dest="backend",
+            metavar="<backend>",
+            default="bvh",
+            help="Phase shift backend to use: 'bvh' (default) or "
+            "'eeasisss' (alias: viperleed).",
+        )
+        parser.add_argument(
+            "--backend-params",
+            dest="backend_params",
+            metavar="<parameters>",
+            help="Backend-specific parameters file. For eeasisss/viperleed, "
+            "pass the ViPErLEED PARAMETERS file.",
+        )
+        parser.add_argument(
+            "--backend-workdir",
+            dest="backend_workdir",
+            metavar="<dir>",
+            help="Backend working directory (eeasisss/viperleed uses it for "
+            "EEASiSSS files).",
         )
         parser.add_argument(
             "-r",
@@ -741,6 +765,8 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
+        backend_name = str(getattr(args, "backend", None) or "bvh").lower()
+
         # Structured input support: auto-generate bulk and slab inputs from geometry
         if getattr(args, "input", None):
             if args.bulk or args.slab:
@@ -764,9 +790,6 @@ def main(argv=None):
         if not args.input and args.slab is None:
             raise CLIError("slab input is required unless using --input.")
 
-        if args.bulk is None and not args.input:
-            args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
-
         if args.store is False:
             args.store = "."
 
@@ -780,10 +803,27 @@ def main(argv=None):
         ### handle keyboard interrupt ###
         return 0
     except Exception as err:
-        indent = len(program_name) * " "
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
         sys.stderr.write("{} for help use --help".format(indent))
         return 2
+
+    def _fatal(err):
+        sys.stderr.write("{}: '{}'\n".format(program_name, err))
+        sys.stderr.write("{} for help use --help".format(indent))
+        return 2
+
+    try:
+        backend = _backend_registry.get_backend(backend_name)
+    except _backend_registry.BackendError as err:
+        return _fatal(err)
+
+    backend_name = getattr(backend, "name", backend_name)
+
+    if backend_name == "eeasisss" and getattr(args, "input", None):
+        return _fatal(CLIError("--input is not supported with the eeasisss backend."))
+
+    if args.bulk is None and not args.input and backend_name != "eeasisss":
+        args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
@@ -794,16 +834,27 @@ def main(argv=None):
         print("\tlmax: %s" % args.lmax)
         print("\trange: %s eV" % [s for s in args.range])
 
-    phsh_files = Wrapper.autogen_from_input(
-        args.bulk,
-        args.slab,
-        tmp_dir=args.tmpdir,
-        lmax=int(args.lmax),
-        format=args.format,
-        store=args.store,
-        range=args.range,
-        verbose=verbose,
+    backend_workdir = args.backend_workdir or args.tmpdir or args.store
+    output_file = (
+        os.path.join(args.store, "PHASESHIFTS") if backend_name == "eeasisss" else None
     )
+
+    try:
+        phsh_files = backend.autogen_from_input(
+            args.bulk,
+            args.slab,
+            tmp_dir=args.tmpdir,
+            lmax=int(args.lmax),
+            format=args.format,
+            store=args.store,
+            range=args.range,
+            verbose=verbose,
+            backend_params=args.backend_params,
+            backend_workdir=backend_workdir,
+            output_file=output_file,
+        )
+    except _backend_registry.BackendError as err:
+        return _fatal(err)
 
     # chain loop commands to next program
     if "PHASESHIFTS_LEED" in os.environ and not args.generate:

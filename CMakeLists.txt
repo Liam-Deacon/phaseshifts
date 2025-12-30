@@ -93,6 +93,9 @@ if(WIN32)
   endif()
 endif()
 
+include(FortranCInterface)
+FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+
 # Safety net
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
   message(
@@ -128,7 +131,7 @@ if (NOT SKBUILD)
 endif()
 
 # Use modern scikit-build-core CMake modules
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(Python COMPONENTS Interpreter Development.Module REQUIRED)
 
 # Get the proper Python extension module suffix
 # When scikit-build-core is driving the build, use SKBUILD_SOABI (more reliable)
@@ -168,12 +171,32 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
+# Normalise paths for CMake include directories on Windows
+file(TO_CMAKE_PATH "${NumPy_INCLUDE_DIRS}" NumPy_INCLUDE_DIRS)
+file(TO_CMAKE_PATH "${F2PY_INCLUDE_DIR}" F2PY_INCLUDE_DIR)
+
 # Prepping the module
 set(f2py_module_name "libphsh")
 set(f2py_module_dirpath "phaseshifts/lib")
 set(fortran_src_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.f")
-set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
-set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
+set(f2py_signature_file "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}.pyf")
+set(f2py_source_args "${fortran_src_file}")
+set(f2py_depends "${fortran_src_file}")
+if(EXISTS "${f2py_signature_file}")
+  list(PREPEND f2py_source_args "${f2py_signature_file}")
+  list(APPEND f2py_depends "${f2py_signature_file}")
+endif()
+set(f2py_generated_c "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}module.c")
+set(f2py_generated_f "${CMAKE_SOURCE_DIR}/${f2py_module_dirpath}/${f2py_module_name}-f2pywrappers.f")
+set(use_pre_generated_f2py FALSE)
+if(Python_VERSION VERSION_LESS "3.9" AND EXISTS "${f2py_generated_c}" AND EXISTS "${f2py_generated_f}")
+  set(use_pre_generated_f2py TRUE)
+  set(f2py_module_c "${f2py_generated_c}")
+  set(f2py_wrapper_f "${f2py_generated_f}")
+else()
+  set(f2py_module_c "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}module.c")
+  set(f2py_wrapper_f "${CMAKE_CURRENT_BINARY_DIR}/${f2py_module_name}-f2pywrappers.f")
+endif()
 
 # Check if source file exists
 if(NOT EXISTS "${fortran_src_file}")
@@ -184,19 +207,21 @@ message(STATUS "Fortran source exists: ${fortran_src_file}")
 
 # Target for enforcing dependencies
 add_custom_target(genpyf
-  DEPENDS "${fortran_src_file}"
+  DEPENDS ${f2py_depends}
 )
-add_custom_command(
-  OUTPUT "${f2py_module_c}" "${f2py_wrapper_f}"
-  COMMAND ${PYTHON_EXECUTABLE} -m "numpy.f2py"
-      -m "${f2py_module_name}"
-      --lower # Important
-      "${fortran_src_file}"
-  DEPENDS "${fortran_src_file}" # Fortran source
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-  COMMENT "Generating f2py wrappers for ${f2py_module_name}"
-  VERBATIM
-)
+if(NOT use_pre_generated_f2py)
+  add_custom_command(
+    OUTPUT "${f2py_module_c}" "${f2py_wrapper_f}"
+    COMMAND ${PYTHON_EXECUTABLE} -m "numpy.f2py"
+        -m "${f2py_module_name}"
+        --lower # Important
+        ${f2py_source_args}
+    DEPENDS ${f2py_depends} # Fortran/signature source
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating f2py wrappers for ${f2py_module_name}"
+    VERBATIM
+  )
+endif()
 
 # Ensure f2py files are generated before building the module
 add_custom_target(generate_f2py_files
@@ -210,13 +235,53 @@ add_library("${f2py_module_name}" MODULE
             "${F2PY_INCLUDE_DIR}/fortranobject.c"
             "${fortran_src_file}")
 
+# --- Windows / MinGW-w64 specifics ------------------------------------------
+if(WIN32 AND MINGW)
+  # 1.  Make sure MinGW is the linker, not MSVC
+  set(CMAKE_SYSTEM_NAME Windows)
+  # 2.  Ask gfortran to link its own runtime statically
+  target_link_options(${f2py_module_name} PRIVATE
+        -static-libgfortran      # Fortran runtime
+        -static-libgcc           # GCC support library
+        -static                  # avoid external CRT DLLs
+  )
+  # 3.  Also link quadmath if your code uses REAL*16 or EXP/LN variants
+  find_library(QUADMATH_LIB quadmath)
+  if(QUADMATH_LIB)
+      target_link_libraries(${f2py_module_name} PRIVATE ${QUADMATH_LIB})
+  endif()
+  # 4.  Export all symbols so Python can find init routine
+  set_target_properties(${f2py_module_name} PROPERTIES
+        CXX_VISIBILITY_PRESET default
+        WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
+if(WIN32)
+  # On Windows, we need to link against the Python library explicitly
+  target_link_libraries("${f2py_module_name}" PRIVATE Python::Module)
+endif()
+
 target_include_directories("${f2py_module_name}" PUBLIC
                            ${F2PY_INCLUDE_DIR}
                            ${NumPy_INCLUDE_DIRS}
                            ${Python_INCLUDE_DIRS})
 
-set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
+if(WIN32)
+  # Windows Python extension modules use .pyd
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".pyd")
+elseif(APPLE)
+  # macOS Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+elseif(UNIX)
+  # Linux/Unix Python extension modules use .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+else()
+  # Fallback: default to .so
+  set_target_properties("${f2py_module_name}" PROPERTIES SUFFIX ".so")
+endif()
 set_target_properties("${f2py_module_name}" PROPERTIES PREFIX "")
+
+
 
 # Platform-specific linking and compiler flags
 if (WIN32)
