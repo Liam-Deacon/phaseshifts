@@ -42,9 +42,7 @@ from shutil import copy
 
 def expand_filepath(path):
     """Expands the filepath for environment and user variables"""
-    return os.path.normpath(
-        os.path.expanduser(os.path.expandvars(path))
-    )
+    return os.path.normpath(os.path.expanduser(os.path.expandvars(path)))
 
 
 class FileUtils(object):

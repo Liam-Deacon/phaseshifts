@@ -63,9 +63,7 @@ try:
     lib_eeasisss = cdll.LoadLibrary(_library_path)
 except OSError as err:
     raise ImportError(
-        "EEASiSSS library not found. Expected at: {} ({})".format(
-            _library_path, err
-        )
+        "EEASiSSS library not found. Expected at: {} ({})".format(_library_path, err)
     ) from err
 
 
@@ -89,9 +87,7 @@ def main(argv=None):
     )
     args = parser.parse_args(argv)
     if not os.path.isfile(args.input_file):
-        sys.stderr.write(
-            "Error: Input file '{}' not found\n".format(args.input_file)
-        )
+        sys.stderr.write("Error: Input file '{}' not found\n".format(args.input_file))
         return 1
     try:
         eeasisss(args.input_file)

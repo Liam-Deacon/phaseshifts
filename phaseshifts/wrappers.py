@@ -156,9 +156,7 @@ class Wrapper(object):
                     lines = file_ptr.readlines()
 
                 if not lines:
-                    raise OSError(
-                        "phase shift file '{}' is empty".format(phsh_file)
-                    )
+                    raise OSError("phase shift file '{}' is empty".format(phsh_file))
 
                 # remove trailing lines
                 while lines[-1] == "\n":
