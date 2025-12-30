@@ -55,7 +55,8 @@ class ViperLeedBackend(PhaseShiftBackend):
             from viperleed.calc.psgen import runPhaseshiftGen
         except ImportError:
             raise BackendError(
-                "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
+                "eeasisss backend requires 'phaseshifts[viperleed]' "
+                "(or 'phaseshifts[eeasisss]') to be installed."
             ) from None
 
         rparams = viper_params.read(parameters_file)
