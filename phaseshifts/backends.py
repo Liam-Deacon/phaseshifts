@@ -56,17 +56,13 @@ class ViperLeedBackend(PhaseShiftBackend):
         except ImportError:
             raise BackendError(
                 "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
-            )
+            ) from None
 
         rparams = viper_params.read(parameters_file)
         viper_params.interpret(rparams)
         slab = viper_poscar.read(slab_file)
 
-        if not os.path.isdir(workdir):
-            try:
-                os.makedirs(workdir)
-            except OSError:
-                pass
+        os.makedirs(workdir, exist_ok=True)
 
         output_path = os.path.join(workdir, output_file)
         cwd = os.getcwd()

@@ -86,10 +86,11 @@ def run_in_venv(wheel_path, import_names):
             except subprocess.CalledProcessError:
                 return False, f"Failed to import {modname}"
         return True, ""
-    except Exception as e:
+    except (subprocess.CalledProcessError, OSError) as e:
         return False, str(e)
     finally:
-        shutil.rmtree(venv_dir)
+        if os.path.exists(venv_dir):
+            shutil.rmtree(venv_dir)
 
 
 def main():
