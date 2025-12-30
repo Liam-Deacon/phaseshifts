@@ -529,6 +529,7 @@ The checked-in f2py artifacts `phaseshifts/lib/libphshmodule.c` and
 `phaseshifts/lib/libphsh.f` or `phaseshifts/lib/libphsh.pyf` changes.
 
 Requirements:
+
 - f2py version: 1.26.4 (from numpy 1.26.4)
 - numpy minimum (build/runtime): numpy>=1.16.6; use numpy==1.26.4 to match the
   committed wrapper generation
@@ -538,11 +539,13 @@ Requirements:
 - C compiler toolchain appropriate for your platform (gcc/clang/MSVC)
 
 Regeneration steps:
+
 1. Create and activate a virtual environment.
 2. Install build tooling:
    `pip install "numpy==1.26.4" "setuptools<63" "wheel"`
 3. From the repo root, run:
-   `python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf phaseshifts/lib/libphsh.f --build-dir /tmp/libphsh-f2py`
+   `python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf phaseshifts/lib/libphsh.f`
+   `--build-dir /tmp/libphsh-f2py`
 4. Copy the generated files into the repo:
    - `/tmp/libphsh-f2py/libphshmodule.c` -> `phaseshifts/lib/libphshmodule.c`
    - `/tmp/libphsh-f2py/libphsh-f2pywrappers.f` -> `phaseshifts/lib/libphsh-f2pywrappers.f`
