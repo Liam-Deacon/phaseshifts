@@ -348,8 +348,8 @@ class EEASiSSSWrapper(Wrapper):
             raise AttributeError("bulk_mtz is not an MTZ_model() instance")
 
         # get unique elements in bulk and slab
-        bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
-        slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
+        bulk_elements = [atom.element for atom in bulk_mtz.atoms]
+        slab_elements = [atom.element for atom in slab_mtz.atoms]
         EEASiSSSWrapper().autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )

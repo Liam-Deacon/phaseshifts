@@ -1,4 +1,4 @@
-.. EEASiSSS_Phase_Shift_Package_Guide:
+.. _EEASiSSS_Phase_Shift_Package_Guide:
 
 **************************************************************************************
 APPENDIX II: Elastic Electron-Atom Scattering in Solids and Surface Slabs - User Guide

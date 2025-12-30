@@ -29,11 +29,11 @@ class SuperstructureMatrix(object):
 
 class AtomParameters(object):
     phase_file: str
-    position: Any
-    vibrational_displacement: Any
+    position: Position
+    vibrational_displacement: float
 
     def __init__(
-        self, phase_file: str, position: Any, vibrational_displacement: Any
+        self, phase_file: str, position: Position, vibrational_displacement: float
     ) -> None: ...
     def to_dict(self) -> Dict[str, Any]: ...
 

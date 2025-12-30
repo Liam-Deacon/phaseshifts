@@ -8,9 +8,10 @@ This package is a Python package which produces atomic phase shifts for
 various LEED packages (including CLEED), as well as for certain XPD packages.
 
 Currently, it uses the Barbieri/Van Hove phase shift calculation package and
-preliminary support for John Rundgren's EEASiSSS package as backends
-that are wrapped using f2py and a few Python modules to provide
-a user-friendly object-orientated interface for the end user.
+preliminary support for John Rundgren's EEASiSSS package as backends. The
+Fortran components are exposed via the legacy f2py path or the modern
+scikit-build-core/CMake build (used for Python 3.12+), with Python wrappers
+providing a user-friendly object-orientated interface for the end user.
 
 The aim of this package is to both automate and simplify the generation of
 phase shift files in a manner that is easy for the computational hitch-hiker,
@@ -19,7 +20,7 @@ but powerful for those that wish to extend the package for particular needs.
 The :ref:`phsh` script unifies many of the steps needed for the phase
 shift calculations into a single command intended for the end-user. For more
 information please read the documentation at
-`<http://pythonhosted.org//phaseshifts/>`_
+`<https://phaseshifts.readthedocs.io/en/latest/>`_
 
 -------------------------
 Barbieri/Van Hove backend
@@ -54,7 +55,7 @@ A local copy of the source files can be found under ``phaseshifts/lib/.phsh.orig
 EEASiSSS backend
 ----------------
 
-package [#]_ [#]_ [#]_ can also calculate phase shifts and has been used
+The EEASiSSS package [#]_ [#]_ [#]_ can also calculate phase shifts and has been used
 in several works on oxides from the mid-2000s to early-2010s [#]_ [#]_. In the
 words of the package's
 author, John Rundgren, the main qualifications of the program are:
