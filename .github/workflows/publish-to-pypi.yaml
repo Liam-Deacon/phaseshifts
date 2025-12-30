@@ -112,7 +112,7 @@ jobs:
           - cp35-*
           - cp36-*
           - cp37-*
-          # - cp38-*  # FIXME: Issues with building legacy wheels for CPython 3.8
+          # - cp38-*  # FIXME: Issues with building legacy wheels for CPython 3.8 (see #67)
     steps:
       - uses: actions/checkout@v4
       - name: Remove pyproject.toml for legacy builds
