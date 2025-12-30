@@ -79,8 +79,9 @@ will produce a list of command line options::
 
 .. note::
    To use the experimental EEASiSSS backend (via ViPErLEED), install:
-   ``pip install "phaseshifts[viperleed]"`` and pass ``--backend eeasisss``
-   (or ``--backend viperleed``) with a POSCAR slab file and
+   ``pip install "phaseshifts[viperleed]"`` (or ``phaseshifts[eeasisss]``) and
+   pass ``--backend eeasisss`` (or ``--backend viperleed``) with a POSCAR slab
+   file and
    ``--backend-params PARAMETERS``.
 
    Example::
