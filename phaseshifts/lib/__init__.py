@@ -4,16 +4,22 @@ import importlib
 import importlib.util
 import os
 import sys
+import warnings
 
 from ._fortran_lib import (
     is_module_importable,
     compile_f2py_shared_library,
     find_shared_library_path,
+    print_package_tree,
     FORTRAN_LIBS,
     LIBPHSH_MODULE,
 )
 
 from .. import settings
+
+_COMPILE_WARNING_TEMPLATE = (
+    "Unable to use Fortran libphsh => Failed to compile {}: '{}'"
+)
 
 
 def _add_windows_dll_dirs():
@@ -86,9 +92,15 @@ if (
     and not os.environ.get("PHASESHIFTS_SKIP_COMPILE_ON_IMPORT")
     and not is_module_importable(LIBPHSH_MODULE)
 ):
+    if "CIBUILDWHEEL" in os.environ:
+        print_package_tree()
     try:
         compile_f2py_shared_library(**FORTRAN_LIBS[LIBPHSH_MODULE])
-    except Exception:  # pragma: no cover - best-effort fallback
+    except Exception as err:  # pragma: no cover - best-effort fallback
+        warnings.warn(
+            message=_COMPILE_WARNING_TEMPLATE.format(LIBPHSH_MODULE, err),
+            category=UserWarning,
+        )
         # Avoid failing import just because the optional auto-compile failed.
         # Callers can inspect/log separately if needed.
         pass

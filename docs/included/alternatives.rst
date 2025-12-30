@@ -25,8 +25,9 @@ A number of alternatives are available, notably the following:
    Whilst the source code is not publicly available online (to this author's best knowledge), John Rundgren
    has been more than happy to assist when approached in the past.
 
-   .. note:: A pre-alpha EEASiSSS backend is now included in phaseshifts as an optional extra.
-             See :ref:`EEASiSSS_Phase_Shift_Package_Guide` for usage details.
+   .. note:: A pre-alpha EEASiSSS backend is now available via the ViPErLEED
+             toolchain (alias: ``viperleed``; see :doc:`/scripts` for CLI usage).
+             Install with ``pip install "phaseshifts[viperleed]"``.
              Ongoing work is tracked in `issue #92 <https://github.com/Liam-Deacon/phaseshifts/issues/92>`_.
 
 4. A fortran program is described in "`McGreevy, E., & Stewart, A.L. (- Apr 1978). <https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501>`_

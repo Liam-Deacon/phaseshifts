@@ -32,6 +32,7 @@ def compile_f2py_shared_library(
     source: str,
     module_name: str | None = ...,
     cwd: str | None = ...,
+    signature: str | None = ...,
     **f2py_kwargs: str
 ) -> int:
     """Compile `source` into f2py wrapped shared library given by `module_name`.

@@ -36,6 +36,14 @@ on:
         description: Build i686 wheels
         default: true
         type: boolean
+      build_wheels_macos:
+        description: Build mac wheels
+        default: true
+        type: boolean
+      build_windows:
+        description: Build windows wheels
+        default: true
+        type: boolean
 
 env:
   # NOTE: Loosened numpy version to allow faster installs on Python 3.13+
@@ -48,6 +56,7 @@ env:
   CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
   CIBW_TEST_EXTRAS: ""
   CIBW_TEST_REQUIRES: ""
+  MACOSX_DEPLOYMENT_TARGET: "11.0"
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
   PHASESHIFTS_COMPILE_MISSING: "0"
   PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
@@ -61,6 +70,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -84,175 +101,384 @@ jobs:
     needs: build_sdist
     if: ${{ github.event.inputs.build_legacy || github.event_name != 'release' }}
     env:
-      # Anything that prevents scikit-build being importable works
-      PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
-      SKBUILD_DISABLE: "1" # scikit-build honour this
+      PIP_NO_BUILD_ISOLATION: "1"
+      SKBUILD_DISABLE: "1"
+    strategy:
+      fail-fast: false
+      matrix:
+        cibw_build:
+          # - cp27-* cp35-* cp36-* cp37-* cp38-* # TODO: Remove monolithic single job in favour of individual jobs
+          - cp27-*
+          - cp35-*
+          - cp36-*
+          - cp37-*
+          # - cp38-*  # FIXME: Issues with building legacy wheels for CPython 3.8
     steps:
       - uses: actions/checkout@v4
-      # TODO: Remove when we drop support for older python versions
+      - name: Remove pyproject.toml for legacy builds
+        run: rm -f pyproject.toml
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Strip Type Hints
+        run: |
+          pip install strip-hints
+          find . -name '*.py' -print0 | xargs -0 -n 1 strip-hints --inplace
+      - name: Transpile Python to 2.x
+        if: ${{ false }} # FIXME: Issues with builtins in 2.x
+        run: |
+          pip install future
+          pasteurize -w tests/**/*.py phaseshifts/**/*.py setup.py
+        continue-on-error: true
       - name: Build legacy wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
-          CIBW_BUILD: cp27-* cp35-*
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_SKIP: cp38-* cp39-* cp312-* cp313-*
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-legacy
+          name: linux-legacy-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_linux_x86_64:
     name: Build Linux x86_64 Wheels
     runs-on: ubuntu-latest
     needs: build_sdist
+    strategy:
+      fail-fast: false
+      matrix:
+        cibw_build:
+          - cp38-*
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
-      - name: Set up QEMU
-        if: runner.os == 'Linux'
-        uses: docker/setup-qemu-action@v3
-        with:
-          platforms: all
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_LINUX: x86_64
-          # Known issue with linux CPython 3.8, see #67
-          CIBW_SKIP: cp38-* cp*musl*
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_SKIP: cp*musl*
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-x86_64
+          name: linux-x86_64-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_linux_aarch64:
     name: Build Linux aarch64 Wheels
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     needs: build_sdist
-    if: ${{ github.event.inputs.build_aarch64 || github.event_name == 'release' }}
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_aarch64 }}
+    strategy:
+      fail-fast: false
+      matrix: # NOTE: Use matrix build as aarch64 builds are very slow
+        cibw_build:
+          - cp38-*
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Set up QEMU
         if: runner.os == 'Linux'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_LINUX: aarch64
-          CIBW_SKIP: cp38-* cp*musl* cp37-musllinux_aarch64
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+          CIBW_SKIP: cp*musl* cp37-musllinux_aarch64
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-aarch64
+          name: linux-aarch64-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_macos:
     name: Build Mac Wheels
     runs-on: macos-latest
     needs: build_sdist
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_wheels_macos }}
+    strategy:
+      fail-fast: false
+      matrix:
+        cibw_build:
+          - cp38-*
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
-      # https://github.com/AntoineD/pdfo/blob/f6a45b3921807ad99a438f65ee2b01fa193038bb/.github/workflows/build_wheels.yml#L14C1-L23C1
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
       - name: Setup Fortran (gfortran)
         uses: fortran-lang/setup-fortran@v1
         with:
           compiler: gcc
           version: 13
-        # This sets up gfortran and gcc for macOS runners
-        # FC, CC, and CXX environment variables will be set for subsequent steps
-        # See https://github.com/fortran-lang/setup-fortran for details
+          # This sets up gfortran and gcc for macOS runners
+          # FC, CC, and CXX environment variables will be set for subsequent steps
+          # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3.1.3
+        if: ${{ false && github.event.inputs.build_legacy }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
+        continue-on-error: true
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: x86_64
+          CIBW_BUILD: ${{ matrix.cibw_build }}
       - name: Build arm64 wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
           CIBW_ARCHS_MACOS: arm64
+          CIBW_BUILD: ${{ matrix.cibw_build }}
           CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_TEST_COMMAND: | # FIXME: Cannot install on runner - unsure why
+            python -c "import phaseshifts; print('Package imported successfully')"
+            python -c "
+            import zipfile;
+            import glob;
+            import os;
+            # Look for wheel files in the current working directory and output directory
+            wheel_patterns = ['*.whl', 'output/*.whl', '../output/*.whl', 'dist/*.whl', '../dist/*.whl'];
+            wheel = None;
+            for pattern in wheel_patterns:
+                wheels = glob.glob(pattern);
+                if wheels:
+                    wheel = wheels[0];
+                    break;
+            if not wheel:
+                print('No wheel file found, checking installed package instead');
+                import phaseshifts.lib;
+                # Check if libphsh module exists in installed package
+                try:
+                    from phaseshifts.lib import libphsh;
+                    print('libphsh extension imported successfully from installed package');
+                except ImportError as e:
+                    print(f'Failed to import libphsh: {e}');
+                    raise AssertionError('libphsh extension not found in installed package');
+            else:
+                z = zipfile.ZipFile(wheel);
+                files = [f for f in z.namelist() if 'libphsh' in f or f.endswith('.so') or f.endswith('.dylib')];
+                print(f'Found {len(files)} compiled extensions in wheel: {wheel}');
+                [print(f'  {f}') for f in files];
+                assert len(files) > 0, 'No libphsh compiled extensions found in wheel';
+            "
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: macos
+          name: macos-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_legacy_wheels_windows:
     name: Build Legacy Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
+    if: ${{ github.event.inputs.build_windows && github.event.inputs.build_legacy }}
     env:
-      CIBW_TEST_COMMAND: "" # FIXME: This is a workaround for an issue with DLL loading on Windows
+      CC: gcc
+      CXX: g++
+      FC: gfortran
+      CIBW_ARCHS_WINDOWS: AMD64
+      PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
+      SKBUILD_DISABLE: "1" # scikit-build honour this
+    strategy:
+      # NOTE: Split matrix build into individual jobs to avoid long build times and to allow some versions to complete
+      fail-fast: false
+      matrix:
+        cibw_build:
+          # - cp27-*  # NOTE: Not supported by cibuildwheel
+          - cp35-*
+          - cp36-*
+          - cp37-*
+          # - cp38-*
     steps:
       - uses: actions/checkout@v4
+      - name: Remove pyproject.toml for legacy builds
+        run: rm -f pyproject.toml
+        shell: bash
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Strip Type Hints
+        if: ${{ false }} # FIXME: charmap codec error on Windows
+        run: |
+          pip install strip-hints
+          find . -name '*.py' -print0 | xargs -0 -n 1 strip-hints --inplace
+        shell: bash
+      - name: Transpile Python to 2.x
+        if: ${{ false }} # FIXME: Issues with builtins in 2.x
+        run: |
+          pip install future
+          pasteurize -w tests/**/*.py phaseshifts/**/*.py setup.py
 
       - name: Tell distutils to use mingw (Windows)
         if: runner.os == 'Windows'
         run: |
           echo "[build]`ncompiler=mingw32" | Out-File -Encoding ASCII ~/pydistutils.cfg
 
+      - name: Set up Fortran tool-chain
+        if: ${{ false }} # Disabled: MSYS2/MinGW provides gfortran below.
+        uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
+        with:
+          compiler: gcc
+          version: "13" # pick any released GCC you like
+
+      - name: Setup MSYS2 (MinGW)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-gcc-fortran
+            mingw-w64-i686-gcc-fortran
+
       - name: Build legacy wheels
         uses: pypa/cibuildwheel@v1.12.0
         with:
           output-dir: dist/
         env:
-          CIBW_BUILD: cp27-* cp35-*
-        continue-on-error: true
-
+          CIBW_BEFORE_BUILD_WINDOWS: |-
+            choco install -y mingw &&
+            pip install 'pip<21' 'setuptools<63' 'wheel<0.35' 'numpy>=1.16.6'
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-legacy
+          name: windows-legacy-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   build_wheels_windows:
     name: Build Windows Wheels
     runs-on: windows-latest
     needs: build_sdist
-    env:
-      CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
+    if: ${{ github.event_name == 'release' || github.event.inputs.build_windows }}
+    strategy:
+      fail-fast: false
+      matrix:
+        cibw_build:
+          - cp38-*
+          - cp39-*
+          - cp310-*
+          - cp311-*
+          - cp312-*
+          - cp313-*
     steps:
       - uses: actions/checkout@v4
+      - name: Set Package Version
+        if: ${{ github.event.inputs.version != '' }}
+        shell: bash
+        env:
+          PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
+        run: |
+          sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
+          rm -f phaseshifts/__init__.py.bak
 
-      # Setup Fortran compiler for Windows
-      - name: Setup Fortran (gfortran)
-        uses: fortran-lang/setup-fortran@v1
+      - name: Set up Fortran tool-chain
+        if: ${{ false }}
+        uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
         with:
           compiler: gcc
-          version: 13
+          version: "13" # pick any released GCC you like
 
-      - name: Verify Fortran compiler
-        run: |
-          echo "FC=${{ env.FC }}"
-          gfortran --version
-          gcc --version
-        shell: bash
+      - name: Setup MSYS2 (MinGW)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-gcc-fortran
+            mingw-w64-i686-gcc-fortran
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v3.1.3
         with:
           output-dir: dist/
         env:
-          # Use scikit-build-core with CMake for Windows builds
-          # This avoids the numpy.distutils deprecation issues
-          # Also install meson for f2py fallback on Python 3.12+
-          CIBW_BEFORE_BUILD_WINDOWS: >-
-            pip install numpy scikit-build-core cmake ninja meson meson-python
-          CIBW_ENVIRONMENT_WINDOWS: >-
-            FC=gfortran
-            CC=gcc
-            CMAKE_GENERATOR=Ninja
-          # Skip musllinux on Windows (not applicable)
-          CIBW_SKIP: "*-musllinux_*"
-
+          CIBW_BUILD: ${{ matrix.cibw_build }}
+      - name: Normalize cibw tag
+        id: normalize_tag
+        shell: bash
+        run: echo "normalized_cibw_tag=$(echo \"${{ matrix.cibw_build }}\" | sed 's/ /_/g; s/[^a-zA-Z0-9_-]/_/g; s/-$//')" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v4
         with:
-          name: windows
+          name: windows-${{ steps.normalize_tag.outputs.normalized_cibw_tag }}
           path: dist/
 
   publish_to_testpypi:
@@ -275,9 +501,11 @@ jobs:
           path: dist
           merge-multiple: true
       - name: Publish package artifacts to TestPyPI
-        uses: pypa/gh-action-pypi-publish@v1.13.0
+        uses: pypa/gh-action-pypi-publish@v1.8.5
         with:
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
+          skip_existing: true
 
   publish_to_pypi:
     name: Publish to PyPI

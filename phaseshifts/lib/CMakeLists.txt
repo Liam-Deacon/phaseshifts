@@ -7,8 +7,18 @@
 # Python_add_library(libphsh MODULE libphsh.f WITH_SOABI)
 # install(TARGETS libphsh DESTINATION phaseshifts/lib)
 
+include(FortranCInterface)
+FortranCInterface_HEADER(FC.h MACRO_NAMESPACE "FC_")
+
 add_library(libphsh MODULE libphsh.f)
 set_target_properties(libphsh PROPERTIES
-    PREFIX ""                         # drop the leading “lib”
-    OUTPUT_NAME "libphsh")            # final file: libphsh.cpython-...so
-install(TARGETS libphsh DESTINATION ${SKBUILD_LIB_DIR})
+    PREFIX ""
+    OUTPUT_NAME "libphsh"
+    SUFFIX "${PYTHON_EXTENSION_MODULE_SUFFIX}")
+install(
+    TARGETS libphsh
+    COMPONENT Runtime
+    # DESTINATION "${SKBUILD_LIB_DIR}"  # <= previous location
+    LIBRARY DESTINATION "phaseshifts/lib"
+    RUNTIME DESTINATION "phaseshifts/lib"
+)
