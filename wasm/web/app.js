@@ -84,31 +84,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
     // Calculate button
     document.getElementById('calculate-btn').addEventListener('click', runCalculation);
-    
+
     // Clear button
     document.getElementById('clear-btn').addEventListener('click', clearResults);
-    
+
     // Method selection - update help text
     document.getElementById('method').addEventListener('change', (e) => {
-        document.getElementById('method-help').textContent = 
+        document.getElementById('method-help').textContent =
             METHOD_DESCRIPTIONS[e.target.value] || '';
     });
-    
+
     // Preset buttons
     document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
     });
-    
+
     // Tab switching
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
-    
+
     // Download buttons
     document.getElementById('download-cleed').addEventListener('click', () => downloadResults('cleed'));
     document.getElementById('download-viperleed').addEventListener('click', () => downloadResults('viperleed'));
     document.getElementById('download-csv').addEventListener('click', () => downloadResults('csv'));
-    
+
     // Chart controls
     document.getElementById('show-all-l').addEventListener('change', updateChart);
     document.getElementById('l-min').addEventListener('change', updateChart);
@@ -121,7 +121,7 @@ function setupEventListeners() {
 function populateElementSelect() {
     const select = document.getElementById('element');
     const allGroup = select.querySelector('optgroup[label="All Elements"]');
-    
+
     Object.entries(ELEMENTS).forEach(([symbol, z]) => {
         const option = document.createElement('option');
         option.value = z;
@@ -139,49 +139,49 @@ async function initializeWasmModule() {
     const statusText = document.getElementById('status-text');
     const calculateBtn = document.getElementById('calculate-btn');
     const versionInfo = document.getElementById('version-info');
-    
+
     try {
         // Check if the WASM module loader is available
         if (typeof createPhaseShiftsModule === 'undefined') {
             throw new Error('WASM module not found. Please build the WASM files first.');
         }
-        
+
         statusText.textContent = 'Initializing WebAssembly module...';
-        
+
         // Create the module
         phaseShiftsModule = await createPhaseShiftsModule();
-        
+
         // Initialize filesystem
         phaseShiftsModule.FS.mkdir('/input');
         phaseShiftsModule.FS.mkdir('/output');
         phaseShiftsModule.FS.mkdir('/work');
-        
+
         // Call init function
         phaseShiftsModule.ccall('init_phaseshifts', null, [], []);
-        
+
         // Get version
         const version = phaseShiftsModule.ccall('get_version', 'string', [], []);
         versionInfo.textContent = version;
-        
+
         // Update status
         statusBanner.className = 'status-banner ready';
         statusIcon.textContent = '✅';
         statusText.textContent = 'WebAssembly module ready!';
         calculateBtn.disabled = false;
-        
+
         // Hide banner after 3 seconds
         setTimeout(() => {
             statusBanner.classList.add('hidden');
         }, 3000);
-        
+
     } catch (error) {
         console.error('Failed to initialize WASM module:', error);
-        
+
         statusBanner.className = 'status-banner error';
         statusIcon.textContent = '❌';
         statusText.textContent = `Failed to load: ${error.message}`;
         versionInfo.textContent = 'Module not loaded';
-        
+
         // Show demo mode option
         showDemoMode();
     }
@@ -203,7 +203,7 @@ function showDemoMode() {
 function loadPreset(presetName) {
     const preset = PRESETS[presetName];
     if (!preset) return;
-    
+
     document.getElementById('element').value = preset.element;
     document.getElementById('muffin-tin-radius').value = preset.muffinTinRadius;
     document.getElementById('lmax').value = preset.lmax;
@@ -211,9 +211,9 @@ function loadPreset(presetName) {
     document.getElementById('energy-max').value = preset.energyMax;
     document.getElementById('energy-step').value = preset.energyStep;
     document.getElementById('method').value = preset.method;
-    
+
     // Update method help text
-    document.getElementById('method-help').textContent = 
+    document.getElementById('method-help').textContent =
         METHOD_DESCRIPTIONS[preset.method] || '';
 }
 
@@ -223,12 +223,12 @@ function loadPreset(presetName) {
 async function runCalculation() {
     const calculateBtn = document.getElementById('calculate-btn');
     const originalText = calculateBtn.innerHTML;
-    
+
     try {
         // Update button state
         calculateBtn.disabled = true;
         calculateBtn.innerHTML = '<span class="spinner"></span> Calculating...';
-        
+
         // Get input parameters
         const params = {
             atomicNumber: parseInt(document.getElementById('element').value),
@@ -239,25 +239,25 @@ async function runCalculation() {
             energyStep: parseFloat(document.getElementById('energy-step').value),
             method: document.getElementById('method').value
         };
-        
+
         // Validate inputs
         if (!params.atomicNumber || params.atomicNumber < 1 || params.atomicNumber > 92) {
             throw new Error('Please select a valid element');
         }
-        
+
         let results;
-        
+
         // Check if we're in demo mode
         if (calculateBtn.dataset.demoMode === 'true') {
             results = generateDemoResults(params);
         } else {
             results = await calculatePhaseShifts(params);
         }
-        
+
         // Store and display results
         currentResults = { params, results };
         displayResults(results, params);
-        
+
     } catch (error) {
         alert(`Calculation error: ${error.message}`);
         console.error(error);
@@ -272,19 +272,19 @@ async function runCalculation() {
  */
 async function calculatePhaseShifts(params) {
     const { atomicNumber, muffinTinRadius, lmax, energyMin, energyMax, energyStep, method } = params;
-    
+
     // Convert energies from eV to Hartrees (1 Hartree = 27.2116 eV)
     const eVtoHartree = 1 / 27.2116;
     const eMinHartree = energyMin * eVtoHartree;
     const eMaxHartree = energyMax * eVtoHartree;
     const eStepHartree = energyStep * eVtoHartree;
-    
+
     // Generate input file for the calculation
     const inputData = generateInputFile(params);
-    
+
     // Write input to MEMFS
     phaseShiftsModule.FS.writeFile('/input/phsh.i', inputData);
-    
+
     // Run the appropriate calculation
     let result;
     switch (method) {
@@ -300,14 +300,14 @@ async function calculatePhaseShifts(params) {
         default:
             throw new Error(`Unknown method: ${method}`);
     }
-    
+
     if (result !== 0) {
         throw new Error(`Calculation failed with error code ${result}`);
     }
-    
+
     // Read output
     const output = phaseShiftsModule.FS.readFile('/output/phasout.o', { encoding: 'utf8' });
-    
+
     return parsePhaseShiftOutput(output, params);
 }
 
@@ -328,28 +328,28 @@ function parsePhaseShiftOutput(output, params) {
     const lines = output.split('\n');
     const energies = [];
     const phaseShifts = [];
-    
+
     // Initialize arrays for each L value
     for (let l = 0; l <= params.lmax; l++) {
         phaseShifts.push([]);
     }
-    
+
     // Parse each line
     for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith('#')) continue;
-        
+
         const values = trimmed.split(/\s+/).map(parseFloat).filter(v => !isNaN(v));
         if (values.length >= 2) {
             const energy = values[0];
             energies.push(energy);
-            
+
             for (let l = 0; l < Math.min(values.length - 1, params.lmax + 1); l++) {
                 phaseShifts[l].push(values[l + 1]);
             }
         }
     }
-    
+
     return {
         raw: output,
         energies,
@@ -363,38 +363,38 @@ function parsePhaseShiftOutput(output, params) {
  */
 function generateDemoResults(params) {
     const { atomicNumber, lmax, energyMin, energyMax, energyStep } = params;
-    
+
     const energies = [];
     const phaseShifts = [];
-    
+
     // Initialize arrays
     for (let l = 0; l <= lmax; l++) {
         phaseShifts.push([]);
     }
-    
+
     // Generate synthetic phase shifts
     for (let e = energyMin; e <= energyMax; e += energyStep) {
         energies.push(e);
-        
+
         for (let l = 0; l <= lmax; l++) {
             // Simplified model: phase shift depends on energy and L
             // Real phase shifts would come from the Fortran calculation
             const k = Math.sqrt(e / 13.6); // approximate wave vector
             const delta = Math.atan(Math.pow(atomicNumber / 10, 0.5) / (k * (l + 1)));
-            
+
             // Add some realistic-looking energy dependence
             const phaseShift = delta * (1 + 0.1 * Math.sin(e / 50)) * (1 - l * 0.05);
             phaseShifts[l].push(phaseShift);
         }
     }
-    
+
     // Generate raw output text
     let raw = '# Phase Shifts (DEMO MODE)\n';
     raw += `# Element: Z=${atomicNumber}, Lmax=${lmax}\n`;
     raw += `# Energy range: ${energyMin}-${energyMax} eV, step ${energyStep} eV\n`;
     raw += '#\n';
     raw += '# E(eV)    ' + Array.from({length: lmax + 1}, (_, i) => `L=${i}`).join('      ') + '\n';
-    
+
     for (let i = 0; i < energies.length; i++) {
         raw += energies[i].toFixed(2).padStart(8);
         for (let l = 0; l <= lmax; l++) {
@@ -402,7 +402,7 @@ function generateDemoResults(params) {
         }
         raw += '\n';
     }
-    
+
     return {
         raw,
         energies,
@@ -418,19 +418,19 @@ function generateDemoResults(params) {
 function displayResults(results, params) {
     const resultsSection = document.getElementById('results-section');
     resultsSection.style.display = 'block';
-    
+
     // Update L max display
     document.getElementById('l-max-display').value = params.lmax;
-    
+
     // Update raw output
     document.getElementById('raw-output').textContent = results.raw;
-    
+
     // Update table
     updateResultsTable(results, params);
-    
+
     // Update chart
     createChart(results, params);
-    
+
     // Scroll to results
     resultsSection.scrollIntoView({ behavior: 'smooth' });
 }
@@ -441,34 +441,34 @@ function displayResults(results, params) {
 function updateResultsTable(results, params) {
     const headerRow = document.getElementById('table-header');
     const tableBody = document.getElementById('table-body');
-    
+
     // Clear existing
     headerRow.innerHTML = '<th>Energy (eV)</th>';
     tableBody.innerHTML = '';
-    
+
     // Add L headers
     for (let l = 0; l <= params.lmax; l++) {
         const th = document.createElement('th');
         th.textContent = `L=${l}`;
         headerRow.appendChild(th);
     }
-    
+
     // Add data rows
     for (let i = 0; i < results.energies.length; i++) {
         const tr = document.createElement('tr');
-        
+
         // Energy column
         const tdE = document.createElement('td');
         tdE.textContent = results.energies[i].toFixed(2);
         tr.appendChild(tdE);
-        
+
         // Phase shift columns
         for (let l = 0; l <= params.lmax; l++) {
             const td = document.createElement('td');
             td.textContent = results.phaseShifts[l][i]?.toFixed(4) || '-';
             tr.appendChild(td);
         }
-        
+
         tableBody.appendChild(tr);
     }
 }
@@ -478,15 +478,15 @@ function updateResultsTable(results, params) {
  */
 function createChart(results, params) {
     const ctx = document.getElementById('phase-shift-chart').getContext('2d');
-    
+
     // Destroy existing chart
     if (chart) {
         chart.destroy();
     }
-    
+
     // Generate colors for each L value
     const colors = generateColors(params.lmax + 1);
-    
+
     // Create datasets
     const datasets = [];
     for (let l = 0; l <= params.lmax; l++) {
@@ -500,7 +500,7 @@ function createChart(results, params) {
             tension: 0.3
         });
     }
-    
+
     chart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -542,11 +542,11 @@ function createChart(results, params) {
  */
 function updateChart() {
     if (!chart || !currentResults) return;
-    
+
     const showAll = document.getElementById('show-all-l').checked;
     const lMin = parseInt(document.getElementById('l-min').value);
     const lMax = parseInt(document.getElementById('l-max-display').value);
-    
+
     chart.data.datasets.forEach((dataset, index) => {
         if (showAll) {
             dataset.hidden = false;
@@ -554,7 +554,7 @@ function updateChart() {
             dataset.hidden = index < lMin || index > lMax;
         }
     });
-    
+
     chart.update();
 }
 
@@ -578,7 +578,7 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
-    
+
     // Update tab content
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.toggle('active', content.id === `tab-${tabName}`);
@@ -593,35 +593,35 @@ function downloadResults(format) {
         alert('No results to download');
         return;
     }
-    
+
     const { params, results } = currentResults;
     let content, filename, mimeType;
-    
+
     switch (format) {
         case 'cleed':
             content = generateCleedFormat(results, params);
             filename = `phaseshifts_Z${params.atomicNumber}.phs`;
             mimeType = 'text/plain';
             break;
-            
+
         case 'viperleed':
             content = generateViperLeedFormat(results, params);
             filename = `PHASESHIFTS_Z${params.atomicNumber}`;
             mimeType = 'text/plain';
             break;
-            
+
         case 'csv':
             content = generateCsvFormat(results, params);
             filename = `phaseshifts_Z${params.atomicNumber}.csv`;
             mimeType = 'text/csv';
             break;
-            
+
         default:
             content = results.raw;
             filename = 'phaseshifts.txt';
             mimeType = 'text/plain';
     }
-    
+
     downloadFile(content, filename, mimeType);
 }
 
@@ -635,10 +635,10 @@ function generateCleedFormat(results, params) {
     output += `# Lmax: ${params.lmax}\n`;
     output += `# Energy range: ${params.energyMin}-${params.energyMax} eV\n`;
     output += '#\n';
-    
+
     // Header
     output += `${params.energyMin.toFixed(4)} ${params.energyStep.toFixed(4)} ${results.energies.length} ${params.lmax + 1}\n`;
-    
+
     // Phase shift data
     for (let i = 0; i < results.energies.length; i++) {
         let line = results.energies[i].toFixed(4);
@@ -647,7 +647,7 @@ function generateCleedFormat(results, params) {
         }
         output += line + '\n';
     }
-    
+
     return output;
 }
 
@@ -656,7 +656,7 @@ function generateCleedFormat(results, params) {
  */
 function generateViperLeedFormat(results, params) {
     let output = `${params.lmax + 1} ${results.energies.length}\n`;
-    
+
     for (let i = 0; i < results.energies.length; i++) {
         output += `${results.energies[i].toFixed(2)}`;
         for (let l = 0; l <= params.lmax; l++) {
@@ -664,7 +664,7 @@ function generateViperLeedFormat(results, params) {
         }
         output += '\n';
     }
-    
+
     return output;
 }
 
@@ -677,7 +677,7 @@ function generateCsvFormat(results, params) {
         output += `,L=${l}`;
     }
     output += '\n';
-    
+
     for (let i = 0; i < results.energies.length; i++) {
         output += results.energies[i].toFixed(4);
         for (let l = 0; l <= params.lmax; l++) {
@@ -685,7 +685,7 @@ function generateCsvFormat(results, params) {
         }
         output += '\n';
     }
-    
+
     return output;
 }
 
@@ -710,7 +710,7 @@ function downloadFile(content, filename, mimeType) {
 function clearResults() {
     currentResults = null;
     document.getElementById('results-section').style.display = 'none';
-    
+
     if (chart) {
         chart.destroy();
         chart = null;

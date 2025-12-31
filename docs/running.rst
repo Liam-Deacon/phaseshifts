@@ -32,8 +32,8 @@ The simplest and most reliable cross-platform way to run `phsh.py` is through do
 Browser-Based Calculator
 ========================
 
-For users who prefer not to install any software, a browser-based phase shift 
-calculator is available. This uses WebAssembly to run the Fortran calculation 
+For users who prefer not to install any software, a browser-based phase shift
+calculator is available. This uses WebAssembly to run the Fortran calculation
 code directly in your web browser.
 
 Features
@@ -51,11 +51,11 @@ Usage
 1. Open the web interface (hosted on GitHub Pages or locally)
 2. Select an element from the dropdown (or enter atomic number)
 3. Choose the calculation method:
-   
+
    - **Relativistic (phsh_rel)**: Full Dirac equation treatment, essential for heavy elements (Z > 30)
    - **Cavity LEED (phsh_cav)**: Traditional cavity method using Loucks grid
    - **Williams (phsh_wil)**: A.R. Williams' method
-   
+
 4. Set the muffin-tin radius and energy range
 5. Click "Calculate Phase Shifts"
 6. View results as a plot, table, or raw output
@@ -68,7 +68,7 @@ To run the browser interface locally (useful for development or offline use)::
 
   # From the repository root
   make wasm-serve
-  
+
   # Then open http://localhost:8080/web/ in your browser
 
 Building from Source
@@ -78,12 +78,12 @@ The WebAssembly version requires Emscripten and f2c to build from source::
 
   # Install prerequisites (macOS)
   brew install emscripten f2c
-  
+
   # Or install Emscripten from source
   git clone https://github.com/emscripten-core/emsdk.git
   cd emsdk && ./emsdk install latest && ./emsdk activate latest
   source ./emsdk_env.sh
-  
+
   # Build WASM
   make wasm
 

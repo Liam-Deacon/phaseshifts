@@ -76,7 +76,7 @@ class TestWebInterface:
         """index.html should have valid HTML structure."""
         index_html = WEB_DIR / "index.html"
         content = index_html.read_text()
-        
+
         # Check for essential HTML elements
         assert "<!DOCTYPE html>" in content, "Missing DOCTYPE"
         assert "<html" in content, "Missing html tag"
@@ -88,7 +88,7 @@ class TestWebInterface:
         """index.html should have phase shift calculator elements."""
         index_html = WEB_DIR / "index.html"
         content = index_html.read_text()
-        
+
         # Check for key UI elements
         assert 'id="element"' in content, "Missing element selector"
         assert 'id="method"' in content, "Missing method selector"
@@ -104,7 +104,7 @@ class TestWebInterface:
         """style.css should have CSS rules."""
         style_css = WEB_DIR / "style.css"
         content = style_css.read_text()
-        
+
         assert len(content) > 100, "style.css seems too short"
         assert "{" in content and "}" in content, "No CSS rules found"
 
@@ -117,14 +117,14 @@ class TestWebInterface:
         """app.js should have required functions."""
         app_js = WEB_DIR / "app.js"
         content = app_js.read_text()
-        
+
         required_functions = [
             "runCalculation",
             "displayResults",
             "downloadResults",
             "loadPreset",
         ]
-        
+
         for func in required_functions:
             assert func in content, f"Missing function: {func}"
 
@@ -145,13 +145,13 @@ class TestJavaScriptAPI:
         """phaseshifts.js should export required symbols."""
         api_js = SRC_DIR / "phaseshifts.js"
         content = api_js.read_text()
-        
+
         required_exports = [
             "PhaseShifts",
             "createPhaseShifts",
             "ELEMENTS",
         ]
-        
+
         for export in required_exports:
             assert export in content, f"Missing export: {export}"
 
@@ -159,7 +159,7 @@ class TestJavaScriptAPI:
         """PhaseShifts class should have required methods."""
         api_js = SRC_DIR / "phaseshifts.js"
         content = api_js.read_text()
-        
+
         required_methods = [
             "calculatePhaseShifts",
             "calculateRelativistic",
@@ -167,7 +167,7 @@ class TestJavaScriptAPI:
             "calculateWilliams",
             "init",
         ]
-        
+
         for method in required_methods:
             assert method in content, f"Missing method: {method}"
 
@@ -177,38 +177,27 @@ class TestBuildTools:
 
     @pytest.mark.skipif(
         subprocess.run(["which", "emcc"], capture_output=True).returncode != 0,
-        reason="Emscripten not installed"
+        reason="Emscripten not installed",
     )
     def test_emcc_available(self):
         """emcc should be available when Emscripten is installed."""
-        result = subprocess.run(
-            ["emcc", "--version"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["emcc", "--version"], capture_output=True, text=True)
         assert result.returncode == 0
         assert "emcc" in result.stdout.lower()
 
     @pytest.mark.skipif(
         subprocess.run(["which", "f2c"], capture_output=True).returncode != 0,
-        reason="f2c not installed"
+        reason="f2c not installed",
     )
     def test_f2c_available(self):
         """f2c should be available when installed."""
-        result = subprocess.run(
-            ["which", "f2c"],
-            capture_output=True,
-            text=True
-        )
+        result = subprocess.run(["which", "f2c"], capture_output=True, text=True)
         assert result.returncode == 0
 
     def test_build_help_works(self):
         """Build script help should work."""
         result = subprocess.run(
-            [str(BUILD_SCRIPT), "--help"],
-            capture_output=True,
-            text=True,
-            cwd=WASM_DIR
+            [str(BUILD_SCRIPT), "--help"], capture_output=True, text=True, cwd=WASM_DIR
         )
         # Help should exit with 0
         assert result.returncode == 0
@@ -221,12 +210,12 @@ class TestWasmBuild:
     @pytest.fixture
     def has_build_tools(self):
         """Check if build tools are available."""
-        emcc_available = subprocess.run(
-            ["which", "emcc"], capture_output=True
-        ).returncode == 0
-        f2c_available = subprocess.run(
-            ["which", "f2c"], capture_output=True
-        ).returncode == 0
+        emcc_available = (
+            subprocess.run(["which", "emcc"], capture_output=True).returncode == 0
+        )
+        f2c_available = (
+            subprocess.run(["which", "f2c"], capture_output=True).returncode == 0
+        )
         return emcc_available and f2c_available
 
     @pytest.mark.skip(reason="Full WASM build requires Emscripten and f2c")
@@ -234,17 +223,17 @@ class TestWasmBuild:
         """WASM build should complete successfully."""
         if not has_build_tools:
             pytest.skip("Build tools not available")
-        
+
         result = subprocess.run(
             [str(BUILD_SCRIPT), "--clean"],
             capture_output=True,
             text=True,
             cwd=WASM_DIR,
-            timeout=300  # 5 minute timeout
+            timeout=300,  # 5 minute timeout
         )
-        
+
         assert result.returncode == 0, f"Build failed: {result.stderr}"
-        
+
         # Check output files exist
         assert (DIST_DIR / "phaseshifts.js").exists()
         assert (DIST_DIR / "phaseshifts.wasm").exists()
@@ -254,13 +243,13 @@ class TestWasmBuild:
         """WASM output should be a reasonable size."""
         if not has_build_tools:
             pytest.skip("Build tools not available")
-        
+
         wasm_file = DIST_DIR / "phaseshifts.wasm"
         if not wasm_file.exists():
             pytest.skip("WASM not built")
-        
+
         size = wasm_file.stat().st_size
-        
+
         # Should be between 100KB and 50MB
         assert size > 100 * 1024, "WASM file too small"
         assert size < 50 * 1024 * 1024, "WASM file too large"
@@ -283,16 +272,18 @@ class TestFortranSource:
         """Fortran source should have required subroutines."""
         fortran_src = PROJECT_ROOT / "phaseshifts" / "lib" / "libphsh.f"
         content = fortran_src.read_text()
-        
+
         required_subroutines = [
             "hartfock",
             "phsh_cav",  # or phsh2cav
             "phsh_rel",  # or phsh_rel
             "phsh_wil",  # or phsh2wil
         ]
-        
+
         content_lower = content.lower()
         for sub in required_subroutines:
             # Check for subroutine definition (may have different naming)
-            assert sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower, \
-                f"Missing subroutine: {sub}"
+            assert (
+                sub.lower() in content_lower
+                or sub.replace("_", "").lower() in content_lower
+            ), f"Missing subroutine: {sub}"

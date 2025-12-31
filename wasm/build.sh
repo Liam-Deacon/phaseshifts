@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build script for WebAssembly version of phaseshifts
-# 
+#
 # This script compiles libphsh.f to WebAssembly using one of:
 #   1. LFortran (native WASM support) - PREFERRED
 #   2. Emscripten + f2c (Fortran to C converter)
@@ -72,7 +72,7 @@ install_f2c_from_source() {
     local F2C_BUILD_DIR="$BUILD_DIR/f2c-source"
     mkdir -p "$F2C_BUILD_DIR"
     cd "$F2C_BUILD_DIR"
-    
+
     # Download f2c source
     if [[ ! -f "src.tgz" ]]; then
         echo "  Downloading f2c source..."
@@ -82,7 +82,7 @@ install_f2c_from_source() {
         echo "  Downloading libf2c..."
         curl -LO https://www.netlib.org/f2c/libf2c.zip
     fi
-    
+
     # Build f2c
     echo "  Building f2c..."
     rm -rf src libf2c
@@ -90,7 +90,7 @@ install_f2c_from_source() {
     cd src
     make -f makefile.u f2c 2>&1 | tail -5
     F2C_BIN="$F2C_BUILD_DIR/src/f2c"
-    
+
     # Build libf2c
     echo "  Building libf2c..."
     cd "$F2C_BUILD_DIR"
@@ -99,11 +99,11 @@ install_f2c_from_source() {
     cp makefile.u Makefile
     make 2>&1 | tail -5 || true
     F2C_LIB_DIR="$F2C_BUILD_DIR/libf2c"
-    
+
     cd "$SCRIPT_DIR"
     echo "  ✓ f2c built at: $F2C_BIN"
     echo "  ✓ libf2c built at: $F2C_LIB_DIR"
-    
+
     # Export for use in build
     export PATH="$F2C_BUILD_DIR/src:$PATH"
     export F2C_INCLUDE="$F2C_BUILD_DIR/src"
@@ -121,7 +121,7 @@ detect_build_method() {
         echo "$METHOD"
         return
     fi
-    
+
     # Prefer LFortran (native WASM support)
     if has_command lfortran; then
         echo "lfortran"
@@ -175,7 +175,7 @@ create_wrapper_c() {
     cat > wrapper.c << 'EOF'
 /*
  * JavaScript interop wrapper for phaseshifts WASM module
- * 
+ *
  * This file provides C-callable wrappers that can be invoked from JavaScript
  * via Emscripten's ccall/cwrap functions.
  */
@@ -191,10 +191,10 @@ extern int phsh_rel_(void);
 extern int phsh_wil_(void);
 extern int abinitio_(void);
 
-/* 
+/*
  * Wrapper for hartfock subroutine
  * Calculates atomic radial charge density using Dirac-Fock method
- * 
+ *
  * @param input_file Path to input file in MEMFS
  * @return 0 on success, non-zero on error
  */
@@ -257,19 +257,19 @@ EOF
 build_with_lfortran() {
     echo "Building with LFortran (native WASM support)..."
     echo ""
-    
+
     cd "$BUILD_DIR"
-    
+
     if [[ ! -f "$FORTRAN_SRC" ]]; then
         echo "Error: Fortran source not found: $FORTRAN_SRC"
         exit 1
     fi
-    
+
     # LFortran can compile directly to WASM
     lfortran --target=wasm32 \
         "$FORTRAN_SRC" \
         -o "$DIST_DIR/phaseshifts.wasm"
-    
+
     # Generate JavaScript wrapper
     cat > "$DIST_DIR/phaseshifts.js" << 'JSEOF'
 // LFortran WASM loader
@@ -284,7 +284,7 @@ export async function createPhaseShiftsModule() {
     return instance.exports;
 }
 JSEOF
-    
+
     echo "  ✓ Generated phaseshifts.wasm (LFortran)"
     echo "  ✓ Generated phaseshifts.js"
 }
@@ -292,7 +292,7 @@ JSEOF
 build_with_f2c() {
     echo "Building with Emscripten + f2c..."
     echo ""
-    
+
     # Verify tools
     if ! has_command emcc; then
         echo "Error: emcc not found"
@@ -302,7 +302,7 @@ build_with_f2c() {
         echo "Error: f2c not found"
         exit 1
     fi
-    
+
     echo "  ✓ emcc found: $(emcc --version | head -1)"
     echo "  ✓ f2c found: $(which f2c)"
     echo ""
@@ -310,7 +310,7 @@ build_with_f2c() {
     # Step 1: Convert Fortran to C using f2c
     echo "Step 1: Converting Fortran to C..."
     cd "$BUILD_DIR"
-    
+
     if [[ ! -f "$FORTRAN_SRC" ]]; then
         echo "Error: Fortran source not found: $FORTRAN_SRC"
         exit 1
@@ -386,7 +386,7 @@ build_with_f2c() {
 build_with_docker() {
     echo "Building with Docker..."
     echo ""
-    
+
     # Create Dockerfile for WASM build
     cat > "$BUILD_DIR/Dockerfile.wasm" << 'DOCKERFILE'
 FROM emscripten/emsdk:latest
@@ -406,12 +406,12 @@ DOCKERFILE
     echo "  Building Docker image..."
     cd "$PROJECT_ROOT"
     docker build -f "$BUILD_DIR/Dockerfile.wasm" -t phaseshifts-wasm-builder .
-    
+
     # Run build in container and copy output
     echo "  Running build in container..."
     docker run --rm -v "$DIST_DIR:/output" phaseshifts-wasm-builder \
         sh -c "cp /build/*.js /build/*.wasm /output/ 2>/dev/null || echo 'Build in progress...'"
-    
+
     echo "  ✓ Build completed in Docker"
 }
 

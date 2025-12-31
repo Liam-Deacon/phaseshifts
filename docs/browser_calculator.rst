@@ -4,14 +4,14 @@ Browser Calculator
 Interactive Phase Shift Calculator
 -----------------------------------
 
-This browser-based calculator uses WebAssembly to run the Fortran 
+This browser-based calculator uses WebAssembly to run the Fortran
 phase shift calculation code directly in your browser — no installation required.
 
 .. raw:: html
 
    <div style="margin-bottom: 1em;">
-     <a href="../calculator/" target="_blank" rel="noopener noreferrer" 
-        style="display: inline-block; padding: 10px 20px; background: #2980b9; color: white; 
+     <a href="../calculator/" target="_blank" rel="noopener noreferrer"
+        style="display: inline-block; padding: 10px 20px; background: #2980b9; color: white;
                text-decoration: none; border-radius: 4px; font-weight: bold;">
        ↗ Open Calculator in New Tab
      </a>
@@ -20,19 +20,19 @@ phase shift calculation code directly in your browser — no installation requir
      </span>
    </div>
 
-   <iframe 
-       src="../calculator/" 
+   <iframe
+       src="../calculator/"
        style="width: 100%; height: 800px; border: 1px solid #ccc; border-radius: 4px;"
        title="Phase Shifts Calculator"
        loading="lazy">
-       <p>Your browser does not support iframes. 
+       <p>Your browser does not support iframes.
           <a href="../calculator/">Open the calculator directly</a>.</p>
    </iframe>
 
 .. note::
-   
-   If the calculator doesn't load in the embedded view above, please use the 
-   "Open Calculator in New Tab" button or access it directly at 
+
+   If the calculator doesn't load in the embedded view above, please use the
+   "Open Calculator in New Tab" button or access it directly at
    `calculator/index.html <../calculator/>`_.
 
 
@@ -42,22 +42,22 @@ Features
 The browser calculator supports three phase shift calculation methods:
 
 **Relativistic (phsh_rel)**
-   Full Dirac equation treatment with spin-orbit coupling. Best for heavy 
+   Full Dirac equation treatment with spin-orbit coupling. Best for heavy
    elements (Z > 30) where relativistic effects are significant.
 
 **Cavity LEED (phsh_cav)**
-   Traditional cavity method using Loucks grid. Suitable for standard 
+   Traditional cavity method using Loucks grid. Suitable for standard
    LEED-IV analysis.
 
 **Williams Method (phsh_wil)**
-   A.R. Williams' phase shift calculation approach. Alternative method 
+   A.R. Williams' phase shift calculation approach. Alternative method
    for comparison.
 
 
 Supported Elements
 ------------------
 
-All elements from Hydrogen (Z=1) to Uranium (Z=92) are supported, with 
+All elements from Hydrogen (Z=1) to Uranium (Z=92) are supported, with
 presets available for common surface science elements:
 
 - **Metals**: Cu, Ag, Au, Ni, Fe, Pt, Pd, Al
@@ -83,7 +83,7 @@ CSV Format
 Command-Line Alternative
 ------------------------
 
-For batch processing or integration into scripts, see the :doc:`running` 
+For batch processing or integration into scripts, see the :doc:`running`
 page for command-line usage of the ``phsh`` programs.
 
 
@@ -92,13 +92,13 @@ Technical Details
 
 The browser calculator works by:
 
-1. Compiling the original Fortran code (``libphsh.f``) to WebAssembly 
+1. Compiling the original Fortran code (``libphsh.f``) to WebAssembly
    using Emscripten
 2. Using MEMFS (in-memory filesystem) to handle Fortran file I/O
 3. Providing a JavaScript API wrapper for browser interaction
 4. Rendering results with Chart.js for interactive visualization
 
-When WebAssembly is not available (unsupported browser or build issues), 
+When WebAssembly is not available (unsupported browser or build issues),
 the calculator falls back to a demo mode with synthetic phase shift data.
 
 

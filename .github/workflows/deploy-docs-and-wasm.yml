@@ -112,7 +112,7 @@ jobs:
       - name: Prepare combined site
         run: |
           mkdir -p _site
-          
+
           # Copy Sphinx docs to root
           if [ -d "docs/_build/html" ]; then
             cp -r docs/_build/html/* _site/
@@ -121,17 +121,17 @@ jobs:
             echo "::error::Sphinx build failed - no HTML output"
             exit 1
           fi
-          
+
           # Disable Jekyll processing
           touch _site/.nojekyll
-          
+
           # Create calculator directory
           mkdir -p _site/calculator/dist
-          
+
           # Copy WASM calculator web files
           cp -r wasm/web/* _site/calculator/
           cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
-          
+
           # Copy built WASM if available, otherwise create demo mode placeholder
           if [ -f "wasm/dist/phaseshifts.js" ] && [ -f "wasm/dist/phaseshifts.wasm" ]; then
             cp -r wasm/dist/* _site/calculator/dist/
@@ -148,7 +148,7 @@ jobs:
             echo "⚠ WASM build unavailable, using demo mode"
             echo "demo" > _site/calculator/dist/mode.txt
           fi
-          
+
           # Create version info
           cat > _site/calculator/version.txt << EOF
           phaseshifts WASM Calculator
@@ -156,7 +156,7 @@ jobs:
           Commit: ${{ github.sha }}
           Mode: $(cat _site/calculator/dist/mode.txt)
           EOF
-          
+
           echo ""
           echo "=== Site structure ==="
           find _site -type f -name "*.html" | head -20
