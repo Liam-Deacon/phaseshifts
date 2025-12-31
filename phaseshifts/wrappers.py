@@ -59,7 +59,17 @@ class Wrapper(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def autogen_from_input(self):
+    def autogen_from_input(
+        self,
+        bulk_file,
+        slab_file,
+        tmp_dir=None,
+        model_name=None,
+        lmax=10,
+        verbose=False,
+        **kwargs
+    ):
+        """Abstract base method for generating phase shifts from input."""
         pass
 
     @abstractmethod
@@ -415,7 +425,7 @@ class BVHWrapper(object):
 
     @staticmethod
     def autogen_from_input(
-        bulk_file, slab_file, tmp_dir=None, model_name=None, verbose=False, **kwargs
+        bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
     ):
         """
         Description
@@ -451,7 +461,8 @@ class BVHWrapper(object):
         # check formatting
         store = kwargs["store"] if "store" in kwargs else "."
         out_format = kwargs["format"].lower() if "format" in kwargs else None
-        lmax = kwargs["lmax"] if "lmax" in kwargs else 10
+        lmax = lmax if isinstance(lmax, int) else 10
+        lmax = kwargs.get("lmax", lmax)
 
         # check for intermediate storage directory, temp folder otherwise
         tmp_dir = str(tmp_dir)  # ensure string does not have escape chars

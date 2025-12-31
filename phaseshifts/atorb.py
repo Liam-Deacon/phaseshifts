@@ -1184,9 +1184,9 @@ class Atorb(object):
 class EEASiSSSAtorb(Atorb):
     def __init__(self, ifil=0, **kwargs):
         # set higher default number of grid points for EEASiSSS
-        kwargs["ngrid"] = 2000 if "ngrid" not in kwargs else kwargs
+        kwargs["ngrid"] = kwargs.get("ngrid", 2000)
         kwargs["fmt"] = "eeasisss"
-        Atorb.__init__(self, kwargs)
+        Atorb.__init__(self, **kwargs)
         self.ifil = int(ifil) if isinstance(ifil, bool) or isinstance(ifil, int) else 0
 
     @property

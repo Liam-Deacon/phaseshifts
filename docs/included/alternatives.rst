@@ -27,7 +27,7 @@ A number of alternatives are available, notably the following:
              `this item <https://github.com/Liam-Deacon/phaseshifts/issues/92>`_.
              An experimental pathway exists via the optional ``eeasisss`` backend
              (alias: ``viperleed``; see :doc:`/scripts` for CLI usage), which runs
-             EEASiSSS through the ViPErLEED toolchain. Install with
+             EEASiSSS through the ViPErLEED toolchain [#]_ [#]_. Install with
              ``pip install "phaseshifts[viperleed]"``.
 
 3. A fortran program is described in "`McGreevy, E., & Stewart, A.L. (- Apr 1978). <https://inis.iaea.org/search/search.aspx?orig_q=RN:9399501>`_
@@ -38,3 +38,6 @@ A number of alternatives are available, notably the following:
           `open an issue <https://Liam-Deacon/phaseshifts/issues>`_ or
           (better yet) create a PR with changes to this documentation
           to keep this list up to date.
+
+.. [#] F. Kraushofer et al., "ViPErLEED package I: Calculation of I(V) curves and structural optimization", Phys. Rev. Research 7, 013005 (2025). DOI: 10.1103/PhysRevResearch.7.013005.
+.. [#] M. Schmid et al., "ViPErLEED package II: Spot tracking, extraction, and processing of I(V) curves", Phys. Rev. Research 7, 013006 (2025). DOI: 10.1103/PhysRevResearch.7.013006.

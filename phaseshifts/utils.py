@@ -70,7 +70,14 @@ class FileUtils(object):
         # do check and create directory if needed
         if os.path.isfile(dst):
             dst = os.path.dirname(dst)
-        os.makedirs(dst, exist_ok=True)
+        if not os.path.isdir(dst):
+            try:
+                os.makedirs(dst)
+            except OSError as err:
+                import errno
+
+                if err.errno != errno.EEXIST:
+                    raise
 
         # copy each phase shift file to directory
         if verbose:

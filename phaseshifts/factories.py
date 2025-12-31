@@ -35,11 +35,11 @@
 import sys
 
 try:
-    from typing import List
+    from typing import Any, List
 except ImportError:
     pass
 
-from wrappers import BVHWrapper, EEASiSSSWrapper
+from .wrappers import BVHWrapper, EEASiSSSWrapper
 
 
 class PhaseshiftFactory(object):
@@ -49,28 +49,42 @@ class PhaseshiftFactory(object):
     phsh_files = []  # type: List[str]
 
     def __init__(self, backend, **kwargs):
-        package = str(backend).lower()
+        # type: (str, **Any) -> None
         self.__dict__.update(kwargs)
-        try:
-            if package not in ["vht", "eeasisss"]:
-                sys.stderr.write("Invalid package selected - " "using default (BVH)\n")
-                sys.stderr.flush()
-                self.backend = BVHWrapper
-            else:
-                if package == "bvh" or package == "van hove" or package == "barbieri":
-                    self.backend = BVHWrapper
-                elif package == "eeasisss" or package == "rundgren":
-                    self.backend = EEASiSSSWrapper
-        except KeyError:
-            sys.stderr.write("Invalid phaseshifts backend\n")
+        self.phsh_files = []
+        package = str(backend).lower()
+        bvh_aliases = ("bvh", "vht", "van hove", "barbieri")
+        eeasisss_aliases = ("eeasisss", "rundgren")
+        if package in eeasisss_aliases:
+            self.backend = EEASiSSSWrapper
+        elif package in bvh_aliases:
+            self.backend = BVHWrapper
+        else:
+            sys.stderr.write("Invalid package selected - using default (BVH)\n")
             sys.stderr.flush()
-            sys.exit(-2)
+            self.backend = BVHWrapper
+
+    def _require_attrs(self, *names):
+        missing = [name for name in names if not hasattr(self, name)]
+        if missing:
+            raise AttributeError(
+                "Missing required phaseshift inputs: {}".format(", ".join(missing))
+            )
 
     def createAtorbFiles(self):
         pass
 
     def getPhaseShiftFiles(self):
         """Returns a list of generated phase shift files"""
+        self._require_attrs(
+            "bulk_file",
+            "slab_file",
+            "tmp_dir",
+            "lmax",
+            "format",
+            "store",
+            "range",
+        )
         return self.backend.autogen_from_input(
             self.bulk_file,
             self.slab_file,
