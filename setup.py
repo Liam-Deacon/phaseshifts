@@ -362,6 +362,15 @@ f2py_platform_extra_args = {
     },
 }.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
+build_eeasisss = (
+    os.environ.get("PHASESHIFTS_BUILD_EEASISSS", "OFF").lower() in TRUE_OPTS
+)
+eeasisss_ext = Extension(
+    name="phaseshifts.lib.libhartfock",
+    extra_compile_args=[],
+    sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
+)
+
 f2py_exts = (
     [
         # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
@@ -380,12 +389,8 @@ f2py_exts = (
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
         ),
-        Extension(
-            name="phaseshifts.lib.libhartfock",
-            extra_compile_args=[],
-            sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
-        ),
     ]
+    + ([eeasisss_ext] if build_eeasisss else [])
 )
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
@@ -394,9 +399,9 @@ README = "README.md"
 LONG_DESCRIPTION = ""
 
 try:
-    with open(README, mode="r", encoding="utf-8") as readme_file_ptr:
+    with open(README, encoding="utf-8") as readme_file_ptr:
         LONG_DESCRIPTION = readme_file_ptr.read()
-except IOError:
+except OSError:
     pass
 
 # --- Fallback logic for build ---

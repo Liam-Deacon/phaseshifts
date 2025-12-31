@@ -35,16 +35,10 @@ will produce a list of command line options::
 
     optional arguments:
     -h, --help            show this help message and exit
-    -i <input>, --input <input>
-                      Optional cleedpy-style structured input (JSON or
-                      YAML). Converts input into bulk/slab ``.i`` files
-                      before running the normal workflow. PyYAML is needed
-                      for YAML; JSON works without it. If ``jsonschema`` is
-                      installed, the input will be validated.
     -b <bulk_file>, --bulk <bulk_file>
                           path to MTZ bulk or CLEED *.bul input file
-    -s <slab_file>, --slab <slab_file>
-                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    -i <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file
     -t <temp_dir>, --tmpdir <temp_dir>
                           temporary directory for intermediate file generation
     -l <lmax>, --lmax <lmax>
@@ -68,19 +62,20 @@ will produce a list of command line options::
                           '<start> <stop> [<step>]', where the <step> value is
                           optional.  Valid for relativistic calculations
                           only. [default: (20, 600, 5)]
+    -i <input>, --input <input>
+                          Optional cleedpy-style structured input (JSON or
+                          YAML). Converts input into bulk/slab ``.i`` files
+                          before running the normal workflow. PyYAML is needed
+                          for YAML; JSON works without it. If ``jsonschema`` is
+                          installed, the input will be validated.
+    -s <slab_file>, --slab <slab_file>
+                          path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    --backend <backend>
+                          Phase shift backend to use (e.g. 'vht' or 'eeasisss').
     -g, --generate-only
                           Exit after generating phaseshifts; do not launch
                           subprocess using PHASESHIFTS_LEED environment
                           variable. [default: False]
-    -a, --atorbs-only
-                          Only generate atomic orbitals of elements found in
-                          the input files using Eric Shirley's hartfock
-                          routine, then exit. [default: False]
-    -p, --package
-                          Selects package to use for phase shift calculations.
-                          Choices are 'VHT' (van Hove-Tong) or 'Rundgren'
-                          (EEASiSSS). [default: 'VHT')
-
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
     -v, --verbose         Set verbosity level [default: None].

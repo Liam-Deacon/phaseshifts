@@ -859,11 +859,12 @@ def main(argv=None):
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
         print("Phase shift auto-generation parameters")
-        print("\tbulk input file: %s" % args.bulk)
-        print("\tslab input file: %s" % args.slab)
-        print("\tformat: %s" % args.format)
-        print("\tlmax: %s" % args.lmax)
-        print("\trange: %s eV" % [s for s in args.range])
+        print("\tbulk input file: {}".format(args.bulk))
+        print("\tslab input file: {}".format(args.slab))
+        print("\tformat: {}".format(args.format))
+        print("\tbackend: {}".format(args.backend))
+        print("\tlmax: {}".format(args.lmax))
+        print("\trange: {} eV".format([s for s in args.range]))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (

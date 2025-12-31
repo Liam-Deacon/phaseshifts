@@ -42,9 +42,7 @@ from shutil import copy
 
 def expand_filepath(path):
     """Expands the filepath for environment and user variables"""
-    return os.path.normpath(
-        os.path.expanduser(os.path.expandvars(os.path.expanduser(path)))
-    )
+    return os.path.normpath(os.path.expanduser(os.path.expandvars(path)))
 
 
 class FileUtils(object):
@@ -61,7 +59,8 @@ class FileUtils(object):
         # check if using native Windows Python with cygwin
         env = ""
         if str(sys.platform).startswith("win") and dst.startswith("/cygdrive"):
-            if os.environ["CLEED_PHASE"] == dst:
+            cleed_phase = os.environ.get("CLEED_PHASE")
+            if cleed_phase == dst:
                 env = "CLEED_PHASE="
             dst = '"%s"' % (
                 dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])

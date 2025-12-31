@@ -35,7 +35,7 @@
 import sys
 
 try:
-    from typing import Any, List
+    from typing import Any, List  # noqa: F401
 except ImportError:
     pass
 
@@ -46,23 +46,28 @@ class PhaseshiftFactory(object):
     """Class for backend selection"""
 
     backend = object
-    phsh_files = []  # type: List[str]
 
     def __init__(self, backend, **kwargs):
         # type: (str, **Any) -> None
-        self.__dict__.update(kwargs)
-        self.phsh_files = []
         package = str(backend).lower()
-        bvh_aliases = ("bvh", "vht", "van hove", "barbieri")
-        eeasisss_aliases = ("eeasisss", "rundgren")
-        if package in eeasisss_aliases:
-            self.backend = EEASiSSSWrapper
-        elif package in bvh_aliases:
-            self.backend = BVHWrapper
-        else:
-            sys.stderr.write("Invalid package selected - using default (BVH)\n")
+        self.__dict__.update(kwargs)
+        self.phsh_files = []  # type: List[str]
+        try:
+            valid_bvh = ["vht", "bvh", "van hove", "barbieri", "bvt"]
+            valid_eeasisss = ["eeasisss", "rundgren", "viperleed", "viper"]
+            if package not in valid_bvh + valid_eeasisss:
+                sys.stderr.write("Invalid package selected - using default (BVH)\n")
+                sys.stderr.flush()
+                self.backend = BVHWrapper()
+            else:
+                if package in valid_bvh:
+                    self.backend = BVHWrapper()
+                elif package in valid_eeasisss:
+                    self.backend = EEASiSSSWrapper()
+        except KeyError:
+            sys.stderr.write("Invalid phaseshifts backend\n")
             sys.stderr.flush()
-            self.backend = BVHWrapper
+            sys.exit(-2)
 
     def _require_attrs(self, *names):
         missing = [name for name in names if not hasattr(self, name)]

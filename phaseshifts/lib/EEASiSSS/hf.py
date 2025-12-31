@@ -68,13 +68,13 @@ PROFILE = 0
 def main(argv=None):
     """Command line options to hf"""
     if argv is None:
-        argv = sys.argv
+        argv = sys.argv[1:]
     else:
-        sys.argv.extend(argv)
+        argv = list(argv)
 
     # display help if no arguments
-    if len(argv) == 1:
-        argv.append("--help")
+    if not argv:
+        argv = ["--help"]
 
     program_name = os.path.basename(sys.argv[0])
     program_version = "v%s" % __date__
@@ -122,16 +122,13 @@ def main(argv=None):
             "by <log_file>. The default is to print to stdout "
             " if the argument is None. [default: %(default)s]",
         )
+        default_atlib = os.environ.get("ATLIB") or os.path.expanduser("~/atlib")
         parser.add_argument(
             "-a",
             "--atom_dir",
             dest="chgden_dir",
             metavar="<chgden_dir>",
-            default=(
-                os.path.expandvars("ATLIB")
-                if os.path.expandvars("ATLIB") != ""
-                else os.path.expanduser("~/atlib")
-            ),
+            default=default_atlib,
             help="Specifies the output directory to place "
             "the calculated atomic charge density files into. "
             "If no argument is given, the 'ATLIB' environment "
@@ -152,7 +149,7 @@ def main(argv=None):
         )
 
         # Process arguments
-        args, unknown = parser.parse_known_args()
+        args, unknown = parser.parse_known_args(argv)
 
         verbose = int(getattr(args, "verbose", False))
 
@@ -166,6 +163,7 @@ def main(argv=None):
         if not os.path.isfile(args.input):
             sys.stderr.write("hf - error: input file '%s' not found\n" % args.input)
             sys.stderr.flush()
+            return 1
 
         args.chgden_dir = os.path.expanduser(os.path.expandvars(args.chgden_dir))
         if not os.path.isdir(args.chgden_dir):

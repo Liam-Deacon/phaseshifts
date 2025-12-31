@@ -341,9 +341,7 @@ def get_electron_config(element_obj):
 
 class Atorb(object):
     r"""
-    A python wrapper for the `atorb` program by Eric Shirley for use in
-    calculating atomic scattering for different elements
-
+    Wrapper for the `atorb` atomic structure solver.
 
     This class encapsulates the logic for interacting with the Barbieri/Van Hove
     `atorb` program. It calculates atomic orbitals and radial charge densities
@@ -749,6 +747,9 @@ class Atorb(object):
 
         Examples
         --------
+        >>> Atorb.get_quantum_info('3d6')
+        (3, 2, [1.5, 2.5], [2.4, 3.6])
+
         For a full '3d10' shell:
 
         >>> Atorb.get_quantum_info('3d10')
@@ -870,51 +871,58 @@ class Atorb(object):
     @staticmethod
     def gen_input(element, **kwargs):
         """
-        Generate hartfock atorb input file from <element> and optional **kwargs
-        arguments. The generated input can then be inputted into
-        :py:meth:`Atorb.calculate_Q_density()`.
+        Generate the input file for the 'atorb' atomic structure solver.
+
+        This method constructs a formatted input file required by the Barbieri/Van Hove
+        'atorb' program (encapsulated in `libphsh`). It determines the electronic
+        configuration of the specified element, handles noble gas core expansion,
+        and sets up the radial grid and exchange-correlation parameters for the
+        Dirac-Fock calculation.
 
         Parameters
         ----------
-        element : int or str
-            Either the atomic number, symbol or name for a given element
-        output : str, optional
-            File string for atomic orbital output (default: 'at_<symbol>.i')
-        ngrid : int, optional
-            Number of points in radial grid (default: 1000)
-        rel : bool, optional
-            Specify whether to consider relativistic effects
-        filename : str, optional
-            Name for generated input file (default: 'atorb')
-        header : str, optional
-            Comment at beginning of input file
-        method : str, optional
-            Exchange correlation method using either 0.0=Hartree-Fock,
-            1.0=LDA, -alpha = xalpha (default: 0.0)
-        relic : float, optional
-            Relic value for calculation (default: 0)
-        mixing_SCF : float, optional
-            Self consisting field value (default: 0.5)
-        tolerance : float, optional
-            Eigenvalue tolerance (default: 0.0005)
-        xnum : float, optional
-            ??? (default: 100)
-        ifil : int, optional
-            flag to read :code:`vpert` array from :file:`vvalence` - possibly
-            redundant. Only used when fmt='rundgren' or 'eeasisss' (default: 0)
-        fmt : str, optional
-            Format of generated atorb input file; can be either 'vht' for the
-            van Hove-Tong package or 'rundgren' for the EEASiSSS package
-            (default: 'vht')
+        element : str or int
+            The chemical symbol (e.g., 'Cu') or atomic number (e.g., 29) of the target element.
+        **kwargs : dict, optional
+            Configuration options for the calculation:
 
-        Returns
-        -------
-        Filename of input file once generated or else instance of StringIO
-        object containing written input text.
-
-        Notes
-        -----
-        output can also be a StringIO() object to avoid saving to file.
+            output : str
+                Filename for the resulting charge density output (default: 'at_<symbol>.i').
+            ngrid : int
+                Number of points in the logarithmic radial grid (default: 1000).
+                Higher values provide better numerical resolution near the nucleus.
+            rel : int or bool
+                Relativistic flag (default: 1).
+                1 (or True): Solve Dirac equations (includes spin-orbit coupling).
+                0 (or False): Solve non-relativistic Schrödinger equations.
+            filename : str
+                Filename for the generated input text file (default: 'atorb_<symbol>.txt').
+            header : str
+                Comment line at the top of the input file (default: auto-generated).
+            method : str
+                Exchange-correlation potential approximation (default: '0.d0' for Hartree-Fock).
+                '0.d0': Hartree-Fock (HF).
+                '1.d0': Local Density Approximation (LDA).
+                '-alpha': X-alpha method (requires providing alpha value).
+            relic : float
+                Mixing parameter for the self-consistency cycle (default: 0.0).
+            mixing_SCF : float
+                Mixing parameter for Self-Consistent Field convergence (default: 0.5).
+            tolerance : float
+                Convergence tolerance for orbital eigenvalues (default: 0.0005 Hartrees).
+            ech : int
+                Parameter for the exchange potential (default: 100).
+            atorb_file : str or IO, optional
+                Override the destination for the generated input file. Accepts a file path
+                or a file-like object (e.g., StringIO) for buffered writes.
+            xnum : float, optional
+                Extra numeric parameter used by EEASiSSS input formatting (default: 100).
+            ifil : int, optional
+                Flag to read `vpert` from `vvalence`. Only used when fmt='rundgren' or 'eeasisss'
+                (default: 0).
+            fmt : str, optional
+                Format of generated atorb input file; use 'vht' for Barbieri/Van Hove
+                or 'rundgren'/'eeasisss' for EEASiSSS (default: 'vht').
 
         Example
         -------
@@ -1000,44 +1008,105 @@ class Atorb(object):
         relic = float(kwargs.get("relic", 0))
         mixing_SCF = float(kwargs.get("mixing_SCF", 0.5))
         eigen_tol = float(kwargs.get("tolerance", 0.0005))
-        ech = int(kwargs.get("ech", kwargs.get("xnum", 100)))
+        ech = int(kwargs.get("ech", 100))
 
-        orbital_models = []
-        for entry in electrons:
-            orbital_models.append(
-                coerce_model(
-                    AtorbElectron,
-                    {
-                        "n": entry[0],
-                        "l": entry[1],
-                        "m": entry[2],
-                        "j": entry[3],
-                        "s": entry[4],
-                        "occ": entry[5],
-                    },
+        fmt = kwargs.get("fmt") or "vht"
+        fmt_lower = str(fmt).lower()
+        xnum = float(kwargs.get("xnum", 100))
+        ifil = int(kwargs.get("ifil", 0))
+
+        use_alt_format = fmt_lower in ("rundgren", "eeasisss")
+        use_stream = file_handle is not None
+
+        if not use_alt_format and not use_stream:
+            orbital_models = []
+            for entry in electrons:
+                orbital_models.append(
+                    coerce_model(
+                        AtorbElectron,
+                        {
+                            "n": entry[0],
+                            "l": entry[1],
+                            "m": entry[2],
+                            "j": entry[3],
+                            "s": entry[4],
+                            "occ": entry[5],
+                        },
+                    )
                 )
+
+            atorb_model = coerce_model(
+                AtorbInputModel,
+                {
+                    "z": Z,
+                    "nr": NR,
+                    "rel": rel,
+                    "method": method,
+                    "relic": relic,
+                    "nlevels": nlevels,
+                    "mixing_scf": mixing_SCF,
+                    "eigen_tol": eigen_tol,
+                    "ech": ech,
+                    "orbitals": orbital_models,
+                    "output": output,
+                    "header": header,
+                },
             )
+            atorb_model.ensure_valid()
+            render_atorb_file(atorb_model, filename=filename)
+        else:
+            handle = file_handle if use_stream else open(filename, "w")
+            comment_prefix = "!" if use_alt_format else "C"
+            if header is not None:
+                header_text = str(header)
+            else:
+                header_text = (
+                    "{0} hartfock input auto-generated by phaseshifts".format(
+                        fmt.upper() if fmt_lower in ("vht", "eeasisss") else fmt.title()
+                    )
+                    if use_alt_format
+                    else "atorb input file"
+                )
 
-        atorb_model = coerce_model(
-            AtorbInputModel,
-            {
-                "z": Z,
-                "nr": NR,
-                "rel": rel,
-                "method": method,
-                "relic": relic,
-                "nlevels": nlevels,
-                "mixing_scf": mixing_SCF,
-                "eigen_tol": eigen_tol,
-                "ech": ech,
-                "orbitals": orbital_models,
-                "output": output,
-                "header": header,
-            },
-        )
-        atorb_model.ensure_valid()
-
-        render_atorb_file(atorb_model, filename=filename, file_handle=file_handle)
+            handle.write(comment_prefix.ljust(70, "*") + "\n")
+            handle.write("{0} {1}\n".format(comment_prefix, header_text))
+            handle.write(comment_prefix.ljust(70, "*") + "\n")
+            handle.write("i\n")
+            if use_alt_format:
+                handle.write("{0}\n".format(ele.symbol))
+            handle.write(
+                "{0} {1}".format(Z, int(NR)).ljust(30, " ")
+                + " ! Z NR (number of points in radial grid)\n"
+            )
+            handle.write("d\n")
+            handle.write("{0}".format(int(rel)).ljust(30) + " ! 1=rel, 0=n.r.\n")
+            handle.write("x\n")
+            handle.write(
+                "{0}".format(method).ljust(30)
+                + " ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...\n"
+            )
+            handle.write("a\n")
+            if use_alt_format:
+                line = "{0} {1} {2} {3} {4} {5}".format(
+                    relic, nlevels, mixing_SCF, eigen_tol, xnum, ifil
+                )
+                comment = " ! relic, levels, mixing SCF, eigen. tolerance, xnum, ifil\n"
+            else:
+                line = "{0} {1} {2} {3} {4}".format(
+                    relic, nlevels, mixing_SCF, eigen_tol, ech
+                )
+                comment = " ! relic,levels,mixing SCF, eigen. tol,for ech.\n"
+            handle.write(line.ljust(30) + comment)
+            for entry in electrons:
+                handle.write(
+                    "{0} {1} {2} {3} {4} {5}".format(*entry).ljust(30)
+                    + " ! n, l, l, -j, <1>, occupation\n"
+                )
+            handle.write("w\n")
+            handle.write("{0}\n".format(output))
+            handle.write("q\n")
+            if not use_stream:
+                handle.close()
 
         return filename  # return output filename for further use
 
@@ -1089,8 +1158,15 @@ class Atorb(object):
 
         Returns
         -------
-        str : filename
-            Path to calculated charge density file or :code:`None` if failed.
+        str
+            Path to the output file containing the calculated atomic charge densities.
+
+        Raises
+        ------
+        ValueError
+            If neither `element` nor `input` is specified.
+        IOError
+            If the output directory cannot be created or accessed.
 
         Examples
         --------
@@ -1184,10 +1260,10 @@ class Atorb(object):
 class EEASiSSSAtorb(Atorb):
     def __init__(self, ifil=0, **kwargs):
         # set higher default number of grid points for EEASiSSS
-        kwargs["ngrid"] = kwargs.get("ngrid", 2000)
+        kwargs.setdefault("ngrid", 2000)
         kwargs["fmt"] = "eeasisss"
         Atorb.__init__(self, **kwargs)
-        self.ifil = int(ifil) if isinstance(ifil, bool) or isinstance(ifil, int) else 0
+        self.ifil = int(ifil) if isinstance(ifil, (bool, int)) else 0
 
     @property
     def ifil(self):
@@ -1298,18 +1374,14 @@ class EEASiSSSAtorb(Atorb):
             tolerance=self.tolerance,
             xnum=self.xnum,
             ifil=self.ifil,
-            atorb_file=(
-                "inputA"
-                if "atorb_file" in self.__dict__
-                else self.__dict__["atorb_file"]
-            ),
+            atorb_file=self.__dict__.get("atorb_file", "inputA"),
             output=(self.__dict__["output"] if "output" in self.__dict__ else None),
             header=(self.__dict__["header"] if "header" in self.__dict__ else None),
             fmt=("eeasisss" if "fmt" not in self.__dict__ else self.__dict__["fmt"]),
         )
 
     @staticmethod
-    def gen_input(elements=[], atorb_file="inputA", **kwargs):
+    def gen_input(elements=None, atorb_file="inputA", **kwargs):
         """
         Description
         -----------
@@ -1374,33 +1446,26 @@ class EEASiSSSAtorb(Atorb):
         >>> non_metals = [e for e in ELEMENTS if SERIES[e.series] == 'Nonmetals']
         >>> EEASiSSS.gen_input(non_metals, atorb_file='./nonmetals.hf')
         """
+        elements = elements or []
         io = StringIO()
-        successful = False
         try:
-            kwargs = kwargs.pop("fmt") if "fmt" in kwargs else kwargs
+            kwargs.pop("fmt", None)
             # generate buffer string of input for each element
             for element in set(elements):
                 Atorb.gen_input(element, atorb_file=io, fmt="eeasisss", **kwargs)
             # write buffered string to disk
             with open(atorb_file, "w") as f:
                 f.write(io.getvalue())
-            successful = True
-        except Exception as e:
-            raise e
         finally:
             # clean up
             io.close()
-        return atorb_file if successful else None
+        return atorb_file
 
     @staticmethod
     def calculate_Q_density(
-        elements=[],
+        elements=None,
         atorb_input="inputA",
-        output_dir=(
-            expand_filepath("ATLIB")
-            if "ATLIB" in os.environ
-            else expand_filepath("~/atlib/")
-        ),
+        output_dir=None,
         **kwargs,
     ):
         """
@@ -1475,6 +1540,13 @@ class EEASiSSSAtorb(Atorb):
         >>> input = './nonmetals.hf'
         >>> EEASiSSSAtorb.calculate_Q_density(non_metals, atorb_file=input)
         """
+        elements = elements or []
+        if output_dir is None:
+            output_dir = (
+                expand_filepath("ATLIB")
+                if "ATLIB" in os.environ
+                else expand_filepath("~/atlib/")
+            )
         # do not do anything if no elements given, otherwise get the set
         if elements == []:
             return []

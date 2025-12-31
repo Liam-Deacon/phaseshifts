@@ -445,12 +445,12 @@ class Model(object):
     @property
     def name(self):
         """Returns the model name"""
-        return self.name or ""
+        return getattr(self, "_name", "")
 
     @name.setter
     def name(self, name):
         """Sets the name of the model"""
-        self.name = str(name) if not isinstance(name, str) else name
+        self._name = str(name) if not isinstance(name, str) else name
 
     @property
     def elements(self):
@@ -460,7 +460,9 @@ class Model(object):
     @property
     def atoms(self):
         """Returns a list of atoms within this model"""
-        return self.atoms or []
+        if not hasattr(self, "_atoms"):
+            self._atoms = []
+        return self._atoms
 
     @atoms.setter
     def atoms(self, atoms):
@@ -480,9 +482,13 @@ class Model(object):
 
         """
         if isinstance(atoms, list):
-            self.atoms = [atom for atom in atoms if isinstance(atom, Atom)]
+            self._atoms = [atom for atom in atoms if isinstance(atom, Atom)]
         else:
             raise TypeError
+
+    def set_atoms(self, atoms):
+        """Set atoms via the property setter for backwards compatibility."""
+        self.atoms = atoms
 
     def set_unitcell(self, unitcell):
         """
@@ -724,11 +730,14 @@ class MTZ_model(Model):
 
         """
 
+        from phaseshifts.leed import Converter, CLEEDInputValidator
+
         filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
-        if CLEED_validator.is_CLEED_file(filename):
-            self = Converter.import_CLEED(filename)
-        else:
-            self._load_input_file(filename)
+        if CLEEDInputValidator.is_cleed_file(filename):
+            cleed_model = Converter.import_CLEED(filename)
+            self.__dict__.update(cleed_model.__dict__)
+            return
+        self._load_input_file(filename)
 
     def create_atorbs(self, **kwargs):
         """

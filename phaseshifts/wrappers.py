@@ -44,7 +44,7 @@ from glob import glob
 from abc import ABCMeta, abstractmethod
 from getpass import getuser
 from time import gmtime, strftime
-from re import compile
+import re
 
 from . import model, atorb
 from .leed import Converter, CLEEDInputValidator
@@ -69,11 +69,10 @@ class Wrapper(object):
         verbose=False,
         **kwargs
     ):
-        """Abstract base method for generating phase shifts from input."""
         pass
 
     @abstractmethod
-    def autogen_atorbs(self, elements=(), output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Abstract base method for generating atomic orbital input for
         Eric Shirley's hartfock program.
@@ -156,19 +155,25 @@ class Wrapper(object):
                 with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
                     lines = file_ptr.readlines()
 
-                if lines.count("\n") == 0:
-                    raise IOError("phase shift file '%s' is empty" % phsh_file)
+                if not lines:
+                    raise OSError("phase shift file '{}' is empty".format(phsh_file))
 
                 # remove trailing lines
                 while lines[-1] == "\n":
                     lines.pop(-1)  # removes last element
 
                 # remove comments and empty lines for input
-                stripped_lines = [
-                    s
-                    for s in lines
-                    if s != "\n" and s not in compile("[a-zA-Z]").findall(lines)
-                ]
+                stripped_lines = []
+                for line in lines:
+                    stripped = line.strip()
+                    if not stripped:
+                        continue
+                    if stripped.startswith(("#", "!")):
+                        continue
+                    first = stripped[0]
+                    if not (first.isdigit() or first in "+-."):
+                        continue
+                    stripped_lines.append(line)
 
                 if lmax == 0:
                     # very crude count of l elements in input line
@@ -190,7 +195,7 @@ class Wrapper(object):
                     getuser(),
                     strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
                 )
-                lines = lines.insert(0, header)
+                lines.insert(0, header)
 
                 # write new contents to file
                 with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
@@ -208,8 +213,8 @@ class Wrapper(object):
         and returns a Python-friendly line string to be processed further.
         """
         regex = r"[-+0-9]{1,5}\.\d{1,6}"  # basic decimal number
-        decimal = compile("({})".format(regex))
-        decimal_and_exponent = compile(r"({}[eED][+-\d]\d{{0,6}})".format(regex))
+        decimal = re.compile("({})".format(regex))
+        decimal_and_exponent = re.compile(r"({}[eED][+-\d]\d{{0,6}})".format(regex))
 
         output = decimal.findall(line)
         output = output if output != [] else decimal_and_exponent.findall(line)
@@ -223,7 +228,7 @@ class EEASiSSSWrapper(Wrapper):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def autogen_atorbs(self, elements=(), output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Generates chgden input files for a set of elements and calculates their
         atomic charge densities using the EEASiSS variant of Eric Shirley's
@@ -238,9 +243,14 @@ class EEASiSSSWrapper(Wrapper):
         -------
         dictionary of atorb filepaths for all elements
         """
-        EEASiSSSWrapper.calculate_Q_density(elements, output_dir=output_dir)
+        elements = elements or ()
+        symbols = []
+        for element in elements:
+            symbol = getattr(element, "symbol", None)
+            symbols.append(symbol if symbol is not None else str(element))
+        EEASiSSSWrapper.calculate_Q_density(symbols, output_dir=output_dir)
         atomic_dict = {}
-        for symbol in [element.symbol for element in elements]:
+        for symbol in set(symbols):
             atomic_dict[symbol] = os.path.join(output_dir, "chgden%s" % symbol)
         return atomic_dict
 
@@ -260,8 +270,8 @@ class EEASiSSSWrapper(Wrapper):
         dst = dst if os.path.isdir(dst) else os.path.dirname(dst) or "."
         FileUtils.copy_files(files, dst, verbose=verbose)
 
-    @staticmethod
-    def autogen_from_input(
+    def autogen_from_input(  # noqa: MC0001
+        self,
         bulk_file,
         slab_file,
         tmp_dir=None,
@@ -338,9 +348,9 @@ class EEASiSSSWrapper(Wrapper):
             raise AttributeError("bulk_mtz is not an MTZ_model() instance")
 
         # get unique elements in bulk and slab
-        bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
-        slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = EEASiSSSWrapper.autogen_atorbs(
+        bulk_elements = [atom.element for atom in bulk_mtz.atoms]
+        slab_elements = [atom.element for atom in slab_mtz.atoms]
+        EEASiSSSWrapper().autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
@@ -354,8 +364,8 @@ class EEASiSSSWrapper(Wrapper):
 
         try:
             from phaseshifts.lib.EEASiSSS.EEASiSSS import eeasisss
-        except ImportError:
-            raise ImportError("EEASiSSS library is not available")
+        except ImportError as err:
+            raise ImportError("EEASiSSS library is not available") from err
 
         eeasisss(input_file=inputX)
 
@@ -387,7 +397,7 @@ class EEASiSSSWrapper(Wrapper):
         return phsh_files
 
 
-class BVHWrapper(object):
+class BVHWrapper(Wrapper):
     """
     Wrapper class to easily generate phase shifts
     using the Barbieri - Van Hove backend.
@@ -396,7 +406,7 @@ class BVHWrapper(object):
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-    def autogen_atorbs(self, elements=[], output_dir="."):
+    def autogen_atorbs(self, elements=None, output_dir="."):
         """
         Generates atomic orbital input files for a set of elements and
         calculates their atomic charge densities according to the Barbieri /
@@ -411,8 +421,13 @@ class BVHWrapper(object):
         -------
         dictionary of atorb filepaths for all elements
         """
+        elements = elements or []
+        symbols = []
+        for element in elements:
+            symbol = getattr(element, "symbol", None)
+            symbols.append(symbol if symbol is not None else str(element))
         atomic_dict = {}
-        for elem in [element.symbol for element in elements]:
+        for elem in set(symbols):
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
@@ -423,9 +438,15 @@ class BVHWrapper(object):
                 atomic_dict[elem] = at_file
         return atomic_dict
 
-    @staticmethod
-    def autogen_from_input(
-        bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
+    def autogen_from_input(  # noqa: MC0001
+        self,
+        bulk_file,
+        slab_file,
+        tmp_dir=None,
+        model_name=None,
+        lmax=10,
+        verbose=False,
+        **kwargs
     ):
         """
         Description
@@ -465,8 +486,8 @@ class BVHWrapper(object):
         lmax = kwargs.get("lmax", lmax)
 
         # check for intermediate storage directory, temp folder otherwise
-        tmp_dir = str(tmp_dir)  # ensure string does not have escape chars
-        if os.path.isdir(str(tmp_dir)):
+        tmp_dir = str(tmp_dir) if tmp_dir is not None else ""
+        if not tmp_dir or not os.path.isdir(tmp_dir):
             tmp_dir = tempfile.gettempdir()
 
         # Load bulk model and calculate MTZ
@@ -501,7 +522,7 @@ class BVHWrapper(object):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = BVHWrapper.autogen_atorbs(
+        atomic_dict = self.autogen_atorbs(
             elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
         )
 
@@ -536,7 +557,7 @@ class BVHWrapper(object):
                 % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
             )
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
@@ -570,7 +591,7 @@ class BVHWrapper(object):
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
-        slab_mtz_file = slab_mtz.calculate_MTZ(
+        slab_mtz.calculate_MTZ(
             cluster_file=slab_file,
             output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
             atomic_file=slab_atomic_file,
@@ -596,7 +617,7 @@ class BVHWrapper(object):
         phsh_files = []
 
         # assign phase shift specific lmax values
-        lmax_dict = {}  # FIXME: artifact from cherry-pick?
+        lmax_dict = {}  # per-element lmax overrides
         for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
             try:
                 lmax_dict[atom.tag] = atom.lmax
@@ -682,7 +703,7 @@ class BVHWrapper(object):
                         with open(mufftin_filepath, "w") as f:
                             f.write("".join([str(line) for line in lines]))
 
-                    except Exception as err:
+                    except (IOError, OSError, ValueError, IndexError) as err:
                         sys.stderr.write(
                             "Unable to change phase shift energy "
                             "range (due to '{}') - using Barbieri/Van Hove "
@@ -724,8 +745,8 @@ class BVHWrapper(object):
                     )
                     phsh.calculate()
 
-        except AttributeError:
-            raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
+        except AttributeError as err:
+            raise AttributeError("MTZ_model has no NFORM (0-2) specified!") from err
 
         # copy files to storage location
         Wrapper._copy_phsh_files(phsh_files, store, out_format)
