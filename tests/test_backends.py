@@ -1,6 +1,11 @@
 import pytest
 
-from phaseshifts.backends import BVHBackend, EEASiSSSBackend, get_backend
+from phaseshifts.backends import (
+    BVHBackend,
+    BackendError,
+    EEASiSSSBackend,
+    get_backend,
+)
 
 
 def test_get_backend_default():
@@ -9,7 +14,7 @@ def test_get_backend_default():
 
 
 def test_get_backend_unknown():
-    with pytest.raises(ValueError):
+    with pytest.raises(BackendError):
         get_backend("unknown-backend")
 
 
