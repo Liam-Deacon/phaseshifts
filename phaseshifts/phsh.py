@@ -768,7 +768,7 @@ def main(argv=None):
             dest="verbose",
             action="count",
             help="Set verbosity level. Note this will also "
-            "produce postscript graphs when using the EEASiSSS"
+            "produce postscript graphs when using the EEASiSSS "
             "backend. [default: %(default)s]",
         )
         parser.add_argument(
