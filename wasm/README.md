@@ -14,33 +14,50 @@ The WASM build uses Emscripten to compile the Fortran code to WebAssembly with M
 
 ## Prerequisites
 
-### Install Emscripten
+The build script supports three methods. Choose one:
+
+### Option 1: LFortran (RECOMMENDED)
+
+LFortran has native WASM support and is the easiest option:
 
 ```bash
-# macOS
-brew install emscripten
+# Via pip
+pip install lfortran
 
-# Or install from source (recommended for latest version)
-git clone https://github.com/emscripten-core/emsdk.git
-cd emsdk
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
+# Or via conda
+conda install -c conda-forge lfortran
 ```
 
-### Install f2c (Fortran to C converter)
+### Option 2: Emscripten + f2c
 
 ```bash
-# macOS
-brew install f2c
+# Install Emscripten
+brew install emscripten
+# Or from source:
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk && ./emsdk install latest && ./emsdk activate latest
+source ./emsdk_env.sh
 
-# Ubuntu/Debian
+# f2c is NOT in Homebrew. Build from source automatically:
+./build.sh --install-f2c
+
+# Or on Ubuntu/Debian:
 sudo apt-get install f2c libf2c2-dev
+```
+
+### Option 3: Docker (no local tools needed)
+
+```bash
+# Docker handles everything
+brew install docker
+# or: https://docs.docker.com/get-docker/
+
+./build.sh --method=docker
 ```
 
 ## Building
 
-### Quick Build
+### Quick Build (auto-detects method)
 
 ```bash
 # From repository root
@@ -49,6 +66,18 @@ make wasm
 # Or directly
 cd wasm
 ./build.sh
+```
+
+### Build Options
+
+```bash
+./build.sh --help           # Show help
+./build.sh --method=lfortran  # Force LFortran
+./build.sh --method=f2c       # Force Emscripten+f2c
+./build.sh --method=docker    # Force Docker
+./build.sh --install-f2c      # Build f2c from source first
+./build.sh --clean            # Clean before building
+./build.sh --debug            # Debug build
 ```
 
 ### Manual Build Steps
@@ -153,7 +182,19 @@ source /path/to/emsdk/emsdk_env.sh
 
 ### "f2c not found"
 
-Install f2c using your package manager (see Prerequisites).
+f2c is not available in Homebrew on macOS. Use one of:
+
+```bash
+# Build from source (automated)
+./build.sh --install-f2c
+
+# Or use Docker instead
+./build.sh --method=docker
+
+# Or use LFortran (no f2c needed)
+pip install lfortran
+./build.sh --method=lfortran
+```
 
 ### Memory errors in browser
 
