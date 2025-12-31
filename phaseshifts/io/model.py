@@ -2,6 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 try:
     from typing import Sequence, Tuple, Union
+
     VectorLike = Union[Tuple[float, float, float], Sequence[float]]
 except ImportError:
     VectorLike = object
