@@ -113,9 +113,8 @@ steps below.
 .. note::
    Optional extras can be installed with:
    - ``pip install "phaseshifts[input]"`` for structured input + validation.
-   - ``pip install "phaseshifts[viperleed]"`` (or ``phaseshifts[eeasisss]``) to
-     enable the experimental EEASiSSS backend (via ViPErLEED, alias:
-     ``viperleed``).
+   - ``pip install "phaseshifts[viperleed]"`` to enable the experimental
+     EEASiSSS backend via ViPErLEED (alias: ``viperleed``).
 
 Build distributions
 -------------------
@@ -131,9 +130,10 @@ module or the Makefile targets::
   make sdist
   make wheel
 
-The EEASiSSS backend is an optional runtime dependency; install the extra
-(``phaseshifts[viperleed]`` or ``phaseshifts[eeasisss]``) on systems where you
-want to run EEASiSSS through ViPErLEED.
+The EEASiSSS backend is an optional runtime dependency; install the
+``phaseshifts[viperleed]`` extra on systems where you want to run EEASiSSS
+through ViPErLEED. Native EEASiSSS requires the vendor library to be available
+on your system.
 
 .. tip::
    To optionally disable building the phshift2007 Fortran binaries (e.g., for minimal installs or CI), set the environment variable before installation:

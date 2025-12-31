@@ -434,7 +434,6 @@ setup_args = dict(
         "docs": ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"],
         "input": ["pyyaml>=6.0", "jsonschema>=4.0"],
         "viperleed": ["viperleed>=0.14.1"],
-        "eeasisss": ["viperleed>=0.14.1"],
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,

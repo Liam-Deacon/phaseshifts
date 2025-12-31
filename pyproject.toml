@@ -49,7 +49,6 @@ test = ["pytest", "pytest-cov"]
 docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
 input = ["pyyaml>=6.0", "jsonschema>=4.0"]
 viperleed = ["viperleed>=0.14.1"]
-eeasisss = ["viperleed>=0.14.1"]
 
 [build-system]
 requires = [
