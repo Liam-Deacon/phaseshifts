@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phase Shifts Calculator - phaseshifts</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>⚛️ Phase Shifts Calculator</h1>
+      <p class="subtitle">
+        Browser-based LEED/XPD phase shift calculations powered by WebAssembly
+      </p>
+    </header>
+
+    <main>
+      <div class="container">
+        <!-- Status Banner -->
+        <div id="status-banner" class="status-banner loading">
+          <span id="status-icon">⏳</span>
+          <span id="status-text">Loading WebAssembly module...</span>
+        </div>
+
+        <!-- Input Section -->
+        <section class="input-section">
+          <h2>📝 Input Parameters</h2>
+
+          <div class="form-grid">
+            <!-- Element Selection -->
+            <div class="form-group">
+              <label for="element">Element</label>
+              <select id="element">
+                <option value="">-- Select Element --</option>
+                <optgroup label="Common Elements">
+                  <option value="29" selected>Cu (Copper, Z=29)</option>
+                  <option value="28">Ni (Nickel, Z=28)</option>
+                  <option value="26">Fe (Iron, Z=26)</option>
+                  <option value="13">Al (Aluminum, Z=13)</option>
+                  <option value="14">Si (Silicon, Z=14)</option>
+                  <option value="47">Ag (Silver, Z=47)</option>
+                  <option value="79">Au (Gold, Z=79)</option>
+                  <option value="78">Pt (Platinum, Z=78)</option>
+                </optgroup>
+                <optgroup label="All Elements">
+                  <!-- Populated by JavaScript -->
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- Algorithm Selection -->
+            <div class="form-group">
+              <label for="method">Algorithm</label>
+              <select id="method">
+                <option value="rel" selected>Relativistic (phsh_rel)</option>
+                <option value="cav">Cavity LEED (phsh_cav)</option>
+                <option value="wil">Williams (phsh_wil)</option>
+              </select>
+              <small class="help-text" id="method-help">
+                Relativistic: Full Dirac equation treatment
+              </small>
+            </div>
+
+            <!-- Muffin-Tin Radius -->
+            <div class="form-group">
+              <label for="muffin-tin-radius">Muffin-Tin Radius (Bohr)</label>
+              <input
+                type="number"
+                id="muffin-tin-radius"
+                value="2.5"
+                step="0.1"
+                min="0.5"
+                max="5.0"
+              />
+            </div>
+
+            <!-- Lmax -->
+            <div class="form-group">
+              <label for="lmax">L<sub>max</sub></label>
+              <input type="number" id="lmax" value="10" min="1" max="20" />
+              <small class="help-text"
+                >Maximum angular momentum quantum number</small
+              >
+            </div>
+          </div>
+
+          <!-- Energy Range -->
+          <div class="form-subsection">
+            <h3>Energy Range</h3>
+            <div class="form-grid form-grid-3">
+              <div class="form-group">
+                <label for="energy-min">Min (eV)</label>
+                <input
+                  type="number"
+                  id="energy-min"
+                  value="20"
+                  step="5"
+                  min="1"
+                />
+              </div>
+              <div class="form-group">
+                <label for="energy-max">Max (eV)</label>
+                <input
+                  type="number"
+                  id="energy-max"
+                  value="400"
+                  step="10"
+                  min="10"
+                />
+              </div>
+              <div class="form-group">
+                <label for="energy-step">Step (eV)</label>
+                <input
+                  type="number"
+                  id="energy-step"
+                  value="5"
+                  step="1"
+                  min="1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Preset Examples -->
+          <div class="form-subsection">
+            <h3>Load Preset</h3>
+            <div class="preset-buttons">
+              <button class="preset-btn" data-preset="cu-fcc">Cu(111)</button>
+              <button class="preset-btn" data-preset="ni-fcc">Ni(100)</button>
+              <button class="preset-btn" data-preset="fe-bcc">Fe(110)</button>
+              <button class="preset-btn" data-preset="si-diamond">
+                Si(100)
+              </button>
+            </div>
+          </div>
+
+          <!-- Calculate Button -->
+          <div class="button-group">
+            <button id="calculate-btn" class="btn btn-primary" disabled>
+              <span class="btn-icon">🧮</span>
+              Calculate Phase Shifts
+            </button>
+            <button id="clear-btn" class="btn btn-secondary">
+              <span class="btn-icon">🗑️</span>
+              Clear
+            </button>
+          </div>
+        </section>
+
+        <!-- Results Section -->
+        <section
+          class="results-section"
+          id="results-section"
+          style="display: none"
+        >
+          <h2>📊 Results</h2>
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="plot">Plot</button>
+            <button class="tab-btn" data-tab="table">Table</button>
+            <button class="tab-btn" data-tab="raw">Raw Output</button>
+          </div>
+
+          <!-- Plot Tab -->
+          <div class="tab-content active" id="tab-plot">
+            <div class="chart-container">
+              <canvas id="phase-shift-chart"></canvas>
+            </div>
+            <div class="chart-controls">
+              <label>
+                <input type="checkbox" id="show-all-l" checked />
+                Show all L values
+              </label>
+              <label>
+                L range:
+                <input
+                  type="number"
+                  id="l-min"
+                  value="0"
+                  min="0"
+                  max="20"
+                  style="width: 50px"
+                />
+                to
+                <input
+                  type="number"
+                  id="l-max-display"
+                  value="10"
+                  min="0"
+                  max="20"
+                  style="width: 50px"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Table Tab -->
+          <div class="tab-content" id="tab-table">
+            <div class="table-container">
+              <table id="results-table">
+                <thead>
+                  <tr id="table-header">
+                    <th>Energy (eV)</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Raw Output Tab -->
+          <div class="tab-content" id="tab-raw">
+            <pre id="raw-output"></pre>
+          </div>
+
+          <!-- Download Buttons -->
+          <div class="download-buttons">
+            <button id="download-cleed" class="btn btn-download">
+              📥 Download CLEED Format
+            </button>
+            <button id="download-viperleed" class="btn btn-download">
+              📥 Download ViPErLEED Format
+            </button>
+            <button id="download-csv" class="btn btn-download">
+              📥 Download CSV
+            </button>
+          </div>
+        </section>
+
+        <!-- Info Section -->
+        <section class="info-section">
+          <details>
+            <summary>ℹ️ About Phase Shifts</summary>
+            <div class="info-content">
+              <p>
+                Phase shifts are fundamental quantities in Low-Energy Electron
+                Diffraction (LEED) and X-ray Photoelectron Diffraction (XPD)
+                calculations. They describe how electron waves scatter from
+                atomic potentials.
+              </p>
+
+              <h4>Available Methods</h4>
+              <ul>
+                <li>
+                  <strong>Relativistic (phsh_rel)</strong>: Full Dirac equation
+                  treatment, essential for heavy elements (Z > 30)
+                </li>
+                <li>
+                  <strong>Cavity LEED (phsh_cav)</strong>: Traditional cavity
+                  method using Loucks grid, suitable for most applications
+                </li>
+                <li>
+                  <strong>Williams (phsh_wil)</strong>: A.R. Williams' method,
+                  good for comparison studies
+                </li>
+              </ul>
+
+              <h4>References</h4>
+              <ul>
+                <li>
+                  Barbieri/Van Hove phase shift package:
+                  <a
+                    href="http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/"
+                    >LEED Pack</a
+                  >
+                </li>
+                <li>
+                  Loucks, T.L. (1967) "Augmented Plane Wave Method", Benjamin,
+                  NY
+                </li>
+              </ul>
+            </div>
+          </details>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        <a href="https://github.com/Liam-Deacon/phaseshifts">phaseshifts</a> -
+        Browser-based phase shift calculations
+      </p>
+      <p class="version" id="version-info">Loading...</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../dist/phaseshifts.js"></script>
+    <script src="../src/phaseshifts.js" type="module"></script>
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
