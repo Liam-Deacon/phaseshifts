@@ -35,7 +35,7 @@
 import sys
 
 try:
-    from typing import Any, List  # noqa: F401
+    from typing import List  # noqa: F401
 except ImportError:
     pass
 
@@ -48,7 +48,6 @@ class PhaseshiftFactory(object):
     backend = None  # type: object
 
     def __init__(self, backend, **kwargs):
-        # type: (str, **Any) -> None
         package = str(backend).lower()
         self.__dict__.update(kwargs)
         self.phsh_files = []  # type: List[str]

@@ -1,5 +1,11 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+try:
+    from typing import Sequence, Tuple, Union
+    VectorLike = Union[Tuple[float, float, float], Sequence[float]]
+except ImportError:
+    VectorLike = object
+
 
 class Position(object):
     def __init__(self, x, y, z):
