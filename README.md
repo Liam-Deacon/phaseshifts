@@ -586,6 +586,45 @@ Michel Van Hove who have kindly allowed the use of their code in the
 [libphsh.f](https://github.com/Liam-Deacon/phaseshifts/blob/master/phaseshifts/lib/libphsh.f) file needed for the underlying low-level functions in this
 package.
 
+## Regenerating f2py wrappers
+
+The checked-in f2py artifacts `phaseshifts/lib/libphshmodule.c` and
+`phaseshifts/lib/libphsh-f2pywrappers.f` are used for deterministic builds
+(notably Python 3.8) when f2py generation is skipped. Regenerate them when
+`phaseshifts/lib/libphsh.f` or `phaseshifts/lib/libphsh.pyf` changes.
+
+Requirements:
+
+- f2py version: 1.26.4 (from numpy 1.26.4)
+- numpy minimum (build/runtime): numpy>=1.16.6; use numpy==1.26.4 to match the
+  committed wrapper generation
+- Python: use Python 3.8-3.11 for regeneration (avoid 3.12+ for f2py distutils
+  removal)
+- Fortran compiler: gfortran (Linux/macOS) or MinGW gfortran (Windows)
+- C compiler toolchain appropriate for your platform (gcc/clang/MSVC)
+
+Regeneration steps:
+
+1. Create and activate a virtual environment.
+2. Install build tooling:
+
+   ```bash
+   pip install "numpy==1.26.4" "setuptools<63" "wheel"
+   ```
+
+3. From the repo root, run:
+
+   ```bash
+   python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf \
+     phaseshifts/lib/libphsh.f --build-dir /tmp/libphsh-f2py
+   ```
+
+4. Copy the generated files into the repo:
+   - `/tmp/libphsh-f2py/libphshmodule.c` -> `phaseshifts/lib/libphshmodule.c`
+   - `/tmp/libphsh-f2py/libphsh-f2pywrappers.f` -> `phaseshifts/lib/libphsh-f2pywrappers.f`
+5. Run the test matrix or at least `pytest tests/test_phsh_backend.py -v` and
+   commit the updated wrappers.
+
 ## Fortran coverage
 
 You can generate gcov/gcovr coverage for the Fortran core:

@@ -54,7 +54,7 @@ jobs:
           # - macos-latest
         python-version:
           # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
-          # - "3.8"  # This version has issues with the build, but is not officially supported anyway
+          - "3.8"
           - "3.9"
           - "3.10"
           - "3.11"
@@ -97,7 +97,7 @@ jobs:
         run: |
           # Install scikit-build-core for modern builds (CMake-based)
           # Also install meson for f2py on Python 3.12+ as fallback
-          pip install "scikit-build-core>=0.5" cmake ninja meson meson-python
+          pip install "scikit-build-core>=0.11.5" cmake ninja meson meson-python
         shell: bash
 
       # Build the extension using pip install which uses scikit-build-core + CMake

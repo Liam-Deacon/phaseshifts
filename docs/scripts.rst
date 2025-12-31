@@ -54,6 +54,15 @@ will produce a list of command line options::
                           'viperleed' or 'none'. Choose 'curve' if you wish to
                           produce XYY... data for easy plotting. <format> is
                           case-insensitive. [default: 'cleed']
+    --backend <backend>
+                          Phase shift backend to use: 'bvh' (default) or
+                          'eeasisss' (alias: viperleed).
+    --backend-params <parameters>
+                          Backend-specific parameters file. For viperleed,
+                          pass the ViPErLEED PARAMETERS file.
+    --backend-workdir <dir>
+                          Backend working directory (viperleed uses it for
+                          EEASiSSS input/output files).
     -r <energy> [<energy> ...], --range <energy> [<energy> ...]
                           Energy range in eV with the format:
                           '<start> <stop> [<step>]', where the <step> value is
@@ -80,6 +89,19 @@ will produce a list of command line options::
 .. note::
    To install the optional dependencies for structured input and validation,
    use: ``pip install "phaseshifts[input]"``.
+
+.. note::
+   To use EEASiSSS via ViPErLEED, install ``pip install "phaseshifts[viperleed]"``
+   and pass ``--backend viperleed`` with a POSCAR slab file and
+   ``--backend-params PARAMETERS``.
+
+   Example::
+
+      phsh.py --backend viperleed --backend-params PARAMETERS --slab POSCAR --format viperleed
+
+   Native EEASiSSS can be used with ``--backend eeasisss`` and a prepared
+   ``inputX`` file passed via ``--backend-params`` (requires the EEASiSSS
+   library to be available locally).
 
 .. warning::
    Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.
