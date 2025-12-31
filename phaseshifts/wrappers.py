@@ -55,11 +55,13 @@ from .utils import FileUtils
 
 def _add_metaclass(metaclass):
     """Create a class decorator for Py2/Py3 compatible metaclasses."""
+
     def decorator(cls):
         attrs = dict(cls.__dict__)
         attrs.pop("__dict__", None)
         attrs.pop("__weakref__", None)
         return metaclass(cls.__name__, cls.__bases__, attrs)
+
     return decorator
 
 
