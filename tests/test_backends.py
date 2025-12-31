@@ -1,11 +1,11 @@
 import pytest
 
-from phaseshifts.backends import EEASiSSSBackend, VHTBackend, get_backend
+from phaseshifts.backends import BVHBackend, EEASiSSSBackend, get_backend
 
 
 def test_get_backend_default():
     backend = get_backend(None)
-    assert isinstance(backend, VHTBackend)
+    assert isinstance(backend, BVHBackend)
 
 
 def test_get_backend_unknown():

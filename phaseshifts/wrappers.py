@@ -46,6 +46,8 @@ from getpass import getuser
 from time import gmtime, strftime
 import re
 
+from six import add_metaclass
+
 from . import model, atorb
 from .leed import Converter, CLEEDInputValidator
 from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
@@ -53,10 +55,9 @@ from .conphas import Conphas
 from .utils import FileUtils
 
 
+@add_metaclass(ABCMeta)
 class Wrapper(object):
     """Abstract base wrapper class for generating phase shifts"""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def autogen_from_input(
