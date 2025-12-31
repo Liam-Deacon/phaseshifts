@@ -44,15 +44,14 @@ Examples
 
 
 """
-from __future__ import print_function, unicode_literals
-from __future__ import absolute_import, division, with_statement
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-import os
 import argparse
-
+import os
+import sys
 from ctypes import cdll, create_string_buffer
 from ctypes.util import find_library
+
 
 _ext = ".dll" if str(sys.platform).startswith("win") else ".so"
 _lib = os.path.join(os.path.dirname(__file__), "lib")

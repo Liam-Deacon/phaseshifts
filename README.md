@@ -623,10 +623,18 @@ Regeneration steps:
 
 1. Create and activate a virtual environment.
 2. Install build tooling:
-   `pip install "numpy==1.26.4" "setuptools<63" "wheel"`
+
+   ```bash
+   pip install "numpy==1.26.4" "setuptools<63" "wheel"
+   ```
+
 3. From the repo root, run:
-   `python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf phaseshifts/lib/libphsh.f`
-   `--build-dir /tmp/libphsh-f2py`
+
+   ```bash
+   python -m numpy.f2py -m libphsh -c phaseshifts/lib/libphsh.pyf \
+     phaseshifts/lib/libphsh.f --build-dir /tmp/libphsh-f2py
+   ```
+
 4. Copy the generated files into the repo:
    - `/tmp/libphsh-f2py/libphshmodule.c` -> `phaseshifts/lib/libphshmodule.c`
    - `/tmp/libphsh-f2py/libphsh-f2pywrappers.f` -> `phaseshifts/lib/libphsh-f2pywrappers.f`
