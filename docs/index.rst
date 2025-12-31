@@ -16,6 +16,7 @@ Contents:
    introduction
    installing_phaseshifts
    running
+   browser_calculator
    contact
    acknowledgements
    scripts
