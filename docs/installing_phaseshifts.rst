@@ -60,7 +60,7 @@ To perform a setup follow the steps below.
 
     Optional extras can be installed as needed::
 
-      pip install "phaseshifts[viperleed]"  # EEASiSSS backend support (alias: viperleed)
+      pip install "phaseshifts[viperleed]"  # EEASiSSS backend support (alias: viperleed, forces ViPErLEED mode)
       pip install "phaseshifts[input]"     # structured input (YAML/JSON) + validation
       pip install "phaseshifts[atorb]"     # extra element helpers for atorb
       pip install "phaseshifts[gui]"       # Qt GUI dependencies
@@ -124,7 +124,7 @@ To perform a setup follow the steps below.
    Optional extras can be installed with:
    - ``pip install "phaseshifts[input]"`` for structured input + validation.
    - ``pip install "phaseshifts[viperleed]"`` to enable the experimental
-     EEASiSSS backend via ViPErLEED (alias: ``viperleed``).
+     EEASiSSS backend via ViPErLEED (alias: ``viperleed``, forces ViPErLEED mode).
 
 Build distributions
 -------------------

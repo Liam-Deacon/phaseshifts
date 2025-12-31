@@ -8,16 +8,18 @@ class BackendError(Exception): ...
 
 class PhaseShiftBackend:
     name: Optional[str]
+    def __init__(self, **kwargs: Any) -> None: ...
     def autogen_from_input(
         self, bulk_file: Any, slab_file: Any, tmp_dir: Any = ..., **kwargs: Any
     ) -> Any: ...
 
 class BVHBackend(PhaseShiftBackend): ...
-class EEASiSSSBackend(PhaseShiftBackend): ...
-class ViperLeedBackend(PhaseShiftBackend): ...
+class EEASiSSSBackend(PhaseShiftBackend):
+    mode: str
+    def __init__(self, mode: str = ..., **kwargs: Any) -> None: ...
 
 DEFAULT_BACKENDS: Dict[str, Type[PhaseShiftBackend]]
-ALIASES: Dict[str, str]
+ALIASES: Dict[str, Any]
 
 def register_backend(
     name: str,
@@ -27,5 +29,5 @@ def register_backend(
 def get_backend(
     name: Optional[str],
     registry: Optional[Dict[str, Type[PhaseShiftBackend]]] = ...,
-    aliases: Optional[Dict[str, str]] = ...,
+    aliases: Optional[Dict[str, Any]] = ...,
 ) -> PhaseShiftBackend: ...

@@ -691,14 +691,15 @@ def main(argv=None):
             metavar="<backend>",
             default="bvh",
             help="Phase shift backend to use: 'bvh' (default), "
-            "'eeasisss' (native), or 'viperleed' (ViPErLEED).",
+            "'eeasisss' (native or ViPErLEED; alias: viperleed).",
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For viperleed, pass the "
-            "ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX file.",
+            help="Backend-specific parameters file. For viperleed mode, pass "
+            "the ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX "
+            "file.",
         )
         parser.add_argument(
             "--backend-workdir",
