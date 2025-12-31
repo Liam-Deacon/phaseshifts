@@ -46,8 +46,6 @@ from getpass import getuser
 from time import gmtime, strftime
 import re
 
-from six import add_metaclass
-
 from . import model, atorb
 from .leed import Converter, CLEEDInputValidator
 from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
@@ -55,7 +53,17 @@ from .conphas import Conphas
 from .utils import FileUtils
 
 
-@add_metaclass(ABCMeta)
+def _add_metaclass(metaclass):
+    """Create a class decorator for Py2/Py3 compatible metaclasses."""
+    def decorator(cls):
+        attrs = dict(cls.__dict__)
+        attrs.pop("__dict__", None)
+        attrs.pop("__weakref__", None)
+        return metaclass(cls.__name__, cls.__bases__, attrs)
+    return decorator
+
+
+@_add_metaclass(ABCMeta)
 class Wrapper(object):
     """Abstract base wrapper class for generating phase shifts"""
 
