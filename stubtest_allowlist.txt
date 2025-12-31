@@ -54,7 +54,12 @@ phaseshifts.tools.debye.ArgumentParser._parse_known_args
 phaseshifts.conphas.Conphas.__init__
 phaseshifts.wrappers.ABCMeta.__new__
 phaseshifts.wrappers.Conphas.__init__
+phaseshifts.wrappers.Wrapper
+phaseshifts.wrappers.BVHWrapper
+phaseshifts.wrappers.EEASiSSSWrapper
 phaseshifts.wrappers.glob
 phaseshifts.wrappers.phsh_cav
 phaseshifts.wrappers.phsh_rel
 phaseshifts.wrappers.phsh_wil
+phaseshifts.factories.BVHWrapper
+phaseshifts.factories.EEASiSSSWrapper
