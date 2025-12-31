@@ -78,19 +78,17 @@ will produce a list of command line options::
    use: ``pip install "phaseshifts[input]"``.
 
 .. note::
-   To use the experimental EEASiSSS backend (via ViPErLEED), install:
-   ``pip install "phaseshifts[viperleed]"`` and pass ``--backend eeasisss``
-   (or ``--backend viperleed``) with a POSCAR slab file and
+   To use EEASiSSS via ViPErLEED, install ``pip install "phaseshifts[viperleed]"``
+   and pass ``--backend viperleed`` with a POSCAR slab file and
    ``--backend-params PARAMETERS``.
 
    Example::
 
-      phsh.py --backend eeasisss --backend-params PARAMETERS --slab POSCAR --format viperleed
+      phsh.py --backend viperleed --backend-params PARAMETERS --slab POSCAR --format viperleed
 
-   The EEASiSSS backend uses ViPErLEED internally (``--backend viperleed`` is an alias).
-   To control where EEASiSSS input/output files are written, pass ``--backend-workdir`` (defaults to the
-   temp directory or ``--store`` when set). The resulting ``PHASESHIFTS`` file
-   is placed in the backend work directory (or ``--store`` when provided).
+   Native EEASiSSS can be used with ``--backend eeasisss`` and a prepared
+   ``inputX`` file passed via ``--backend-params`` (requires the EEASiSSS
+   library to be available locally).
 
 .. warning::
    Breaking change in ``0.1.9``: the option for specifying the slab file is now ``-s`` (previously ``-i``). Please update your scripts accordingly.

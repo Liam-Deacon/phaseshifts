@@ -690,15 +690,15 @@ def main(argv=None):
             dest="backend",
             metavar="<backend>",
             default="bvh",
-            help="Phase shift backend to use: 'bvh' (default) or "
-            "'eeasisss' (alias: viperleed).",
+            help="Phase shift backend to use: 'bvh' (default), "
+            "'eeasisss' (native), or 'viperleed' (ViPErLEED).",
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For eeasisss/viperleed, "
-            "pass the ViPErLEED PARAMETERS file.",
+            help="Backend-specific parameters file. For viperleed, pass the "
+            "ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX file.",
         )
         parser.add_argument(
             "--backend-workdir",
@@ -819,10 +819,18 @@ def main(argv=None):
 
     backend_name = getattr(backend, "name", backend_name)
 
-    if backend_name == "eeasisss" and getattr(args, "input", None):
+    if backend_name in ("eeasisss", "viperleed") and getattr(args, "input", None):
         return _fatal(CLIError("--input is not supported with the eeasisss backend."))
 
-    if args.bulk is None and not args.input and backend_name != "eeasisss":
+    if (
+        args.bulk is None
+        and not args.input
+        and backend_name
+        not in (
+            "eeasisss",
+            "viperleed",
+        )
+    ):
         args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
     # create phase shifts (warning: black magic within - needs testing)
@@ -836,7 +844,9 @@ def main(argv=None):
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (
-        os.path.join(args.store, "PHASESHIFTS") if backend_name == "eeasisss" else None
+        os.path.join(args.store, "PHASESHIFTS")
+        if backend_name in ("eeasisss", "viperleed")
+        else None
     )
 
     try:
