@@ -132,9 +132,7 @@ class EEASiSSSBackend(PhaseShiftBackend):
                 return _run_viperleed(parameters_file, slab_file, workdir, output_file)
             if _load_native_eeasisss() is not None:
                 if verbose:
-                    print(
-                        "eeasisss: ViPErLEED not available; falling back to native."
-                    )
+                    print("eeasisss: ViPErLEED not available; falling back to native.")
                 return _run_native_eeasisss(parameters_file, workdir, output_file)
             raise BackendError(
                 "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."

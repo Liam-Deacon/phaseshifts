@@ -820,13 +820,16 @@ def main(argv=None):
     backend_name = getattr(backend, "name", backend_name)
 
     if backend_name in ("eeasisss", "viperleed") and getattr(args, "input", None):
-        return _fatal(
-            CLIError("--input is not supported with the eeasisss backend.")
-        )
+        return _fatal(CLIError("--input is not supported with the eeasisss backend."))
 
-    if args.bulk is None and not args.input and backend_name not in (
-        "eeasisss",
-        "viperleed",
+    if (
+        args.bulk is None
+        and not args.input
+        and backend_name
+        not in (
+            "eeasisss",
+            "viperleed",
+        )
     ):
         args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
