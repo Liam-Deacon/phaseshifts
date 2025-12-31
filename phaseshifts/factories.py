@@ -45,7 +45,7 @@ from .wrappers import BVHWrapper, EEASiSSSWrapper
 class PhaseshiftFactory(object):
     """Class for backend selection"""
 
-    backend = object
+    backend = None  # type: object
 
     def __init__(self, backend, **kwargs):
         # type: (str, **Any) -> None
