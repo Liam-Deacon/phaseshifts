@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD041 -->
 # WebAssembly Build for phaseshifts
 
 This directory contains the build infrastructure for compiling the `libphsh.f`
@@ -225,5 +226,6 @@ Same as the parent phaseshifts project (MIT License).
 
 - [Emscripten Documentation](https://emscripten.org/docs/)
 - [f2c Manual](https://www.netlib.org/f2c/)
-- [LEED Theory](http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/
-  leed/)
+- [LEED Theory][leed-theory]
+
+[leed-theory]: http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/

@@ -3,6 +3,10 @@
  * Browser-based LEED/XPD phase shift calculations
  */
 
+/* eslint-env browser */
+/* global Chart, createPhaseShiftsModule */
+/* eslint-disable security/detect-object-injection */
+
 // Global state
 let phaseShiftsModule = null;
 let chart = null;
@@ -148,15 +152,49 @@ const presets = {
 const methodDescriptions = {
   rel: 'Relativistic: Full Dirac equation treatment, essential for heavy elements (Z > 30)',
   cav: 'Cavity LEED: Traditional cavity method using Loucks grid, suitable for most applications',
-  wil: "Williams: A.R. Williams' method, good for comparison studies",
+  wil: 'Williams: A.R. Williams\' method, good for comparison studies',
 };
 
-// Initialize application
-document.addEventListener('DOMContentLoaded', async () => {
+async function handleDomContentLoaded() {
   setupEventListeners();
   populateElementSelect();
   await initializeWasmModule();
-});
+}
+
+function handleMethodChange(event) {
+  const value = event.target.value;
+  document.getElementById('method-help').textContent =
+    methodDescriptions[value] || '';
+}
+
+function handlePresetClick(event) {
+  const presetName = event.currentTarget.dataset.preset;
+  if (presetName) {
+    loadPreset(presetName);
+  }
+}
+
+function handleTabClick(event) {
+  const tabName = event.currentTarget.dataset.tab;
+  if (tabName) {
+    switchTab(tabName);
+  }
+}
+
+function handleDownloadCleed() {
+  downloadResults('cleed');
+}
+
+function handleDownloadViperleed() {
+  downloadResults('viperleed');
+}
+
+function handleDownloadCsv() {
+  downloadResults('csv');
+}
+
+// Initialize application
+document.addEventListener('DOMContentLoaded', handleDomContentLoaded);
 
 /**
  * Set up all event listeners
@@ -171,31 +209,30 @@ function setupEventListeners() {
   document.getElementById('clear-btn').addEventListener('click', clearResults);
 
   // Method selection - update help text
-  document.getElementById('method').addEventListener('change', (e) => {
-    document.getElementById('method-help').textContent =
-      methodDescriptions[e.target.value] || '';
-  });
+  document
+    .getElementById('method')
+    .addEventListener('change', handleMethodChange);
 
   // Preset buttons
   document.querySelectorAll('.preset-btn').forEach((btn) => {
-    btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+    btn.addEventListener('click', handlePresetClick);
   });
 
   // Tab switching
   document.querySelectorAll('.tab-btn').forEach((btn) => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    btn.addEventListener('click', handleTabClick);
   });
 
   // Download buttons
   document
     .getElementById('download-cleed')
-    .addEventListener('click', () => downloadResults('cleed'));
+    .addEventListener('click', handleDownloadCleed);
   document
     .getElementById('download-viperleed')
-    .addEventListener('click', () => downloadResults('viperleed'));
+    .addEventListener('click', handleDownloadViperleed);
   document
     .getElementById('download-csv')
-    .addEventListener('click', () => downloadResults('csv'));
+    .addEventListener('click', handleDownloadCsv);
 
   // Chart controls
   document.getElementById('show-all-l').addEventListener('change', updateChart);
@@ -262,7 +299,7 @@ async function initializeWasmModule() {
     calculateBtn.disabled = false;
 
     // Hide banner after 3 seconds
-    setTimeout(() => {
+    window.setTimeout(() => {
       statusBanner.classList.add('hidden');
     }, 3000);
   } catch (error) {
@@ -313,20 +350,24 @@ function loadPreset(presetName) {
  */
 async function runCalculation() {
   const calculateBtn = document.getElementById('calculate-btn');
-  const originalText = calculateBtn.innerHTML;
+  const originalText = calculateBtn.textContent;
 
   try {
     // Update button state
     calculateBtn.disabled = true;
-    calculateBtn.innerHTML = '<span class="spinner"></span> Calculating...';
+    const spinner = document.createElement('span');
+    spinner.className = 'spinner';
+    calculateBtn.textContent = '';
+    calculateBtn.appendChild(spinner);
+    calculateBtn.appendChild(document.createTextNode(' Calculating...'));
 
     // Get input parameters
     const params = {
-      atomicNumber: parseInt(document.getElementById('element').value),
+      atomicNumber: parseInt(document.getElementById('element').value, 10),
       muffinTinRadius: parseFloat(
         document.getElementById('muffin-tin-radius').value,
       ),
-      lmax: parseInt(document.getElementById('lmax').value),
+      lmax: parseInt(document.getElementById('lmax').value, 10),
       energyMin: parseFloat(document.getElementById('energy-min').value),
       energyMax: parseFloat(document.getElementById('energy-max').value),
       energyStep: parseFloat(document.getElementById('energy-step').value),
@@ -359,7 +400,7 @@ async function runCalculation() {
     console.error(error);
   } finally {
     calculateBtn.disabled = false;
-    calculateBtn.innerHTML = originalText;
+    calculateBtn.textContent = originalText;
   }
 }
 
@@ -367,21 +408,7 @@ async function runCalculation() {
  * Calculate phase shifts using WASM module
  */
 async function calculatePhaseShifts(params) {
-  const {
-    atomicNumber,
-    muffinTinRadius,
-    lmax,
-    energyMin,
-    energyMax,
-    energyStep,
-    method,
-  } = params;
-
-  // Convert energies from eV to Hartrees (1 Hartree = 27.2116 eV)
-  const eVtoHartree = 1 / 27.2116;
-  const eMinHartree = energyMin * eVtoHartree;
-  const eMaxHartree = energyMax * eVtoHartree;
-  const eStepHartree = energyStep * eVtoHartree;
+  const method = params.method;
 
   // Generate input file for the calculation
   const inputData = generateInputFile(params);
@@ -459,12 +486,13 @@ function parsePhaseShiftOutput(output, params) {
     }
   }
 
-  return {
+  const parsed = {
     raw: output,
     energies,
     phaseShifts,
     success: true,
   };
+  return parsed;
 }
 
 /**
@@ -555,8 +583,11 @@ function updateResultsTable(results, params) {
   const tableBody = document.getElementById('table-body');
 
   // Clear existing
-  headerRow.innerHTML = '<th>Energy (eV)</th>';
-  tableBody.innerHTML = '';
+  headerRow.textContent = '';
+  tableBody.textContent = '';
+  const energyHeader = document.createElement('th');
+  energyHeader.textContent = 'Energy (eV)';
+  headerRow.appendChild(energyHeader);
 
   // Add L headers
   for (let l = 0; l <= params.lmax; l++) {
@@ -656,8 +687,8 @@ function updateChart() {
   if (!chart || !currentResults) return;
 
   const showAll = document.getElementById('show-all-l').checked;
-  const lMin = parseInt(document.getElementById('l-min').value);
-  const lMax = parseInt(document.getElementById('l-max-display').value);
+  const lMin = parseInt(document.getElementById('l-min').value, 10);
+  const lMax = parseInt(document.getElementById('l-max-display').value, 10);
 
   chart.data.datasets.forEach((dataset, index) => {
     if (showAll) {
@@ -805,7 +836,8 @@ function generateCsvFormat(results, params) {
  * Download a file
  */
 function downloadFile(content, filename, mimeType) {
-  const blob = new Blob([content], { type: mimeType });
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
+  const blob = new window.Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;

@@ -230,7 +230,10 @@ class PhaseShifts {
    * @private
    */
   _generateAtorbInput(params) {
-    const { atomicNumber, relativity = 1, exchangeAlpha = 0.7 } = params;
+    const atomicNumber = params.atomicNumber;
+    const relativity = params.relativity === undefined ? 1 : params.relativity;
+    const exchangeAlpha =
+      params.exchangeAlpha === undefined ? 0.7 : params.exchangeAlpha;
 
     let input = `d                           ! Dirac calculation\n`;
     input += `${relativity}                           ! relativity flag\n`;
@@ -250,14 +253,14 @@ class PhaseShifts {
    * @private
    */
   _generatePhshInput(params) {
-    const {
-      atomicNumber,
-      muffinTinRadius = 2.5,
-      energyMin = 1.0,
-      energyMax = 12.0,
-      energyStep = 0.25,
-      lmax = 10,
-    } = params;
+    const atomicNumber = params.atomicNumber;
+    const muffinTinRadius =
+      params.muffinTinRadius === undefined ? 2.5 : params.muffinTinRadius;
+    const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
+    const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
+    const energyStep =
+      params.energyStep === undefined ? 0.25 : params.energyStep;
+    const lmax = params.lmax === undefined ? 10 : params.lmax;
 
     // Number of energy points
     const nEnergies = Math.floor((energyMax - energyMin) / energyStep) + 1;
@@ -277,17 +280,19 @@ class PhaseShifts {
     try {
       const output = this.FS.readFile('/output/atorb.o', { encoding: 'utf8' });
 
-      return {
+      const parsed = {
         raw: output,
         success: true,
         // Additional parsing can be added here
       };
+      return parsed;
     } catch (e) {
-      return {
+      const parsed = {
         raw: '',
         success: false,
         error: e.message,
       };
+      return parsed;
     }
   }
 
@@ -311,7 +316,7 @@ class PhaseShifts {
       // Parse phase shifts from output
       const phaseShifts = this._parsePhaseShiftData(output, lmax);
 
-      return {
+      const parsed = {
         raw: output,
         success: true,
         energies: phaseShifts.energies,
@@ -319,14 +324,16 @@ class PhaseShifts {
         lmax: lmax,
         energyRange: { min: energyMin, max: energyMax, step: energyStep },
       };
+      return parsed;
     } catch (e) {
-      return {
+      const parsed = {
         raw: '',
         success: false,
         error: e.message,
         energies: [],
         phaseShifts: [],
       };
+      return parsed;
     }
   }
 
@@ -368,7 +375,8 @@ class PhaseShifts {
       }
     }
 
-    return { energies, data };
+    const parsed = { energies, data };
+    return parsed;
   }
 
   /**
@@ -436,7 +444,7 @@ async function createPhaseShifts(options = {}) {
     createModule = createPhaseShiftsModule;
   } else {
     // Dynamic import
-    const script = await import(/* webpackChunkName: "phaseshifts" */ wasmPath);
+    const script = await import(/* webpackChunkName: 'phaseshifts' */ wasmPath);
     createModule = script.default || script.createPhaseShiftsModule;
   }
 
