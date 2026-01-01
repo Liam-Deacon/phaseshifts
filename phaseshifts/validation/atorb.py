@@ -689,7 +689,7 @@ def render_atorb_file(model, filename, file_handle=None):
 
     if handle is not None:
         handle.write(payload)
-        return getattr(handle, "name", "") or filename
+        return getattr(handle, "name", "")
 
     with open(filename, "w") as handle:
         handle.write(payload)

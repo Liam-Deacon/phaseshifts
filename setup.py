@@ -368,6 +368,7 @@ build_eeasisss = (
 eeasisss_ext = Extension(
     name="phaseshifts.lib.libhartfock",
     extra_compile_args=[],
+    language="f90",
     sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
 )
 

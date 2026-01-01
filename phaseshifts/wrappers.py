@@ -109,6 +109,27 @@ class Wrapper(object):
         else:
             FileUtils.copy_files(phsh_files, os.path.abspath("."), verbose=True)
 
+    @staticmethod
+    def _remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format):
+        """Remove pi/2 jumps from phase shift outputs and return new filenames."""
+        phsh_files = []
+        for i, phaseshift in enumerate(phaseshifts):
+            filename = os.path.splitext(phasout_files[i])[0]
+            if out_format == "curve":
+                filename += ".cur"
+            else:
+                filename += ".phs"
+            phsh_files.append(filename)
+            print("\nRemoving pi/2 jumps in '{}':\n".format(os.path.basename(filename)))
+            phsh = Conphas(
+                input_files=[phasout_files[i]],
+                output_file=filename,
+                formatting=out_format,
+                lmax=lmax_dict[phaseshift],
+            )
+            phsh.calculate()
+        return phsh_files
+
     def _add_header(self, phsh_file=None, fmt=None):
         """
         Description
@@ -345,7 +366,7 @@ class EEASiSSSWrapper(Wrapper):
 
         # generate atomic charge densities for each element in bulk model
         if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model() instance")
+            raise TypeError("bulk_mtz is not an MTZ_model() instance")
 
         # get unique elements in bulk and slab
         bulk_elements = [atom.element for atom in bulk_mtz.atoms]
@@ -639,23 +660,11 @@ class BVHWrapper(Wrapper):
                 )
 
                 # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
+                phsh_files.extend(
+                    Wrapper._remove_pi_jumps(
+                        phaseshifts, phasout_files, lmax_dict, out_format
                     )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                )
 
             if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
                 # calculate phase shifts
@@ -725,23 +734,11 @@ class BVHWrapper(Wrapper):
                 )
 
                 # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
+                phsh_files.extend(
+                    Wrapper._remove_pi_jumps(
+                        phaseshifts, phasout_files, lmax_dict, out_format
                     )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                )
 
         except AttributeError as err:
             raise AttributeError("MTZ_model has no NFORM (0-2) specified!") from err

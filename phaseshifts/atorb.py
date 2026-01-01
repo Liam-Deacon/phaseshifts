@@ -617,8 +617,7 @@ class Atorb(object):
         config = ConfigParser(allow_no_value=True)
         config.set("DEFAULT", "# parameters common to all backends")
         config.set("DEFAULT", "ngrid", str(self.ngrid))
-        config.set("DEFAULT", "rel", str(self.ngrid))
-        config.set("DEFAULT", "exchange", str(self.exchange))
+        config.set("DEFAULT", "rel", str(self.rel))
         config.set("DEFAULT", "exchange", str(self.exchange))
         config.set("DEFAULT", "relic", str(self.relic))
         config.set("DEFAULT", "mixing_SCF", str(self.mixing_SCF))
@@ -1543,7 +1542,7 @@ class EEASiSSSAtorb(Atorb):
         elements = elements or []
         if output_dir is None:
             output_dir = (
-                expand_filepath("ATLIB")
+                expand_filepath("$ATLIB")
                 if "ATLIB" in os.environ
                 else expand_filepath("~/atlib/")
             )
@@ -1598,8 +1597,14 @@ class EEASiSSSAtorb(Atorb):
 if __name__ == "__main__":
     atorb = EEASiSSSAtorb()
     atorb.gen_conf_file("~/atlib/hf.conf")
-    for i in range(1, 112):
-        atorb.calculate_Q_density(elements=[elements_module.ELEMENTS[i].symbol])
+    if os.environ.get("PHASESHIFTS_RUN_FULL_ATORB") == "1":
+        for i in range(1, 112):
+            atorb.calculate_Q_density(elements=[elements_module.ELEMENTS[i].symbol])
+    else:
+        print(
+            "Set PHASESHIFTS_RUN_FULL_ATORB=1 to generate charge densities "
+            "for all elements."
+        )
 
 
 def get_substr_positions(string, substring="\n"):

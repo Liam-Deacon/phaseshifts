@@ -55,7 +55,7 @@ import sys
 import os
 import argparse
 
-from ..libhartfock import hartfock  # TODO: Handle import more gracefully
+from ..hartfock import hartfock  # TODO: Handle import more gracefully
 
 __date__ = "2015-04-26"
 __updated__ = "2015-04-26"
@@ -183,7 +183,7 @@ def main(argv=None):
         pass
     except Exception as err:  # pylint: disable=broad-except
         if DEBUG or TEST_RUN:
-            raise (err)
+            raise
         indent = len(program_name) * " "
         sys.stderr.write(program_name + ": " + repr(err) + "\n")
         sys.stderr.write(indent + "  for help use --help")

@@ -85,15 +85,14 @@ import sys
 import tempfile
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from glob import glob
-from shutil import copy
 
 import phaseshifts
 import phaseshifts.backends as _backend_registry
 import phaseshifts.settings
 from phaseshifts import atorb, model
-from phaseshifts.backends import get_backend
 from phaseshifts.conphas import Conphas
 from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
+from phaseshifts.utils import FileUtils
 
 try:
     from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
@@ -520,35 +519,7 @@ class Wrapper(object):
     @staticmethod
     def _copy_files(files, dst, verbose=False):
         """copy list of files into destination directory"""
-        # check if using native Windows Python with cygwin
-        env = ""
-        if platform.system() == "Windows" and dst.startswith("/cygdrive"):
-            if os.environ["CLEED_PHASE"] == dst:
-                env = "CLEED_PHASE="
-            dst = '"%s"' % (
-                dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])
-            )
-
-        # do check and create directory if needed
-        if os.path.isfile(dst):
-            dst = os.path.dirname(dst)
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-            except (PermissionError, OSError):
-                pass
-
-        # copy each phase shift file to directory
-        if verbose:
-            print("\nCopying files to %s'%s'" % (env, dst))
-        for filename in files:
-            try:
-                copy(filename, dst)
-                if verbose:
-                    print(os.path.basename(filename))
-            except IOError:
-                sys.stderr.write("Cannot copy file '%s'\n" % filename)
-                sys.stderr.flush()
+        FileUtils.copy_files(files, dst, verbose=verbose)
 
 
 class CLIError(Exception):
@@ -831,7 +802,14 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        backend_name = str(getattr(args, "backend", None) or "bvh").lower()
+        default_backend = parser.get_default("backend")
+        backend_name = str(getattr(args, "backend", None) or default_backend).lower()
+        package_name = str(getattr(args, "package", "") or "").lower()
+        if package_name and backend_name == str(default_backend).lower():
+            if package_name in ("vht", "bvh", "van hove", "barbieri"):
+                backend_name = "bvh"
+            elif package_name in ("rundgren", "eeasisss"):
+                backend_name = "eeasisss"
 
         # Structured input support: auto-generate bulk and slab inputs from geometry
         if getattr(args, "input", None):

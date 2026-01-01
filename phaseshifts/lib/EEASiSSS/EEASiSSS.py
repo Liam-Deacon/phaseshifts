@@ -68,6 +68,8 @@ except OSError as err:
 
 def eeasisss(input_file="inputX"):
     """Wrapper function to call EEASiSSS Fortran library using ctypes"""
+    if not os.path.isfile(input_file):
+        raise FileNotFoundError("Input file '{}' not found".format(input_file))
     input_bytes = str(input_file).encode("utf-8")
     lib_eeasisss.hartfock_(create_string_buffer(input_bytes, 255))
 

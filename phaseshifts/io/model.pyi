@@ -5,6 +5,7 @@ Type stubs for phaseshifts.io.model.
 from typing import Any, Dict, List, Sequence, Tuple, Union
 
 VectorLike = Union[Tuple[float, float, float], Sequence[float]]
+VibrationalDisplacement = Union[float, List[Union[str, float]]]
 
 class Position(object):
     x: float
@@ -32,10 +33,13 @@ class SuperstructureMatrix(object):
 class AtomParameters(object):
     phase_file: str
     position: Position
-    vibrational_displacement: float
+    vibrational_displacement: VibrationalDisplacement
 
     def __init__(
-        self, phase_file: str, position: Position, vibrational_displacement: float
+        self,
+        phase_file: str,
+        position: Position,
+        vibrational_displacement: VibrationalDisplacement,
     ) -> None: ...
     def to_dict(self) -> Dict[str, Any]: ...
 

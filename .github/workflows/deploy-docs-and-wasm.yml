@@ -89,11 +89,11 @@ jobs:
         id: wasm-tools
         run: |
           if command -v emcc &> /dev/null && command -v f2c &> /dev/null; then
-            echo "WASM_TOOLS_AVAILABLE=true" >> $GITHUB_OUTPUT
+            echo "WASM_TOOLS_AVAILABLE=true" >> "$GITHUB_OUTPUT"
             emcc --version
             which f2c
           else
-            echo "WASM_TOOLS_AVAILABLE=false" >> $GITHUB_OUTPUT
+            echo "WASM_TOOLS_AVAILABLE=false" >> "$GITHUB_OUTPUT"
             echo "::warning::WASM build tools not available, deploying demo mode"
           fi
         continue-on-error: true
@@ -172,6 +172,7 @@ jobs:
           path: "_site"
 
   deploy:
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
     needs: build
     runs-on: ubuntu-latest
     environment:
@@ -184,7 +185,9 @@ jobs:
 
       - name: Summary
         run: |
-          echo "## Deployment Complete! 🚀" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- **Documentation**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Calculator**: ${{ steps.deployment.outputs.page_url }}calculator/" >> $GITHUB_STEP_SUMMARY
+          {
+            echo "## Deployment Complete! 🚀"
+            echo ""
+            echo "- **Documentation**: ${{ steps.deployment.outputs.page_url }}"
+            echo "- **Calculator**: ${{ steps.deployment.outputs.page_url }}calculator/"
+          } >> "$GITHUB_STEP_SUMMARY"
