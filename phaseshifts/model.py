@@ -128,11 +128,8 @@ class Atom(object):
 
     # set coordinates of atom within unitcell in terms of a
     def set_coordinates(self, coordinates):
-        try:
-            self.coordinates = coordinates
-            self._coordinates = [r / 0.529 for r in coordinates]
-        except Exception:
-            raise
+        self.coordinates = coordinates
+        self._coordinates = [r / 0.529 for r in coordinates]
 
     # set valence of atom
     def set_valence(self, valency):
@@ -595,7 +592,7 @@ class MTZ_model(Model):
                 elif nform in ["0", "1", "2"]:
                     self.nform = int(nform)
         except Exception as exc:
-            raise TypeError(str(exc))
+            raise TypeError(str(exc))  # pylint: disable=raise-missing-from
 
     def set_slab_c(self, c):
         """Set the maximum height of the slab in Angstroms.

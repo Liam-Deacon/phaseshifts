@@ -55,7 +55,7 @@ import sys
 import os
 import argparse
 
-from ..hartfock import hartfock  # TODO: Handle import more gracefully
+from ..hartfock import hartfock  # NOTE: Handle import more gracefully.
 
 __date__ = "2015-04-26"
 __updated__ = "2015-04-26"

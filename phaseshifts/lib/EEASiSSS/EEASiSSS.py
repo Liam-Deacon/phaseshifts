@@ -69,7 +69,9 @@ except OSError as err:
 def eeasisss(input_file="inputX"):
     """Call the EEASiSSS Fortran library using ctypes."""
     if not os.path.isfile(input_file):
-        raise FileNotFoundError("Input file '{}' not found".format(input_file))
+        raise FileNotFoundError(
+            "Input file '%s' not found" % input_file
+        )  # pylint: disable=consider-using-f-string
     input_bytes = str(input_file).encode("utf-8")
     lib_eeasisss.hartfock_(create_string_buffer(input_bytes, 255))
 

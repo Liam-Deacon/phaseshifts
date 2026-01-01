@@ -131,9 +131,11 @@ class Wrapper(object):
             else:
                 filename += ".phs"
             phsh_files.append(filename)
+            # pylint: disable=consider-using-f-string
             sys.stdout.write(
-                "\nRemoving pi/2 jumps in '{}':\n".format(os.path.basename(filename))
+                "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
             )
+            # pylint: enable=consider-using-f-string
             phsh = Conphas(
                 input_files=[phasout_files[i]],
                 output_file=filename,
@@ -143,7 +145,7 @@ class Wrapper(object):
             phsh.calculate()
         return phsh_files
 
-    def _add_header(self, phsh_file=None, fmt=None):
+    def _add_header(self, phsh_file=None, fmt=None):  # pylint: disable=too-many-locals
         """Prepend a header line to the beginning of the phase shift file.
 
         Description

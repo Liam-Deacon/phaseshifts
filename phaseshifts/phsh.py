@@ -883,7 +883,7 @@ def main(argv=None):
             atomic_dict = _generate_atomic_orbitals(
                 args.bulk, args.slab, tmp_dir=args.tmpdir, verbose=verbose
             )
-        except Exception as err:
+        except Exception as err:  # pylint: disable=broad-exception-caught
             return _fatal(err)
         if verbose:
             sys.stdout.write("\nGenerated atomic orbitals:\n")
@@ -899,7 +899,7 @@ def main(argv=None):
         sys.stdout.write("\tformat: {}\n".format(args.format))
         sys.stdout.write("\tbackend: {}\n".format(args.backend))
         sys.stdout.write("\tlmax: {}\n".format(args.lmax))
-        sys.stdout.write("\trange: {} eV\n".format([s for s in args.range]))
+        sys.stdout.write("\trange: {} eV\n".format(args.range))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (
