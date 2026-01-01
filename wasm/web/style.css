@@ -11,12 +11,12 @@
   --error-color: #ef4444;
   --warning-color: #f59e0b;
   --background: #f8fafc;
-  --surface: #ffffff;
+  --surface: #fff;
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --border-color: #e2e8f0;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow: 0 1px 3px rgb(0 0 0 / 10%);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 10%);
   --radius: 8px;
   --radius-lg: 12px;
 }
@@ -157,7 +157,7 @@ section h3 {
 .form-group select:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 10%);
 }
 
 .form-group .help-text {
@@ -273,7 +273,7 @@ section h3 {
 
 .tab-btn.active {
   color: var(--primary-color);
-  background: rgba(37, 99, 235, 0.1);
+  background: rgb(37 99 235 / 10%);
 }
 
 .tab-content {
@@ -309,9 +309,8 @@ section h3 {
 
 /* Table */
 .table-container {
-  overflow-x: auto;
   max-height: 400px;
-  overflow-y: auto;
+  overflow: auto;
 }
 
 #results-table {
@@ -335,7 +334,7 @@ section h3 {
 }
 
 #results-table tbody tr:hover {
-  background: rgba(37, 99, 235, 0.05);
+  background: rgb(37 99 235 / 5%);
 }
 
 /* Raw Output */
@@ -344,11 +343,10 @@ section h3 {
   color: #e2e8f0;
   padding: 1rem;
   border-radius: var(--radius);
-  overflow-x: auto;
-  font-family: "Monaco", "Menlo", "Consolas", monospace;
+  overflow: auto;
+  font-family: Monaco, Menlo, Consolas, monospace;
   font-size: 0.8rem;
   max-height: 400px;
-  overflow-y: auto;
 }
 
 /* Download Buttons */
@@ -425,7 +423,7 @@ footer .version {
 }
 
 /* Responsive */
-@media (max-width: 768px) {
+@media (width <= 768px) {
   header h1 {
     font-size: 1.5rem;
   }
@@ -452,7 +450,7 @@ footer .version {
   display: inline-block;
   width: 1em;
   height: 1em;
-  border: 2px solid currentColor;
+  border: 2px solid currentcolor;
   border-right-color: transparent;
   border-radius: 50%;
   animation: spin 0.75s linear infinite;

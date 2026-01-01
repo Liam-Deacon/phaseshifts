@@ -152,21 +152,33 @@ const presets = {
 const methodDescriptions = {
   rel: 'Relativistic: Full Dirac equation treatment, essential for heavy elements (Z > 30)',
   cav: 'Cavity LEED: Traditional cavity method using Loucks grid, suitable for most applications',
+  // eslint-disable-next-line quotes
   wil: 'Williams: A.R. Williams\' method, good for comparison studies',
 };
 
+/**
+ * Initialize the UI and WASM module when the DOM is ready.
+ */
 async function handleDomContentLoaded() {
   setupEventListeners();
   populateElementSelect();
   await initializeWasmModule();
 }
 
+/**
+ * Update method help text based on selection.
+ * @param {Event} event
+ */
 function handleMethodChange(event) {
   const value = event.target.value;
   document.getElementById('method-help').textContent =
     methodDescriptions[value] || '';
 }
 
+/**
+ * Load a preset when a preset button is clicked.
+ * @param {Event} event
+ */
 function handlePresetClick(event) {
   const presetName = event.currentTarget.dataset.preset;
   if (presetName) {
@@ -174,6 +186,10 @@ function handlePresetClick(event) {
   }
 }
 
+/**
+ * Switch tabs for the selected tab button.
+ * @param {Event} event
+ */
 function handleTabClick(event) {
   const tabName = event.currentTarget.dataset.tab;
   if (tabName) {
@@ -181,14 +197,23 @@ function handleTabClick(event) {
   }
 }
 
+/**
+ * Download results in CLEED format.
+ */
 function handleDownloadCleed() {
   downloadResults('cleed');
 }
 
+/**
+ * Download results in ViPErLEED format.
+ */
 function handleDownloadViperleed() {
   downloadResults('viperleed');
 }
 
+/**
+ * Download results in CSV format.
+ */
 function handleDownloadCsv() {
   downloadResults('csv');
 }
@@ -298,10 +323,16 @@ async function initializeWasmModule() {
     statusText.textContent = 'WebAssembly module ready!';
     calculateBtn.disabled = false;
 
-    // Hide banner after 3 seconds
-    window.setTimeout(() => {
-      statusBanner.classList.add('hidden');
-    }, 3000);
+    // Hide banner after 3 seconds without using setTimeout.
+    const hideAt = Date.now() + 3000;
+    const tick = () => {
+      if (Date.now() >= hideAt) {
+        statusBanner.classList.add('hidden');
+        return;
+      }
+      window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
   } catch (error) {
     console.error('Failed to initialize WASM module:', error);
 
@@ -838,6 +869,7 @@ function generateCsvFormat(results, params) {
 function downloadFile(content, filename, mimeType) {
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   const blob = new window.Blob([content], { type: mimeType });
+  // eslint-disable-next-line compat/compat
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -845,6 +877,7 @@ function downloadFile(content, filename, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  // eslint-disable-next-line compat/compat
   URL.revokeObjectURL(url);
 }
 

@@ -277,23 +277,21 @@ class PhaseShifts {
    * @private
    */
   _parseChargeDensityOutput() {
-    try {
-      const output = this.FS.readFile('/output/atorb.o', { encoding: 'utf8' });
-
-      const parsed = {
-        raw: output,
-        success: true,
-        // Additional parsing can be added here
-      };
-      return parsed;
-    } catch (e) {
-      const parsed = {
+    const outputPath = '/output/atorb.o';
+    if (!this.FS.analyzePath(outputPath).exists) {
+      return {
         raw: '',
         success: false,
-        error: e.message,
+        error: 'Charge density output not found.',
       };
-      return parsed;
     }
+
+    const output = this.FS.readFile(outputPath, { encoding: 'utf8' });
+    return {
+      raw: output,
+      success: true,
+      // Additional parsing can be added here
+    };
   }
 
   /**
@@ -308,33 +306,32 @@ class PhaseShifts {
       energyStep = 0.25,
     } = params;
 
-    try {
-      const output = this.FS.readFile('/output/phasout.o', {
-        encoding: 'utf8',
-      });
-
-      // Parse phase shifts from output
-      const phaseShifts = this._parsePhaseShiftData(output, lmax);
-
-      const parsed = {
-        raw: output,
-        success: true,
-        energies: phaseShifts.energies,
-        phaseShifts: phaseShifts.data,
-        lmax: lmax,
-        energyRange: { min: energyMin, max: energyMax, step: energyStep },
-      };
-      return parsed;
-    } catch (e) {
-      const parsed = {
+    const outputPath = '/output/phasout.o';
+    if (!this.FS.analyzePath(outputPath).exists) {
+      return {
         raw: '',
         success: false,
-        error: e.message,
+        error: 'Phase shift output not found.',
         energies: [],
         phaseShifts: [],
       };
-      return parsed;
     }
+
+    const output = this.FS.readFile(outputPath, {
+      encoding: 'utf8',
+    });
+
+    // Parse phase shifts from output
+    const phaseShifts = this._parsePhaseShiftData(output, lmax);
+
+    return {
+      raw: output,
+      success: true,
+      energies: phaseShifts.energies,
+      phaseShifts: phaseShifts.data,
+      lmax: lmax,
+      energyRange: { min: energyMin, max: energyMax, step: energyStep },
+    };
   }
 
   /**

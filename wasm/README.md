@@ -1,4 +1,3 @@
-<!-- markdownlint-disable MD041 -->
 # WebAssembly Build for phaseshifts
 
 This directory contains the build infrastructure for compiling the `libphsh.f`
