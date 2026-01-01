@@ -279,19 +279,21 @@ class PhaseShifts {
   _parseChargeDensityOutput() {
     const outputPath = '/output/atorb.o';
     if (!this.FS.analyzePath(outputPath).exists) {
-      return {
+      const parsed = {
         raw: '',
         success: false,
         error: 'Charge density output not found.',
       };
+      return parsed;
     }
 
     const output = this.FS.readFile(outputPath, { encoding: 'utf8' });
-    return {
+    const parsed = {
       raw: output,
       success: true,
       // Additional parsing can be added here
     };
+    return parsed;
   }
 
   /**
@@ -299,22 +301,22 @@ class PhaseShifts {
    * @private
    */
   _parsePhaseShiftOutput(params) {
-    const {
-      lmax = 10,
-      energyMin = 1.0,
-      energyMax = 12.0,
-      energyStep = 0.25,
-    } = params;
+    const lmax = params.lmax === undefined ? 10 : params.lmax;
+    const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
+    const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
+    const energyStep =
+      params.energyStep === undefined ? 0.25 : params.energyStep;
 
     const outputPath = '/output/phasout.o';
     if (!this.FS.analyzePath(outputPath).exists) {
-      return {
+      const parsed = {
         raw: '',
         success: false,
         error: 'Phase shift output not found.',
         energies: [],
         phaseShifts: [],
       };
+      return parsed;
     }
 
     const output = this.FS.readFile(outputPath, {
@@ -324,7 +326,7 @@ class PhaseShifts {
     // Parse phase shifts from output
     const phaseShifts = this._parsePhaseShiftData(output, lmax);
 
-    return {
+    const parsed = {
       raw: output,
       success: true,
       energies: phaseShifts.energies,
@@ -332,6 +334,7 @@ class PhaseShifts {
       lmax: lmax,
       energyRange: { min: energyMin, max: energyMax, step: energyStep },
     };
+    return parsed;
   }
 
   /**

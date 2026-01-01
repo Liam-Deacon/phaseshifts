@@ -5,6 +5,7 @@
 
 /* eslint-env browser */
 /* global Chart, createPhaseShiftsModule */
+/* eslint-disable compat/compat */
 /* eslint-disable security/detect-object-injection */
 
 // Global state
@@ -152,6 +153,7 @@ const presets = {
 const methodDescriptions = {
   rel: 'Relativistic: Full Dirac equation treatment, essential for heavy elements (Z > 30)',
   cav: 'Cavity LEED: Traditional cavity method using Loucks grid, suitable for most applications',
+  // prettier-ignore
   // eslint-disable-next-line quotes
   wil: 'Williams: A.R. Williams\' method, good for comparison studies',
 };

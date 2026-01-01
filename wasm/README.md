@@ -1,4 +1,4 @@
-# WebAssembly Build for phaseshifts
+**WebAssembly Build for phaseshifts**
 
 This directory contains the build infrastructure for compiling the `libphsh.f`
 Fortran phase shift code to WebAssembly, enabling browser-based calculations.
