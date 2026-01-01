@@ -12,6 +12,7 @@ from .model import (  # noqa: F401
     SuperstructureMatrix,
     UnitCell,
 )
+
 try:
     from .cleedpy_yaml import CleedpyYamlAdapter as _CleedpyYamlAdapter
 except ImportError:
