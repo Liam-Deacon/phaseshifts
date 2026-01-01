@@ -141,8 +141,8 @@ after execution. When operating in this mode, the following assumptions are made
 
         rm:  <phase_shift> <radius>
 
-    However, if no value is found the radius is guessed from the
-    ::code::`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
+However, if no value is found the radius is guessed from the
+:code:`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
     depending on the valency of the given phase shift element.
 
 A full list of additional syntax to customise the generation of the phase shifts

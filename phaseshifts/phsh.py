@@ -565,6 +565,48 @@ class CLIError(Exception):
         return self.msg
 
 
+def _generate_atomic_orbitals(bulk_file, slab_file, tmp_dir=None, verbose=False):
+    """Generate atomic charge density files for elements in bulk and slab inputs."""
+    if not bulk_file or not slab_file:
+        raise CLIError("--atorbs-only requires both bulk and slab inputs.")
+
+    tmp_dir = tmp_dir or tempfile.gettempdir()
+    if not os.path.isdir(tmp_dir):
+        os.makedirs(tmp_dir)
+
+    dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    bulk_mtz = model.MTZ_model(dummycell, atoms=[])
+    if CLEEDInputValidator.is_cleed_file(bulk_file):
+        bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
+    else:
+        bulk_mtz.load_from_file(bulk_file)
+
+    slab_mtz = model.MTZ_model(dummycell, atoms=[])
+    if CLEEDInputValidator.is_cleed_file(slab_file):
+        slab_mtz = Converter.import_CLEED(slab_file, verbose=verbose)
+    else:
+        slab_mtz.load_from_file(slab_file)
+
+    elements = [
+        getattr(atom.element, "symbol", str(atom.element))
+        for atom in bulk_mtz.atoms + slab_mtz.atoms
+    ]
+
+    atomic_dict = {}
+    for elem in sorted(set(elements)):
+        at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
+        if not os.path.isfile(at_file):
+            if verbose:
+                print("\nCalculating atomic charge density for %s..." % elem)
+            atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
+                element=elem, output_dir=tmp_dir
+            )
+        else:
+            atomic_dict[elem] = at_file
+
+    return atomic_dict
+
+
 def main(argv=None):
     """
     Main command-line interface for phase shift generation.
@@ -856,6 +898,19 @@ def main(argv=None):
         )
     ):
         args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
+
+    if args.atorbs_only:
+        try:
+            atomic_dict = _generate_atomic_orbitals(
+                args.bulk, args.slab, tmp_dir=args.tmpdir, verbose=verbose
+            )
+        except Exception as err:
+            return _fatal(err)
+        if verbose:
+            print("\nGenerated atomic orbitals:")
+            for at_file in sorted(atomic_dict.values()):
+                print("\t{}".format(at_file))
+        return 0
 
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
