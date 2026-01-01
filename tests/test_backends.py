@@ -1,6 +1,11 @@
 import pytest
 
-from phaseshifts.backends import BVHBackend, EEASiSSSBackend, BackendError, get_backend
+from phaseshifts.backends import (
+    BVHBackend,
+    BackendError,
+    EEASiSSSBackend,
+    get_backend,
+)
 
 
 def test_get_backend_default():

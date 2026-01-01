@@ -50,10 +50,10 @@ will produce a list of command line options::
                           case-insensitive. [default: 'cleed']
     --backend <backend>
                           Phase shift backend to use: 'bvh' (default) or
-                          'eeasisss' (alias: viperleed).
+                          'eeasisss' (native or ViPErLEED; alias: viperleed).
     --backend-params <parameters>
-                          Backend-specific parameters file. For viperleed,
-                          pass the ViPErLEED PARAMETERS file.
+                          Backend-specific parameters file. For viperleed
+                          mode, pass the ViPErLEED PARAMETERS file.
     --backend-workdir <dir>
                           Backend working directory (viperleed uses it for
                           EEASiSSS input/output files).
@@ -87,8 +87,8 @@ will produce a list of command line options::
 
 .. note::
    To use EEASiSSS via ViPErLEED, install ``pip install "phaseshifts[viperleed]"``
-   and pass ``--backend viperleed`` with a POSCAR slab file and
-   ``--backend-params PARAMETERS``.
+   and pass ``--backend viperleed`` (an alias for ``eeasisss`` that forces
+   ViPErLEED mode) with a POSCAR slab file and ``--backend-params PARAMETERS``.
 
    Example::
 
@@ -141,8 +141,8 @@ after execution. When operating in this mode, the following assumptions are made
 
         rm:  <phase_shift> <radius>
 
-However, if no value is found the radius is guessed from the
-:code:`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
+    However, if no value is found the radius is guessed from the
+    :code:`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
     depending on the valency of the given phase shift element.
 
 A full list of additional syntax to customise the generation of the phase shifts

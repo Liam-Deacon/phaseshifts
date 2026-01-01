@@ -45,20 +45,28 @@ from .wrappers import BVHWrapper, EEASiSSSWrapper
 class PhaseshiftFactory(object):
     """Class for backend selection"""
 
+    backend = None  # type: object
+
     def __init__(self, backend, **kwargs):
+        package = str(backend).lower()
         self.__dict__.update(kwargs)
         self.phsh_files = []  # type: List[str]
-        package = str(backend).lower()
-        valid_bvh = ["vht", "bvh", "van hove", "barbieri", "bvt"]
-        valid_eeasisss = ["eeasisss", "rundgren", "viperleed", "viper"]
-        if package not in valid_bvh + valid_eeasisss:
-            sys.stderr.write("Invalid package selected - using default (BVH)\n")
+        try:
+            valid_bvh = ["vht", "bvh", "van hove", "barbieri", "bvt"]
+            valid_eeasisss = ["eeasisss", "rundgren", "viperleed", "viper"]
+            if package not in valid_bvh + valid_eeasisss:
+                sys.stderr.write("Invalid package selected - using default (BVH)\n")
+                sys.stderr.flush()
+                self.backend = BVHWrapper()
+            else:
+                if package in valid_bvh:
+                    self.backend = BVHWrapper()
+                elif package in valid_eeasisss:
+                    self.backend = EEASiSSSWrapper()
+        except KeyError:
+            sys.stderr.write("Invalid phaseshifts backend\n")
             sys.stderr.flush()
-            self.backend = BVHWrapper()
-        elif package in valid_bvh:
-            self.backend = BVHWrapper()
-        else:
-            self.backend = EEASiSSSWrapper()
+            sys.exit(-2)
 
     def _require_attrs(self, *names):
         missing = [name for name in names if not hasattr(self, name)]
@@ -74,7 +82,13 @@ class PhaseshiftFactory(object):
     def getPhaseShiftFiles(self):
         """Returns a list of generated phase shift files"""
         self._require_attrs(
-            "bulk_file", "slab_file", "tmp_dir", "lmax", "format", "store", "range"
+            "bulk_file",
+            "slab_file",
+            "tmp_dir",
+            "lmax",
+            "format",
+            "store",
+            "range",
         )
         return self.backend.autogen_from_input(
             self.bulk_file,

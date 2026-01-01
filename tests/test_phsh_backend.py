@@ -5,7 +5,6 @@ from phaseshifts.backends import (
     BVHBackend,
     BackendError,
     EEASiSSSBackend,
-    ViperLeedBackend,
     get_backend,
 )
 
@@ -41,4 +40,5 @@ def test_eeasisss_backend_requires_native_or_viperleed(monkeypatch):
 
 def test_viperleed_backend():
     backend = get_backend("viperleed")
-    assert isinstance(backend, ViperLeedBackend)
+    assert isinstance(backend, EEASiSSSBackend)
+    assert backend.mode == "viperleed"

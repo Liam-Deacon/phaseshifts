@@ -53,10 +53,21 @@ from .conphas import Conphas
 from .utils import FileUtils
 
 
+def _add_metaclass(metaclass):
+    """Create a class decorator for Py2/Py3 compatible metaclasses."""
+
+    def decorator(cls):
+        attrs = dict(cls.__dict__)
+        attrs.pop("__dict__", None)
+        attrs.pop("__weakref__", None)
+        return metaclass(cls.__name__, cls.__bases__, attrs)
+
+    return decorator
+
+
+@_add_metaclass(ABCMeta)
 class Wrapper(object):
     """Abstract base wrapper class for generating phase shifts"""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def autogen_from_input(
@@ -465,6 +476,7 @@ class BVHWrapper(Wrapper):
         slab_file,
         tmp_dir=None,
         model_name=None,
+        lmax=10,
         verbose=False,
         **kwargs
     ):
@@ -502,7 +514,8 @@ class BVHWrapper(Wrapper):
         # check formatting
         store = kwargs["store"] if "store" in kwargs else "."
         out_format = kwargs["format"].lower() if "format" in kwargs else None
-        lmax = kwargs["lmax"] if "lmax" in kwargs else 10
+        lmax = lmax if isinstance(lmax, int) else 10
+        lmax = kwargs.get("lmax", lmax)
 
         # check for intermediate storage directory, temp folder otherwise
         tmp_dir = str(tmp_dir) if tmp_dir is not None else ""
