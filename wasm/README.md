@@ -1,10 +1,13 @@
 # WebAssembly Build for phaseshifts
 
-This directory contains the build infrastructure for compiling the `libphsh.f` Fortran phase shift code to WebAssembly, enabling browser-based calculations.
+This directory contains the build infrastructure for compiling the `libphsh.f`
+Fortran phase shift code to WebAssembly, enabling browser-based calculations.
 
 ## Overview
 
-The WASM build uses Emscripten to compile the Fortran code to WebAssembly with MEMFS (in-memory filesystem) for virtualized file I/O. This allows the original Fortran code to run in the browser with minimal modifications.
+The WASM build uses Emscripten to compile the Fortran code to WebAssembly with
+MEMFS (in-memory filesystem) for virtualized file I/O. This allows the original
+Fortran code to run in the browser with minimal modifications.
 
 ### Supported Algorithms
 
@@ -89,12 +92,14 @@ cd wasm
    ```
 
 2. Compile with Emscripten:
+
    ```bash
    emcc libphsh.c -lf2c \
        -s WASM=1 \
        -s MODULARIZE=1 \
        -s EXPORT_NAME="createPhaseShiftsModule" \
-       -s EXPORTED_FUNCTIONS="['_hartfock_', '_phsh_cav_', '_phsh_rel_', '_phsh_wil_']" \
+       -s EXPORTED_FUNCTIONS="['_hartfock_', '_phsh_cav_', \
+       '_phsh_rel_', '_phsh_wil_']" \
        -s EXPORTED_RUNTIME_METHODS="['FS', 'ccall', 'cwrap']" \
        -s FORCE_FILESYSTEM=1 \
        -s ALLOW_MEMORY_GROWTH=1 \
@@ -117,13 +122,13 @@ After building, the `dist/` directory will contain:
 <script>
   createPhaseShiftsModule().then((Module) => {
     // Write input file to virtual filesystem
-    Module.FS.writeFile("/input.dat", inputData);
+    Module.FS.writeFile('/input.dat', inputData);
 
     // Run phase shift calculation
-    Module.ccall("phsh_rel_", null, [], []);
+    Module.ccall('phsh_rel_', null, [], []);
 
     // Read output
-    const output = Module.FS.readFile("/output.dat", { encoding: "utf8" });
+    const output = Module.FS.readFile('/output.dat', { encoding: 'utf8' });
   });
 </script>
 ```
@@ -153,7 +158,7 @@ pytest tests/test_wasm_build.py -v
 
 ## Architecture
 
-```
+```text
 wasm/
 ├── README.md           # This file
 ├── build.sh            # Main build script
@@ -209,7 +214,7 @@ emcc ... -s INITIAL_MEMORY=64MB -s MAXIMUM_MEMORY=256MB ...
 Ensure you're writing files to the MEMFS before calling Fortran functions:
 
 ```javascript
-Module.FS.writeFile("/input.dat", data);
+Module.FS.writeFile('/input.dat', data);
 ```
 
 ## License
@@ -220,4 +225,5 @@ Same as the parent phaseshifts project (MIT License).
 
 - [Emscripten Documentation](https://emscripten.org/docs/)
 - [f2c Manual](https://www.netlib.org/f2c/)
-- [LEED Theory](http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/)
+- [LEED Theory](http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/
+  leed/)

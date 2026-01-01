@@ -337,10 +337,10 @@ build_with_f2c() {
 
     # Set compiler flags based on debug mode
     if [[ $DEBUG -eq 1 ]]; then
-        EMCC_FLAGS="-O0 -g -s ASSERTIONS=2"
+        EMCC_FLAGS=(-O0 -g -s ASSERTIONS=2)
         echo "  (Debug build enabled)"
     else
-        EMCC_FLAGS="-O2"
+        EMCC_FLAGS=(-O2)
     fi
 
     # Locate f2c library
@@ -362,10 +362,10 @@ build_with_f2c() {
     fi
 
     # Main compilation
-    emcc $EMCC_FLAGS \
+    emcc "${EMCC_FLAGS[@]}" \
         libphsh.c \
         wrapper.c \
-        $F2C_LINK \
+        "$F2C_LINK" \
         -s WASM=1 \
         -s MODULARIZE=1 \
         -s EXPORT_NAME="createPhaseShiftsModule" \

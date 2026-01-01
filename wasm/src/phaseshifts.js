@@ -9,6 +9,8 @@
  * @license MIT
  */
 
+/* global createPhaseShiftsModule */
+
 /**
  * PhaseShifts calculator class
  * Wraps the WASM module and provides a clean JavaScript API
@@ -33,12 +35,12 @@ class PhaseShifts {
     if (this._initialized) return this;
 
     // Call the WASM init function
-    this.Module.ccall("init_phaseshifts", null, [], []);
+    this.Module.ccall('init_phaseshifts', null, [], []);
 
     // Create working directories in MEMFS
-    this._createDir("/input");
-    this._createDir("/output");
-    this._createDir("/work");
+    this._createDir('/input');
+    this._createDir('/output');
+    this._createDir('/work');
 
     this._initialized = true;
     return this;
@@ -49,10 +51,9 @@ class PhaseShifts {
    * @private
    */
   _createDir(path) {
-    try {
+    const info = this.FS.analyzePath(path);
+    if (!info.exists) {
       this.FS.mkdir(path);
-    } catch (e) {
-      if (e.code !== "EEXIST") throw e;
     }
   }
 
@@ -61,7 +62,7 @@ class PhaseShifts {
    * @returns {string} Version string
    */
   getVersion() {
-    const ptr = this.Module.ccall("get_version", "string", [], []);
+    const ptr = this.Module.ccall('get_version', 'string', [], []);
     return ptr;
   }
 
@@ -79,14 +80,14 @@ class PhaseShifts {
     this._ensureInitialized();
 
     const inputFile = this._generateAtorbInput(params);
-    this.FS.writeFile("/input/atorb.i", inputFile);
+    this.FS.writeFile('/input/atorb.i', inputFile);
 
     // Run hartfock calculation
     const result = this.Module.ccall(
-      "run_hartfock",
-      "number",
-      ["string"],
-      ["/input/atorb.i"]
+      'run_hartfock',
+      'number',
+      ['string'],
+      ['/input/atorb.i'],
     );
 
     if (result !== 0) {
@@ -114,11 +115,11 @@ class PhaseShifts {
   calculatePhaseShifts(params) {
     this._ensureInitialized();
 
-    const method = (params.method || "rel").toLowerCase();
+    const method = (params.method || 'rel').toLowerCase();
 
     // Generate or use provided potential
     if (params.potentialFile) {
-      this.FS.writeFile("/input/mufftin.o", params.potentialFile);
+      this.FS.writeFile('/input/mufftin.o', params.potentialFile);
     } else {
       // Need to run hartfock first to generate potential
       this.calculateChargeDensity(params);
@@ -126,29 +127,29 @@ class PhaseShifts {
 
     // Generate phase shift input file
     const phshInput = this._generatePhshInput(params);
-    this.FS.writeFile("/input/phsh.i", phshInput);
+    this.FS.writeFile('/input/phsh.i', phshInput);
 
     // Run the appropriate phase shift calculation
     let result;
     switch (method) {
-      case "rel":
-        result = this.Module.ccall("run_phsh_rel", "number", [], []);
+      case 'rel':
+        result = this.Module.ccall('run_phsh_rel', 'number', [], []);
         break;
-      case "cav":
-        result = this.Module.ccall("run_phsh_cav", "number", [], []);
+      case 'cav':
+        result = this.Module.ccall('run_phsh_cav', 'number', [], []);
         break;
-      case "wil":
-        result = this.Module.ccall("run_phsh_wil", "number", [], []);
+      case 'wil':
+        result = this.Module.ccall('run_phsh_wil', 'number', [], []);
         break;
       default:
         throw new Error(
-          `Unknown method: ${method}. Use 'rel', 'cav', or 'wil'.`
+          `Unknown method: ${method}. Use 'rel', 'cav', or 'wil'.`,
         );
     }
 
     if (result !== 0) {
       throw new Error(
-        `Phase shift calculation (${method}) failed with code ${result}`
+        `Phase shift calculation (${method}) failed with code ${result}`,
       );
     }
 
@@ -161,7 +162,7 @@ class PhaseShifts {
    * @returns {Object} Phase shift results
    */
   calculateRelativistic(params) {
-    return this.calculatePhaseShifts({ ...params, method: "rel" });
+    return this.calculatePhaseShifts({ ...params, method: 'rel' });
   }
 
   /**
@@ -170,7 +171,7 @@ class PhaseShifts {
    * @returns {Object} Phase shift results
    */
   calculateCavity(params) {
-    return this.calculatePhaseShifts({ ...params, method: "cav" });
+    return this.calculatePhaseShifts({ ...params, method: 'cav' });
   }
 
   /**
@@ -179,7 +180,7 @@ class PhaseShifts {
    * @returns {Object} Phase shift results
    */
   calculateWilliams(params) {
-    return this.calculatePhaseShifts({ ...params, method: "wil" });
+    return this.calculatePhaseShifts({ ...params, method: 'wil' });
   }
 
   /**
@@ -199,7 +200,7 @@ class PhaseShifts {
    * @param {string} [options.encoding='utf8'] - File encoding
    * @returns {string|Uint8Array} File content
    */
-  readFile(path, options = { encoding: "utf8" }) {
+  readFile(path, options = { encoding: 'utf8' }) {
     this._ensureInitialized();
     return this.FS.readFile(path, options);
   }
@@ -211,7 +212,7 @@ class PhaseShifts {
    */
   listDir(path) {
     this._ensureInitialized();
-    return this.FS.readdir(path).filter((f) => f !== "." && f !== "..");
+    return this.FS.readdir(path).filter((f) => f !== '.' && f !== '..');
   }
 
   /**
@@ -220,7 +221,7 @@ class PhaseShifts {
    */
   _ensureInitialized() {
     if (!this._initialized) {
-      throw new Error("PhaseShifts not initialized. Call init() first.");
+      throw new Error('PhaseShifts not initialized. Call init() first.');
     }
   }
 
@@ -229,24 +230,14 @@ class PhaseShifts {
    * @private
    */
   _generateAtorbInput(params) {
-    const {
-      atomicNumber,
-      relativity = 1,
-      exchangeAlpha = 0.7,
-      orbitals,
-    } = params;
-
-    // Generate default orbital configuration based on atomic number
-    const orbitalConfig = orbitals || this._getDefaultOrbitals(atomicNumber);
+    const { atomicNumber, relativity = 1, exchangeAlpha = 0.7 } = params;
 
     let input = `d                           ! Dirac calculation\n`;
     input += `${relativity}                           ! relativity flag\n`;
     input += `x                           ! exchange correlation\n`;
     input += `${exchangeAlpha.toFixed(4)}                     ! alpha\n`;
     input += `i                           ! initialize\n`;
-    input += `${atomicNumber.toFixed(
-      1
-    )}                       ! atomic number\n`;
+    input += `${atomicNumber.toFixed(1)}                       ! atomic number\n`;
     input += `a                           ! ab initio calculation\n`;
     input += `w                           ! write output\n`;
     input += `q                           ! quit\n`;
@@ -272,9 +263,9 @@ class PhaseShifts {
     const nEnergies = Math.floor((energyMax - energyMin) / energyStep) + 1;
 
     return `${atomicNumber.toFixed(1)} ${muffinTinRadius.toFixed(
-      4
+      4,
     )} ${energyMin.toFixed(4)} ${energyMax.toFixed(4)} ${energyStep.toFixed(
-      4
+      4,
     )} ${lmax} ${nEnergies}\n`;
   }
 
@@ -284,9 +275,7 @@ class PhaseShifts {
    */
   _parseChargeDensityOutput() {
     try {
-      const output = this.FS.readFile("/output/atorb.o", { encoding: "utf8" });
-      // Parse the output file
-      const lines = output.split("\n");
+      const output = this.FS.readFile('/output/atorb.o', { encoding: 'utf8' });
 
       return {
         raw: output,
@@ -295,7 +284,7 @@ class PhaseShifts {
       };
     } catch (e) {
       return {
-        raw: "",
+        raw: '',
         success: false,
         error: e.message,
       };
@@ -315,8 +304,8 @@ class PhaseShifts {
     } = params;
 
     try {
-      const output = this.FS.readFile("/output/phasout.o", {
-        encoding: "utf8",
+      const output = this.FS.readFile('/output/phasout.o', {
+        encoding: 'utf8',
       });
 
       // Parse phase shifts from output
@@ -332,7 +321,7 @@ class PhaseShifts {
       };
     } catch (e) {
       return {
-        raw: "",
+        raw: '',
         success: false,
         error: e.message,
         energies: [],
@@ -346,7 +335,7 @@ class PhaseShifts {
    * @private
    */
   _parsePhaseShiftData(output, lmax) {
-    const lines = output.split("\n");
+    const lines = output.split('\n');
     const energies = [];
     const data = [];
 
@@ -358,7 +347,7 @@ class PhaseShifts {
     // Parse lines looking for energy and phase shift values
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#")) continue;
+      if (!trimmed || trimmed.startsWith('#')) continue;
 
       const values = trimmed
         .split(/\s+/)
@@ -373,6 +362,7 @@ class PhaseShifts {
 
         // Remaining values are phase shifts for L=0,1,2,...
         for (let l = 0; l < values.length - 1 && l <= lmax; l++) {
+          // eslint-disable-next-line security/detect-object-injection
           data[l].push(values[l + 1]);
         }
       }
@@ -435,18 +425,18 @@ class PhaseShifts {
  * });
  */
 async function createPhaseShifts(options = {}) {
-  const wasmPath = options.wasmPath || "./phaseshifts.js";
+  const wasmPath = options.wasmPath || './phaseshifts.js';
 
   // Dynamically load the WASM module
   // In browser, this relies on the Emscripten-generated loader
   let createModule;
 
-  if (typeof createPhaseShiftsModule !== "undefined") {
+  if (typeof createPhaseShiftsModule !== 'undefined') {
     // Module already loaded (via script tag)
     createModule = createPhaseShiftsModule;
   } else {
     // Dynamic import
-    const script = await import(wasmPath);
+    const script = await import(/* webpackChunkName: "phaseshifts" */ wasmPath);
     createModule = script.default || script.createPhaseShiftsModule;
   }
 
@@ -458,7 +448,7 @@ async function createPhaseShifts(options = {}) {
 }
 
 // Element data for convenience
-const ELEMENTS = {
+const elements = {
   H: 1,
   He: 2,
   Li: 3,
@@ -554,14 +544,21 @@ const ELEMENTS = {
 };
 
 // Export for different module systems
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = { PhaseShifts, createPhaseShifts, ELEMENTS };
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    PhaseShifts,
+    createPhaseShifts,
+    elements,
+    ELEMENTS: elements,
+  };
 }
 
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   window.PhaseShifts = PhaseShifts;
   window.createPhaseShifts = createPhaseShifts;
-  window.ELEMENTS = ELEMENTS;
+  window.elements = elements;
+  window.ELEMENTS = elements;
 }
 
-export { PhaseShifts, createPhaseShifts, ELEMENTS };
+export { PhaseShifts, createPhaseShifts, elements };
+export { elements as ELEMENTS };
