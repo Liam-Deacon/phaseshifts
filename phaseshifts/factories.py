@@ -43,11 +43,12 @@ from .wrappers import BVHWrapper, EEASiSSSWrapper
 
 
 class PhaseshiftFactory(object):
-    """Class for backend selection"""
+    """Class for backend selection."""
 
     backend = None  # type: object
 
     def __init__(self, backend, **kwargs):
+        """Initialize the factory with a backend identifier."""
         package = str(backend).lower()
         self.__dict__.update(kwargs)
         self.phsh_files = []  # type: List[str]
@@ -75,12 +76,12 @@ class PhaseshiftFactory(object):
                 "Missing required phaseshift inputs: {}".format(", ".join(missing))
             )
 
-    def createAtorbFiles(self):
+    def createAtorbFiles(self):  # noqa: N802
         """Generate atomic orbital input files for the configured backend."""
         raise NotImplementedError("createAtorbFiles is not implemented.")
 
-    def getPhaseShiftFiles(self):
-        """Returns a list of generated phase shift files"""
+    def getPhaseShiftFiles(self):  # noqa: N802
+        """Return a list of generated phase shift files."""
         self._require_attrs(
             "bulk_file",
             "slab_file",

@@ -1601,11 +1601,12 @@ if __name__ == "__main__":
         for i in range(1, 112):
             atorb.calculate_Q_density(elements=[elements_module.ELEMENTS[i].symbol])
     else:
-        print(
+        sys.stdout.write(
             "Set PHASESHIFTS_RUN_FULL_ATORB=1 to generate charge densities "
-            "for all elements."
+            "for all elements.\n"
         )
 
 
 def get_substr_positions(string, substring="\n"):
+    """Return start indices for all substring occurrences."""
     return [m.start() for m in re.finditer(substring, string)]

@@ -518,7 +518,7 @@ class Wrapper(object):
 
     @staticmethod
     def _copy_files(files, dst, verbose=False):
-        """copy list of files into destination directory"""
+        """Copy list of files into destination directory."""
         FileUtils.copy_files(files, dst, verbose=verbose)
 
 
@@ -568,7 +568,9 @@ def _generate_atomic_orbitals(bulk_file, slab_file, tmp_dir=None, verbose=False)
         at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
         if not os.path.isfile(at_file):
             if verbose:
-                print("\nCalculating atomic charge density for %s..." % elem)
+                sys.stdout.write(
+                    "\nCalculating atomic charge density for %s...\n" % elem
+                )
             atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
                 element=elem, output_dir=tmp_dir
             )
@@ -579,8 +581,7 @@ def _generate_atomic_orbitals(bulk_file, slab_file, tmp_dir=None, verbose=False)
 
 
 def main(argv=None):
-    """
-    Main command-line interface for phase shift generation.
+    """Run the command-line interface for phase shift generation.
 
     Parses user arguments, sets up the workflow, and executes the full Barbieri/Van Hove phase shift
     calculation sequence. Supports options for input files, output formatting, energy range, and
@@ -609,7 +610,6 @@ def main(argv=None):
     - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
     """
-
     if argv is None:
         argv = sys.argv
     else:
@@ -886,20 +886,20 @@ def main(argv=None):
         except Exception as err:
             return _fatal(err)
         if verbose:
-            print("\nGenerated atomic orbitals:")
+            sys.stdout.write("\nGenerated atomic orbitals:\n")
             for at_file in sorted(atomic_dict.values()):
-                print("\t{}".format(at_file))
+                sys.stdout.write("\t{}\n".format(at_file))
         return 0
 
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
-        print("Phase shift auto-generation parameters")
-        print("\tbulk input file: {}".format(args.bulk))
-        print("\tslab input file: {}".format(args.slab))
-        print("\tformat: {}".format(args.format))
-        print("\tbackend: {}".format(args.backend))
-        print("\tlmax: {}".format(args.lmax))
-        print("\trange: {} eV".format([s for s in args.range]))
+        sys.stdout.write("Phase shift auto-generation parameters\n")
+        sys.stdout.write("\tbulk input file: {}\n".format(args.bulk))
+        sys.stdout.write("\tslab input file: {}\n".format(args.slab))
+        sys.stdout.write("\tformat: {}\n".format(args.format))
+        sys.stdout.write("\tbackend: {}\n".format(args.backend))
+        sys.stdout.write("\tlmax: {}\n".format(args.lmax))
+        sys.stdout.write("\trange: {} eV\n".format([s for s in args.range]))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (

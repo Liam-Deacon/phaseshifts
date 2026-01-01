@@ -598,12 +598,10 @@ class MTZ_model(Model):
             raise TypeError(str(exc))
 
     def set_slab_c(self, c):
-        """
-        Description
-        -----------
-        Set the maximum height of the slab in Angstroms - if this is
-        much larger than the bulk c distance then there will be a large
-        vacuum and therefore should be used when calculating a thin slab
+        """Set the maximum height of the slab in Angstroms.
+
+        If this is much larger than the bulk c distance then there will be a
+        large vacuum and therefore should be used when calculating a thin slab
         rather than a bulk muffin-tin potential.
 
         Examples

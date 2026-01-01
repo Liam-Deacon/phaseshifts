@@ -131,7 +131,9 @@ class Wrapper(object):
             else:
                 filename += ".phs"
             phsh_files.append(filename)
-            print("\nRemoving pi/2 jumps in '{}':\n".format(os.path.basename(filename)))
+            sys.stdout.write(
+                "\nRemoving pi/2 jumps in '{}':\n".format(os.path.basename(filename))
+            )
             phsh = Conphas(
                 input_files=[phasout_files[i]],
                 output_file=filename,
@@ -142,7 +144,8 @@ class Wrapper(object):
         return phsh_files
 
     def _add_header(self, phsh_file=None, fmt=None):
-        """
+        """Prepend a header line to the beginning of the phase shift file.
+
         Description
         -----------
         Prepends a header line to the beginning of the phase shift file.
