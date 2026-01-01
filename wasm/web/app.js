@@ -325,16 +325,8 @@ async function initializeWasmModule() {
     statusText.textContent = 'WebAssembly module ready!';
     calculateBtn.disabled = false;
 
-    // Hide banner after 3 seconds without using setTimeout.
-    const hideAt = Date.now() + 3000;
-    const tick = () => {
-      if (Date.now() >= hideAt) {
-        statusBanner.classList.add('hidden');
-        return;
-      }
-      window.requestAnimationFrame(tick);
-    };
-    window.requestAnimationFrame(tick);
+    // Hide banner after 3 seconds via CSS animation.
+    statusBanner.classList.add('auto-hide');
   } catch (error) {
     console.error('Failed to initialize WASM module:', error);
 
@@ -869,18 +861,14 @@ function generateCsvFormat(results, params) {
  * Download a file
  */
 function downloadFile(content, filename, mimeType) {
-  // eslint-disable-next-line n/no-unsupported-features/node-builtins
-  const blob = new window.Blob([content], { type: mimeType });
-  // eslint-disable-next-line compat/compat
-  const url = URL.createObjectURL(blob);
+  const url =
+    'data:' + mimeType + ';charset=utf-8,' + encodeURIComponent(content);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // eslint-disable-next-line compat/compat
-  URL.revokeObjectURL(url);
 }
 
 /**

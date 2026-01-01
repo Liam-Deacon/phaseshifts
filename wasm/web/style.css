@@ -98,6 +98,21 @@ main {
   display: none;
 }
 
+.status-banner.ready.auto-hide {
+  animation: banner-fade 0.3s ease 3s forwards;
+}
+
+@keyframes banner-fade {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
 /* Sections */
 section {
   background: var(--surface);
