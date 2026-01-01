@@ -131,8 +131,8 @@ class Atom(object):
         try:
             self.coordinates = coordinates
             self._coordinates = [r / 0.529 for r in coordinates]
-        except any as e:
-            raise e
+        except Exception:
+            raise
 
     # set valence of atom
     def set_valence(self, valency):
@@ -594,8 +594,8 @@ class MTZ_model(Model):
                     self.nform = 2
                 elif nform in ["0", "1", "2"]:
                     self.nform = int(nform)
-        except any as e:
-            raise TypeError(e.msg)
+        except Exception as exc:
+            raise TypeError(str(exc))
 
     def set_slab_c(self, c):
         """

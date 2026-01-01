@@ -282,7 +282,7 @@ potential(s).
 
 An important detail is that, as a function of energy, the
 calculated phase shifts may, and often do, show discontinuities
-by ::math::`\pi`, i.e. jumps by ::math::`\pi` at some energies.
+by :math:`\pi`, i.e. jumps by :math:`\pi` at some energies.
 Since the LEED programs interpolate phase shifts between energies at which
 they are provided, such discontinuities would give totally
 erroneous results at such discontinuities. Therefore these
