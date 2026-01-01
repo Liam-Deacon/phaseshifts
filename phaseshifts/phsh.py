@@ -664,7 +664,7 @@ def main(argv=None):
             "--tmpdir",
             dest="tmpdir",
             metavar="<temp_dir>",
-            help="temporary directory for intermediate file generation",
+            help="temporary directory for intermediate " "file generation",
         )
         parser.add_argument(
             "-l",
@@ -691,14 +691,15 @@ def main(argv=None):
             metavar="<backend>",
             default="bvh",
             help="Phase shift backend to use: 'bvh' (default), "
-            "'eeasisss' (native), or 'viperleed' (ViPErLEED).",
+            "'eeasisss' (native or ViPErLEED; alias: viperleed).",
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For viperleed, pass the "
-            "ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX file.",
+            help="Backend-specific parameters file. For viperleed mode, pass "
+            "the ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX "
+            "file.",
         )
         parser.add_argument(
             "--backend-workdir",
@@ -733,6 +734,27 @@ def main(argv=None):
             "[default: %(default)s]",
         )
         parser.add_argument(
+            "-a",
+            "--atorbs-only",
+            dest="atorbs_only",
+            action="store_true",
+            default=False,
+            help="Only generate atomic orbitals of elements "
+            "found in the input files using Eric Shirley's "
+            "hartfock routine, then exit. "
+            "[default: %(default)s]",
+        )
+        parser.add_argument(
+            "-p",
+            "--package",
+            dest="package",
+            metavar="<package>",
+            default="VHT",
+            help="Selects package to use for phase shift "
+            "calculations. Choices are 'VHT' (van Hove-Tong) "
+            "or 'Rundgren' (EEASiSSS). [default: %(default)s]",
+        )
+        parser.add_argument(
             "-S",
             "--store",
             dest="store",
@@ -745,7 +767,9 @@ def main(argv=None):
             "--verbose",
             dest="verbose",
             action="count",
-            help="set verbosity level [default: %(default)s]",
+            help="Set verbosity level. Note this will also "
+            "produce postscript graphs when using the EEASiSSS"
+            "backend. [default: %(default)s]",
         )
         parser.add_argument(
             "-V", "--version", action="version", version=program_version_message
@@ -836,11 +860,12 @@ def main(argv=None):
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
         print("Phase shift auto-generation parameters")
-        print("\tbulk input file: %s" % args.bulk)
-        print("\tslab input file: %s" % args.slab)
-        print("\tformat: %s" % args.format)
-        print("\tlmax: %s" % args.lmax)
-        print("\trange: %s eV" % [s for s in args.range])
+        print("\tbulk input file: {}".format(args.bulk))
+        print("\tslab input file: {}".format(args.slab))
+        print("\tformat: {}".format(args.format))
+        print("\tbackend: {}".format(args.backend))
+        print("\tlmax: {}".format(args.lmax))
+        print("\trange: {} eV".format([s for s in args.range]))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
     output_file = (

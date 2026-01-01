@@ -442,7 +442,30 @@ class Model(object):
                 "Not every atom position in model is unique!\n%s\n" % info
             )
 
-    def set_atoms(self, atoms):
+    @property
+    def name(self):
+        """Returns the model name"""
+        return getattr(self, "_name", "")
+
+    @name.setter
+    def name(self, name):
+        """Sets the name of the model"""
+        self._name = str(name) if not isinstance(name, str) else name
+
+    @property
+    def elements(self):
+        """Returns a list of unique elements within the model"""
+        return {atom.element for atom in self.atoms}
+
+    @property
+    def atoms(self):
+        """Returns a list of atoms within this model"""
+        if not hasattr(self, "_atoms"):
+            self._atoms = []
+        return self._atoms
+
+    @atoms.setter
+    def atoms(self, atoms):
         """
         Set the atoms for the model.
 
@@ -459,9 +482,13 @@ class Model(object):
 
         """
         if isinstance(atoms, list):
-            self.atoms = [atom for atom in atoms if isinstance(atom, Atom)]
+            self._atoms = [atom for atom in atoms if isinstance(atom, Atom)]
         else:
             raise TypeError
+
+    def set_atoms(self, atoms):
+        """Set atoms via the property setter for backwards compatibility."""
+        self.atoms = atoms
 
     def set_unitcell(self, unitcell):
         """
@@ -591,7 +618,7 @@ class MTZ_model(Model):
         except:
             pass
 
-    def load_from_file(self, filename):
+    def _load_input_file(self, filename):
         """
         Description
         -----------
@@ -682,6 +709,35 @@ class MTZ_model(Model):
 
         except ValueError:
             raise ValueError("malformatted input in '%s'" % filename)
+
+    def load_from_file(self, filename):
+        """
+        Description
+        -----------
+        Load an input file and update the class instance variables
+
+        Parameters
+        ----------
+        filename : str
+            The path of the input file (e.g. cluster*.i or *slab*.i)
+
+        Raises
+        ------
+        IOError : exception
+            If the file cannot be read.
+        TypeError : exception
+            If a input line cannot be parsed correctly.
+
+        """
+
+        from phaseshifts.leed import Converter, CLEEDInputValidator
+
+        filename = glob(os.path.expanduser(os.path.expandvars(filename)))[0]
+        if CLEEDInputValidator.is_cleed_file(filename):
+            cleed_model = Converter.import_CLEED(filename)
+            self.__dict__.update(cleed_model.__dict__)
+            return
+        self._load_input_file(filename)
 
     def create_atorbs(self, **kwargs):
         """

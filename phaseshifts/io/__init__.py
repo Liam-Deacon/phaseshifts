@@ -17,7 +17,7 @@ class IOAdapter(object):
         raise NotImplementedError
 
 
-from .model import (  # noqa: E402  # isort:skip
+from .model import (  # isort:skip
     AtomParameters,
     EnergyRange,
     InputParameters,
@@ -26,8 +26,14 @@ from .model import (  # noqa: E402  # isort:skip
     UnitCell,
 )
 
+try:
+    from .cleedpy_yaml import CleedpyYamlAdapter  # noqa: E402
+except ImportError:  # pragma: no cover - optional dependency
+    CleedpyYamlAdapter = None
+
 __all__ = [
     "AtomParameters",
+    "CleedpyYamlAdapter",
     "EnergyRange",
     "InputParameters",
     "IOAdapter",

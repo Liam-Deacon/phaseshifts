@@ -362,6 +362,15 @@ f2py_platform_extra_args = {
     },
 }.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
+build_eeasisss = (
+    os.environ.get("PHASESHIFTS_BUILD_EEASISSS", "OFF").lower() in TRUE_OPTS
+)
+eeasisss_ext = Extension(
+    name="phaseshifts.lib.libhartfock",
+    extra_compile_args=[],
+    sources=[os.path.join("phaseshifts", "lib", "EEASiSSS", "hf.f90")],
+)
+
 f2py_exts = (
     [
         # NOTE: When hacking the build process for Python 3.12, we still want to force wheel to be platform specific
@@ -379,13 +388,21 @@ f2py_exts = (
             extra_compile_args=f2py_platform_extra_args["extra_compile_args"],
             extra_link_args=f2py_platform_extra_args["extra_link_args"],
             sources=f2py_exts_sources["libphsh"],
-        )
+        ),
     ]
+    + ([eeasisss_ext] if build_eeasisss else [])
 )
 
 print("BUILD_BACKEND: {}".format(BUILD_BACKEND))
 
 README = "README.md"
+LONG_DESCRIPTION = ""
+
+try:
+    with open(README, encoding="utf-8") as readme_file_ptr:
+        LONG_DESCRIPTION = readme_file_ptr.read()
+except OSError:
+    pass
 
 # --- Fallback logic for build ---
 setup_args = dict(
@@ -399,7 +416,7 @@ setup_args = dict(
     description=(
         "Python-based version of the Barbieri/Van Hove phase shift calculation package for LEED/XPD modelling"
     ),
-    long_description=(None if not os.path.exists(README) else open(README).read()),
+    long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     classifiers=[
         "Development Status :: 4 - Beta",

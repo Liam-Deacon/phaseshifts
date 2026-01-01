@@ -6,7 +6,7 @@
 #                                                                            #
 # Contact: liam.deacon@diamond.ac.uk                                         #
 #                                                                            #
-# Created on 18 Mar 2015                                                     #
+# Created on 15 Apr 2015                                                     #
 #                                                                            #
 # Copyright: Copyright (C) 2015 Liam Deacon                                  #
 #                                                                            #
@@ -31,71 +31,61 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-"""
-eeasisss.py - calculate EEASiSSS phase shifts.
+""" """
+from __future__ import print_function, unicode_literals
+from __future__ import absolute_import, division, with_statement
 
-eeasisss calculates phase shifts using John Rundgren's EEASiSSS() subroutine.
-
-Examples
---------
-.. code:: bash
-
-    eeasisss.py -i inputX -a ~/atlib/ -l ilogA
-
-
-"""
-from __future__ import absolute_import, division, print_function, unicode_literals
-
-import argparse
-import os
 import sys
-from ctypes import cdll, create_string_buffer
-from ctypes.util import find_library
+import os
+from shutil import copy
 
 
-_ext = ".dll" if str(sys.platform).startswith("win") else ".so"
-_lib = os.path.join(os.path.dirname(__file__), "lib")
-
-os.environ["PATH"] = _lib + os.pathsep + os.environ.get("PATH", "")
-_library_path = find_library("EEASiSSS") or os.path.join(_lib, "libEEASiSSS" + _ext)
-try:
-    lib_eeasisss = cdll.LoadLibrary(_library_path)
-except OSError as err:
-    raise ImportError(
-        "EEASiSSS library not found. Expected at: {} ({})".format(_library_path, err)
-    ) from err
+def expand_filepath(path):
+    """Expands the filepath for environment and user variables"""
+    return os.path.normpath(os.path.expanduser(os.path.expandvars(path)))
 
 
-def eeasisss(input_file="inputX"):
-    """Wrapper function to call EEASiSSS Fortran library using ctypes"""
-    input_bytes = str(input_file).encode("utf-8")
-    lib_eeasisss.hartfock_(create_string_buffer(input_bytes, 255))
+class FileUtils(object):
+    """Class for performing phase shift related file operations."""
 
+    @staticmethod
+    def expand_filepath(path):
+        """Backwards-compatible helper mirroring module-level expand_filepath."""
+        return expand_filepath(path)
 
-def main(argv=None):
-    """CLI entry point for eeasisss."""
-    parser = argparse.ArgumentParser(
-        description="Call the EEASiSSS Fortran library using ctypes.",
-    )
-    parser.add_argument(
-        "-i",
-        "--input",
-        dest="input_file",
-        default="inputX",
-        help="Input file passed to the EEASiSSS library",
-    )
-    args = parser.parse_args(argv)
-    if not os.path.isfile(args.input_file):
-        sys.stderr.write("Error: Input file '{}' not found\n".format(args.input_file))
-        return 1
-    try:
-        eeasisss(args.input_file)
-    except Exception as err:  # pylint: disable=broad-except
-        sys.stderr.write("Error calling EEASiSSS: {}\n".format(err))
-        return 1
-    return 0
+    @staticmethod
+    def copy_files(files, dst, verbose=False):
+        """copy list of files into destination directory"""
+        # check if using native Windows Python with cygwin
+        env = ""
+        if str(sys.platform).startswith("win") and dst.startswith("/cygdrive"):
+            cleed_phase = os.environ.get("CLEED_PHASE")
+            if cleed_phase == dst:
+                env = "CLEED_PHASE="
+            dst = '"%s"' % (
+                dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])
+            )
 
+        # do check and create directory if needed
+        if os.path.isfile(dst):
+            dst = os.path.dirname(dst)
+        if not os.path.isdir(dst):
+            try:
+                os.makedirs(dst)
+            except OSError as err:
+                import errno
 
-if __name__ == "__main__":
-    # use this file as a script
-    main()
+                if err.errno != errno.EEXIST:
+                    raise
+
+        # copy each phase shift file to directory
+        if verbose:
+            print("\nCopying files to %s'%s'" % (env, dst))
+        for filename in files:
+            try:
+                copy(filename, dst)
+                if verbose:
+                    print(os.path.basename(filename))
+            except IOError:
+                sys.stderr.write("Cannot copy file '%s'\n" % filename)
+                sys.stderr.flush()

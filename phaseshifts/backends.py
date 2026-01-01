@@ -12,6 +12,9 @@ class PhaseShiftBackend(object):
 
     name = None
 
+    def __init__(self, **kwargs):
+        _ = kwargs
+
     def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
         raise NotImplementedError
 
@@ -113,6 +116,11 @@ class EEASiSSSBackend(PhaseShiftBackend):
     """EEASiSSS backend using native library or ViPErLEED."""
 
     name = "eeasisss"
+    _valid_modes = ("auto", "native", "viperleed")
+
+    def __init__(self, mode="auto", **kwargs):
+        _ = kwargs
+        self.mode = mode or "auto"
 
     def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
         _ = bulk_file
@@ -120,11 +128,33 @@ class EEASiSSSBackend(PhaseShiftBackend):
         workdir = kwargs.get("backend_workdir") or tmp_dir or os.getcwd()
         output_file = kwargs.get("output_file") or "PHASESHIFTS"
         verbose = kwargs.get("verbose")
+        mode = str(self.mode or "auto").lower()
+
+        if mode not in self._valid_modes:
+            raise BackendError(
+                "eeasisss backend mode must be one of: {}.".format(
+                    ", ".join(sorted(self._valid_modes))
+                )
+            )
 
         if not parameters_file:
             raise BackendError(
                 "eeasisss backend requires --backend-params <PARAMETERS|inputX>."
             )
+
+        if mode == "viperleed":
+            if not slab_file:
+                raise BackendError(
+                    "eeasisss backend in viperleed mode requires --slab <POSCAR>."
+                )
+            if _load_viperleed_modules() is None:
+                raise BackendError(
+                    "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
+                )
+            return _run_viperleed(parameters_file, slab_file, workdir, output_file)
+
+        if mode == "native":
+            return _run_native_eeasisss(parameters_file, workdir, output_file)
 
         if slab_file:
             modules = _load_viperleed_modules()
@@ -152,31 +182,9 @@ class EEASiSSSBackend(PhaseShiftBackend):
         )
 
 
-class ViperLeedBackend(PhaseShiftBackend):
-    """EEASiSSS backend using the ViPErLEED toolchain."""
-
-    name = "viperleed"
-
-    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
-        _ = bulk_file
-        parameters_file = kwargs.get("backend_params")
-        workdir = kwargs.get("backend_workdir") or tmp_dir or os.getcwd()
-        output_file = kwargs.get("output_file") or "PHASESHIFTS"
-
-        if not parameters_file:
-            raise BackendError(
-                "viperleed backend requires --backend-params <PARAMETERS>."
-            )
-        if not slab_file:
-            raise BackendError("viperleed backend requires --slab <POSCAR>.")
-
-        return _run_viperleed(parameters_file, slab_file, workdir, output_file)
-
-
 DEFAULT_BACKENDS = {
     BVHBackend.name: BVHBackend,
     EEASiSSSBackend.name: EEASiSSSBackend,
-    ViperLeedBackend.name: ViperLeedBackend,
 }
 
 ALIASES = {
@@ -186,8 +194,8 @@ ALIASES = {
     "bvt": "bvh",
     "easisss": "eeasisss",
     "easiss": "eeasisss",
-    "viperleed": "viperleed",
-    "viper": "viperleed",
+    "viperleed": ("eeasisss", {"mode": "viperleed"}),
+    "viper": ("eeasisss", {"mode": "viperleed"}),
 }
 
 
@@ -202,11 +210,21 @@ def get_backend(name, registry=None, aliases=None):
     registry = registry or DEFAULT_BACKENDS
     aliases = aliases or ALIASES
     key = str(name or BVHBackend.name).lower()
-    key = aliases.get(key, key)
+    init_kwargs = {}
+    alias = aliases.get(key)
+    if alias is not None:
+        if isinstance(alias, tuple):
+            key = alias[0]
+            if len(alias) > 1 and alias[1]:
+                init_kwargs = alias[1]
+        else:
+            key = alias
     backend_cls = registry.get(key)
     if backend_cls is None:
         available = ", ".join(sorted(registry.keys()))
         raise BackendError(
             "Unknown backend '{}'. Available: {}.".format(name, available)
         )
+    if init_kwargs:
+        return backend_cls(**init_kwargs)
     return backend_cls()

@@ -11,6 +11,8 @@ phaseshifts.lib.phsh
 phaseshifts.lib.scripts
 phaseshifts.lib.scripts.*
 phaseshifts.lib.atomic_structure_solver
+phaseshifts.lib.EEASiSSS
+phaseshifts.lib.EEASiSSS.*
 
 # Specific symbol allowlist entries
 phaseshifts.VERSION
@@ -50,3 +52,14 @@ phaseshifts.tools.debye.__contact__
 phaseshifts.tools.debye.ArgumentParser._parse_known_args
 # Stub may be out of sync with runtime (v0_params parameter)
 phaseshifts.conphas.Conphas.__init__
+phaseshifts.wrappers.ABCMeta.__new__
+phaseshifts.wrappers.Conphas.__init__
+phaseshifts.wrappers.Wrapper
+phaseshifts.wrappers.BVHWrapper
+phaseshifts.wrappers.EEASiSSSWrapper
+phaseshifts.wrappers.glob
+phaseshifts.wrappers.phsh_cav
+phaseshifts.wrappers.phsh_rel
+phaseshifts.wrappers.phsh_wil
+phaseshifts.factories.BVHWrapper
+phaseshifts.factories.EEASiSSSWrapper

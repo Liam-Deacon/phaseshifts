@@ -4,6 +4,8 @@
 Scripts
 *******
 
+.. _phsh:
+
 phsh.py
 =======
 
@@ -22,7 +24,7 @@ will produce a list of command line options::
   phsh - quickly generate phase shifts
 
         Created by Liam Deacon on 2013-11-15.
-        Copyright 2013-2014 Liam Deacon. All rights reserved.
+        Copyright 2013-2015 Liam Deacon. All rights reserved.
 
         Licensed under the MIT license (see LICENSE file for details)
 
@@ -48,10 +50,10 @@ will produce a list of command line options::
                           case-insensitive. [default: 'cleed']
     --backend <backend>
                           Phase shift backend to use: 'bvh' (default) or
-                          'eeasisss' (alias: viperleed).
+                          'eeasisss' (native or ViPErLEED; alias: viperleed).
     --backend-params <parameters>
-                          Backend-specific parameters file. For viperleed,
-                          pass the ViPErLEED PARAMETERS file.
+                          Backend-specific parameters file. For viperleed
+                          mode, pass the ViPErLEED PARAMETERS file.
     --backend-workdir <dir>
                           Backend working directory (viperleed uses it for
                           EEASiSSS input/output files).
@@ -68,10 +70,16 @@ will produce a list of command line options::
                           installed, the input will be validated.
     -s <slab_file>, --slab <slab_file>
                           path to MTZ slab or CLEED *.inp input file (required unless --input is used)
+    --backend <backend>
+                          Phase shift backend to use (e.g. 'vht' or 'eeasisss').
+    -g, --generate-only
+                          Exit after generating phaseshifts; do not launch
+                          subprocess using PHASESHIFTS_LEED environment
+                          variable. [default: False]
     -S <subdir>, --store <subdir>
                           Keep intermediate files in subdir when done
-    -v, --verbose         set verbosity level [default: None].
-    -V, --version         show program's version number and exit
+    -v, --verbose         Set verbosity level [default: None].
+    -V, --version         Show program's version number and exit
 
 .. note::
    To install the optional dependencies for structured input and validation,
@@ -79,8 +87,8 @@ will produce a list of command line options::
 
 .. note::
    To use EEASiSSS via ViPErLEED, install ``pip install "phaseshifts[viperleed]"``
-   and pass ``--backend viperleed`` with a POSCAR slab file and
-   ``--backend-params PARAMETERS``.
+   and pass ``--backend viperleed`` (an alias for ``eeasisss`` that forces
+   ViPErLEED mode) with a POSCAR slab file and ``--backend-params PARAMETERS``.
 
    Example::
 
@@ -123,19 +131,19 @@ after execution. When operating in this mode, the following assumptions are made
  5. The element and oxidation of each atom in a model is guessed by reading the phase
     shift tag from the CLEED input file. For example::
 
-        po:  O_2-_COOH ...
+        po:  O_-2_COOH ...
 
     will be interpreted as a Oxygen with a -2 oxidation state and with a unique name
-    tag of "O_2-_COOH" to show it is in a carboxylic group. Note the '-' may be at
-    the beginning or the end of the oxidation sub-string. If no oxidation state is
+    tag of "O_-2_COOH" to show it is in a carboxylic group. Note the '-' must
+    be at the beginning the oxidation sub-string. If no oxidation state is
     given then the atom is assumed to have zero charge.
  6. The muffin-tin radius of the phase shift species is guessed from lines with::
 
         rm:  <phase_shift> <radius>
 
     However, if no value is found the radius is guessed from the
-    ELEMENTS dictionary within :py:mod:`phaseshifts.elements` depending on the
-    valency of the given phase shift element.
+    ::code::`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
+    depending on the valency of the given phase shift element.
 
 A full list of additional syntax to customise the generation of the phase shifts
 when using CLEED input files can be found in
