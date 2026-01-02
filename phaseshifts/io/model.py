@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 try:
-    from typing import Sequence, Tuple, Union
+    from typing import List, Sequence, Tuple, Union
 
     VectorLike = Union[Tuple[float, float, float], Sequence[float]]
+    VibrationalDisplacement = Union[float, List[Union[str, float]]]
 except ImportError:
     VectorLike = object
+    VibrationalDisplacement = object
 
 
 class Position(object):
