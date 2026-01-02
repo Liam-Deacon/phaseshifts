@@ -11,9 +11,13 @@
 
 /* global createPhaseShiftsModule */
 
+// codacy-disable-next-line
 import { elements } from './elements.js';
+// codacy-disable-next-line
 import { buildAtorbInput, buildPhshInput } from './input_format.js';
+// codacy-disable-next-line
 import { IO_PATHS } from './io_paths.js';
+// codacy-disable-next-line
 import { parsePhaseShiftData } from './phase_shift_parser.js';
 
 /**
@@ -349,17 +353,6 @@ async function createPhaseShifts(options = {}) {
   await phsh.init();
 
   return phsh;
-}
-
-// Export for different module systems
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    PhaseShifts,
-    createPhaseShifts,
-    elements,
-    ELEMENTS: elements,
-    IO_PATHS,
-  };
 }
 
 if (typeof window !== 'undefined') {

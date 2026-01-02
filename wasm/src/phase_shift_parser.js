@@ -1,6 +1,13 @@
+/**
+ * Parse phase shift data from text output.
+ * @param {string} output - Raw text output containing phase shift data
+ * @param {number} lmax - Maximum angular momentum quantum number
+ * @returns {{energies: number[], data: number[][]}} Parsed energies and phase shifts indexed by L
+ */
 function parsePhaseShiftData(output, lmax) {
   const lines = output.split('\n');
   const energies = [];
+  const energySet = new Set();
   const data = [];
 
   for (let l = 0; l <= lmax; l++) {
@@ -17,12 +24,16 @@ function parsePhaseShiftData(output, lmax) {
       .filter((v) => !isNaN(v));
     if (values.length >= 2) {
       const energy = values[0];
-      if (!energies.includes(energy)) {
+      if (!energySet.has(energy)) {
         energies.push(energy);
+        energySet.add(energy);
       }
 
       for (let l = 0; l < values.length - 1 && l <= lmax; l++) {
-        data[l].push(values[l + 1]);
+        const bucket = data[l];
+        if (bucket) {
+          bucket.push(values[l + 1]);
+        }
       }
     }
   }
