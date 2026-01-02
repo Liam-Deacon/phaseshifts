@@ -9,6 +9,8 @@
 /* eslint-disable security/detect-object-injection */
 
 import { elements } from '../src/elements.js';
+import { buildPhshInput } from '../src/input_format.js';
+import { IO_PATHS } from '../src/io_paths.js';
 import { parsePhaseShiftData } from '../src/phase_shift_parser.js';
 
 // Global state
@@ -346,7 +348,7 @@ async function calculatePhaseShifts(params) {
   const inputData = generateInputFile(params);
 
   // Write input to MEMFS
-  phaseShiftsModule.FS.writeFile('/input/phsh.i', inputData);
+  phaseShiftsModule.FS.writeFile(IO_PATHS.phshInput, inputData);
 
   // Run the appropriate calculation
   let result;
@@ -369,7 +371,7 @@ async function calculatePhaseShifts(params) {
   }
 
   // Read output
-  const output = phaseShiftsModule.FS.readFile('/output/phasout.o', {
+  const output = phaseShiftsModule.FS.readFile(IO_PATHS.phshOutput, {
     encoding: 'utf8',
   });
 
@@ -380,9 +382,7 @@ async function calculatePhaseShifts(params) {
  * Generate input file content
  */
 function generateInputFile(params) {
-  // This would generate the proper Fortran input format
-  // Simplified for now
-  return `${params.atomicNumber} ${params.muffinTinRadius} ${params.energyMin} ${params.energyMax} ${params.energyStep} ${params.lmax}`;
+  return buildPhshInput(params);
 }
 
 /**

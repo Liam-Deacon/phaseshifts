@@ -123,13 +123,13 @@ After building, the `dist/` directory will contain:
 <script>
   createPhaseShiftsModule().then((Module) => {
     // Write input file to virtual filesystem
-    Module.FS.writeFile('/input.dat', inputData);
+    Module.FS.writeFile('/input/atorb.i', inputData);
 
     // Run phase shift calculation
     Module.ccall('phsh_rel_', null, [], []);
 
     // Read output
-    const output = Module.FS.readFile('/output.dat', { encoding: 'utf8' });
+    const output = Module.FS.readFile('/output/phasout.o', { encoding: 'utf8' });
   });
 </script>
 ```
@@ -137,6 +137,26 @@ After building, the `dist/` directory will contain:
 ### Using the Web Interface
 
 Open `web/index.html` in a browser to use the graphical interface.
+
+### Virtual filesystem contract (MEMFS)
+
+The WASM module relies on fixed input/output paths inside MEMFS so the
+Fortran routines can open files with their legacy defaults. These paths
+are also used by the JavaScript API and should be treated as part of the
+public contract (useful for Jupyter or custom scripts):
+
+- Inputs
+  - `/input/atorb.i` — atorb input (charge density setup)
+  - `/input/mufftin.o` — optional potential override
+  - `/input/phsh.i` — phase shift input
+- Outputs
+  - `/output/atorb.o` — charge density output
+  - `/output/phasout.o` — phase shift output
+  - `/output/dataph.o` — phase shift diagnostics
+  - `/output/inpdat.o` — input echo data
+
+Roadmap: we plan to refactor the Fortran routines to accept configurable
+filenames, while keeping these defaults for backwards compatibility.
 
 ## Development
 

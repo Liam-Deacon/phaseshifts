@@ -12,6 +12,8 @@
 /* global createPhaseShiftsModule */
 
 import { elements } from './elements.js';
+import { buildAtorbInput, buildPhshInput } from './input_format.js';
+import { IO_PATHS } from './io_paths.js';
 import { parsePhaseShiftData } from './phase_shift_parser.js';
 
 /**
@@ -41,9 +43,9 @@ class PhaseShifts {
     this.Module.ccall('init_phaseshifts', null, [], []);
 
     // Create working directories in MEMFS
-    this._createDir('/input');
-    this._createDir('/output');
-    this._createDir('/work');
+    this._createDir(IO_PATHS.inputDir);
+    this._createDir(IO_PATHS.outputDir);
+    this._createDir(IO_PATHS.workDir);
 
     this._initialized = true;
     return this;
@@ -83,14 +85,14 @@ class PhaseShifts {
     this._ensureInitialized();
 
     const inputFile = this._generateAtorbInput(params);
-    this.FS.writeFile('/input/atorb.i', inputFile);
+    this.FS.writeFile(IO_PATHS.atorbInput, inputFile);
 
     // Run hartfock calculation
     const result = this.Module.ccall(
       'run_hartfock',
       'number',
       ['string'],
-      ['/input/atorb.i'],
+      [IO_PATHS.atorbInput],
     );
 
     if (result !== 0) {
@@ -122,7 +124,7 @@ class PhaseShifts {
 
     // Generate or use provided potential
     if (params.potentialFile) {
-      this.FS.writeFile('/input/mufftin.o', params.potentialFile);
+      this.FS.writeFile(IO_PATHS.mufftinInput, params.potentialFile);
     } else {
       // Need to run hartfock first to generate potential
       this.calculateChargeDensity(params);
@@ -130,7 +132,7 @@ class PhaseShifts {
 
     // Generate phase shift input file
     const phshInput = this._generatePhshInput(params);
-    this.FS.writeFile('/input/phsh.i', phshInput);
+    this.FS.writeFile(IO_PATHS.phshInput, phshInput);
 
     // Run the appropriate phase shift calculation
     let result;
@@ -233,22 +235,7 @@ class PhaseShifts {
    * @private
    */
   _generateAtorbInput(params) {
-    const atomicNumber = params.atomicNumber;
-    const relativity = params.relativity === undefined ? 1 : params.relativity;
-    const exchangeAlpha =
-      params.exchangeAlpha === undefined ? 0.7 : params.exchangeAlpha;
-
-    let input = `d                           ! Dirac calculation\n`;
-    input += `${relativity}                           ! relativity flag\n`;
-    input += `x                           ! exchange correlation\n`;
-    input += `${exchangeAlpha.toFixed(4)}                     ! alpha\n`;
-    input += `i                           ! initialize\n`;
-    input += `${atomicNumber.toFixed(1)}                       ! atomic number\n`;
-    input += `a                           ! ab initio calculation\n`;
-    input += `w                           ! write output\n`;
-    input += `q                           ! quit\n`;
-
-    return input;
+    return buildAtorbInput(params);
   }
 
   /**
@@ -256,23 +243,7 @@ class PhaseShifts {
    * @private
    */
   _generatePhshInput(params) {
-    const atomicNumber = params.atomicNumber;
-    const muffinTinRadius =
-      params.muffinTinRadius === undefined ? 2.5 : params.muffinTinRadius;
-    const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
-    const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
-    const energyStep =
-      params.energyStep === undefined ? 0.25 : params.energyStep;
-    const lmax = params.lmax === undefined ? 10 : params.lmax;
-
-    // Number of energy points
-    const nEnergies = Math.floor((energyMax - energyMin) / energyStep) + 1;
-
-    return `${atomicNumber.toFixed(1)} ${muffinTinRadius.toFixed(
-      4,
-    )} ${energyMin.toFixed(4)} ${energyMax.toFixed(4)} ${energyStep.toFixed(
-      4,
-    )} ${lmax} ${nEnergies}\n`;
+    return buildPhshInput(params);
   }
 
   /**
@@ -280,7 +251,7 @@ class PhaseShifts {
    * @private
    */
   _parseChargeDensityOutput() {
-    const outputPath = '/output/atorb.o';
+    const outputPath = IO_PATHS.atorbOutput;
     if (!this.FS.analyzePath(outputPath).exists) {
       const parsed = {
         raw: '',
@@ -310,7 +281,7 @@ class PhaseShifts {
     const energyStep =
       params.energyStep === undefined ? 0.25 : params.energyStep;
 
-    const outputPath = '/output/phasout.o';
+    const outputPath = IO_PATHS.phshOutput;
     if (!this.FS.analyzePath(outputPath).exists) {
       const parsed = {
         raw: '',
@@ -340,42 +311,6 @@ class PhaseShifts {
     return parsed;
   }
 
-  /**
-   * Get default orbital configuration for an element
-   * @private
-   */
-  _getDefaultOrbitals(Z) {
-    // Simplified orbital filling based on atomic number
-    // Full implementation would use periodic table data
-    const orbitals = [];
-    let remaining = Z;
-
-    const shells = [
-      { n: 1, l: 0, capacity: 2 }, // 1s
-      { n: 2, l: 0, capacity: 2 }, // 2s
-      { n: 2, l: 1, capacity: 6 }, // 2p
-      { n: 3, l: 0, capacity: 2 }, // 3s
-      { n: 3, l: 1, capacity: 6 }, // 3p
-      { n: 4, l: 0, capacity: 2 }, // 4s
-      { n: 3, l: 2, capacity: 10 }, // 3d
-      { n: 4, l: 1, capacity: 6 }, // 4p
-      { n: 5, l: 0, capacity: 2 }, // 5s
-      { n: 4, l: 2, capacity: 10 }, // 4d
-    ];
-
-    for (const shell of shells) {
-      if (remaining <= 0) break;
-      const occ = Math.min(remaining, shell.capacity);
-      orbitals.push({
-        n: shell.n,
-        l: shell.l,
-        occupation: occ,
-      });
-      remaining -= occ;
-    }
-
-    return orbitals;
-  }
 }
 
 /**
@@ -423,6 +358,7 @@ if (typeof module !== 'undefined' && module.exports) {
     createPhaseShifts,
     elements,
     ELEMENTS: elements,
+    IO_PATHS,
   };
 }
 
@@ -431,7 +367,9 @@ if (typeof window !== 'undefined') {
   window.createPhaseShifts = createPhaseShifts;
   window.elements = elements;
   window.ELEMENTS = elements;
+  window.IO_PATHS = IO_PATHS;
 }
 
 export { PhaseShifts, createPhaseShifts, elements };
 export { elements as ELEMENTS };
+export { IO_PATHS };

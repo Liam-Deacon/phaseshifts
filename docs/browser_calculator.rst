@@ -101,6 +101,28 @@ The browser calculator works by:
 When WebAssembly is not available (unsupported browser or build issues),
 the calculator falls back to a demo mode with synthetic phase shift data.
 
+Virtual Filesystem Contract
+---------------------------
+
+The WebAssembly build uses MEMFS (an in-memory filesystem) with fixed file
+paths for inputs and outputs. These paths are part of the public API and
+are especially useful when driving calculations from notebooks (e.g.,
+Jupyter + Pyodide) or other custom tooling:
+
+- Inputs
+  - ``/input/atorb.i`` — atorb input (charge density setup)
+  - ``/input/mufftin.o`` — optional potential override
+  - ``/input/phsh.i`` — phase shift input
+- Outputs
+  - ``/output/atorb.o`` — charge density output
+  - ``/output/phasout.o`` — phase shift output
+  - ``/output/dataph.o`` — phase shift diagnostics
+  - ``/output/inpdat.o`` — input echo data
+
+Roadmap: the Fortran routines currently use fixed filenames. We plan to
+refactor them to accept configurable filenames while keeping these defaults
+for backwards compatibility.
+
 
 See Also
 --------
