@@ -34,11 +34,6 @@
 
 import sys
 
-try:
-    from typing import List  # noqa: F401
-except ImportError:
-    pass
-
 from .wrappers import BVHWrapper, EEASiSSSWrapper
 
 
@@ -51,7 +46,7 @@ class PhaseshiftFactory(object):
         """Initialize the factory with a backend identifier."""
         package = str(backend).lower()
         self.__dict__.update(kwargs)
-        self.phsh_files = []  # type: List[str]
+        self.phsh_files = []
         try:
             valid_bvh = ["vht", "bvh", "van hove", "barbieri", "bvt"]
             valid_eeasisss = ["eeasisss", "rundgren", "viperleed", "viper"]
