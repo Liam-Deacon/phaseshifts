@@ -18,10 +18,8 @@ from typing import List
 
 try:
     from pydantic import BaseModel as PydanticBaseModel
-    from pydantic import ValidationError as PydanticValidationError
 except ImportError:  # pragma: no cover - pydantic unavailable
     PydanticBaseModel = None
-    PydanticValidationError = None
 
 
 class ValidationError(ValueError):
