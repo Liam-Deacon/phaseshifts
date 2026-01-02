@@ -204,9 +204,7 @@ class TestBuildTools:
             command = [bash, str(BUILD_SCRIPT), "--help"]
         else:
             command = [str(BUILD_SCRIPT), "--help"]
-        result = subprocess.run(
-            command, capture_output=True, text=True, cwd=WASM_DIR
-        )
+        result = subprocess.run(command, capture_output=True, text=True, cwd=WASM_DIR)
         # Help should exit with 0
         assert result.returncode == 0
         assert "Usage" in result.stdout or "build" in result.stdout.lower()
