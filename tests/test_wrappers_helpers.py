@@ -44,5 +44,7 @@ def test_remove_pi_jumps_generates_output(
     expected = str(phasout.with_suffix(expected_ext))
 
     assert result == [expected]
+    assert len(calls) == 1
+    assert Path(result[0]).is_file()
     assert calls[0]["formatting"] == out_format
     assert calls[0]["lmax"] == 4

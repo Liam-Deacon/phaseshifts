@@ -337,6 +337,9 @@ def test_render_without_header(tmp_path):
 
 def test_get_substr_positions():
     assert get_substr_positions("a\nb\nc", "\n") == [1, 3]
+    assert get_substr_positions("abc", "\n") == []
+    assert get_substr_positions("", "\n") == []
+    assert get_substr_positions("a,b,c", ",") == [1, 3]
 
 
 def test_gen_conf_file_uses_rel_value(tmp_path):
@@ -349,32 +352,32 @@ def test_gen_conf_file_uses_rel_value(tmp_path):
 
     assert config["DEFAULT"]["rel"] == "False"
 
+    conf_true = tmp_path / "hf_true.conf"
+    at_true = Atorb(rel=True, ngrid=123)
+    at_true.gen_conf_file(str(conf_true))
+
+    config_true = ConfigParser(allow_no_value=True)
+    config_true.read(str(conf_true))
+
+    assert config_true["DEFAULT"]["rel"] == "True"
+
 
 def test_render_atorb_file_returns_handle_name():
-    model = type(
-        "Model",
-        (),
-        {
-            "header": "test",
-            "z": 1,
-            "nr": 10,
-            "rel": 0,
-            "method": 0.0,
-            "relic": 0,
-            "nlevels": 1,
-            "mixing_scf": 0.05,
-            "eigen_tol": 0.0005,
-            "ech": 100,
-            "orbitals": [
-                type(
-                    "Orbital",
-                    (),
-                    {"n": 1, "l": 0, "m": 0, "j": 0.5, "s": 1, "occ": 2.0},
-                )()
-            ],
-            "output": "at_Cl.i",
-        },
-    )()
+    orb = AtorbElectron(n=1, l=0, m=0, j=0.5, s=1, occ=2.0)
+    model = AtorbInputModel(
+        header="test",
+        z=1,
+        nr=10,
+        rel=0,
+        method="HF",
+        relic=0,
+        nlevels=1,
+        mixing_scf=0.05,
+        eigen_tol=0.0005,
+        ech=100,
+        orbitals=[orb],
+        output="at_Cl.i",
+    )
 
     handle = io.StringIO()
     result = render_atorb_file(model, "unused.txt", file_handle=handle)

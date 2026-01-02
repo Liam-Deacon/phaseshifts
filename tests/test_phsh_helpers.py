@@ -70,6 +70,7 @@ def test_main_package_maps_backend(monkeypatch, tmp_path):
         name = "eeasisss"
 
     def fake_get_backend(name):
+        # Backend registry maps package names (e.g., "rundgren" -> "eeasisss").
         seen["name"] = name
         return DummyBackend()
 
