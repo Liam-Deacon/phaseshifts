@@ -394,12 +394,10 @@ FROM emscripten/emsdk:latest
 # Install f2c
 RUN apt-get update && apt-get install -y f2c libf2c2-dev && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /build
-COPY phaseshifts/lib/libphsh.f ./libphsh.f
-COPY wasm/src/ ./src/
-
-# Build f2c wrapper and compile to WASM
-RUN f2c -a -A libphsh.f
+WORKDIR /work
+COPY wasm/ ./wasm/
+COPY phaseshifts/lib/libphsh.f ./phaseshifts/lib/libphsh.f
+RUN chmod +x /work/wasm/build.sh
 DOCKERFILE
 
     # Build Docker image
@@ -409,8 +407,8 @@ DOCKERFILE
 
     # Run build in container and copy output
     echo "  Running build in container..."
-    docker run --rm -v "$DIST_DIR:/output" phaseshifts-wasm-builder \
-        sh -c "cp /build/*.js /build/*.wasm /output/ 2>/dev/null || echo 'Build in progress...'"
+    docker run --rm -v "$DIST_DIR:/work/wasm/dist" phaseshifts-wasm-builder \
+        bash -lc "/work/wasm/build.sh --method=f2c"
 
     echo "  ✓ Build completed in Docker"
 }
