@@ -17,11 +17,20 @@ import warnings
 from typing import List
 
 try:
-    from pydantic import BaseModel, ValidationError
+    from pydantic import BaseModel as PydanticBaseModel
+    from pydantic import ValidationError as PydanticValidationError
 except ImportError:  # pragma: no cover - pydantic unavailable
+    PydanticBaseModel = None
+    PydanticValidationError = None
 
-    class ValidationError(ValueError):
-        """Lightweight stand-in when pydantic is unavailable."""
+
+class ValidationError(ValueError):
+    """Validation error for semantic checks and parsing helpers."""
+
+
+if PydanticBaseModel is not None:
+    BaseModel = PydanticBaseModel
+else:  # pragma: no cover - pydantic unavailable
 
     class BaseModel(object):
         """Minimal shim to keep type signatures consistent without pydantic."""

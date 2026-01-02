@@ -1,6 +1,9 @@
+import io
+from configparser import ConfigParser
+
 import pytest
 
-from phaseshifts.atorb import Atorb, validate_atorb_file
+from phaseshifts.atorb import Atorb, get_substr_positions, validate_atorb_file
 from phaseshifts.validation.atorb import (
     AtorbElectron,
     AtorbInputModel,
@@ -330,3 +333,51 @@ def test_render_without_header(tmp_path):
 
     content = dest.read_text()
     assert "atorb input file" in content
+
+
+def test_get_substr_positions():
+    assert get_substr_positions("a\nb\nc", "\n") == [1, 3]
+
+
+def test_gen_conf_file_uses_rel_value(tmp_path):
+    conf_path = tmp_path / "hf.conf"
+    at = Atorb(rel=False, ngrid=123)
+    at.gen_conf_file(str(conf_path))
+
+    config = ConfigParser(allow_no_value=True)
+    config.read(str(conf_path))
+
+    assert config["DEFAULT"]["rel"] == "False"
+
+
+def test_render_atorb_file_returns_handle_name():
+    model = type(
+        "Model",
+        (),
+        {
+            "header": "test",
+            "z": 1,
+            "nr": 10,
+            "rel": 0,
+            "method": 0.0,
+            "relic": 0,
+            "nlevels": 1,
+            "mixing_scf": 0.05,
+            "eigen_tol": 0.0005,
+            "ech": 100,
+            "orbitals": [
+                type(
+                    "Orbital",
+                    (),
+                    {"n": 1, "l": 0, "m": 0, "j": 0.5, "s": 1, "occ": 2.0},
+                )()
+            ],
+            "output": "at_Cl.i",
+        },
+    )()
+
+    handle = io.StringIO()
+    result = render_atorb_file(model, "unused.txt", file_handle=handle)
+
+    assert result == ""
+    assert "C test" in handle.getvalue()
