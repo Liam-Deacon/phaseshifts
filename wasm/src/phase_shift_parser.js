@@ -5,6 +5,10 @@
  * @returns {{energies: number[], data: number[][]}} Parsed energies and phase shifts indexed by L
  */
 function parsePhaseShiftData(output, lmax) {
+  if (!Number.isInteger(lmax) || lmax < 0) {
+    throw new TypeError('lmax must be a non-negative integer');
+  }
+
   const lines = output.split('\n');
   const energies = [];
   const energySet = new Set();
@@ -30,10 +34,7 @@ function parsePhaseShiftData(output, lmax) {
       }
 
       for (let l = 0; l < values.length - 1 && l <= lmax; l++) {
-        const bucket = data[l];
-        if (bucket) {
-          bucket.push(values[l + 1]);
-        }
+        data.at(l).push(values[l + 1]);
       }
     }
   }

@@ -1,4 +1,4 @@
-const IO_PATHS = {
+const ioPaths = Object.freeze({
   inputDir: '/input',
   outputDir: '/output',
   workDir: '/work',
@@ -9,6 +9,7 @@ const IO_PATHS = {
   mufftinInput: '/input/mufftin.o',
   dataphOutput: '/output/dataph.o',
   inpdatOutput: '/output/inpdat.o',
-};
+});
 
-export { IO_PATHS };
+export { ioPaths };
+export { ioPaths as IO_PATHS };

@@ -1,14 +1,40 @@
+// codacy-disable
 import { elements } from './elements.js';
+// codacy-enable
 
+/**
+ * Format a float as a fixed-width field.
+ * @param {number} value - Value to format.
+ * @param {number} width - Field width.
+ * @param {number} precision - Decimal precision.
+ * @returns {string} Fixed-width string.
+ */
 function formatFloat(value, width, precision) {
   const fixed = Number(value).toFixed(precision);
   return fixed.padStart(width, ' ');
 }
 
+/**
+ * Format an integer as a fixed-width field.
+ * @param {number} value - Value to format.
+ * @param {number} width - Field width.
+ * @returns {string} Fixed-width string.
+ */
 function formatInt(value, width) {
   return String(Math.trunc(value)).padStart(width, ' ');
 }
 
+/**
+ * Format a single orbital line for atorb input.
+ * @param {Object} orbital - Orbital descriptor.
+ * @param {number} orbital.n - Principal quantum number.
+ * @param {number} orbital.l - Angular momentum.
+ * @param {number} orbital.m - Magnetic quantum number.
+ * @param {number} orbital.j - Total angular momentum.
+ * @param {number} orbital.s - Spin.
+ * @param {number} orbital.occ - Occupancy.
+ * @returns {string} Fixed-width orbital line.
+ */
 function formatOrbitalLine(orbital) {
   const n = formatInt(orbital.n, 2);
   const l = String(Math.trunc(orbital.l));
@@ -19,6 +45,11 @@ function formatOrbitalLine(orbital) {
   return `${n} ${l} ${m} ${j} ${s} ${occ}`;
 }
 
+/**
+ * Create a default electron configuration up to 7p.
+ * @param {number} atomicNumber - Atomic number (Z).
+ * @returns {Array<{n: number, l: number, occupation: number}>} Orbital list.
+ */
 function buildDefaultOrbitals(atomicNumber) {
   const shells = [
     { n: 1, l: 0, capacity: 2 }, // 1s
@@ -59,6 +90,11 @@ function buildDefaultOrbitals(atomicNumber) {
   return orbitals;
 }
 
+/**
+ * Expand compact orbitals into Dirac-split components.
+ * @param {Array<{n: number, l: number, occupation: number}>} orbitals - Input list.
+ * @returns {Array<Object>} Expanded orbital list.
+ */
 function expandOrbitals(orbitals) {
   const expanded = [];
   for (const orbital of orbitals) {
@@ -84,6 +120,11 @@ function expandOrbitals(orbitals) {
   return expanded;
 }
 
+/**
+ * Normalize orbital input or generate defaults.
+ * @param {Object} params - Input parameters.
+ * @returns {Array<{n: number, l: number, occupation: number}>} Normalized orbitals.
+ */
 function normalizeOrbitals(params) {
   if (Array.isArray(params.orbitals) && params.orbitals.length > 0) {
     return params.orbitals.map((orbital) => ({
@@ -96,20 +137,41 @@ function normalizeOrbitals(params) {
   return buildDefaultOrbitals(params.atomicNumber);
 }
 
+/**
+ * Resolve an element symbol from an atomic number.
+ * @param {number} atomicNumber - Atomic number.
+ * @returns {string|null} Element symbol or null if not found.
+ */
+function getElementSymbol(atomicNumber) {
+  const target = Number(atomicNumber);
+  if (!Number.isFinite(target)) {
+    return null;
+  }
+
+  for (const [symbol, number] of Object.entries(elements)) {
+    if (number === target) {
+      return symbol;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Build an atorb input file payload.
+ * @param {Object} params - Input parameters.
+ * @returns {string} Formatted atorb input.
+ */
 function buildAtorbInput(params) {
   const atomicNumber = params.atomicNumber;
-  const elementSymbol = Object.keys(elements).find(
-    (key) => elements[key] === atomicNumber,
-  );
+  const elementSymbol = getElementSymbol(atomicNumber);
   const ngrid = params.ngrid === undefined ? 1000 : params.ngrid;
   const rel = params.relativity === undefined ? 1 : params.relativity;
   const method =
     params.method === undefined ? '0.d0' : String(params.method).trim();
   const relic = params.relic === undefined ? 0 : params.relic;
-  const mixingScf =
-    params.mixingScf === undefined ? 0.5 : params.mixingScf;
-  const eigenTol =
-    params.eigenTol === undefined ? 0.0005 : params.eigenTol;
+  const mixingScf = params.mixingScf === undefined ? 0.5 : params.mixingScf;
+  const eigenTol = params.eigenTol === undefined ? 5e-4 : params.eigenTol;
   const ech = params.ech === undefined ? 100 : params.ech;
   const output =
     params.output === undefined && elementSymbol
@@ -157,14 +219,18 @@ function buildAtorbInput(params) {
   return lines.join('\n') + '\n';
 }
 
+/**
+ * Build a phsh input file payload.
+ * @param {Object} params - Input parameters.
+ * @returns {string} Formatted phsh input.
+ */
 function buildPhshInput(params) {
   const atomicNumber = params.atomicNumber;
   const muffinTinRadius =
     params.muffinTinRadius === undefined ? 2.5 : params.muffinTinRadius;
   const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
   const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
-  const energyStep =
-    params.energyStep === undefined ? 0.25 : params.energyStep;
+  const energyStep = params.energyStep === undefined ? 0.25 : params.energyStep;
   const lmax = params.lmax === undefined ? 10 : params.lmax;
 
   const nEnergies = Math.floor((energyMax - energyMin) / energyStep) + 1;

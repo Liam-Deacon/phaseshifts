@@ -11,14 +11,12 @@
 
 /* global createPhaseShiftsModule */
 
-// codacy-disable-next-line
+// codacy-disable
 import { elements } from './elements.js';
-// codacy-disable-next-line
 import { buildAtorbInput, buildPhshInput } from './input_format.js';
-// codacy-disable-next-line
 import { IO_PATHS } from './io_paths.js';
-// codacy-disable-next-line
 import { parsePhaseShiftData } from './phase_shift_parser.js';
+// codacy-enable
 
 /**
  * PhaseShifts calculator class
@@ -314,7 +312,6 @@ class PhaseShifts {
     };
     return parsed;
   }
-
 }
 
 /**
@@ -355,13 +352,15 @@ async function createPhaseShifts(options = {}) {
   return phsh;
 }
 
-if (typeof window !== 'undefined') {
-  window.PhaseShifts = PhaseShifts;
-  window.createPhaseShifts = createPhaseShifts;
-  window.elements = elements;
-  window.ELEMENTS = elements;
-  window.IO_PATHS = IO_PATHS;
-}
+const globalScope = typeof window === 'undefined' ? null : window;
+globalScope &&
+  Object.assign(globalScope, {
+    PhaseShifts,
+    createPhaseShifts,
+    elements,
+    ELEMENTS: elements,
+    IO_PATHS,
+  });
 
 export { PhaseShifts, createPhaseShifts, elements };
 export { elements as ELEMENTS };

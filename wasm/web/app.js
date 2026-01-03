@@ -8,14 +8,12 @@
 /* eslint-disable compat/compat */
 /* eslint-disable security/detect-object-injection */
 
-// codacy-disable-next-line
+// codacy-disable
 import { elements } from '../src/elements.js';
-// codacy-disable-next-line
 import { buildPhshInput } from '../src/input_format.js';
-// codacy-disable-next-line
 import { IO_PATHS } from '../src/io_paths.js';
-// codacy-disable-next-line
 import { parsePhaseShiftData } from '../src/phase_shift_parser.js';
+// codacy-enable
 
 // Global state
 let phaseShiftsModule = null;
