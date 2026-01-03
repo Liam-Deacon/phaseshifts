@@ -5,7 +5,7 @@ import { elements } from './elements.js';
  * Default parameters for phase shift input generation.
  * @type {{muffinTinRadius: number, energyMin: number, energyMax: number, energyStep: number, lmax: number}}
  */
-const DEFAULT_PHSH_PARAMS = Object.freeze({
+const defaultPhshParams = Object.freeze({
   muffinTinRadius: 2.5,
   energyMin: 1.0,
   energyMax: 12.0,
@@ -242,21 +242,21 @@ function normalizePhshParams(params) {
     atomicNumber: safe.atomicNumber,
     muffinTinRadius:
       safe.muffinTinRadius === undefined
-        ? DEFAULT_PHSH_PARAMS.muffinTinRadius
+        ? defaultPhshParams.muffinTinRadius
         : safe.muffinTinRadius,
     energyMin:
       safe.energyMin === undefined
-        ? DEFAULT_PHSH_PARAMS.energyMin
+        ? defaultPhshParams.energyMin
         : safe.energyMin,
     energyMax:
       safe.energyMax === undefined
-        ? DEFAULT_PHSH_PARAMS.energyMax
+        ? defaultPhshParams.energyMax
         : safe.energyMax,
     energyStep:
       safe.energyStep === undefined
-        ? DEFAULT_PHSH_PARAMS.energyStep
+        ? defaultPhshParams.energyStep
         : safe.energyStep,
-    lmax: safe.lmax === undefined ? DEFAULT_PHSH_PARAMS.lmax : safe.lmax,
+    lmax: safe.lmax === undefined ? defaultPhshParams.lmax : safe.lmax,
   };
 }
 
@@ -291,7 +291,7 @@ function buildPhshInput(params) {
 }
 
 export {
-  DEFAULT_PHSH_PARAMS,
+  defaultPhshParams as DEFAULT_PHSH_PARAMS,
   buildAtorbInput,
   buildPhshInput,
   normalizePhshParams,
