@@ -35,6 +35,7 @@ function parsePhaseShiftData(output, lmax) {
 
       const limit = Math.min(lmax + 1, values.length - 1);
       for (let l = 0; l < limit; l++) {
+        // eslint-disable-next-line security/detect-object-injection
         data[l].push(values[l + 1]);
       }
     }
