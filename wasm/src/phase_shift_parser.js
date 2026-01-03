@@ -5,16 +5,15 @@
  * @returns {{energies: number[], data: number[][]}} Parsed energies and phase shifts indexed by L
  */
 function parsePhaseShiftData(output, lmax) {
-  if (!Number.isInteger(lmax) || lmax < 0) throw new TypeError('lmax must be a non-negative integer');
+  if (!Number.isInteger(lmax) || lmax < 0)
+    throw new TypeError('lmax must be a non-negative integer');
 
   const lines = output.split('\n');
   const energies = [];
   const energySet = new Set();
   const data = [];
 
-  for (let l = 0; l <= lmax; l++) {
-    data.push([]);
-  }
+  for (let l = 0; l <= lmax; l++) data.push([]);
 
   for (const line of lines) {
     const trimmed = line.trim();
@@ -33,10 +32,9 @@ function parsePhaseShiftData(output, lmax) {
     }
 
     const limit = Math.min(lmax + 1, values.length - 1);
-    for (let l = 0; l < limit; l++) {
+    for (let l = 0; l < limit; l++)
       // eslint-disable-next-line security/detect-object-injection
       data[l].push(values[l + 1]);
-    }
   }
 
   return { energies, data };
