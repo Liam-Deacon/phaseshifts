@@ -11,7 +11,7 @@ name: Test Package
 
 on:
   push:
-    branches: ["master"]
+    branches: ['master']
     paths:
       - phaseshifts/**
       - tests/**
@@ -19,12 +19,12 @@ on:
       - requirements*.txt
       - Makefile
       - MANIFEST.in
-      - "**/*.py"
-      - "**/*.f"
+      - '**/*.py'
+      - '**/*.f'
       - CMakeLists.txt
       - pyproject.toml
   pull_request:
-    branches: ["master"]
+    branches: ['master']
     paths:
       - phaseshifts/**
       - tests/**
@@ -32,16 +32,16 @@ on:
       - requirements*.txt
       - Makefile
       - MANIFEST.in
-      - "**/*.py"
-      - "**/*.f"
+      - '**/*.py'
+      - '**/*.f'
       - CMakeLists.txt
       - pyproject.toml
 
 jobs:
   build:
     env:
-      PHASESHIFTS_COMPILE_MISSING: "0"
-      PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
+      PHASESHIFTS_COMPILE_MISSING: '0'
+      PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: '1'
       PYTHONPATH: ${{ github.workspace }}
       PHASESHIFTS_FORTRAN_COVERAGE: ${{ matrix.os == 'ubuntu-latest' && '1' || '' }}
       CMAKE_ARGS: ${{ matrix.os == 'ubuntu-latest' && '-DENABLE_FORTRAN_COVERAGE=ON' || '' }}
@@ -54,12 +54,12 @@ jobs:
           # - macos-latest
         python-version:
           # NOTE: 2.7 through to 3.7 inclusive are not provided in the ubuntu-latest runner
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-          - "3.12"
-          - "3.13"
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -159,7 +159,7 @@ jobs:
           fi
           pytest tests/ -v --cov=phaseshifts --cov-report=xml ${EXTRA_PYTEST_ARGS}
         env:
-          PHASESHIFTS_TEST_USE_SOURCE: "1"
+          PHASESHIFTS_TEST_USE_SOURCE: '1'
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4

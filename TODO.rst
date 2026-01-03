@@ -55,9 +55,14 @@ be included as this package matures, which include:
       + Improve readability (it would be nice to eliminate *goto* statements)
       + Possibly form into a FORTRAN 90 module to allow optional arguments to
         functions and subroutines.
+      + Allow configurable input/output filenames for Fortran routines while
+        keeping legacy defaults (e.g., mufftin.d, phasout, inpdat) for
+        compatibility with existing workflows and WASM bindings.
       + Pure-Python implementation of functionality, which would be particularly useful for users
         with restricted environments and/or to avoid specific compiler quirks
         (needs rigorous regression testing to ensure faithfulness of port)
 
     Ensure mutual compatibility between hartfock and model input files from
     EEASiSSS and Barbieri/Van Hove backends.
+
+    Add ruff pre-commit hook once support for Python <= 3.10 is dropped (ruff is not Python 2.7 compatible).

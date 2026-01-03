@@ -8,9 +8,7 @@ from ._distutils_compat import ensure_distutils
 # This must happen at module load time because numpy.f2py imports
 # distutils.msvccompiler unconditionally even on Linux.
 if not ensure_distutils():
-    raise ImportError(
-        "distutils is unavailable; install setuptools or enable build isolation."
-    )
+    raise ImportError("distutils is unavailable; install setuptools or enable build isolation.")
 
 
 def main(argv=None):

@@ -17,11 +17,18 @@ import warnings
 from typing import List
 
 try:
-    from pydantic import BaseModel, ValidationError
+    from pydantic import BaseModel as PydanticBaseModel
 except ImportError:  # pragma: no cover - pydantic unavailable
+    PydanticBaseModel = None
 
-    class ValidationError(ValueError):
-        """Lightweight stand-in when pydantic is unavailable."""
+
+class ValidationError(ValueError):
+    """Validation error for semantic checks and parsing helpers."""
+
+
+if PydanticBaseModel is not None:
+    BaseModel = PydanticBaseModel
+else:  # pragma: no cover - pydantic unavailable
 
     class BaseModel(object):
         """Minimal shim to keep type signatures consistent without pydantic."""
@@ -188,14 +195,10 @@ class AtorbInputModel(BaseModel):
         if self.nr <= 0:
             raise ValidationError("Radial grid points (NR) must be positive")
         if self.rel not in (0, 1):
-            raise ValidationError(
-                "rel must be 0 (non-relativistic) or 1 (relativistic)"
-            )
+            raise ValidationError("rel must be 0 (non-relativistic) or 1 (relativistic)")
         if self.nlevels != len(self.orbitals):
             raise ValidationError(
-                "nlevels ({0}) does not match number of orbital lines ({1})".format(
-                    self.nlevels, len(self.orbitals)
-                )
+                "nlevels ({0}) does not match number of orbital lines ({1})".format(self.nlevels, len(self.orbitals))
             )
         cleaned_orbitals = []
         for orbital in self.orbitals:
@@ -367,11 +370,7 @@ def _check_marker(lines, cursor, marker, description):
 
     if cursor >= len(lines):
 
-        raise ValueError(
-            "Unexpected end of file while expecting '{0}' line {1}".format(
-                marker, description
-            )
-        )
+        raise ValueError("Unexpected end of file while expecting '{0}' line {1}".format(marker, description))
 
     if lines[cursor].lower() != marker.lower():
 
@@ -401,9 +400,7 @@ def _parse_rel(line):
 
     except (ValueError, IndexError):
 
-        raise ValueError(
-            "Unable to parse relativistic flag from line: {0}".format(line)
-        )
+        raise ValueError("Unable to parse relativistic flag from line: {0}".format(line))
 
 
 def _parse_scf_params(line):
@@ -458,11 +455,7 @@ def _parse_orbitals(lines, start_cursor, nlevels):
 
         except Exception:
 
-            raise ValueError(
-                "Unable to parse orbital entry on line {0}: {1}".format(
-                    line_idx + 1, lines[line_idx]
-                )
-            )
+            raise ValueError("Unable to parse orbital entry on line {0}: {1}".format(line_idx + 1, lines[line_idx]))
 
     return orbitals
 
@@ -656,27 +649,18 @@ def render_atorb_file(model, filename, file_handle=None):
     lines.append("C {0}".format(header.strip() if header else "atorb input file"))
     lines.append("C".ljust(70, "*"))
     lines.append("i")
-    lines.append(
-        "{0} {1}".format(model.z, model.nr).ljust(30, " ")
-        + " ! Z NR (number of points in radial grid)"
-    )
+    lines.append("{0} {1}".format(model.z, model.nr).ljust(30, " ") + " ! Z NR (number of points in radial grid)")
     lines.append("d")
     lines.append("{0}".format(model.rel).ljust(30) + " ! 1=rel, 0=n.r.")
     lines.append("x")
-    lines.append(
-        "{0}".format(model.method).ljust(30) + " ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa..."
-    )
+    lines.append("{0}".format(model.method).ljust(30) + " ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...")
     lines.append("a")
     lines.append(
-        "{0} {1} {2} {3} {4}".format(
-            model.relic, model.nlevels, model.mixing_scf, model.eigen_tol, model.ech
-        ).ljust(30)
+        "{0} {1} {2} {3} {4}".format(model.relic, model.nlevels, model.mixing_scf, model.eigen_tol, model.ech).ljust(30)
         + " ! relic,levels,mixing SCF, eigen. tol,for ech."
     )
     for orbital in model.orbitals:
-        lines.append(
-            "{0}  ! n, l, l, -j, <1>, occupation".format(format_orbital_line(orbital))
-        )
+        lines.append("{0}  ! n, l, l, -j, <1>, occupation".format(format_orbital_line(orbital)))
     lines.append("w")
     lines.append("{0}".format(model.output))
     lines.append("q")
@@ -689,7 +673,10 @@ def render_atorb_file(model, filename, file_handle=None):
 
     if handle is not None:
         handle.write(payload)
-        return getattr(handle, "name", "") or filename
+        handle_name = getattr(handle, "name", "")
+        if handle_name:
+            return handle_name
+        return filename if isinstance(filename, str) else ""
 
     with open(filename, "w") as handle:
         handle.write(payload)

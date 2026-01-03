@@ -60,10 +60,7 @@ def test_libphsh_exists():
         details.append("phaseshifts.__file__: %s" % phaseshifts.__file__)
 
         if os.path.isdir(PHASESHIFTS_LIB_DIR):
-            details.append(
-                "Contents of %s: %s"
-                % (PHASESHIFTS_LIB_DIR, os.listdir(PHASESHIFTS_LIB_DIR))
-            )
+            details.append("Contents of %s: %s" % (PHASESHIFTS_LIB_DIR, os.listdir(PHASESHIFTS_LIB_DIR)))
         else:
             details.append("Directory does not exist: %s" % PHASESHIFTS_LIB_DIR)
 
@@ -96,9 +93,7 @@ def test_libphsh_exists():
         )  # macOS Mach-O
     )
 
-    assert (
-        valid_binary
-    ), "Found libphsh at %s but it doesn't appear to be a valid binary. Header: %s" % (
+    assert valid_binary, "Found libphsh at %s but it doesn't appear to be a valid binary. Header: %s" % (
         location,
         header,
     )
@@ -126,10 +121,7 @@ def test_import_libphsh():
     try:
         from phaseshifts.lib import libphsh as _libphsh  # noqa: F401
     except ModuleNotFoundError:
-        assert False, (
-            "libphsh*{} has not been compiled.\n"
-            "Extension location search result: {}".format(ext, location)
-        )
+        assert False, "libphsh*{} has not been compiled.\n" "Extension location search result: {}".format(ext, location)
     except ImportError as err:
         # Provide detailed diagnostics
         details = [
@@ -172,14 +164,10 @@ def test_import_libphsh():
                 else:
                     dll_found[dll] = "NOT FOUND"
             details.append(
-                "MinGW DLL search results:\n%s"
-                % "\n".join("  %s: %s" % (k, v) for k, v in dll_found.items())
+                "MinGW DLL search results:\n%s" % "\n".join("  %s: %s" % (k, v) for k, v in dll_found.items())
             )
 
-        assert False, (
-            "Unable to import compiled libphsh due to ImportError.\n"
-            "Diagnostics:\n%s" % "\n".join(details)
-        )
+        assert False, "Unable to import compiled libphsh due to ImportError.\n" "Diagnostics:\n%s" % "\n".join(details)
 
 
 def test_libphsh_hb_invocation():
@@ -196,6 +184,4 @@ def test_libphsh_hb_invocation():
         result = libphsh.hb(2.5, 1.0)
     except (TypeError, AttributeError, RuntimeError) as err:
         assert False, "Could not call libphsh.hb(2.5, 1.0): %s" % str(err)
-    assert isinstance(
-        result, float
-    ), "Expected float result from libphsh.hb, got %s" % type(result)
+    assert isinstance(result, float), "Expected float result from libphsh.hb, got %s" % type(result)

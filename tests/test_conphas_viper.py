@@ -22,9 +22,7 @@ class TestConphasViperFormat(unittest.TestCase):
     ):
         """Write a minimal PHASOUT file with configurable lmax and number of energies."""
         phasout_path = os.path.join(self.tmpdir.name, filename)
-        energies = [
-            emin + i * (emax - emin) / max(nenergies - 1, 1) for i in range(nenergies)
-        ]
+        energies = [emin + i * (emax - emin) / max(nenergies - 1, 1) for i in range(nenergies)]
         with open(phasout_path, "w") as f:
             f.write("HEADER\n")
             # emin, emax, nenergies, lmax

@@ -17,9 +17,7 @@ from ._fortran_lib import (
 
 from .. import settings
 
-_COMPILE_WARNING_TEMPLATE = (
-    "Unable to use Fortran libphsh => Failed to compile {}: '{}'"
-)
+_COMPILE_WARNING_TEMPLATE = "Unable to use Fortran libphsh => Failed to compile {}: '{}'"
 
 
 def _add_windows_dll_dirs():
@@ -57,9 +55,7 @@ def _add_windows_dll_dirs():
         r"C:\\msys64\\mingw32",
         r"C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64",
     ]
-    default_dirs = [
-        os.path.join(path, "bin") if path else None for path in default_dirs
-    ]
+    default_dirs = [os.path.join(path, "bin") if path else None for path in default_dirs]
 
     path_dirs = [p for p in os.environ.get("PATH", "").split(os.pathsep) if p]
     search_dirs = path_dirs + [d for d in default_dirs if d]

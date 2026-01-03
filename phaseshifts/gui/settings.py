@@ -92,12 +92,7 @@ class Settings(object):
         # add extra arguments
         for kwarg in kwargs:
             self.members_dict.update(
-                {
-                    kwarg: str(type(kwargs.get(kwarg)))
-                    .replace("<type ", "")
-                    .replace("'", "")
-                    .strip(">")
-                }
+                {kwarg: str(type(kwargs.get(kwarg))).replace("<type ", "").replace("'", "").strip(">")}
             )
 
         self.__dict__.update(kwargs)  # update class dictionary

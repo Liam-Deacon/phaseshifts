@@ -3,7 +3,7 @@ import pytest
 
 yaml = pytest.importorskip("yaml")
 
-from phaseshifts.io import (  # noqa: E402
+from phaseshifts.io import (
     AtomParameters,
     CleedpyYamlAdapter,
     EnergyRange,

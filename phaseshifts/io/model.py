@@ -1,11 +1,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 try:
-    from typing import Sequence, Tuple, Union
+    from typing import List, Sequence, Tuple, Union
 
     VectorLike = Union[Tuple[float, float, float], Sequence[float]]
+    VibrationalDisplacement = Union[float, List[Union[str, float]]]
 except ImportError:
     VectorLike = object
+    VibrationalDisplacement = object
 
 
 class Position(object):
@@ -46,11 +48,7 @@ class AtomParameters(object):
     def to_dict(self):
         return {
             "phase_file": self.phase_file,
-            "position": (
-                self.position.to_dict()
-                if hasattr(self.position, "to_dict")
-                else self.position
-            ),
+            "position": (self.position.to_dict() if hasattr(self.position, "to_dict") else self.position),
             "vibrational_displacement": self.vibrational_displacement,
         }
 

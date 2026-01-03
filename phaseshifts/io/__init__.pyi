@@ -12,7 +12,11 @@ from .model import (  # noqa: F401
     SuperstructureMatrix,
     UnitCell,
 )
-from .cleedpy_yaml import CleedpyYamlAdapter as _CleedpyYamlAdapter
+
+try:
+    from .cleedpy_yaml import CleedpyYamlAdapter as _CleedpyYamlAdapter
+except ImportError:
+    _CleedpyYamlAdapter = None  # type: ignore[misc,assignment]
 
 class IOAdapter(object):
     def read(self, path: str) -> Any: ...

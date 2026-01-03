@@ -29,12 +29,7 @@ class Atom:
     occupancy: float
     lmax: int
 
-    def __init__(
-        self,
-        element: Union[str, int],
-        coordinates: Optional[List[float]] = ...,
-        **kwargs: Any
-    ) -> None:
+    def __init__(self, element: Union[str, int], coordinates: Optional[List[float]] = ..., **kwargs: Any) -> None:
         """
         Constructor for Atom class.
 

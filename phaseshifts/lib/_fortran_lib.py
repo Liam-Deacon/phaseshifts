@@ -122,9 +122,7 @@ def compile_f2py_shared_library(
     # numpy.f2py relies on distutils; on Python 3.12+ ensure a vendored copy is
     # available so the subprocess does not fail immediately.
     if not ensure_distutils():
-        raise ImportError(
-            "distutils is unavailable; install setuptools or enable build isolation."
-        )
+        raise ImportError("distutils is unavailable; install setuptools or enable build isolation.")
 
     f2py_args = [
         "-m",
@@ -139,9 +137,7 @@ def compile_f2py_shared_library(
     # Ensure the subprocess can import the package (for the shim) even when the
     # current working directory is inside phaseshifts/lib.
     env = os.environ.copy()
-    pkg_parent = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
-    )
+    pkg_parent = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
     pythonpath_parts = [pkg_parent]
     if env.get("PYTHONPATH"):
         pythonpath_parts.append(env["PYTHONPATH"])

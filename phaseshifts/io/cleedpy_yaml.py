@@ -48,9 +48,7 @@ class CleedpyYamlAdapter(IOAdapter):
         ]
         missing = [key for key in required_keys if key not in data]
         if missing:
-            raise ValueError(
-                "Missing required keys in YAML: {}".format(", ".join(missing))
-            )
+            raise ValueError("Missing required keys in YAML: {}".format(", ".join(missing)))
         unit_cell = UnitCell(
             data["unit_cell"]["a1"],
             data["unit_cell"]["a2"],

@@ -8,7 +8,7 @@ build:
   apt_packages:
     - gfortran
   tools:
-    python: "3.12"
+    python: '3.12'
 
 formats:
   - pdf

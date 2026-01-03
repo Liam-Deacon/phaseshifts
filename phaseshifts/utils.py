@@ -31,7 +31,7 @@
 # DEALINGS IN THE SOFTWARE.                                                  #
 #                                                                            #
 ##############################################################################
-""" """
+"""Utility helpers for filesystem paths and file copying."""
 from __future__ import print_function, unicode_literals
 from __future__ import absolute_import, division, with_statement
 
@@ -62,9 +62,7 @@ class FileUtils(object):
             cleed_phase = os.environ.get("CLEED_PHASE")
             if cleed_phase == dst:
                 env = "CLEED_PHASE="
-            dst = '"%s"' % (
-                dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])
-            )
+            dst = '"%s"' % (dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:]))
 
         # do check and create directory if needed
         if os.path.isfile(dst):

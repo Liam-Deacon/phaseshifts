@@ -74,5 +74,4 @@ program hartfock_main
     iarg = iarg + 1
   end do
   call hartfock(input_file,log_file,output_dir,atom_dir)
-  stop
 end program hartfock_main

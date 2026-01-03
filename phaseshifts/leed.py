@@ -88,9 +88,7 @@ class CLEEDInputValidator:
         ext = os.path.splitext(filename)[1]
         if ext not in [".bmin", ".bul", ".inp", ".pmin"]:
             if ext != ".i":
-                sys.stderr.write(
-                    "Warning: %s is not a valid CLEED extension\n" % filename
-                )
+                sys.stderr.write("Warning: %s is not a valid CLEED extension\n" % filename)
                 sys.stderr.flush()
             return False
         else:
@@ -131,16 +129,9 @@ class CLEEDInputValidator:
         else:  # try to determine filetype from file data
             with open(filename) as f:
                 # get input lines, stripping left whitespace and comments
-                lines = "".join(
-                    [line.lstrip() for line in f if not line.lstrip().startswith("#")]
-                )
+                lines = "".join([line.lstrip() for line in f if not line.lstrip().startswith("#")])
                 # check for control parameters
-                if (
-                    "ef=" in lines
-                    and "ti=" in lines
-                    and "id=" in lines
-                    and "wt=" in lines
-                ):
+                if "ef=" in lines and "ti=" in lines and "id=" in lines and "wt=" in lines:
                     # probably control file
                     filetype = "control"
                 elif "pb:" in lines and (
@@ -159,9 +150,7 @@ class CLEEDInputValidator:
                     "a1:" in lines or "a2:" in lines or "m1:" in lines or "m2:" in lines
                 ):  # surface file?
                     filetype = "surface"
-                elif "po:" in lines and not (
-                    "a1:" in lines or "a2:" in lines or "m1:" in lines or "m2:" in lines
-                ):
+                elif "po:" in lines and not ("a1:" in lines or "a2:" in lines or "m1:" in lines or "m2:" in lines):
                     filetype = "parameter"
                 else:
                     raise OSError("unknown CLEED format for file '%s'" % filename)
@@ -192,22 +181,14 @@ class CLEEDInputValidator:
                 sys.stderr.flush()
         # unit cell
         try:
-            basis = [
-                line
-                for line in lines
-                if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0
-            ]
+            basis = [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]
 
         except ValueError:
             raise ValueError("'%s' is not a valid basis vector" % line[:2])
 
         # try to get minimum radii for mufftin input
         try:
-            minimum_radii = [
-                "".join(line.split(":")[1].split()[:4])
-                for line in lines
-                if line.startswith("rm:")
-            ]
+            minimum_radii = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("rm:")]
         except ValueError:
             raise ValueError("'%s' is not a valid minimum radius input" % line[:2])
         radii_dict = {}
@@ -216,20 +197,12 @@ class CLEEDInputValidator:
             radii_dict[tag] = value
 
         try:
-            overlayer_atoms = [
-                "".join(line.split(":")[1].split()[:4])
-                for line in lines
-                if line.startswith("po:")
-            ]
+            overlayer_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 
         try:
-            bulk_atoms = [
-                "".join(line.split(":")[1].split()[:4])
-                for line in lines
-                if line.startswith("pb:")
-            ]
+            bulk_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 
@@ -445,9 +418,7 @@ class Converter:
         z_dist = 4.0  # calculate 'c' for slab from atom coordinates
         z_min = sys.float_info.max
         z_max = sys.float_info.min
-        title = "/".join(
-            [line.split(":")[1].lstrip() for line in lines if line.startswith("c:")]
-        )
+        title = "/".join([line.split(":")[1].lstrip() for line in lines if line.startswith("c:")])
 
         # Hartree-Fock exchange term alpha
         try:
@@ -455,33 +426,23 @@ class Converter:
                 [
                     line.split(":")[1]
                     for line in lines
-                    if line.startswith("alpha:")
-                    or line.startswith("exchange:")
-                    or line.startswith("exc:")
+                    if line.startswith("alpha:") or line.startswith("exchange:") or line.startswith("exc:")
                 ][0]
             )
         except (ValueError, IndexError):
             alpha = None
 
         # unit cell
-        basis = [
-            line
-            for line in lines
-            if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0
-        ]
+        basis = [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]
 
         a1 = a2 = a3 = [0.0, 0.0, 0.0]  # intialise basis vectors
         for vector_line in basis:
             line = " ".join(vector_line.replace(":", "").split()[:4])
 
             try:
-                (vector_str, x, y, z) = (
-                    t(s) for (t, s) in zip((str, float, float, float), line.split())
-                )
+                (vector_str, x, y, z) = (t(s) for (t, s) in zip((str, float, float, float), line.split()))
             except ValueError:
-                raise ValueError(
-                    "'%s' is not a valid basis vector" % vector_line.replace("\n", "")
-                )
+                raise ValueError("'%s' is not a valid basis vector" % vector_line.replace("\n", ""))
 
             exec("{} = [{:f}, {:f}, {:f}]".format(vector_str, x, y, z))
 
@@ -503,9 +464,7 @@ class Converter:
         # try to get minimum radii for mufftin input
         try:
             minimum_radii = [
-                " ".join(line.split(":")[1].split()[:4])
-                for line in lines + other_lines
-                if line.startswith("rm:")
+                " ".join(line.split(":")[1].split()[:4]) for line in lines + other_lines if line.startswith("rm:")
             ]
 
             for radius in minimum_radii:
@@ -518,9 +477,7 @@ class Converter:
         # try to get lmax values for each phaseshift type
         try:
             lmax_values = [
-                " ".join(line.split(":")[1].split()[:4])
-                for line in lines + other_lines
-                if line.startswith("lmax:")
+                " ".join(line.split(":")[1].split()[:4]) for line in lines + other_lines if line.startswith("lmax:")
             ]
 
             for lmax_str in lmax_values:
@@ -533,9 +490,7 @@ class Converter:
         # try to get oxidation values for each phaseshift type
         try:
             oxidation_values = [
-                " ".join(line.split(":")[1].split()[:4])
-                for line in lines + other_lines
-                if line.startswith("val:")
+                " ".join(line.split(":")[1].split()[:4]) for line in lines + other_lines if line.startswith("val:")
             ]
 
             for oxi_str in oxidation_values:
@@ -546,35 +501,23 @@ class Converter:
             raise ValueError("'%s' is not a valid valency (oxidation state)" % line[:2])
 
         # try to get the overlayer atoms
-        overlayer_atoms = [
-            " ".join(line.split(":")[1].split()[:4])
-            for line in lines
-            if line.startswith("po:")
-        ]
+        overlayer_atoms = [" ".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]
 
         # extract details for each overlayer atom
         for overlayer_atom in overlayer_atoms:
             try:
-                id_str, x, y, z = (
-                    t(s)
-                    for t, s in zip((str, float, float, float), overlayer_atom.split())
-                )
+                id_str, x, y, z = (t(s) for t, s in zip((str, float, float, float), overlayer_atom.split()))
 
             except ValueError:
                 raise ValueError("'%s' line input is invalid")
 
             # extract further information from id string
-            id_str = os.path.basename(
-                os.path.expanduser(os.path.expandvars(id_str))
-            )  # ensure path not included
+            id_str = os.path.basename(os.path.expanduser(os.path.expandvars(id_str)))  # ensure path not included
             element = id_str.split("_")[0]  # assume element name / symbol
             element = "".join([ch for ch in element if ch.isalpha()])
 
             if element not in ELEMENTS:
-                raise NameError(
-                    "Unknown element '%s' from phase shift name"
-                    "'%s'" % (element, id_str)
-                )
+                raise NameError("Unknown element '%s' from phase shift name" "'%s'" % (element, id_str))
 
             # try to determine oxidation state from string
             oxidation = None
@@ -612,9 +555,7 @@ class Converter:
 
             if lmax is None:
                 try:  # to get lmax from id string
-                    substrings = [
-                        s for s in id_str.lower().split("_") if s.startswith("lmax")
-                    ]
+                    substrings = [s for s in id_str.lower().split("_") if s.startswith("lmax")]
                     if substrings:
                         lmax = int("".join([s for s in substrings[0] if s.isdigit()]))
                 except ValueError:
@@ -630,13 +571,9 @@ class Converter:
                     lmax=lmax,
                 )
             elif rm and not lmax:
-                atom = model.Atom(
-                    element, [x, y, z], tag=id_str, valence=oxidation, radius=rm
-                )
+                atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation, radius=rm)
             elif not rm and lmax:
-                atom = model.Atom(
-                    element, [x, y, z], tag=id_str, valence=oxidation, lmax=lmax
-                )
+                atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation, lmax=lmax)
             else:
                 atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation)
 
@@ -650,11 +587,7 @@ class Converter:
             atoms.append(atom)
 
         # try to get the bulk atoms
-        bulk_atoms = [
-            " ".join(line.split(":")[1].split()[:4])
-            for line in lines
-            if line.startswith("pb:")
-        ]
+        bulk_atoms = [" ".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]
         if verbose:
             print("CLEED model")
             print("\tbulk atoms: %s" % [s for s in bulk_atoms])
@@ -663,21 +596,14 @@ class Converter:
         for bulk_atom in bulk_atoms:
             # split line data
             try:
-                (id_str, x, y, z) = (
-                    t(s) for t, s in zip((str, float, float, float), bulk_atom.split())
-                )
+                (id_str, x, y, z) = (t(s) for t, s in zip((str, float, float, float), bulk_atom.split()))
                 # extract further information from id string
-                id_str = os.path.basename(
-                    os.path.expanduser(os.path.expandvars(id_str))
-                )  # ensure path not included
+                id_str = os.path.basename(os.path.expanduser(os.path.expandvars(id_str)))  # ensure path not included
                 element = id_str.split("_")[0]  # assume element name / symbol
                 element = "".join([ch for ch in element if ch.isalpha()])
 
                 if element not in ELEMENTS:
-                    raise NameError(
-                        "Unknown element '%s' from phase shift name"
-                        "'%s'" % (element, id_str)
-                    )
+                    raise NameError("Unknown element '%s' from phase shift name" "'%s'" % (element, id_str))
 
             except ValueError:
                 print("'%s' line input is invalid")
@@ -723,13 +649,9 @@ class Converter:
                     lmax=lmax,
                 )
             elif rm and not lmax:
-                atom = model.Atom(
-                    element, [x, y, z], tag=id_str, valence=oxidation, radius=rm
-                )
+                atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation, radius=rm)
             elif not rm and lmax:
-                atom = model.Atom(
-                    element, [x, y, z], tag=id_str, valence=oxidation, lmax=lmax
-                )
+                atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation, lmax=lmax)
             else:
                 atom = model.Atom(element, [x, y, z], tag=id_str, valence=oxidation)
 
@@ -764,18 +686,12 @@ class Converter:
             mtz_model.set_exchange(alpha)
 
         # read additional phaseshift statement lines 'phs:'
-        phs_lines = [
-            line.lower().lstrip("phs:").rstrip("#")
-            for line in lines
-            if line.lower().startswith("phs:")
-        ]
+        phs_lines = [line.lower().lstrip("phs:").rstrip("#") for line in lines if line.lower().startswith("phs:")]
 
         for line in phs_lines:
             strings = line.split()
             phase_shift = strings[0]
-            phs_atoms = [
-                atom.tag for atom in mtz_model.atoms if atom.tag == phase_shift
-            ]
+            phs_atoms = [atom.tag for atom in mtz_model.atoms if atom.tag == phase_shift]
             if phase_shift not in phs_atoms:
                 for i in range(len(strings)):
                     try:
@@ -839,9 +755,7 @@ class Converter:
         try:
             return json.loads(content)
         except ValueError:
-            raise ImportError(
-                "PyYAML is required to read YAML input. Install pyyaml or provide JSON."
-            )
+            raise ImportError("PyYAML is required to read YAML input. Install pyyaml or provide JSON.")
 
     @staticmethod
     def _validate_structured_input(data):
@@ -917,9 +831,7 @@ class Converter:
             element = Converter._resolve_element(layer.get("phase_file"))
             radius = minimum_radius.get(element, None)
             position = layer.get("position") or [0.0, 0.0, 0.0]
-            atom = model.Atom(
-                element, coordinates=position, tag=layer.get("phase_file")
-            )
+            atom = model.Atom(element, coordinates=position, tag=layer.get("phase_file"))
             if radius:
                 atom.set_mufftin_radius(radius)
             if lmax_global:
@@ -956,14 +868,10 @@ class Converter:
         Converter._validate_structured_input(data)
         unitcell = Converter._build_unitcell(data, superstructure)
 
-        minimum_radius = {
-            str(k).title(): float(v) for k, v in data.get("minimum_radius", {}).items()
-        }
+        minimum_radius = {str(k).title(): float(v) for k, v in data.get("minimum_radius", {}).items()}
         lmax_global = data.get("maximum_angular_momentum")
 
-        bulk_atoms = Converter._build_atoms(
-            data.get("bulk_layers", []), minimum_radius, lmax_global
-        )
+        bulk_atoms = Converter._build_atoms(data.get("bulk_layers", []), minimum_radius, lmax_global)
         slab_atoms = Converter._build_atoms(
             data.get("overlayers", []) + data.get("bulk_layers", []),
             minimum_radius,
@@ -1000,14 +908,9 @@ class Converter:
             except OSError:
                 pass
 
-        bulk_model, slab_model, metadata = Converter.import_cleedpy_input(
-            filename, yaml_loader=yaml_loader, **kwargs
-        )
+        bulk_model, slab_model, metadata = Converter.import_cleedpy_input(filename, yaml_loader=yaml_loader, **kwargs)
 
-        system_name = (
-            metadata.get("system_name")
-            or os.path.splitext(os.path.basename(filename))[0]
-        )
+        system_name = metadata.get("system_name") or os.path.splitext(os.path.basename(filename))[0]
         bulk_file = os.path.join(tmp_dir, "%s_bulk.i" % system_name)
         slab_file = os.path.join(tmp_dir, "%s_slab.i" % system_name)
 
@@ -1032,9 +935,7 @@ class CSearch:
     def getIteration(self, iteration):
         try:
             with open(self.model + ".log") as f:
-                return [line for line in f if line.startswith("#") and "par" in line][
-                    int(iteration)
-                ]
+                return [line for line in f if line.startswith("#") and "par" in line][int(iteration)]
         except (IndexError, ValueError, OSError):
             return None
 

@@ -70,8 +70,6 @@ will produce a list of command line options::
                           installed, the input will be validated.
     -s <slab_file>, --slab <slab_file>
                           path to MTZ slab or CLEED *.inp input file (required unless --input is used)
-    --backend <backend>
-                          Phase shift backend to use (e.g. 'vht' or 'eeasisss').
     -g, --generate-only
                           Exit after generating phaseshifts; do not launch
                           subprocess using PHASESHIFTS_LEED environment
@@ -142,7 +140,7 @@ after execution. When operating in this mode, the following assumptions are made
         rm:  <phase_shift> <radius>
 
     However, if no value is found the radius is guessed from the
-    ::code::`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
+    :code:`ELEMENTS` dictionary within :py:mod:`phaseshifts.elements`
     depending on the valency of the given phase shift element.
 
 A full list of additional syntax to customise the generation of the phase shifts

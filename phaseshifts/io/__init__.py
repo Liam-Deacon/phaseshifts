@@ -27,7 +27,7 @@ from .model import (  # isort:skip
 )
 
 try:
-    from .cleedpy_yaml import CleedpyYamlAdapter  # noqa: E402
+    from .cleedpy_yaml import CleedpyYamlAdapter
 except ImportError:  # pragma: no cover - optional dependency
     CleedpyYamlAdapter = None
 

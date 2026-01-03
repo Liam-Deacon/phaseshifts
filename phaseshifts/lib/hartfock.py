@@ -147,17 +147,10 @@ class hartfock(object):
             # get exchange correlation (Alpha)
             elif ichar == "x":
                 if os.path.isfile(input_stream):
-                    alfa = float(
-                        "".join(
-                            [ch for ch in f.next().split("!")[0] if ch.lower() != "d"]
-                        )
-                    )
+                    alfa = float("".join([ch for ch in f.next().split("!")[0] if ch.lower() != "d"]))
                 else:
                     alfa = float(
-                        get_input(
-                            "Enter exchange correlation method"
-                            " (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): "
-                        )
+                        get_input("Enter exchange correlation method" " (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): ")
                     )
 
             elif ichar == "a":
@@ -318,9 +311,7 @@ class hartfock(object):
                 else:
                     while True:
                         try:
-                            (corpol, rs, rp, sd) = get_input(
-                                "enter ALPHA, RS, RP, RD: "
-                            ).split()[:3]
+                            (corpol, rs, rp, sd) = get_input("enter ALPHA, RS, RP, RD: ").split()[:3]
                             break
                         except:
                             print("Invalid input - please retry...")
@@ -335,18 +326,8 @@ class hartfock(object):
 
             elif ichar == "f":
                 if os.path.isfile(input_stream):
-                    (iunit, corpol) = [
-                        t(s)
-                        for t, s, in zip(
-                            (int, float), f.next().split("!")[0].split()[:1]
-                        )
-                    ]
-                    (ilev, inum, eold) = [
-                        t(s)
-                        for t, s in zip(
-                            (int, int, float), f.next().split("!")[0].split()[:2]
-                        )
-                    ]
+                    (iunit, corpol) = [t(s) for t, s, in zip((int, float), f.next().split("!")[0].split()[:1])]
+                    (ilev, inum, eold) = [t(s) for t, s in zip((int, int, float), f.next().split("!")[0].split()[:2])]
                 else:
                     while True:
                         try:
@@ -354,9 +335,7 @@ class hartfock(object):
                                 t(s)
                                 for t, s in zip(
                                     (int, float),
-                                    get_input("Please enter IUNIT, CORPOL: ").split()[
-                                        :2
-                                    ],
+                                    get_input("Please enter IUNIT, CORPOL: ").split()[:2],
                                 )
                             ]
                             break
@@ -552,10 +531,7 @@ def abinitio(
     elif isinstance(input_stream, file):
         f = input_stream
         (nfc, nel, ratio, etol, xnum) = [
-            t(s)
-            for t, s in zip(
-                (int, int, float, float, float), f.next().split("!")[0].split()[:5]
-            )
+            t(s) for t, s in zip((int, int, float, float, float), f.next().split("!")[0].split()[:5])
         ]
 
     # for all of the electrons, read in the quantum numbers.
@@ -640,10 +616,7 @@ def abinitio(
     # write out information about the atom.
     for i in range(1, nel + 1):
         nj = xnj[i] * 2
-        print(
-            "  %4i%2i%4i%10.4f%18.6f\n"
-            % (no[i], nl[i], nm[i], nj, "/2", iss[i], occ[i], ev[i])
-        )
+        print("  %4i%2i%4i%10.4f%18.6f\n" % (no[i], nl[i], nm[i], nj, "/2", iss[i], occ[i], ev[i]))
         print("Total energy =  %14.6f  14.6f" % (etot, etot * 27.2116))
 
     return (
@@ -1042,13 +1015,7 @@ def getpot(
 
                 etot = etot + rc * (xqi0[k] * valj + xqj0[k] * vali)
 
-            if (
-                iss[i] != iss[j]
-                and occ[i] <= 1.0
-                and occ[j] <= 1.0
-                and xnj[i] >= 0.0
-                and xnj[j] >= 0.0
-            ):
+            if iss[i] != iss[j] and occ[i] <= 1.0 and occ[j] <= 1.0 and xnj[i] >= 0.0 and xnj[j] >= 0.0:
                 continue  # goto 2990
             if abs(alfa) >= 0.001:
                 continue  # goto 2990
@@ -1062,8 +1029,7 @@ def getpot(
                 lap = la + 1
 
                 coeff = float((li + li + 1) * (lj + lj + 1)) / float(
-                    pow(la + la + 1, 2.0)
-                    * pow(cg[li][lj][la][-mi][mj] * cg[li][lj][la][0][0], 2.0)
+                    pow(la + la + 1, 2.0) * pow(cg[li][lj][la][-mi][mj] * cg[li][lj][la][0][0], 2.0)
                 )
                 if occ[i] > 1.0 or occ[j] > 1.0 or xnj[i] < 0.0 or xnj[j] < 0.0:
                     coeff = pin[li][lj][la] / 4.0
@@ -1154,12 +1120,7 @@ def getpot(
                 icond = False
                 if no[jj] == no[ii + 1] and nl[jj] == nl[ii + 1] and iuflag == 2:
                     icond = True
-                if (
-                    no[jj] == no[ii + 1]
-                    and nl[jj] == nl[ii + 1]
-                    and iss[jj] == iss[ii + 1]
-                    and iuflag == 1
-                ):
+                if no[jj] == no[ii + 1] and nl[jj] == nl[ii + 1] and iss[jj] == iss[ii + 1] and iuflag == 1:
                     icond = True
                 if icond:
                     ii += 1
@@ -1365,9 +1326,7 @@ def augment(e, l, xj, phi, v, nr, r, dl):
     return
 
 
-def setqmm(
-    i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi
-):
+def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi):
     """setqmm subroutine"""
     c = 137.038
     alpha = rel / c
@@ -1395,9 +1354,7 @@ def setqmm(
 
             for j in range(2, nr - 1):
                 dvdl = (orb[j + 1][i] - orb[j - 1][i]) / (2.0 * dl)
-                ddvdrr = (
-                    (orb[j + 1][i] + orb[j - 1][i] - 2.0 * orb[j][i]) / (dl * dl) - dvdl
-                ) / r2[j]
+                ddvdrr = ((orb[j + 1][i] + orb[j - 1][i] - 2.0 * orb[j][i]) / (dl * dl) - dvdl) / r2[j]
                 xm1[j] = -a2 * dvdl / r[j] - za2 / r2[j]
                 xm2[j] = -a2 * ddvdrr + zaa / r2[j] / r[j]
 
@@ -1507,15 +1464,10 @@ def initiali(
     """
 
     if input_stream == "stdin":
-        (zorig, nr) = [
-            t(s) for t, s in zip((float, int), get_input("Enter Z, NR: ").split())
-        ]
+        (zorig, nr) = [t(s) for t, s in zip((float, int), get_input("Enter Z, NR: ").split())]
 
     elif isinstance(input_stream, file):
-        (zorig, nr) = [
-            t(s)
-            for t, s in zip((float, int), input_stream.next().split("!")[0].split())
-        ]
+        (zorig, nr) = [t(s) for t, s in zip((float, int), input_stream.next().split("!")[0].split())]
 
     else:
         raise IOError("input stream is not a file handle or 'stdin'")
@@ -1543,9 +1495,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
-def integ(
-    e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel
-):
+def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):
     """integrate out count nodes"""
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
@@ -1783,19 +1733,11 @@ def pseudo(
     # read input
     if input_stream == "stdin":
         (np, corpol, rnorm) = [
-            t(s)
-            for t, s in zip(
-                (int, float, float), get_input("Please enter NP CORPOL RNORM: ").split()
-            )
+            t(s) for t, s in zip((int, float, float), get_input("Please enter NP CORPOL RNORM: ").split())
         ]
 
     elif isinstance(input_stream, file):
-        (np, corpol, rnorm) = [
-            t(s)
-            for t, s in zip(
-                (int, float, float), input_stream.readline().split("!")[0].split()
-            )
-        ]
+        (np, corpol, rnorm) = [t(s) for t, s in zip((int, float, float), input_stream.readline().split("!")[0].split())]
     else:
         raise IOError("input_stream is not valid!")
 
@@ -2226,9 +2168,7 @@ def pseudize(
     )
 
     if rcut is None or factor is None:
-        (rcut, factor) = get_input(
-            "Please enter the cutoff radius, and factor: "
-        ).split()
+        (rcut, factor) = get_input("Please enter the cutoff radius, and factor: ").split()
 
     if rcut < 0.0:
         xnodefrac = -rcut
@@ -2337,9 +2277,7 @@ def pseudize(
     ruse = 0.0
     v0 = v[jrc]
     dvdl = (8.0 * (v[jrc + 1] - v[jrc - 1]) - (v[jrc + 2] - v[jrc - 2])) / (12.0 * dl)
-    ddvdll = (
-        16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]
-    ) / (12.0 * dl * dl)
+    ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (12.0 * dl * dl)
     dldr = 1.0 / r[jrc]
     ddldrr = -1.0 / r2[jrc]
     v1 = dvdl * dldr
@@ -2426,12 +2364,7 @@ def pseudize(
             for j in range(jj - 1, jj + 1):
                 vf[2 + j - jj] = phi0[j]
             (psi, psip, psipp, rf, vf) = parabreg(psi, psip, psipp, rf, vf)
-            v[ii] = (
-                vraw[ii]
-                + (1.0 - phi0[ii] / phi[ii])
-                * (2.0 * psip / psi * fp / f + fpp / f)
-                / 2.0
-            )
+            v[ii] = vraw[ii] + (1.0 - phi0[ii] / phi[ii]) * (2.0 * psip / psi * fp / f + fpp / f) / 2.0
 
             fitx0(
                 i,
@@ -2615,20 +2548,10 @@ def getillls(pin):
                 for ia in range(nn, n):
                     af = si[ia] * fa[ia + ia] / fa[ia] / fa[n - ia] / fa[ia + ia - n]
                     for ib in range(ll, l):
-                        bf = (
-                            si[ib] * fa[ib + ib] / fa[ib] / fa[l - ib] / fa[ib + ib - l]
-                        )
+                        bf = si[ib] * fa[ib + ib] / fa[ib] / fa[l - ib] / fa[ib + ib - l]
                         for ic in range(mm, m):
-                            xcf = (
-                                si[ic]
-                                * fa[ic + ic]
-                                / fa[ic]
-                                / fa[m - ic]
-                                / fa[ic + ic - m]
-                            )
-                            xi = xi + xf * af * bf * xcf / (
-                                ia * 2 + ib * 2 + ic * 2 - n - l - m + 1
-                            )
+                            xcf = si[ic] * fa[ic + ic] / fa[ic] / fa[m - ic] / fa[ic + ic - m]
+                            xi = xi + xf * af * bf * xcf / (ia * 2 + ib * 2 + ic * 2 - n - l - m + 1)
                 pin[l][m][n] = xi
     return fa, si
 
@@ -2708,9 +2631,7 @@ def hfdisk(
     )
 
 
-def exchcorr(
-    nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, uc2=0.0
-):
+def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, uc2=0.0):
     """
     Description
     -----------
@@ -2829,24 +2750,14 @@ def exchcorr(
         cu = 0.002
         du = -0.0116
         ecu = au * xlr + bu + cu * rlr + du * rs
-        ucu = (
-            au * xlr
-            + (bu - au / 3.0)
-            + 2.0 / 3.0 * cu * rlr
-            + (2.0 * du - cu) * rs / 3.0
-        )
+        ucu = au * xlr + (bu - au / 3.0) + 2.0 / 3.0 * cu * rlr + (2.0 * du - cu) * rs / 3.0
 
         ap = 0.01555
         bp = -0.0269
         cp = 0.0007
         dp = -0.0048
         ecp = ap * xlr + bp + cp * rlr + dp * rs
-        ucp = (
-            ap * xlr
-            + (bp - ap / 3.0)
-            + 2.0 / 3.0 * cp * rlr
-            + (2.0 * dp - cp) * rs / 3.0
-        )
+        ucp = ap * xlr + (bp - ap / 3.0) + 2.0 / 3.0 * cp * rlr + (2.0 * dp - cp) * rs / 3.0
 
     # if we are nonrelativistic, turn off the MacDonald-Vosko correction.
     if not rel:

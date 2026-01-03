@@ -188,8 +188,7 @@ class NumpyDocString(object):
         return params
 
     _name_rgx = re.compile(
-        r"^\s*(:(?P<role>\w+):`(?P<name>[a-zA-Z0-9_.-]+)`|"
-        r" (?P<name2>[a-zA-Z0-9_.-]+))\s*",
+        r"^\s*(:(?P<role>\w+):`(?P<name>[a-zA-Z0-9_.-]+)`|" r" (?P<name2>[a-zA-Z0-9_.-]+))\s*",
         re.X,
     )
 
@@ -493,11 +492,7 @@ class ClassDoc(NumpyDocString):
 
     @property
     def methods(self):
-        return [
-            name
-            for name, func in inspect.getmembers(self._cls)
-            if not name.startswith("_") and callable(func)
-        ]
+        return [name for name, func in inspect.getmembers(self._cls) if not name.startswith("_") and callable(func)]
 
     def __str__(self):
         out = ""

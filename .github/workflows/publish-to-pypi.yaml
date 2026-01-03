@@ -7,7 +7,7 @@ on:
     inputs:
       version:
         description: Version to upload
-        default: ""
+        default: ''
       pypi_repo:
         description: PyPI Repo
         type: choice
@@ -54,12 +54,12 @@ env:
   CIBW_BEFORE_BUILD_MUSLLINUX: apk add --no-cache python3-dev && pip install "numpy<2" scikit-build-core cmake ninja meson meson-python
   CIBW_ENVIRONMENT_PASS_LINUX: PHASESHIFTS_VERSION
   CIBW_TEST_COMMAND: python -c "import phaseshifts.lib.libphsh as phsh; print('Import OK')"
-  CIBW_TEST_EXTRAS: ""
-  CIBW_TEST_REQUIRES: ""
-  MACOSX_DEPLOYMENT_TARGET: "11.0"
+  CIBW_TEST_EXTRAS: ''
+  CIBW_TEST_REQUIRES: ''
+  MACOSX_DEPLOYMENT_TARGET: '11.0'
   PHASESHIFTS_VERSION: ${{ github.event.inputs.version }}
-  PHASESHIFTS_COMPILE_MISSING: "0"
-  PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: "1"
+  PHASESHIFTS_COMPILE_MISSING: '0'
+  PHASESHIFTS_SKIP_COMPILE_ON_IMPORT: '1'
 
 permissions:
   contents: read
@@ -80,7 +80,7 @@ jobs:
           rm -f phaseshifts/__init__.py.bak
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
       # TODO: Figure out how to create a sdist zip for Windows
       - name: Build sdist
         run: |
@@ -101,8 +101,8 @@ jobs:
     needs: build_sdist
     if: ${{ github.event.inputs.build_legacy || github.event_name != 'release' }}
     env:
-      PIP_NO_BUILD_ISOLATION: "1"
-      SKBUILD_DISABLE: "1"
+      PIP_NO_BUILD_ISOLATION: '1'
+      SKBUILD_DISABLE: '1'
     strategy:
       fail-fast: false
       matrix:
@@ -128,7 +128,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
       - name: Strip Type Hints
         run: |
           pip install strip-hints
@@ -293,7 +293,7 @@ jobs:
         env:
           CIBW_ARCHS_MACOS: arm64
           CIBW_BUILD: ${{ matrix.cibw_build }}
-          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ""
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS: ''
           CIBW_TEST_COMMAND: | # FIXME: Cannot install on runner - unsure why
             python -c "import phaseshifts; print('Package imported successfully')"
             python -c "
@@ -344,8 +344,8 @@ jobs:
       CXX: g++
       FC: gfortran
       CIBW_ARCHS_WINDOWS: AMD64
-      PIP_NO_BUILD_ISOLATION: "1" # skip auto-install of build back-ends
-      SKBUILD_DISABLE: "1" # scikit-build honour this
+      PIP_NO_BUILD_ISOLATION: '1' # skip auto-install of build back-ends
+      SKBUILD_DISABLE: '1' # scikit-build honour this
     strategy:
       # NOTE: Split matrix build into individual jobs to avoid long build times and to allow some versions to complete
       fail-fast: false
@@ -372,7 +372,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
       - name: Strip Type Hints
         if: ${{ false }} # FIXME: charmap codec error on Windows
         run: |
@@ -395,7 +395,7 @@ jobs:
         uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
         with:
           compiler: gcc
-          version: "13" # pick any released GCC you like
+          version: '13' # pick any released GCC you like
 
       - name: Setup MSYS2 (MinGW)
         uses: msys2/setup-msys2@v2
@@ -455,7 +455,7 @@ jobs:
         uses: fortran-lang/setup-fortran@v1 # grabs GCC + gfortran on Windows
         with:
           compiler: gcc
-          version: "13" # pick any released GCC you like
+          version: '13' # pick any released GCC you like
 
       - name: Setup MSYS2 (MinGW)
         uses: msys2/setup-msys2@v2
