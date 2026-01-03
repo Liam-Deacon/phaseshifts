@@ -77,13 +77,14 @@ class TestWebInterface:
         """index.html should have valid HTML structure."""
         index_html = WEB_DIR / "index.html"
         content = index_html.read_text(encoding="utf-8")
+        content_lower = content.lower()
 
         # Check for essential HTML elements
-        assert "<!DOCTYPE html>" in content, "Missing DOCTYPE"
-        assert "<html" in content, "Missing html tag"
-        assert "<head>" in content, "Missing head tag"
-        assert "<body>" in content, "Missing body tag"
-        assert "</html>" in content, "Missing closing html tag"
+        assert "<!doctype html>" in content_lower, "Missing DOCTYPE"
+        assert "<html" in content_lower, "Missing html tag"
+        assert "<head>" in content_lower, "Missing head tag"
+        assert "<body>" in content_lower, "Missing body tag"
+        assert "</html>" in content_lower, "Missing closing html tag"
 
     def test_index_html_has_required_elements(self):
         """index.html should have phase shift calculator elements."""
