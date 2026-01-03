@@ -290,4 +290,9 @@ function buildPhshInput(params) {
   return `${fields.join(' ')}\n`;
 }
 
-export { DEFAULT_PHSH_PARAMS, buildAtorbInput, buildPhshInput, normalizePhshParams };
+export {
+  DEFAULT_PHSH_PARAMS,
+  buildAtorbInput,
+  buildPhshInput,
+  normalizePhshParams,
+};
