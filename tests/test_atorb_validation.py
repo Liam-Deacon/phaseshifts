@@ -382,5 +382,5 @@ def test_render_atorb_file_returns_handle_name():
     handle = io.StringIO()
     result = render_atorb_file(model, "unused.txt", file_handle=handle)
 
-    assert result == ""
+    assert result == "unused.txt"
     assert "C test" in handle.getvalue()

@@ -405,7 +405,7 @@ DOCKERFILE
     cd "$PROJECT_ROOT"
     docker build -f "$BUILD_DIR/Dockerfile.wasm" -t phaseshifts-wasm-builder .
 
-    # Run build in container and copy output
+    # Run build script in container (includes f2c conversion + emcc compile)
     echo "  Running build in container..."
     docker run --rm -v "$DIST_DIR:/work/wasm/dist" phaseshifts-wasm-builder \
         bash -lc "/work/wasm/build.sh --method=f2c"

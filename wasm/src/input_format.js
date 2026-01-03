@@ -1,5 +1,17 @@
-// eslint-disable-next-line
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
 import { elements } from './elements.js';
+
+/**
+ * Default parameters for phase shift input generation.
+ * @type {{muffinTinRadius: number, energyMin: number, energyMax: number, energyStep: number, lmax: number}}
+ */
+const DEFAULT_PHSH_PARAMS = Object.freeze({
+  muffinTinRadius: 2.5,
+  energyMin: 1.0,
+  energyMax: 12.0,
+  energyStep: 0.25,
+  lmax: 10,
+});
 
 /**
  * Format a float as a fixed-width field.
@@ -220,18 +232,48 @@ function buildAtorbInput(params) {
 }
 
 /**
+ * Normalize phase shift parameters by applying default values.
+ * @param {Object} params - Input parameters.
+ * @returns {Object} Parameters with defaults applied.
+ */
+function normalizePhshParams(params) {
+  const safe = params || {};
+  return {
+    atomicNumber: safe.atomicNumber,
+    muffinTinRadius:
+      safe.muffinTinRadius === undefined
+        ? DEFAULT_PHSH_PARAMS.muffinTinRadius
+        : safe.muffinTinRadius,
+    energyMin:
+      safe.energyMin === undefined
+        ? DEFAULT_PHSH_PARAMS.energyMin
+        : safe.energyMin,
+    energyMax:
+      safe.energyMax === undefined
+        ? DEFAULT_PHSH_PARAMS.energyMax
+        : safe.energyMax,
+    energyStep:
+      safe.energyStep === undefined
+        ? DEFAULT_PHSH_PARAMS.energyStep
+        : safe.energyStep,
+    lmax: safe.lmax === undefined ? DEFAULT_PHSH_PARAMS.lmax : safe.lmax,
+  };
+}
+
+/**
  * Build a phsh input file payload.
  * @param {Object} params - Input parameters.
  * @returns {string} Formatted phsh input.
  */
 function buildPhshInput(params) {
-  const atomicNumber = params.atomicNumber;
-  const muffinTinRadius =
-    params.muffinTinRadius === undefined ? 2.5 : params.muffinTinRadius;
-  const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
-  const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
-  const energyStep = params.energyStep === undefined ? 0.25 : params.energyStep;
-  const lmax = params.lmax === undefined ? 10 : params.lmax;
+  const {
+    atomicNumber,
+    muffinTinRadius,
+    energyMin,
+    energyMax,
+    energyStep,
+    lmax,
+  } = normalizePhshParams(params);
 
   const nEnergies = Math.floor((energyMax - energyMin) / energyStep) + 1;
 
@@ -248,4 +290,4 @@ function buildPhshInput(params) {
   return `${fields.join(' ')}\n`;
 }
 
-export { buildAtorbInput, buildPhshInput };
+export { DEFAULT_PHSH_PARAMS, buildAtorbInput, buildPhshInput, normalizePhshParams };

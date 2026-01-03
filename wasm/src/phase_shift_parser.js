@@ -1,4 +1,8 @@
-/* eslint-disable */
+/**
+ * Parsing helpers for phase shift output.
+ * @module phase_shift_parser
+ */
+
 /**
  * Parse phase shift data from text output.
  * @param {string} output - Raw text output containing phase shift data
@@ -34,10 +38,9 @@ export function parsePhaseShiftData(output, lmax) {
 
     const limit = Math.min(lmax + 1, values.length - 1);
     for (let l = 0; l < limit; l++)
-      // eslint-disable-next-line security/detect-object-injection
+      // eslint-disable-next-line security/detect-object-injection -- l is bounded by lmax.
       data[l].push(values[l + 1]);
   }
 
   return { energies, data };
 }
-/* eslint-enable */

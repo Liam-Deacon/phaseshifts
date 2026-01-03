@@ -11,13 +11,17 @@
 
 /* global createPhaseShiftsModule */
 
-// eslint-disable-next-line
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
 import { elements } from './elements.js';
-// eslint-disable-next-line
-import { buildAtorbInput, buildPhshInput } from './input_format.js';
-// eslint-disable-next-line
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
+import {
+  buildAtorbInput,
+  buildPhshInput,
+  normalizePhshParams,
+} from './input_format.js';
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
 import { IO_PATHS } from './io_paths.js';
-// eslint-disable-next-line
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
 import { parsePhaseShiftData } from './phase_shift_parser.js';
 
 /**
@@ -120,6 +124,9 @@ class PhaseShifts {
    * @param {number} [params.lmax=10] - Maximum angular momentum quantum number
    * @param {string} [params.potentialFile] - Pre-calculated potential file content
    * @returns {Object} Phase shift results
+   *
+   * Note: if no `potentialFile` is provided, this will also run
+   * `calculateChargeDensity` to generate the muffin-tin potential.
    */
   calculatePhaseShifts(params) {
     this._ensureInitialized();
@@ -279,11 +286,11 @@ class PhaseShifts {
    * @private
    */
   _parsePhaseShiftOutput(params) {
-    const lmax = params.lmax === undefined ? 10 : params.lmax;
-    const energyMin = params.energyMin === undefined ? 1.0 : params.energyMin;
-    const energyMax = params.energyMax === undefined ? 12.0 : params.energyMax;
-    const energyStep =
-      params.energyStep === undefined ? 0.25 : params.energyStep;
+    const normalized = normalizePhshParams(params || {});
+    const lmax = normalized.lmax;
+    const energyMin = normalized.energyMin;
+    const energyMax = normalized.energyMax;
+    const energyStep = normalized.energyStep;
 
     const outputPath = IO_PATHS.phshOutput;
     if (!this.FS.analyzePath(outputPath).exists) {

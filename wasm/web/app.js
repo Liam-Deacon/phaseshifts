@@ -5,20 +5,14 @@
 
 /* eslint-env browser */
 /* global Chart, createPhaseShiftsModule */
-/* eslint-disable compat/compat */
-/* eslint-disable security/detect-object-injection */
+/* eslint-disable compat/compat -- WASM UI targets modern browsers. */
+/* eslint-disable security/detect-object-injection -- UI indexes preset maps by user selection. */
 
-// eslint-disable-next-line
-import { elements } from '../src/elements.js';
-// eslint-disable-next-line
-import { buildPhshInput } from '../src/input_format.js';
-// eslint-disable-next-line
-import { IO_PATHS } from '../src/io_paths.js';
-// eslint-disable-next-line
-import { parsePhaseShiftData } from '../src/phase_shift_parser.js';
+// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
+import { createPhaseShifts, elements } from '../src/phaseshifts.js';
 
 // Global state
-let phaseShiftsModule = null;
+let phaseShiftsApi = null;
 let chart = null;
 let currentResults = null;
 
@@ -217,19 +211,11 @@ async function initializeWasmModule() {
 
     statusText.textContent = 'Initializing WebAssembly module...';
 
-    // Create the module
-    phaseShiftsModule = await createPhaseShiftsModule();
-
-    // Initialize filesystem
-    phaseShiftsModule.FS.mkdir('/input');
-    phaseShiftsModule.FS.mkdir('/output');
-    phaseShiftsModule.FS.mkdir('/work');
-
-    // Call init function
-    phaseShiftsModule.ccall('init_phaseshifts', null, [], []);
+    // Create the API wrapper (initializes the module internally).
+    phaseShiftsApi = await createPhaseShifts();
 
     // Get version
-    const version = phaseShiftsModule.ccall('get_version', 'string', [], []);
+    const version = phaseShiftsApi.getVersion();
     versionInfo.textContent = version;
 
     // Update status
@@ -346,60 +332,11 @@ async function runCalculation() {
  * Calculate phase shifts using WASM module
  */
 async function calculatePhaseShifts(params) {
-  const method = params.method;
-
-  // Generate input file for the calculation
-  const inputData = generateInputFile(params);
-
-  // Write input to MEMFS
-  phaseShiftsModule.FS.writeFile(IO_PATHS.phshInput, inputData);
-
-  // Run the appropriate calculation
-  let result;
-  switch (method) {
-    case 'rel':
-      result = phaseShiftsModule.ccall('run_phsh_rel', 'number', [], []);
-      break;
-    case 'cav':
-      result = phaseShiftsModule.ccall('run_phsh_cav', 'number', [], []);
-      break;
-    case 'wil':
-      result = phaseShiftsModule.ccall('run_phsh_wil', 'number', [], []);
-      break;
-    default:
-      throw new Error(`Unknown method: ${method}`);
+  if (!phaseShiftsApi) {
+    throw new Error('WebAssembly module not initialized');
   }
 
-  if (result !== 0) {
-    throw new Error(`Calculation failed with error code ${result}`);
-  }
-
-  // Read output
-  const output = phaseShiftsModule.FS.readFile(IO_PATHS.phshOutput, {
-    encoding: 'utf8',
-  });
-
-  return buildPhaseShiftOutput(output, params);
-}
-
-/**
- * Generate input file content
- */
-function generateInputFile(params) {
-  return buildPhshInput(params);
-}
-
-/**
- * Parse phase shift output
- */
-function buildPhaseShiftOutput(output, params) {
-  const parsed = parsePhaseShiftData(output, params.lmax);
-  return {
-    raw: output,
-    energies: parsed.energies,
-    phaseShifts: parsed.data,
-    success: true,
-  };
+  return phaseShiftsApi.calculatePhaseShifts(params);
 }
 
 /**

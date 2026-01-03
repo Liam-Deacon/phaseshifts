@@ -1,3 +1,7 @@
+/**
+ * Element symbol to atomic number mapping.
+ * @type {Record<string, number>}
+ */
 const elements = {
   H: 1,
   He: 2,

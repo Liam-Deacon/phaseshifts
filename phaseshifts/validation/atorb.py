@@ -696,7 +696,10 @@ def render_atorb_file(model, filename, file_handle=None):
 
     if handle is not None:
         handle.write(payload)
-        return getattr(handle, "name", "")
+        handle_name = getattr(handle, "name", "")
+        if handle_name:
+            return handle_name
+        return filename if isinstance(filename, str) else ""
 
     with open(filename, "w") as handle:
         handle.write(payload)

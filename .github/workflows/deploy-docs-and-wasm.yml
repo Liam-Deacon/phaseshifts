@@ -130,7 +130,7 @@ jobs:
 
           # Copy WASM calculator web files
           cp -r wasm/web/* _site/calculator/
-          cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
+          cp -r wasm/src _site/src 2>/dev/null || true
 
           # Copy built WASM if available, otherwise create demo mode placeholder
           if [ -f "wasm/dist/phaseshifts.js" ] && [ -f "wasm/dist/phaseshifts.wasm" ]; then
