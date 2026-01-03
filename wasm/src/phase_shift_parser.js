@@ -26,18 +26,20 @@ function parsePhaseShiftData(output, lmax) {
       .split(/\s+/)
       .map(parseFloat)
       .filter((v) => !isNaN(v));
-    if (values.length >= 2) {
-      const energy = values[0];
-      if (!energySet.has(energy)) {
-        energies.push(energy);
-        energySet.add(energy);
-      }
+    if (values.length < 2) {
+      continue;
+    }
 
-      const limit = Math.min(lmax + 1, values.length - 1);
-      for (let l = 0; l < limit; l++) {
-        // eslint-disable-next-line security/detect-object-injection
-        data[l].push(values[l + 1]);
-      }
+    const energy = values[0];
+    if (!energySet.has(energy)) {
+      energies.push(energy);
+      energySet.add(energy);
+    }
+
+    const limit = Math.min(lmax + 1, values.length - 1);
+    for (let l = 0; l < limit; l++) {
+      // eslint-disable-next-line security/detect-object-injection
+      data[l].push(values[l + 1]);
     }
   }
 

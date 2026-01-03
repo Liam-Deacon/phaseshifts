@@ -1,4 +1,5 @@
-import { elements } from '@phaseshifts/elements.js';
+// eslint-disable-next-line
+import { elements } from './elements.js';
 
 /**
  * Format a float as a fixed-width field.

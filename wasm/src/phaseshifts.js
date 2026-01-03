@@ -11,10 +11,14 @@
 
 /* global createPhaseShiftsModule */
 
-import { elements } from '@phaseshifts/elements.js';
-import { buildAtorbInput, buildPhshInput } from '@phaseshifts/input_format.js';
-import { IO_PATHS } from '@phaseshifts/io_paths.js';
-import { parsePhaseShiftData } from '@phaseshifts/phase_shift_parser.js';
+// eslint-disable-next-line
+import { elements } from './elements.js';
+// eslint-disable-next-line
+import { buildAtorbInput, buildPhshInput } from './input_format.js';
+// eslint-disable-next-line
+import { IO_PATHS } from './io_paths.js';
+// eslint-disable-next-line
+import { parsePhaseShiftData } from './phase_shift_parser.js';
 
 /**
  * PhaseShifts calculator class

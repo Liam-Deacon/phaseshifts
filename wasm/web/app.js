@@ -8,10 +8,14 @@
 /* eslint-disable compat/compat */
 /* eslint-disable security/detect-object-injection */
 
-import { elements } from '@phaseshifts/elements.js';
-import { buildPhshInput } from '@phaseshifts/input_format.js';
-import { IO_PATHS } from '@phaseshifts/io_paths.js';
-import { parsePhaseShiftData } from '@phaseshifts/phase_shift_parser.js';
+// eslint-disable-next-line
+import { elements } from '../src/elements.js';
+// eslint-disable-next-line
+import { buildPhshInput } from '../src/input_format.js';
+// eslint-disable-next-line
+import { IO_PATHS } from '../src/io_paths.js';
+// eslint-disable-next-line
+import { parsePhaseShiftData } from '../src/phase_shift_parser.js';
 
 // Global state
 let phaseShiftsModule = null;
