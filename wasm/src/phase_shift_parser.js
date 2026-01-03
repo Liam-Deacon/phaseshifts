@@ -4,6 +4,7 @@
  * @param {number} lmax - Maximum angular momentum quantum number
  * @returns {{energies: number[], data: number[][]}} Parsed energies and phase shifts indexed by L
  */
+/* eslint-disable no-extra-blocks */
 export function parsePhaseShiftData(output, lmax) {
   if (!Number.isInteger(lmax) || lmax < 0)
     throw new TypeError('lmax must be a non-negative integer');
@@ -39,3 +40,4 @@ export function parsePhaseShiftData(output, lmax) {
 
   return { energies, data };
 }
+/* eslint-enable no-extra-blocks */
