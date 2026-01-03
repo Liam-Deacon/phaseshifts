@@ -255,6 +255,13 @@ pip install -e '.[gui,dev,test]' # extra deps are only needed for development/te
 phsh --help
 ```
 
+To enable pre-commit hooks (recommended for local development):
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
 ### Windows Installation
 
 For Windows users, here's a step-by-step guide to install phaseshifts with all necessary build dependencies:
