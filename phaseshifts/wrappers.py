@@ -70,16 +70,7 @@ class Wrapper(object):
     """Abstract base wrapper class for generating phase shifts"""
 
     @abstractmethod
-    def autogen_from_input(
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
-    ):
+    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs):
         pass
 
     @abstractmethod
@@ -132,9 +123,7 @@ class Wrapper(object):
                 filename += ".phs"
             phsh_files.append(filename)
             # pylint: disable=consider-using-f-string
-            sys.stdout.write(
-                "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-            )
+            sys.stdout.write("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
             # pylint: enable=consider-using-f-string
             phsh = Conphas(
                 input_files=[phasout_files[i]],
@@ -296,9 +285,7 @@ class EEASiSSSWrapper(Wrapper):
         """
         Convenience passthrough to the EEASiSSS-specific Atorb helper.
         """
-        return atorb.EEASiSSSAtorb.calculate_Q_density(
-            elements=elements, output_dir=output_dir
-        )
+        return atorb.EEASiSSSAtorb.calculate_Q_density(elements=elements, output_dir=output_dir)
 
     @staticmethod
     def _copy_files(files, dst, verbose=False):
@@ -308,14 +295,7 @@ class EEASiSSSWrapper(Wrapper):
         FileUtils.copy_files(files, dst, verbose=verbose)
 
     def autogen_from_input(  # noqa: MC0001
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
+        self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
     ):
         """
         Description
@@ -361,9 +341,7 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -373,9 +351,7 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -387,9 +363,7 @@ class EEASiSSSWrapper(Wrapper):
         # get unique elements in bulk and slab
         bulk_elements = [atom.element for atom in bulk_mtz.atoms]
         slab_elements = [atom.element for atom in slab_mtz.atoms]
-        EEASiSSSWrapper().autogen_atorbs(
-            elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
-        )
+        EEASiSSSWrapper().autogen_atorbs(elements=set(bulk_elements + slab_elements), output_dir=tmp_dir)
 
         if verbose:
             print("\nModel")
@@ -415,17 +389,13 @@ class EEASiSSSWrapper(Wrapper):
         # copy files to storage location
         if "store" in kwargs and out_format != "cleed":
             if kwargs["store"] != ".":
-                dst = os.path.abspath(
-                    os.path.expanduser(os.path.expandvars(kwargs["store"]))
-                )
+                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
             else:
                 dst = os.path.abspath(".")
             EEASiSSSWrapper._copy_files(phsh_files, dst, verbose=True)
 
         elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(
-                os.path.expanduser(os.path.expandvars("$CLEED_PHASE"))
-            )
+            dst = os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
             EEASiSSSWrapper._copy_files(phsh_files, dst, verbose=True)
 
         else:
@@ -468,22 +438,13 @@ class BVHWrapper(Wrapper):
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                    element=elem, output_dir=output_dir
-                )
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=output_dir)
             else:
                 atomic_dict[elem] = at_file
         return atomic_dict
 
     def autogen_from_input(  # noqa: MC0001
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
+        self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
     ):
         """
         Description
@@ -532,9 +493,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -544,9 +503,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -559,14 +516,10 @@ class BVHWrapper(Wrapper):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = self.autogen_atorbs(
-            elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
-        )
+        atomic_dict = self.autogen_atorbs(elements=set(bulk_elements + slab_elements), output_dir=tmp_dir)
 
         # prepare at files for appending into atomic file
-        bulk_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)
-        ]
+        bulk_at_files = [atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)]
 
         # create atomic.i input file from mtz model
         bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
@@ -586,13 +539,8 @@ class BVHWrapper(Wrapper):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz")
-            )
-            print(
-                "\tmufftin file: '%s'"
-                % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
 
         bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
@@ -604,9 +552,7 @@ class BVHWrapper(Wrapper):
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
         # prepare at files for appending into atomic file
-        slab_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)
-        ]
+        slab_at_files = [atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)]
 
         # create atomic.i input file from mtz model
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
@@ -622,9 +568,7 @@ class BVHWrapper(Wrapper):
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz"))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
@@ -638,19 +582,13 @@ class BVHWrapper(Wrapper):
         )
 
         # create raw phase shift files
-        print(
-            "\nGenerating phase shifts from '%s'..."
-            % os.path.basename(mufftin_filepath)
-        )
+        print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
         filepath = os.path.join(tmp_dir, slab_model_name)
         phasout_filepath = filepath + "_phasout.i"
         dataph_filepath = filepath + "_dataph.d"
 
         phaseshifts = [atom.tag for atom in set(slab_mtz.atoms + bulk_mtz.atoms)]
-        phasout_files = [
-            os.path.join(tmp_dir, atom.tag + ".ph")
-            for atom in set(slab_mtz.atoms + bulk_mtz.atoms)
-        ]
+        phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms + bulk_mtz.atoms)]
         phsh_files = []
 
         # assign phase shift specific lmax values
@@ -673,16 +611,10 @@ class BVHWrapper(Wrapper):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
-                phsh_files.extend(
-                    Wrapper._remove_pi_jumps(
-                        phaseshifts, phasout_files, lmax_dict, out_format
-                    )
-                )
+                phsh_files.extend(Wrapper._remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format))
 
             if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
                 # calculate phase shifts
@@ -694,9 +626,7 @@ class BVHWrapper(Wrapper):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
             if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
                 # check energy range
@@ -715,15 +645,12 @@ class BVHWrapper(Wrapper):
                         ]
 
                         # assign new values
-                        (ei, ef, de) = [
-                            t(s) for t, s in zip((float, float, float), kwargs["range"])
-                        ]
+                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
 
                         # edit energy range
-                        lines[1] = str(
-                            "%12.4f%12.4f%12.4f    %3i    %12.4f\n"
-                            % (ei, de, ef, lsm, vc)
-                        ).replace("e", "D")
+                        lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(
+                            "e", "D"
+                        )
 
                         with open(mufftin_filepath, "w") as f:
                             f.write("".join([str(line) for line in lines]))
@@ -747,16 +674,10 @@ class BVHWrapper(Wrapper):
                 # print("Current time " + time.strftime("%X"))
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
-                phsh_files.extend(
-                    Wrapper._remove_pi_jumps(
-                        phaseshifts, phasout_files, lmax_dict, out_format
-                    )
-                )
+                phsh_files.extend(Wrapper._remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format))
 
         except AttributeError as err:
             raise AttributeError("MTZ_model has no NFORM (0-2) specified!") from err

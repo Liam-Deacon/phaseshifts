@@ -144,9 +144,7 @@ def main(argv=None):
             action="count",
             help="Set verbosity level. [default: %(default)s]",
         )
-        parser.add_argument(
-            "-V", "--version", action="version", version=program_version_message
-        )
+        parser.add_argument("-V", "--version", action="version", version=program_version_message)
 
         # Process arguments
         args, unknown = parser.parse_known_args(argv)
@@ -168,10 +166,7 @@ def main(argv=None):
         args.chgden_dir = os.path.expanduser(os.path.expandvars(args.chgden_dir))
         if not os.path.isdir(args.chgden_dir):
             if verbose:
-                sys.stderr.write(
-                    "hf - warning: '%s' does not exist. "
-                    "Creating directory..." % args.chgden_dir
-                )
+                sys.stderr.write("hf - warning: '%s' does not exist. " "Creating directory..." % args.chgden_dir)
                 sys.stderr.flush()
             os.makedirs(args.chgden_dir)
 

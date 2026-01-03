@@ -23,9 +23,7 @@ def test_gen_input_cl_has_safe_comment_spacing(tmp_path):
     for line in orbital_lines:
         assert "!" in line
         bang_index = line.index("!")
-        assert line[
-            bang_index - 1
-        ].isspace(), "Inline comments must be separated from data by whitespace"
+        assert line[bang_index - 1].isspace(), "Inline comments must be separated from data by whitespace"
 
     validated = Atorb.validate_input_file(str(dest))
     assert validated.nlevels == len(validated.orbitals) == 7
@@ -227,9 +225,7 @@ def test_parser_failure_modes(tmp_path):
     check_failure("i\n1 100\nd\n1\nx\n0.d0\nz", "Expected 'a' line")
 
     # Unexpected EOF before a
-    check_failure(
-        "i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'"
-    )
+    check_failure("i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'")
 
     # Bad SCF
     check_failure("i\n1 100\nd\n1\nx\n0.d0\na\nbad", "Unable to parse SCF")
@@ -280,17 +276,13 @@ def test_render_with_header(tmp_path):
 
     content = dest.read_text()
     assert "Custom Header" in content
-    assert (
-        "atorb input file" not in content
-    )  # Should override default if present, or at least appear
+    assert "atorb input file" not in content  # Should override default if present, or at least appear
 
 
 def test_validate_comment_spacing_at_start(tmp_path):
     # ! at start of line should be fine (no preceding char to check)
     f = tmp_path / "comment_start.txt"
-    f.write_text(
-        "i\n!comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq"
-    )
+    f.write_text("i\n!comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq")
 
     # We just want to ensure it doesn't warn.
     import warnings

@@ -22,9 +22,7 @@ if use_source or _has_local_compiled_lib():
     sys.path.insert(0, PROJECT_ROOT)
 else:
     # Ensure the repo root does not shadow the installed wheel
-    sys.path[:] = [
-        p for p in sys.path if os.path.abspath(p or os.curdir) != PROJECT_ROOT
-    ]
+    sys.path[:] = [p for p in sys.path if os.path.abspath(p or os.curdir) != PROJECT_ROOT]
 
 
 def pytest_addoption(parser):
@@ -64,9 +62,7 @@ def _iter_search_roots():
 
 
 def _should_collect_fortran_coverage(config):
-    return bool(
-        config.getoption("--fortran-coverage") or os.environ.get(FORTRAN_COVERAGE_ENV)
-    )
+    return bool(config.getoption("--fortran-coverage") or os.environ.get(FORTRAN_COVERAGE_ENV))
 
 
 def pytest_sessionfinish(session, exitstatus):
@@ -102,8 +98,7 @@ def pytest_sessionfinish(session, exitstatus):
     if not gcda_files:
         _write_terminal(
             session.config,
-            "[fortran-coverage] No gcov data (.gcda) found. "
-            "Ensure the build used PHASESHIFTS_FORTRAN_COVERAGE=1.",
+            "[fortran-coverage] No gcov data (.gcda) found. " "Ensure the build used PHASESHIFTS_FORTRAN_COVERAGE=1.",
         )
         return
 
@@ -124,9 +119,7 @@ def pytest_sessionfinish(session, exitstatus):
     for root in search_roots:
         cmd.extend(["--search-path", root])
 
-    result = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )  # nosec
+    result = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # nosec
     stdout, stderr = result.communicate()
 
     if result.returncode != 0:

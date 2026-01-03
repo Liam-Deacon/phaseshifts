@@ -215,12 +215,8 @@ class TestWasmBuild:
     @pytest.fixture
     def has_build_tools(self):
         """Check if build tools are available."""
-        emcc_available = (
-            subprocess.run(["which", "emcc"], capture_output=True).returncode == 0
-        )
-        f2c_available = (
-            subprocess.run(["which", "f2c"], capture_output=True).returncode == 0
-        )
+        emcc_available = subprocess.run(["which", "emcc"], capture_output=True).returncode == 0
+        f2c_available = subprocess.run(["which", "f2c"], capture_output=True).returncode == 0
         return emcc_available and f2c_available
 
     @pytest.mark.skip(reason="Full WASM build requires Emscripten and f2c")
@@ -289,6 +285,5 @@ class TestFortranSource:
         for sub in required_subroutines:
             # Check for subroutine definition (may have different naming)
             assert (
-                sub.lower() in content_lower
-                or sub.replace("_", "").lower() in content_lower
+                sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower
             ), f"Missing subroutine: {sub}"

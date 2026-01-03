@@ -28,9 +28,7 @@ maximum_angular_momentum: 4
     yaml_path = tmp_path / "input.yml"
     yaml_path.write_text(yaml_content)
 
-    bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
-        str(yaml_path), tmp_dir=tmp_path
-    )
+    bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(str(yaml_path), tmp_dir=tmp_path)
 
     assert os.path.exists(bulk_file)
     assert os.path.exists(slab_file)
@@ -39,9 +37,7 @@ maximum_angular_momentum: 4
     # use explicit loader (dependency injection)
     import yaml
 
-    bulk_model, slab_model, parsed = Converter.import_cleedpy_input(
-        str(yaml_path), yaml_loader=yaml.safe_load
-    )
+    bulk_model, slab_model, parsed = Converter.import_cleedpy_input(str(yaml_path), yaml_loader=yaml.safe_load)
     assert len(bulk_model.atoms) == 1
     assert len(slab_model.atoms) == 2
     assert getattr(slab_model.atoms[0], "lmax") == 4

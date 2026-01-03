@@ -13,11 +13,7 @@ BINARY_TESTS_ENABLED = os.environ.get("BINARIES_TESTING_ENABLED", "").lower() in
 }
 
 BIN_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "bin"))
-INPUT_DIR = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__), "..", "phaseshifts", "examples", "input_files"
-    )
-)
+INPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "phaseshifts", "examples", "input_files"))
 TESTDATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "Re0001"))
 
 BINARY_TESTS = [
@@ -87,9 +83,7 @@ def test_phshift2007_binary_runs(binary, input_file):
             if not os.path.isfile(atomic_au_src):
                 atorb_src = os.path.join(INPUT_DIR, "atorb_Au.txt")
                 if not os.path.isfile(atorb_src):
-                    pytest.skip(
-                        "[SKIP] phsh1: atorb_Au.txt not available to generate atomic_Au.i"
-                    )
+                    pytest.skip("[SKIP] phsh1: atorb_Au.txt not available to generate atomic_Au.i")
                 # Run phsh0 to generate atomic_Au.i in temp dir
                 phsh0_bin = os.path.join(BIN_DIR, "phsh0")
                 shutil.copy(atorb_src, os.path.join(tmpdir, "atorb"))
@@ -118,9 +112,7 @@ def test_phshift2007_binary_runs(binary, input_file):
                 cluster_src = os.path.join(INPUT_DIR, "cluster_Au.i")
                 atomic_au_src = os.path.join(INPUT_DIR, "atomic_Au.i")
                 if not os.path.isfile(cluster_src) or not os.path.isfile(atomic_au_src):
-                    pytest.skip(
-                        f"[SKIP] {binary}: cannot generate mufftin_Au.d, missing cluster_Au.i or atomic_Au.i"
-                    )
+                    pytest.skip(f"[SKIP] {binary}: cannot generate mufftin_Au.d, missing cluster_Au.i or atomic_Au.i")
                 phsh1_bin = os.path.join(BIN_DIR, "phsh1")
                 shutil.copy(cluster_src, os.path.join(tmpdir, "cluster.i"))
                 shutil.copy(atomic_au_src, os.path.join(tmpdir, "atomic.i"))

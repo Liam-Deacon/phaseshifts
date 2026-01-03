@@ -94,9 +94,7 @@ except ImportError:
     try:
         from distutils.core import find_packages
     except ImportError:
-        raise ImportError(
-            "setuptools is required for building phaseshifts. Please install setuptools."
-        )
+        raise ImportError("setuptools is required for building phaseshifts. Please install setuptools.")
 
 INCLUDE_DIRS = []
 
@@ -164,10 +162,7 @@ if tuple(sys.version_info[:2]) <= (3, 11):
                     fortran_flags = phaseshifts.phshift2007.COMPILER_FLAGS["gfortran"]
                     # Filter out flags that f2py/numpy.distutils might not handle well
                     f2py_safe_flags = [
-                        flag
-                        for flag in fortran_flags
-                        if flag
-                        not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
+                        flag for flag in fortran_flags if flag not in phaseshifts.phshift2007.WINDOWS_INCOMPATIBLE_FLAGS
                     ]
                     if f2py_safe_flags:
                         fortran_flags_str = " ".join(f2py_safe_flags)
@@ -235,9 +230,7 @@ else:
                     )  # nosec
                 except subprocess.CalledProcessError as e:
                     print(
-                        "WARNING: f2py build failed ({}); extension may not be available.".format(
-                            e
-                        ),
+                        "WARNING: f2py build failed ({}); extension may not be available.".format(e),
                         file=sys.stderr,
                     )
         except ImportError:
@@ -255,9 +248,7 @@ CMAKE_ARGS = {}
 TRUE_OPTS = {"y", "yes", "on", "true", "1"}
 
 # Read environment variable to control phshift2007 binary build
-BUILD_PHSHIFT2007 = (
-    os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
-)
+BUILD_PHSHIFT2007 = os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
 
 if BUILD_BACKEND == "skbuild":
     cmake_args = [
@@ -301,8 +292,7 @@ if BUILD_BACKEND == "skbuild":
 
         if not gfortran_found:
             print(
-                "WARNING: gfortran not found in common locations. "
-                "Please ensure MinGW-w64 is installed and in PATH.",
+                "WARNING: gfortran not found in common locations. " "Please ensure MinGW-w64 is installed and in PATH.",
                 file=sys.stderr,
             )
 
@@ -348,9 +338,7 @@ f2py_platform_extra_args = {
     "darwin": {"extra_link_args": [], "extra_compile_args": []},
     "win32": {
         "extra_link_args": ([] if shutil.which("cl.exe") else gfortran_compiler_args),
-        "extra_compile_args": (
-            [] if shutil.which("cl.exe") else gfortran_compiler_args
-        ),
+        "extra_compile_args": ([] if shutil.which("cl.exe") else gfortran_compiler_args),
     },
     "linux": {
         "extra_link_args": gfortran_compiler_args + ["-lgomp"],
@@ -362,9 +350,7 @@ f2py_platform_extra_args = {
     },
 }.get(sys.platform, {"extra_link_args": [], "extra_compile_args": []})
 
-build_eeasisss = (
-    os.environ.get("PHASESHIFTS_BUILD_EEASISSS", "OFF").lower() in TRUE_OPTS
-)
+build_eeasisss = os.environ.get("PHASESHIFTS_BUILD_EEASISSS", "OFF").lower() in TRUE_OPTS
 eeasisss_ext = Extension(
     name="phaseshifts.lib.libhartfock",
     extra_compile_args=[],

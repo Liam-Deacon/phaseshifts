@@ -12,9 +12,7 @@ import phaseshifts.wrappers as wrappers
         ("cleed", ".phs"),
     ],
 )
-def test_remove_pi_jumps_generates_output(
-    monkeypatch, tmp_path, out_format, expected_ext
-):
+def test_remove_pi_jumps_generates_output(monkeypatch, tmp_path, out_format, expected_ext):
     calls = []
 
     class DummyConphas(object):
@@ -37,9 +35,7 @@ def test_remove_pi_jumps_generates_output(
     phasout = tmp_path / "phasout.dat"
     phasout.write_text("data")
 
-    result = wrappers.Wrapper._remove_pi_jumps(
-        ["Ni"], [str(phasout)], {"Ni": 4}, out_format
-    )
+    result = wrappers.Wrapper._remove_pi_jumps(["Ni"], [str(phasout)], {"Ni": 4}, out_format)
 
     expected = str(phasout.with_suffix(expected_ext))
 

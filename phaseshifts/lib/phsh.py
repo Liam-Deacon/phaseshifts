@@ -49,9 +49,7 @@ def phsh_cav(mufftin_file, phasout_file, dataph_file):
         for ix in range(1, ntab + 1):  # 19
             rx[ix], v[ix] = mtz.readline().split()  # 219
         zph.write("{} {} {} {}".format(name, z, rmt, mtz))  # 200
-        phasout.write(
-            "non-relativistic phase shifts for %s\n" % "".join([part for part in name])
-        )
+        phasout.write("non-relativistic phase shifts for %s\n" % "".join([part for part in name]))
         phasout.write("  %9.4f  %9.4f  %3i  %3i\n" % (emin, estep, ianz, nl))
         e = emin
         ncount = 0
@@ -171,12 +169,7 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
 
         for i in range(5):  # 5
             term = (
-                a
-                / (x - xr[i])
-                / (xr[i] - xr[i + 1])
-                / (xr[i] - xr[i + 2])
-                / (xr[i] - xr[i + 3])
-                / (xr[i] - xr[i + 4])
+                a / (x - xr[i]) / (xr[i] - xr[i + 1]) / (xr[i] - xr[i + 2]) / (xr[i] - xr[i + 3]) / (xr[i] - xr[i + 4])
             )
             sum = 0.0
 
@@ -320,13 +313,8 @@ def phsh_wil(
                 tlp1 = 2 * l + 1
                 t5 = pow(r[nr], lp1)
                 ut = f[tlp1][ilst] / tx + float(l) * y[tlp1][ilst] / r[nr]
-                t1 = (
-                    f44(l, t4) * y[2 * lp1][ilst]
-                    + t3 * f44(lp1, t4) * y[tlp1][ilst] * t5
-                )
-                t2 = (
-                    (f45(l, t4) * ut - t3 * f45(l - 1, t4) * y[tlp1][ilst]) * r[nr] / t5
-                )
+                t1 = f44(l, t4) * y[2 * lp1][ilst] + t3 * f44(lp1, t4) * y[tlp1][ilst] * t5
+                t2 = (f45(l, t4) * ut - t3 * f45(l - 1, t4) * y[tlp1][ilst]) * r[nr] / t5
                 s[i][lp1] = t1
                 c[i][lp1] = t2
 
@@ -371,9 +359,7 @@ def phsh_wil(
 
         # print phase shifts
         for lp in range(1, nl + 1):
-            zph.write(
-                "%14.7e%14.7e\n" % (e[i], delta[lp])
-            )  # format(1p8e14.7,  / , 14x, 1p7e14.7,  / )
+            zph.write("%14.7e%14.7e\n" % (e[i], delta[lp]))  # format(1p8e14.7,  / , 14x, 1p7e14.7,  / )
             # write phase shifts in format used by leed program
             # 71    format(1f7.4)
             # 72    format(10f7.4)
@@ -393,9 +379,7 @@ def phsh_wil(
             for kk in range(1, nl + 1):  # 145
                 dataph.write('"l = %2i\n' % kk - 1)  # format(3h"l = ,i2)
                 for ii in range(1, ne + 1):  # 146
-                    dataph.write(
-                        "{e} {delta}\n".format(e=e[ii], delta=delstore[kkk][ii][kk])
-                    )
+                    dataph.write("{e} {delta}\n".format(e=e[ii], delta=delstore[kkk][ii][kk]))
                 dataph.write("\n")  # 15 continue
         # 2 continue
 
@@ -478,9 +462,7 @@ def s16(r, rt, v, z, mtz=sys.stdin, zph=sys.stdout):
     # read format used for input of r vs. v[r) or r vs. r*v[r)
     # (v is assumed positive)
     for i in range(1, 200 + 1):  # 16
-        rs[i], zs[i] = [
-            t(s) for t, s in zip((float, float), mtz.readline().split()[:1])
-        ]
+        rs[i], zs[i] = [t(s) for t, s in zip((float, float), mtz.readline().split()[:1])]
         # the next lines assume that the input potential and cs are negative
         zs[i] = -zs[i]
         if rs[i] < 0:
@@ -575,15 +557,7 @@ def s5(e, nl, nr, v, r, f, y):
             f[jp1][ip1] = (vme[lp1] * y[j][ip1] - flp1 * y[jp1][ip1]) * t1
 
         for j in range(1, nj + 1):
-            y[j][ip1] = (
-                y[j][ip0]
-                + (
-                    y[j][ip0]
-                    - y[j][im2]
-                    + 3.0 * (f[j][ip1] + 2.0 * f[j][ip0] - f[j][im1])
-                )
-                / 8.0
-            )
+            y[j][ip1] = y[j][ip0] + (y[j][ip0] - y[j][im2] + 3.0 * (f[j][ip1] + 2.0 * f[j][ip0] - f[j][im1])) / 8.0
             eest[j] = f(j, im2) - y(j, ip1)
             y[j][ip1] += 0.743801653e-1 * eest[j]
 
@@ -870,21 +844,16 @@ def phsh_rel(
 
     inpdat.write("input data\n")  # 13 format (1h1, /  / ,t61,'input data',)
     name = mtz.readline().split()  # 10
-    (es, de, ue, lsm, vc) = [
-        t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())
-    ]
+    (es, de, ue, lsm, vc) = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
 
     nl = 8  # nl is the number of plotted phase shifts
     inpdat.write("%12.4d%12.4d%12.4d    %s%s%3i\n" % (es, de, ue, opt, opt1, lsm))
 
     # 75 format (a28, a2, 4x, a30, f10.7, 1x, a3)
-    (nz, adata[1], jri, alc, blc, clc, exca, excb, exco) = slices(
-        mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10
-    )
+    (nz, adata[1], jri, alc, blc, clc, exca, excb, exco) = slices(mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10)
     # 16 format (i4,f10.6,i4,t21,6f10.6)
     inpdat.write(
-        "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f"
-        % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
+        "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f" % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
     )  # 4,76
     # 76 format (i4,f10.6,i4,2x,6f10.6)
     vs = 0.0
@@ -917,9 +886,7 @@ def phsh_rel(
     n = (ue - es) / de + half
     n += 1
 
-    phasout.write(
-        "relativistic phase shifts for {}\n".format("".join([s for s in name]))
-    )
+    phasout.write("relativistic phase shifts for {}\n".format("".join([s for s in name])))
     phasout.write("%10.4f%9.4f%5i%5i\n" % (es, de, n, lsm))
 
     es /= 13.6
@@ -993,10 +960,7 @@ def phsh_rel(
     # go to 40
     for i in range(1, n + 1):  # 90 or 80
         lsm1 += 1
-        phasout.write(
-            "%9.4f%s\n"
-            % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)]))
-        )
+        phasout.write("%9.4f%s\n" % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)])))
 
     for kk in range(1, nl + 1):  # label 145
         dataph.write('"l = %2i\n' % kk - 1)
@@ -1127,27 +1091,15 @@ def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
         nm5 = n - 5
         tc = (e + vcz) * t + pot[np1]
         vc = cin * tc
-        unp = u[nm5] + x20 * (
-            t11 * (up[n] + up[nm4]) + t26 * up[nm2] - c - t14 * (up[nm1] + up[nm3])
-        )  # label 27
-        wnp = w[nm5] + x20 * (
-            t11 * (wp[n] + wp[nm4]) + t26 * wp[nm2] - c - t14 * (wp[nm1] + wp[nm3])
-        )
+        unp = u[nm5] + x20 * (t11 * (up[n] + up[nm4]) + t26 * up[nm2] - c - t14 * (up[nm1] + up[nm3]))  # label 27
+        wnp = w[nm5] + x20 * (t11 * (wp[n] + wp[nm4]) + t26 * wp[nm2] - c - t14 * (wp[nm1] + wp[nm3]))
         nit = 0
 
         while n < jri:
             up[np1] = (vc + t) * wnp - xk * unp  # label 33
             wp[np1] = xk * wnp - tc * unp
-            unp2 = (
-                u[nm3]
-                + (t7 * (up[np1] + up[nm3]) + t32 * (up[nm2] + up[n]) + t12 * up[nm1])
-                - c * xmft
-            )
-            wnp2 = (
-                w[nm3]
-                + (t7 * (wp[np1] + wp[nm3]) + t32 * (wp[nm2] + wp[n]) + t12 * wp[nm1])
-                - c * xmft
-            )
+            unp2 = u[nm3] + (t7 * (up[np1] + up[nm3]) + t32 * (up[nm2] + up[n]) + t12 * up[nm1]) - c * xmft
+            wnp2 = w[nm3] + (t7 * (wp[np1] + wp[nm3]) + t32 * (wp[nm2] + wp[n]) + t12 * wp[nm1]) - c * xmft
 
             # compare predictor with corrector
             if abs(test * (unp2 - unp)) > abs(unp2):

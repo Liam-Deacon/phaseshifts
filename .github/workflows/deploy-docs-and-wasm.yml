@@ -7,20 +7,20 @@ on:
       - main
       - feat/wasm-browser-support
     paths:
-      - "docs/**"
-      - "wasm/**"
-      - "phaseshifts/**"
-      - ".github/workflows/deploy-docs-and-wasm.yml"
+      - 'docs/**'
+      - 'wasm/**'
+      - 'phaseshifts/**'
+      - '.github/workflows/deploy-docs-and-wasm.yml'
   workflow_dispatch:
     inputs:
       build_wasm:
-        description: "Build WASM module (false = demo mode only)"
+        description: 'Build WASM module (false = demo mode only)'
         required: false
-        default: "true"
+        default: 'true'
         type: choice
         options:
-          - "true"
-          - "false"
+          - 'true'
+          - 'false'
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: 'pages'
   cancel-in-progress: false
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: '3.11'
 
       - name: Cache pip packages
         uses: actions/cache@v4
@@ -60,7 +60,7 @@ jobs:
           pip install sphinx sphinx_rtd_theme numpydoc
           pip install -r requirements-doc.txt || true
         env:
-          PHASESHIFTS_COMPILE: "false"
+          PHASESHIFTS_COMPILE: 'false'
 
       - name: Build Sphinx HTML documentation
         run: |
@@ -73,8 +73,8 @@ jobs:
         if: ${{ github.event.inputs.build_wasm != 'false' }}
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: "latest"
-          actions-cache-folder: "emsdk-cache"
+          version: 'latest'
+          actions-cache-folder: 'emsdk-cache'
         continue-on-error: true
 
       - name: Install f2c
@@ -105,7 +105,7 @@ jobs:
           chmod +x build.sh
           ./build.sh --method=f2c
         env:
-          EMCC_CFLAGS: "-O2"
+          EMCC_CFLAGS: '-O2'
         continue-on-error: true
 
       # === Combine into single site ===
@@ -169,7 +169,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "_site"
+          path: '_site'
 
   deploy:
     if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}

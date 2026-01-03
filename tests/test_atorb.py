@@ -54,11 +54,7 @@ class Test(unittest.TestCase):
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
-    sys.stderr.write(
-        "======================================================================\n"
-    )
+    sys.stderr.write("======================================================================\n")
     sys.stderr.write("TESTING: %s\n" % os.path.basename(__file__))
-    sys.stderr.write(
-        "======================================================================\n"
-    )
+    sys.stderr.write("======================================================================\n")
     unittest.main()

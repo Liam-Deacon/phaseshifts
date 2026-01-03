@@ -6,11 +6,11 @@ Reading and following these guidelines will help us make the contribution proces
 
 ## Quick Links
 
-* [Code of Conduct](#code-of-conduct)
-* [Getting Started](#getting-started)
-  * [Issues](#issues)
-  * [Pull Requests](#pull-requests)
-* [Getting Help](#getting-help)
+- [Code of Conduct](#code-of-conduct)
+- [Getting Started](#getting-started)
+  - [Issues](#issues)
+  - [Pull Requests](#pull-requests)
+- [Getting Help](#getting-help)
 
 ## Code of Conduct
 
@@ -20,8 +20,8 @@ We take our open source community seriously and hold ourselves and other contrib
 
 Contributions are made to this repo via Issues and Pull Requests (PRs). A few general guidelines that cover both:
 
-* Search for existing Issues and PRs before creating your own.
-* The maintainer(s) try to ensure issues are handled in a timely manner but, depending on the impact, it could take a while to investigate the root cause. A friendly ping in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
+- Search for existing Issues and PRs before creating your own.
+- The maintainer(s) try to ensure issues are handled in a timely manner but, depending on the impact, it could take a while to investigate the root cause. A friendly ping in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
 
 ### Issues
 
@@ -33,11 +33,11 @@ If you find an Issue that addresses the problem you're having, please add your o
 
 PRs are always welcome and can be a quick way to get your fix or improvement slated for the next release. In general, PRs should:
 
-* Only fix/add the functionality in question **OR** address wide-spread whitespace/style issues, not both.
-* Add unit or integration tests for fixed or changed functionality.
-* Address a single concern in the least number of changed lines as possible.
-* Include documentation in the repo by editing `docs/`` area.
-* Be accompanied by a complete Pull Request template (loaded automatically when a PR is created).
+- Only fix/add the functionality in question **OR** address wide-spread whitespace/style issues, not both.
+- Add unit or integration tests for fixed or changed functionality.
+- Address a single concern in the least number of changed lines as possible.
+- Include documentation in the repo by editing `docs/`` area.
+- Be accompanied by a complete Pull Request template (loaded automatically when a PR is created).
 
 For changes that address core functionality or would require breaking changes (e.g. a major release), it's best to open an Issue to discuss your proposal first. This is not required but can save time creating and reviewing changes.
 

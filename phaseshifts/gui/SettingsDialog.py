@@ -53,9 +53,7 @@ class SettingsDialog(QtWidgets.QDialog):
         super(SettingsDialog, self).__init__(parent)
 
         # dynamically load ui
-        self.ui = uic.loadUi(
-            os.path.join(os.path.dirname(__file__), "SettingsDialog.ui"), self
-        )
+        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "SettingsDialog.ui"), self)
 
         # settings default
         self.settings = Settings()
@@ -84,12 +82,8 @@ class SettingsDialog(QtWidgets.QDialog):
         self.ui.toolWritePath.pressed.connect(self.getWritePath)
         self.ui.lineLogFile.editingFinished.connect(self.updateLogPath)
         self.ui.toolLogFile.pressed.connect(self.getLogPath)
-        self.ui.buttonBoxSave.clicked[QtWidgets.QAbstractButton].connect(
-            self.adjustSettings
-        )
-        self.ui.buttonBoxApply.clicked[QtWidgets.QAbstractButton].connect(
-            self.adjustSettings
-        )
+        self.ui.buttonBoxSave.clicked[QtWidgets.QAbstractButton].connect(self.adjustSettings)
+        self.ui.buttonBoxApply.clicked[QtWidgets.QAbstractButton].connect(self.adjustSettings)
 
         self.ui.spinAlpha.valueChanged.connect(self.updateAlpha)
         self.ui.spinMuffinTinZero.valueChanged.connect(self.updateNh)
@@ -149,9 +143,7 @@ class SettingsDialog(QtWidgets.QDialog):
     def getLogPath(self):
         """use file dialog to set path to log file"""
         logfile = str(
-            QtWidgets.QFileDialog.getSaveFileName(
-                self, "Save Log File...", "log.txt", "Text document (*.txt)"
-            )
+            QtWidgets.QFileDialog.getSaveFileName(self, "Save Log File...", "log.txt", "Text document (*.txt)")
         )
 
         if logfile != "":  # check for empty path
@@ -175,8 +167,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
-                    "'%s' directory does not exist! "
-                    "Do you wish to create it?" % os.path.dirname(logfile),
+                    "'%s' directory does not exist! " "Do you wish to create it?" % os.path.dirname(logfile),
                     QtWidgets.QMessageBox.Yes,
                     QtWidgets.QMessageBox.No,
                 )
@@ -192,17 +183,11 @@ class SettingsDialog(QtWidgets.QDialog):
         """Attempts to loads the settings from valid ini file"""
         config = configparser.ConfigParser()
         default = os.path.join(
-            str(
-                QtCore.QStandardPaths.standardLocations(
-                    QtCore.QStandardPaths.StandardLocation.AppConfigLocation
-                )[0]
-            ),
+            str(QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.AppConfigLocation)[0]),
             ".phaseshifts",
             "config.ini",
         )
-        filepath = str(
-            QtWidgets.QFileDialog.getOpenFileName(self, "Open ini file...", default)
-        )
+        filepath = str(QtWidgets.QFileDialog.getOpenFileName(self, "Open ini file...", default))
 
         if filepath == "":
             return  # user abort
@@ -210,9 +195,7 @@ class SettingsDialog(QtWidgets.QDialog):
         try:
             config.read(filepath)
         except IOError:
-            QtWidgets.QMessageBox.critical(
-                self, "Error!", "Unable to read ini file '%s'" % filepath
-            )
+            QtWidgets.QMessageBox.critical(self, "Error!", "Unable to read ini file '%s'" % filepath)
             return
 
         general_dict = {
@@ -246,9 +229,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = general_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write(
-                    "Error loading %s in config file - %s\n" % (option, err)
-                )
+                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
                 sys.stderr.flush()
 
         for option in atorb_dict:  # load each setting from atorb section
@@ -257,9 +238,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = atorb_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write(
-                    "Error loading %s in config file - %s\n" % (option, err)
-                )
+                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
                 sys.stderr.flush()
 
         for option in phsh_dict:  # load each setting from phaseshifts section
@@ -268,25 +247,17 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = phsh_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write(
-                    "Error loading %s in config file - %s\n" % (option, str(err))
-                )
+                sys.stderr.write("Error loading %s in config file - %s\n" % (option, str(err)))
                 sys.stderr.flush()
 
     def saveConfig(self):
         config = configparser.ConfigParser()
         default = os.path.join(
-            str(
-                QtCore.QStandardPaths.standardLocations(
-                    QtCore.QStandardPaths.StandardLocation.AppConfigLocation
-                )[0]
-            ),
+            str(QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.AppConfigLocation)[0]),
             ".phaseshifts",
             "config.ini",
         )
-        filepath = str(
-            QtWidgets.QFileDialog.getSaveFileName(self, "Save ini file...", default)
-        )
+        filepath = str(QtWidgets.QFileDialog.getSaveFileName(self, "Save ini file...", default))
 
         if filepath == "":
             return  # user abort
@@ -296,9 +267,7 @@ class SettingsDialog(QtWidgets.QDialog):
             try:
                 os.makedirs(filepath)
             except IOError:
-                QtWidgets.QMessageBox.critical(
-                    self, "Error!", "Unable to create directory '%s'" % filepath
-                )
+                QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % filepath)
                 return
 
         config.add_section("GENERAL")
@@ -348,16 +317,12 @@ class SettingsDialog(QtWidgets.QDialog):
             with open(filepath, "w") as configfile:  # save
                 config.write(configfile)
         except IOError:
-            QtWidgets.QMessageBox.critical(
-                self, "Error!", "Unable to write settings file '%s'" % filepath
-            )
+            QtWidgets.QMessageBox.critical(self, "Error!", "Unable to write settings file '%s'" % filepath)
 
     def getWritePath(self):
         """use file dialog to set path to generated files"""
         path = str(
-            QtWidgets.QFileDialog.getExistingDirectory(
-                self, "Specify File Directory", self.ui.lineWritePath.text()
-            )
+            QtWidgets.QFileDialog.getExistingDirectory(self, "Specify File Directory", self.ui.lineWritePath.text())
         )
 
         if path != "":  # check for empty path
@@ -365,8 +330,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
-                    "'%s' directory does not exist! "
-                    "Do you wish to create it?" % os.pardir(path),
+                    "'%s' directory does not exist! " "Do you wish to create it?" % os.pardir(path),
                     QtWidgets.QMessageBox.Yes,
                     QtWidgets.QMessageBox.No,
                 )
@@ -374,9 +338,7 @@ class SettingsDialog(QtWidgets.QDialog):
                     try:
                         os.makedirs(path)
                     except IOError:
-                        QtWidgets.QMessageBox.critical(
-                            self, "Error!", "Unable to create directory '%s'" % path
-                        )
+                        QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % path)
                         return
                 else:
                     return  # do not create directory, nor store new path
@@ -534,18 +496,16 @@ class SettingsDialog(QtWidgets.QDialog):
             elif text == "APPDATA":
                 path = os.path.join(
                     str(
-                        QtCore.QStandardPaths.standardLocations(
-                            QtCore.QStandardPaths.StandardLocation.AppDataLocation
-                        )[0]
+                        QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.AppDataLocation)[
+                            0
+                        ]
                     ),
                     app,
                 )
             elif text == "TEMP":
                 path = os.path.join(
                     str(
-                        QtCore.QStandardPaths.standardLocations(
-                            QtCore.QStandardPaths.StandardLocation.TempLocation
-                        )[0]
+                        QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.TempLocation)[0]
                     ),
                     app,
                 )
@@ -553,9 +513,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 app = "." + str(app)
                 path = os.path.join(
                     str(
-                        QtCore.QStandardPaths.standardLocations(
-                            QtCore.QStandardPaths.StandardLocation.HomeLocation
-                        )[0]
+                        QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.HomeLocation)[0]
                     ),
                     app,
                 )
@@ -569,9 +527,7 @@ class SettingsDialog(QtWidgets.QDialog):
             try:
                 os.makedirs(path)
             except IOError:
-                QtWidgets.QMessageBox.critical(
-                    self, "Error!", "Unable to create directory '%s'" % path
-                )
+                QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % path)
                 return
 
         self.ui.lineWritePath.setText(path)

@@ -152,9 +152,7 @@ class Wrapper(object):
         self.__dict__.update(kwargs)
 
     @staticmethod
-    def autogen_from_input(
-        bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs
-    ):
+    def autogen_from_input(bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs):
         """
            Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
@@ -227,9 +225,7 @@ class Wrapper(object):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -239,9 +235,7 @@ class Wrapper(object):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -252,28 +246,19 @@ class Wrapper(object):
 
         # get unique elements in bulk and slab
         atomic_dict = {}
-        bulk_elements = [
-            getattr(atom.element, "symbol", str(atom.element))
-            for atom in bulk_mtz.atoms
-        ]
-        slab_elements = [
-            getattr(atom.element, "symbol", str(atom.element))
-            for atom in slab_mtz.atoms
-        ]
+        bulk_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms]
+        slab_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in slab_mtz.atoms]
         for elem in set(bulk_elements + slab_elements):
             at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                    element=elem, output_dir=tmp_dir
-                )
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
             else:
                 atomic_dict[elem] = at_file
 
         # prepare at files for appending into atomic file
         bulk_at_files = [
-            atomic_dict[getattr(atom.element, "symbol", str(atom.element))]
-            for atom in set(bulk_mtz.atoms)
+            atomic_dict[getattr(atom.element, "symbol", str(atom.element))] for atom in set(bulk_mtz.atoms)
         ]
 
         # create atomic.i input file from mtz model
@@ -294,13 +279,8 @@ class Wrapper(object):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz")
-            )
-            print(
-                "\tmufftin file: '%s'"
-                % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
 
         bulk_mtz_file = bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
@@ -312,9 +292,7 @@ class Wrapper(object):
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
         # prepare at files for appending into atomic file
-        slab_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)
-        ]
+        slab_at_files = [atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)]
 
         # create atomic.i input file from mtz model
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
@@ -330,9 +308,7 @@ class Wrapper(object):
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz"))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
@@ -346,18 +322,13 @@ class Wrapper(object):
         )
 
         # create raw phase shift files
-        print(
-            "\nGenerating phase shifts from '%s'..."
-            % os.path.basename(mufftin_filepath)
-        )
+        print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
         filepath = os.path.join(tmp_dir, slab_model_name)
         phasout_filepath = filepath + "_phasout.i"
         dataph_filepath = filepath + "_dataph.d"
 
         phaseshifts = [atom.tag for atom in set(slab_mtz.atoms)]
-        phasout_files = [
-            os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)
-        ]
+        phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)]
         phsh_files = []
 
         # assign phase shift specific lmax values
@@ -380,9 +351,7 @@ class Wrapper(object):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
                 for i, phaseshift in enumerate(phaseshifts):
@@ -392,9 +361,7 @@ class Wrapper(object):
                     else:
                         filename += ".phs"
                     phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
+                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
                     phsh = Conphas(
                         input_files=[phasout_files[i]],
                         output_file=filename,
@@ -413,9 +380,7 @@ class Wrapper(object):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
             if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
                 # check energy range
@@ -434,15 +399,12 @@ class Wrapper(object):
                         ]
 
                         # assign new values
-                        (ei, ef, de) = [
-                            t(s) for t, s in zip((float, float, float), kwargs["range"])
-                        ]
+                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
 
                         # edit energy range
-                        lines[1] = str(
-                            "%12.4f%12.4f%12.4f    %3i    %12.4f\n"
-                            % (ei, de, ef, lsm, vc)
-                        ).replace("e", "D")
+                        lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(
+                            "e", "D"
+                        )
                         #                         lines[1] = ff.FortranRecordWriter(
                         #                                         '(3D12.4,4X,I3,4X,D12.4)'
                         #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
@@ -469,9 +431,7 @@ class Wrapper(object):
                 # print("Current time " + time.strftime("%X"))
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
                 for i, phaseshift in enumerate(phaseshifts):
@@ -481,9 +441,7 @@ class Wrapper(object):
                     else:
                         filename += ".phs"
                     phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
+                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
                     phsh = Conphas(
                         input_files=[phasout_files[i]],
                         output_file=filename,
@@ -498,17 +456,13 @@ class Wrapper(object):
         # copy files to storage location
         if "store" in kwargs and out_format != "cleed":
             if kwargs["store"] != ".":
-                dst = os.path.abspath(
-                    os.path.expanduser(os.path.expandvars(kwargs["store"]))
-                )
+                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
             else:
                 dst = os.path.abspath(".")
             Wrapper._copy_files(phsh_files, dst, verbose=True)
 
         elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(
-                os.path.expanduser(os.path.expandvars("$CLEED_PHASE"))
-            )
+            dst = os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
             Wrapper._copy_files(phsh_files, dst, verbose=True)
 
         else:
@@ -558,22 +512,15 @@ def _generate_atomic_orbitals(bulk_file, slab_file, tmp_dir=None, verbose=False)
     else:
         slab_mtz.load_from_file(slab_file)
 
-    elements = [
-        getattr(atom.element, "symbol", str(atom.element))
-        for atom in bulk_mtz.atoms + slab_mtz.atoms
-    ]
+    elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms + slab_mtz.atoms]
 
     atomic_dict = {}
     for elem in sorted(set(elements)):
         at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
         if not os.path.isfile(at_file):
             if verbose:
-                sys.stdout.write(
-                    "\nCalculating atomic charge density for %s...\n" % elem
-                )
-            atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                element=elem, output_dir=tmp_dir
-            )
+                sys.stdout.write("\nCalculating atomic charge density for %s...\n" % elem)
+            atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
         else:
             atomic_dict[elem] = at_file
 
@@ -648,9 +595,7 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = ArgumentParser(
-            description=program_license, formatter_class=RawDescriptionHelpFormatter
-        )
+        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument(
             "-b",
             "--bulk",
@@ -704,8 +649,7 @@ def main(argv=None):
             dest="backend",
             metavar="<backend>",
             default="bvh",
-            help="Phase shift backend to use: 'bvh' (default), "
-            "'eeasisss' (native or ViPErLEED; alias: viperleed).",
+            help="Phase shift backend to use: 'bvh' (default), " "'eeasisss' (native or ViPErLEED; alias: viperleed).",
         )
         parser.add_argument(
             "--backend-params",
@@ -719,8 +663,7 @@ def main(argv=None):
             "--backend-workdir",
             dest="backend_workdir",
             metavar="<dir>",
-            help="Backend working directory (eeasisss/viperleed uses it for "
-            "EEASiSSS files).",
+            help="Backend working directory (eeasisss/viperleed uses it for " "EEASiSSS files).",
         )
         parser.add_argument(
             "-r",
@@ -785,9 +728,7 @@ def main(argv=None):
             "produce postscript graphs when using the EEASiSSS "
             "backend. [default: %(default)s]",
         )
-        parser.add_argument(
-            "-V", "--version", action="version", version=program_version_message
-        )
+        parser.add_argument("-V", "--version", action="version", version=program_version_message)
 
         # Process arguments
         args, unknown = parser.parse_known_args()
@@ -815,21 +756,15 @@ def main(argv=None):
         # Structured input support: auto-generate bulk and slab inputs from geometry
         if getattr(args, "input", None):
             if args.bulk or args.slab:
-                sys.stderr.write(
-                    "phsh: --input provided; ignoring --bulk/--slab arguments\n"
-                )
+                sys.stderr.write("phsh: --input provided; ignoring --bulk/--slab arguments\n")
                 sys.stderr.flush()
             try:
-                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
-                    args.input, tmp_dir=args.tmpdir
-                )
+                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(args.input, tmp_dir=args.tmpdir)
             except ImportError as exc:
                 raise CLIError(str(exc))
             args.bulk = bulk_file
             args.slab = slab_file
-            if metadata.get(
-                "maximum_angular_momentum"
-            ) and args.lmax == parser.get_default("lmax"):
+            if metadata.get("maximum_angular_momentum") and args.lmax == parser.get_default("lmax"):
                 args.lmax = int(metadata["maximum_angular_momentum"])
 
         if not args.input and args.slab is None:
@@ -880,9 +815,7 @@ def main(argv=None):
 
     if args.atorbs_only:
         try:
-            atomic_dict = _generate_atomic_orbitals(
-                args.bulk, args.slab, tmp_dir=args.tmpdir, verbose=verbose
-            )
+            atomic_dict = _generate_atomic_orbitals(args.bulk, args.slab, tmp_dir=args.tmpdir, verbose=verbose)
         except Exception as err:  # pylint: disable=broad-exception-caught
             return _fatal(err)
         if verbose:
@@ -902,11 +835,7 @@ def main(argv=None):
         sys.stdout.write("\trange: {} eV\n".format(args.range))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
-    output_file = (
-        os.path.join(args.store, "PHASESHIFTS")
-        if backend_name in ("eeasisss", "viperleed")
-        else None
-    )
+    output_file = os.path.join(args.store, "PHASESHIFTS") if backend_name in ("eeasisss", "viperleed") else None
 
     try:
         phsh_files = backend.autogen_from_input(
@@ -931,13 +860,7 @@ def main(argv=None):
         csearch = CSearch(os.path.splitext(args.slab)[0])
         last_iteration = csearch.getIteration(-1)
         if last_iteration is not None:
-            it = (
-                str(last_iteration)
-                .split("par:", 1)[0]
-                .replace(" ", "")
-                .replace("#", "")
-                .rjust(3, "0")
-            )
+            it = str(last_iteration).split("par:", 1)[0].replace(" ", "").replace("#", "").rjust(3, "0")
             model = os.path.splitext(os.path.basename(args.slab))[0]
             parent = os.path.dirname(args.slab)
             name, ext = os.path.splitext(os.path.basename(args.slab))
@@ -948,11 +871,7 @@ def main(argv=None):
         leed_cmd = [os.environ.get("PHASESHIFTS_LEED") or "cleed"]
         # check if using native Windows Python with cygwin
         if platform.system() == "Windows" and leed_cmd[0].startswith("/cygdrive"):
-            leed_cmd[0] = '"%s"' % (
-                leed_cmd[0].split("/")[2]
-                + ":"
-                + os.path.sep.join(leed_cmd[0].split("/")[3:])
-            )
+            leed_cmd[0] = '"%s"' % (leed_cmd[0].split("/")[2] + ":" + os.path.sep.join(leed_cmd[0].split("/")[3:]))
 
         leed_cmd.extend(argv)
 

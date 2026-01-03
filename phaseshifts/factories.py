@@ -67,9 +67,7 @@ class PhaseshiftFactory(object):
     def _require_attrs(self, *names):
         missing = [name for name in names if not hasattr(self, name)]
         if missing:
-            raise AttributeError(
-                "Missing required phaseshift inputs: {}".format(", ".join(missing))
-            )
+            raise AttributeError("Missing required phaseshift inputs: {}".format(", ".join(missing)))
 
     def createAtorbFiles(self):  # noqa: N802  # pylint: disable=invalid-name
         """Generate atomic orbital input files for the configured backend."""

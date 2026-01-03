@@ -48,11 +48,7 @@ class AtomParameters(object):
     def to_dict(self):
         return {
             "phase_file": self.phase_file,
-            "position": (
-                self.position.to_dict()
-                if hasattr(self.position, "to_dict")
-                else self.position
-            ),
+            "position": (self.position.to_dict() if hasattr(self.position, "to_dict") else self.position),
             "vibrational_displacement": self.vibrational_displacement,
         }
 

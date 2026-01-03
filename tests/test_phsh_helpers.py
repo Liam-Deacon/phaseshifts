@@ -45,13 +45,9 @@ def test_generate_atomic_orbitals_collects_elements(monkeypatch, tmp_path):
         output_path.write_text("data")
         return str(output_path)
 
-    monkeypatch.setattr(
-        phsh.atorb.Atorb, "calculate_Q_density", staticmethod(fake_calc)
-    )
+    monkeypatch.setattr(phsh.atorb.Atorb, "calculate_Q_density", staticmethod(fake_calc))
 
-    result = phsh._generate_atomic_orbitals(
-        str(bulk_file), str(slab_file), tmp_dir=str(tmp_path)
-    )
+    result = phsh._generate_atomic_orbitals(str(bulk_file), str(slab_file), tmp_dir=str(tmp_path))
 
     assert set(result.keys()) == {"Ni", "Cu"}
     assert sorted(calls) == ["Cu", "Ni"]
@@ -75,9 +71,7 @@ def test_main_package_maps_backend(monkeypatch, tmp_path):
         return DummyBackend()
 
     monkeypatch.setattr(phsh._backend_registry, "get_backend", fake_get_backend)
-    monkeypatch.setattr(
-        phsh, "_generate_atomic_orbitals", lambda *args, **kwargs: {"Ni": "at_Ni.i"}
-    )
+    monkeypatch.setattr(phsh, "_generate_atomic_orbitals", lambda *args, **kwargs: {"Ni": "at_Ni.i"})
     monkeypatch.setattr(
         phsh.sys,
         "argv",

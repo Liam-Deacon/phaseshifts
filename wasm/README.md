@@ -1,4 +1,5 @@
 <!-- markdownlint-disable MD041 MD043 -->
+
 # WebAssembly Build for phaseshifts
 
 This directory contains the build infrastructure for compiling the `libphsh.f`
@@ -129,7 +130,9 @@ After building, the `dist/` directory will contain:
     Module.ccall('phsh_rel_', null, [], []);
 
     // Read output
-    const output = Module.FS.readFile('/output/phasout.o', { encoding: 'utf8' });
+    const output = Module.FS.readFile('/output/phasout.o', {
+      encoding: 'utf8',
+    });
   });
 </script>
 ```

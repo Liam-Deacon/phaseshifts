@@ -41,9 +41,7 @@ class PeriodicTableDialog(QtWidgets.QFrame):
         super(PeriodicTableDialog, self).__init__(parent)
 
         # Or more dynamically
-        self.ui = uic.loadUi(
-            os.path.join(os.path.dirname(__file__), "PeriodicTable.ui"), self
-        )
+        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "PeriodicTable.ui"), self)
         self.ui.show()
 
         self.selectedElement = "H"  # default is Hydrogen
@@ -104,15 +102,9 @@ class PeriodicTableDialog(QtWidgets.QFrame):
             # pylint: enable=eval-used
 
     def buttonClick(self):
-        self.selectedElement = elements.ELEMENTS[
-            ELEMENTS_DICT.keys().index(self.sender().text()) + 1
-        ]
-        self.ui.labelMass.setText(
-            """<html><sup>%.1f</sup></html>""" % float(self.selectedElement.mass)
-        )
-        self.ui.labelZ.setText(
-            """<html><sup>%s</sup></html>""" % self.selectedElement.protons
-        )
+        self.selectedElement = elements.ELEMENTS[ELEMENTS_DICT.keys().index(self.sender().text()) + 1]
+        self.ui.labelMass.setText("""<html><sup>%.1f</sup></html>""" % float(self.selectedElement.mass))
+        self.ui.labelZ.setText("""<html><sup>%s</sup></html>""" % self.selectedElement.protons)
         self.ui.labelElement.setText(
             """<html><head/><body><p><span style="
                                         font-size:12pt;">%s</span></p></body>
