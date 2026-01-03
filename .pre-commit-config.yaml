@@ -21,7 +21,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
     -   id: prettier
-        types_or: [json, markdown, yaml, html, css, scss, javascript, typescript]
+        files: "\\.(json|ya?ml|md|html?|css|scss|js|jsx|ts|tsx)$"
 # TODO(issue): enable ruff once support for Python <= 3.10 is dropped; ruff is not Python 2.7 compatible.
 # -   repo: https://github.com/astral-sh/ruff-pre-commit
 #     rev: v0.9.9

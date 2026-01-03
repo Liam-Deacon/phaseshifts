@@ -9,6 +9,7 @@ These tests verify:
 """
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -54,7 +55,7 @@ class TestWasmInfrastructure:
     def test_readme_has_content(self):
         """WASM README should have meaningful content."""
         readme = WASM_DIR / "README.md"
-        content = readme.read_text()
+        content = readme.read_text(encoding="utf-8")
         assert len(content) > 500, "README.md seems too short"
         assert "WebAssembly" in content or "WASM" in content
         assert "Emscripten" in content
@@ -75,7 +76,7 @@ class TestWebInterface:
     def test_index_html_valid_structure(self):
         """index.html should have valid HTML structure."""
         index_html = WEB_DIR / "index.html"
-        content = index_html.read_text()
+        content = index_html.read_text(encoding="utf-8")
 
         # Check for essential HTML elements
         assert "<!DOCTYPE html>" in content, "Missing DOCTYPE"
@@ -87,7 +88,7 @@ class TestWebInterface:
     def test_index_html_has_required_elements(self):
         """index.html should have phase shift calculator elements."""
         index_html = WEB_DIR / "index.html"
-        content = index_html.read_text()
+        content = index_html.read_text(encoding="utf-8")
 
         # Check for key UI elements
         assert 'id="element"' in content, "Missing element selector"
@@ -103,7 +104,7 @@ class TestWebInterface:
     def test_style_css_has_content(self):
         """style.css should have CSS rules."""
         style_css = WEB_DIR / "style.css"
-        content = style_css.read_text()
+        content = style_css.read_text(encoding="utf-8")
 
         assert len(content) > 100, "style.css seems too short"
         assert "{" in content and "}" in content, "No CSS rules found"
@@ -116,7 +117,7 @@ class TestWebInterface:
     def test_app_js_has_required_functions(self):
         """app.js should have required functions."""
         app_js = WEB_DIR / "app.js"
-        content = app_js.read_text()
+        content = app_js.read_text(encoding="utf-8")
 
         required_functions = [
             "runCalculation",
@@ -144,7 +145,7 @@ class TestJavaScriptAPI:
     def test_phaseshifts_js_exports(self):
         """phaseshifts.js should export required symbols."""
         api_js = SRC_DIR / "phaseshifts.js"
-        content = api_js.read_text()
+        content = api_js.read_text(encoding="utf-8")
 
         required_exports = [
             "PhaseShifts",
@@ -158,7 +159,7 @@ class TestJavaScriptAPI:
     def test_phaseshifts_js_has_methods(self):
         """PhaseShifts class should have required methods."""
         api_js = SRC_DIR / "phaseshifts.js"
-        content = api_js.read_text()
+        content = api_js.read_text(encoding="utf-8")
 
         required_methods = [
             "calculatePhaseShifts",
@@ -196,9 +197,13 @@ class TestBuildTools:
 
     def test_build_help_works(self):
         """Build script help should work."""
-        result = subprocess.run(
-            [str(BUILD_SCRIPT), "--help"], capture_output=True, text=True, cwd=WASM_DIR
-        )
+        cmd = [str(BUILD_SCRIPT), "--help"]
+        if os.name == "nt":
+            bash_path = shutil.which("bash")
+            if not bash_path:
+                pytest.skip("bash is not available on Windows")
+            cmd = [bash_path, str(BUILD_SCRIPT), "--help"]
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=WASM_DIR)
         # Help should exit with 0
         assert result.returncode == 0
         assert "Usage" in result.stdout or "build" in result.stdout.lower()
