@@ -11,12 +11,10 @@
 
 /* global createPhaseShiftsModule */
 
-// codacy-disable
-import { elements } from './elements.js';
-import { buildAtorbInput, buildPhshInput } from './input_format.js';
-import { IO_PATHS } from './io_paths.js';
-import { parsePhaseShiftData } from './phase_shift_parser.js';
-// codacy-enable
+import { elements } from '@phaseshifts/elements.js';
+import { buildAtorbInput, buildPhshInput } from '@phaseshifts/input_format.js';
+import { IO_PATHS } from '@phaseshifts/io_paths.js';
+import { parsePhaseShiftData } from '@phaseshifts/phase_shift_parser.js';
 
 /**
  * PhaseShifts calculator class

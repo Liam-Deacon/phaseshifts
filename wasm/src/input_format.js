@@ -1,6 +1,4 @@
-// codacy-disable
-import { elements } from './elements.js';
-// codacy-enable
+import { elements } from '@phaseshifts/elements.js';
 
 /**
  * Format a float as a fixed-width field.
@@ -171,7 +169,8 @@ function buildAtorbInput(params) {
     params.method === undefined ? '0.d0' : String(params.method).trim();
   const relic = params.relic === undefined ? 0 : params.relic;
   const mixingScf = params.mixingScf === undefined ? 0.5 : params.mixingScf;
-  const eigenTol = params.eigenTol === undefined ? 5e-4 : params.eigenTol;
+  const eigenTol =
+    params.eigenTol === undefined ? '0.0005' : String(params.eigenTol);
   const ech = params.ech === undefined ? 100 : params.ech;
   const output =
     params.output === undefined && elementSymbol

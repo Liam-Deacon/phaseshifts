@@ -33,8 +33,9 @@ function parsePhaseShiftData(output, lmax) {
         energySet.add(energy);
       }
 
-      for (let l = 0; l < values.length - 1 && l <= lmax; l++) {
-        data.at(l).push(values[l + 1]);
+      const limit = Math.min(lmax + 1, values.length - 1);
+      for (let l = 0; l < limit; l++) {
+        data[l].push(values[l + 1]);
       }
     }
   }
