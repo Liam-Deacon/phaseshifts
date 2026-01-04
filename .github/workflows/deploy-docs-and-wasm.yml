@@ -70,7 +70,7 @@ jobs:
       # === Build WASM Calculator (optional, fault-tolerant) ===
       - name: Setup Emscripten
         if: ${{ github.event.inputs.build_wasm != 'false' }}
-        uses: mymindstorm/setup-emsdk@v14
+        uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
         with:
           version: 'latest'
           actions-cache-folder: 'emsdk-cache'
