@@ -134,8 +134,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # tree dictionaries
         # self.treeRootDict = self.ui.getChildItems(self.ui.treeWidgetBulk)
-        _bulk_tree = self.ui.treeWidgetBulk.invisibleRootItem()
-        _slab_tree = self.ui.treeWidgetSlab.invisibleRootItem()
+        # _bulk_tree = self.ui.treeWidgetBulk.invisibleRootItem()
+        # _slab_tree = self.ui.treeWidgetSlab.invisibleRootItem()
         # bulk = OrderedDict([str(_bulk_tree.child(i).text(0)) for i in range(_bulk_tree.childCount())])
         # slab = OrderedDict([str(_slab_tree.child(i).text(0)) for i in range(_slab_tree.childCount())])
         # print(bulk)
@@ -381,7 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 elif branch == "Parameters":
                     params = self.getChildItemsDict(tree.topLevelItem(trunk.get(branch)))
-                    _parent = root.child(trunk.get(branch))
+                    # _parent = root.child(trunk.get(branch))
                     for param in params:
                         node = item.child(self.treeRootDict.get(model).get(branch))
                         if param == "nh":  # update nh

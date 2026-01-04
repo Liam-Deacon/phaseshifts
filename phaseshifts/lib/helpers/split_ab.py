@@ -12,7 +12,6 @@ def split_ab(input_path, output_dir):
     with open(input_path, "r") as f:
         lines = f.readlines()
     prog_re = re.compile(r"^C\s+program\s+(\S+)")
-    current_file = None
     out_f = None
     for line in lines:
         m = prog_re.match(line)

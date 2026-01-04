@@ -5,8 +5,19 @@ from __future__ import print_function, division
 
 from math import cos, pi, pow, exp, log, sinh, sqrt
 from copy import deepcopy
+import io
 import sys
 import os
+
+try:
+    raw_input
+except NameError:  # pragma: no cover - python 3 fallback
+    raw_input = input  # type: ignore
+
+try:
+    file
+except NameError:  # pragma: no cover - python 3 fallback
+    file = io.IOBase  # type: ignore
 
 
 def get_input(prompt):
@@ -102,10 +113,10 @@ class hartfock(object):
         """
 
         # initialise class variables
-        io2 = iorbs * (iorbs + 1) / 2.0
-        ijive = io2 * (io2 + 1) / 2.0
+        # io2 = iorbs * (iorbs + 1) / 2.0
+        # ijive = io2 * (io2 + 1) / 2.0
         no = nl = nm = xnj = iss = ev = ek = occ = [None] * iorbs
-        r = dr = r2 = v = rho = [None] * nrmax
+        r = dr = r2 = rho = [None] * nrmax
         njrc = [None] * 4
         vi = [[None] * 7] * nrmax
         phe = orb = [[None] * iorbs] * nrmax
@@ -313,7 +324,7 @@ class hartfock(object):
                         try:
                             (corpol, rs, rp, sd) = get_input("enter ALPHA, RS, RP, RD: ").split()[:3]
                             break
-                        except:
+                        except Exception:
                             print("Invalid input - please retry...")
 
                 for k in range(0, nr):
@@ -339,7 +350,7 @@ class hartfock(object):
                                 )
                             ]
                             break
-                        except:
+                        except Exception:
                             print("incorrect input - please retry...")
 
                     while True:
@@ -352,7 +363,7 @@ class hartfock(object):
                                 )
                             ]
                             break
-                        except:
+                        except Exception:
                             print("incorrect input - please retry...")
 
                 xl = nl[ilev]
@@ -616,8 +627,8 @@ def abinitio(
     # write out information about the atom.
     for i in range(1, nel + 1):
         nj = xnj[i] * 2
-        print("  %4i%2i%4i%10.4f%18.6f\n" % (no[i], nl[i], nm[i], nj, "/2", iss[i], occ[i], ev[i]))
-        print("Total energy =  %14.6f  14.6f" % (etot, etot * 27.2116))
+        print("  %4i%2i%4i%4i%s%4i%10.4f%18.6f\n" % (no[i], nl[i], nm[i], nj, "/2", iss[i], occ[i], ev[i]))
+        print("Total energy =  %14.6f  %14.6f" % (etot, etot * 27.2116))
 
     return (
         etot,
@@ -1476,7 +1487,8 @@ def initiali(
     rmax = 800.0 / sqrt(zorig)
 
     nr, rmin, rmax, r, dr, r2, dl = setgrid(nr, rmin, rmax, r, dr, r2, dl)
-    njrc[j] = [0 for j in range(len(njrc))]
+    for idx in range(len(njrc)):
+        njrc[idx] = 0
 
     return (zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel)
 
@@ -1588,10 +1600,11 @@ def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, d
         p1 = p2
 
     if istop > 0:
-        psip2 = phi[istop + 2] - phi[istop - 2]
-        psip1 = phi[istop + 1] - phi[istop - 1]
-        psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
-        x0 = psip / phi[istop]
+        # psip2 = phi[istop + 2] - phi[istop - 2]
+        # psip1 = phi[istop + 1] - phi[istop - 1]
+        # psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
+        # x0 = psip / phi[istop]
+        pass
 
     if not is0:
         return

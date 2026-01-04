@@ -110,7 +110,6 @@ class CLEEDInputValidator:
 
         basename, ext = os.path.splitext(filename)
         if isinstance(ext, int):
-            aoi = True
             basename, ext = os.path.splitext(basename)
 
         BULK_INPUT_FILE_EXTENSIONS = {".bul", ".bmin", ".bsr"}
@@ -181,8 +180,7 @@ class CLEEDInputValidator:
                 sys.stderr.flush()
         # unit cell
         try:
-            basis = [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]
-
+            [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]
         except ValueError:
             raise ValueError("'%s' is not a valid basis vector" % line[:2])
 
@@ -197,12 +195,12 @@ class CLEEDInputValidator:
             radii_dict[tag] = value
 
         try:
-            overlayer_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]
+            ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 
         try:
-            bulk_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]
+            ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 

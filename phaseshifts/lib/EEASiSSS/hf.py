@@ -174,7 +174,7 @@ def main(argv=None):
         hartfock(args.input, args.log, args.chgden_dir)
 
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt
         pass
     except Exception as err:  # pylint: disable=broad-except
         if DEBUG or TEST_RUN:

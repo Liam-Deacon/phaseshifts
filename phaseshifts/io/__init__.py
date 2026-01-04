@@ -1,5 +1,19 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+from .model import (  # isort:skip
+    AtomParameters,
+    EnergyRange,
+    InputParameters,
+    Position,
+    SuperstructureMatrix,
+    UnitCell,
+)
+
+try:
+    from .cleedpy_yaml import CleedpyYamlAdapter
+except ImportError:  # pragma: no cover - optional dependency
+    CleedpyYamlAdapter = None
+
 
 class IOAdapter(object):
     """Base adapter interface for LEED input/output formats."""
@@ -16,20 +30,6 @@ class IOAdapter(object):
     def from_model(self, model):
         raise NotImplementedError
 
-
-from .model import (  # isort:skip
-    AtomParameters,
-    EnergyRange,
-    InputParameters,
-    Position,
-    SuperstructureMatrix,
-    UnitCell,
-)
-
-try:
-    from .cleedpy_yaml import CleedpyYamlAdapter
-except ImportError:  # pragma: no cover - optional dependency
-    CleedpyYamlAdapter = None
 
 __all__ = [
     "AtomParameters",

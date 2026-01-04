@@ -109,6 +109,16 @@ try:
 except ImportError:
     mendeleev = None  # Need to install mendeleev
 
+from phaseshifts.validation.atorb import (
+    AtorbElectron,
+    AtorbInputModel,
+    coerce_model,
+    render_atorb_file,
+    validate_atorb_file,
+)
+
+from phaseshifts import elements
+
 
 def eeasisss_hartfock(input_file):
     """
@@ -123,16 +133,6 @@ def eeasisss_hartfock(input_file):
         raise ImportError("EEASiSSS hartfock routine is unavailable") from exc
     return hartfock(input_file, None, None)
 
-
-from phaseshifts.validation.atorb import (
-    AtorbElectron,
-    AtorbInputModel,
-    coerce_model,
-    render_atorb_file,
-    validate_atorb_file,
-)
-
-from phaseshifts import elements
 
 elements_dict = OrderedDict(
     [

@@ -53,7 +53,7 @@ class ApiDocWriter(object):
         if *package_name* is ``sphinx``, then ``sphinx.util`` will
         result in ``.util`` being passed for earching by these
         regexps. If is None, gives default. Default is:
-        ['\.tests$']
+        ['\\.tests$']
         module_skip_patterns : None or sequence
         Sequence of strings giving URIs of modules to be excluded
         Operates on the module name including preceding URI path,
@@ -61,7 +61,7 @@ class ApiDocWriter(object):
         ``sphinx.util.console`` results in the string to search of
         ``.util.console``
         If is None, gives default. Default is:
-        ['\.setup$', '\._']"""
+        ['\\.setup$', '\\._']"""
         if package_skip_patterns is None:
             package_skip_patterns = ["\\.tests$"]
         if module_skip_patterns is None:
@@ -314,7 +314,7 @@ class ApiDocWriter(object):
         >>> mods = dw.discover_modules()
         >>> 'sphinx.util' in mods
         True
-        >>> dw.package_skip_patterns.append('\.util$')
+        >>> dw.package_skip_patterns.append('\\.util$')
         >>> 'sphinx.util' in dw.discover_modules()
         False
         >>>"""

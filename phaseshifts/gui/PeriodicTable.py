@@ -23,7 +23,7 @@ import re
 import sys
 from collections import OrderedDict
 
-from qtpy import QtGui, QtCore, QtWidgets, uic
+from qtpy import QtCore, QtWidgets, uic
 
 from phaseshifts.elements import ELEMENTS
 

@@ -54,14 +54,13 @@ Examples
 
 import ntpath
 import os
-import sys
 import platform
 import re
 from numpy import loadtxt
 from math import pi
 from getpass import getuser
 from time import gmtime, strftime
-from copy import copy, deepcopy
+from copy import deepcopy
 
 # Constants
 HARTREE = 27.21  # 139 eV in Van Hove LEED program
@@ -161,7 +160,7 @@ class Conphas:
 
     # Set internal data for conphas
     def __set_data(self, data=None):
-        if data != None:
+        if data is not None:
             self.data = data
 
     # Load phase shift data from file
@@ -189,7 +188,7 @@ class Conphas:
 
         """
         with open(filename, "r") as f:
-            title = f.readline()  # skip first line
+            f.readline()  # skip first line
             (initial_energy, energy_step, n_phases, lmf) = [
                 t(s) for (t, s) in zip((float, float, int, int), f.readline().replace("-", " -").split())
             ]
@@ -398,10 +397,11 @@ class Conphas:
             if n_phases > 250:
                 n_phases = 250
             if i == 0:
-                initial_energy0 = copy(initial_energy)
-                energy_step0 = copy(energy_step)
-                n_phases0 = copy(n_phases)
-                lmf0 = copy(lmf)
+                # initial_energy0 = copy(initial_energy)
+                # energy_step0 = copy(energy_step)
+                # n_phases0 = copy(n_phases)
+                # lmf0 = copy(lmf)
+                pass
 
             # increase dimensions of array for input
             phas.append([])
@@ -451,12 +451,12 @@ class Conphas:
                 root = os.path.dirname(self.input_files[i])
                 name = os.path.splitext(os.path.basename(self.input_files[i]))[0]
                 dataph = os.path.join(root, str("dataph_" + name + ".d"))
-                leedph = os.path.join(root, str("leedph_" + name + ".d"))
+                # leedph = os.path.join(root, str("leedph_" + name + ".d"))
             else:
                 root = os.path.dirname(self.output_file)
                 name = os.path.splitext(os.path.basename(self.output_file))[0]
                 dataph = os.path.join(root, "dataph_{0}_{1}.d".format(name, i))
-                leedph = os.path.join(root, "leedph_{0}_{1}.d".format(name, i))
+                # leedph = os.path.join(root, "leedph_{0}_{1}.d".format(name, i))
 
             # write datafile 'dataph.d'
             try:

@@ -333,7 +333,7 @@ class ElementsDict(Mapping):
             try:
                 start, stop, step = key.indices(len(self._list))
                 return self._list[slice(start - 1, stop - 1, step)]
-            except:
+            except Exception:
                 raise KeyError
 
 

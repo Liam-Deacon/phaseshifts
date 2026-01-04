@@ -54,10 +54,10 @@ import webbrowser
 import wxversion
 
 wxversion.ensureMinimal("2.8")
-import wx
-from wx.lib import fancytext, buttons, rcsizer
+import wx  # noqa: E402
+from wx.lib import fancytext, buttons, rcsizer  # noqa: E402
 
-from phaseshifts.elements import ELEMENTS, SERIES
+from phaseshifts.elements import ELEMENTS, SERIES  # noqa: E402
 
 
 class MainApp(wx.App):

@@ -1,6 +1,6 @@
 import argparse
 import sys
-from phaseshifts import phsh, atorb
+from phaseshifts import phsh
 
 
 def main():

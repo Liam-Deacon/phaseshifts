@@ -1,4 +1,6 @@
-import re, inspect, textwrap, pydoc
+import inspect
+import textwrap
+import pydoc
 from docscrape import NumpyDocString, FunctionDoc, ClassDoc
 
 

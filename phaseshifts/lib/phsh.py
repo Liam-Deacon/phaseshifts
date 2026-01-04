@@ -122,7 +122,7 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
     # tabulation of spherical Bessel functions in bj and bn
     es = sqrt(e)
     x = es * rad
-    z = x
+    # z = x
     ll = nl + 1
     calcbf(bj, bn, ll, x)
 
@@ -136,7 +136,7 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
         ff = fl2 * fl2
         y1 = pow(x1, fl2)
         y2 = exp(dx * fl2) * y1
-        zph.write("0l?%5.1fy1,y2?%14.5f%14.5f\n".format(fl, y1, y2))  # 60
+        zph.write("0l?%5.1fy1,y2?%14.5f%14.5f\n" % (fl, y1, y2))  # 60
         gam1 = ff + rx[0] * rx[0] * (v[0] - e)
         gam2 = ff + rx[1] * rx[1] * (v[1] - e)
         wf[0] = y1 * sqrt(rx[0])
@@ -318,8 +318,8 @@ def phsh_wil(
                 s[i][lp1] = t1
                 c[i][lp1] = t2
 
-            iss = 2
-            i4 = 9
+            # iss = 2
+            # i4 = 9
             if ip < 1:
                 pass
                 # go to 15
@@ -430,16 +430,16 @@ def s16(r, rt, v, z, mtz=sys.stdin, zph=sys.stdout):
     # common / cmrv / r, v, nr, nl, z
     # dimension r(201), v[201, 15)
     rs = zs = ztt = [None] * 202
-    fmt = [None] * 18
+    # fmt = [None] * 18
     # set default values of variables in namelist  / nl16 /
     ix = 1
     e1 = 4.0
     e2 = 24.0
-    ne = 30
+    # ne = 30
     nl = 9
     nr = 101
     neui = 1
-    neuo = 2
+    # neuo = 2
     potyp = 2
     if mtz == sys.stdin:  # read from standard input
         nl16 = mtz.readline()
@@ -517,9 +517,7 @@ def f12(x, y, z, n):
             k = ip1 - j
             w[k] = w[k + 1] + u * (w[k] - w[k + 1]) / (x[k] - x[i])
 
-    f12 = w[1]
-
-    return
+    return w[1]
 
 
 def s5(e, nl, nr, v, r, f, y):
@@ -610,7 +608,7 @@ def s10(e, cmrv, r, v, nr, nl, z, cm5, y, f, ilst, zph=sys.stdout):
                 break
 
         for k in range(1, 10):
-            zph.write(" %10.2pe%10i 11%e10.2e" % (e, lp1, r[4], a[k]))
+            zph.write(" %10.2e%10i %11e%10.2e" % (e, lp1, r[4], a[k]))
             # 4  format(1pe10.2, i10, 11e10.2)
 
     for j in range(2, 4 + 1):  # 6
@@ -685,7 +683,7 @@ def f45(l, x):
     if l < 0:
         return -f44(l + 1, x)
 
-    lp1 = l + 1
+    # lp1 = l + 1
     js = l + l + 1
 
     if abs(x / float(js)) <= 10.0:
@@ -805,17 +803,17 @@ def phsh_rel(
 
     zero = 0.0
     one = 1.0
-    two = 2.0
-    anine = 9.0
+    # two = 2.0
+    # anine = 9.0
     half = 0.5
-    zilch = 1.0e-4
-    tol = 0.005e0
+    # zilch = 1.0e-4
+    # tol = 0.005e0
     des = 0.025e0
-    ams = "nc =  ", "l =  ", " es = ", " de = ", "id =  "
-    tl = "l"
-    sl = "s"
-    ss1 = "nospin"
-    ss2 = " spin "
+    # ams = "nc =  ", "l =  ", " es = ", " de = ", "id =  "
+    # tl = "l"
+    # sl = "s"
+    # ss1 = "nospin"
+    # ss2 = " spin "
     sub = "sub"
     record = "nos"
 
@@ -856,10 +854,11 @@ def phsh_rel(
         "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f" % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
     )  # 4,76
     # 76 format (i4,f10.6,i4,2x,6f10.6)
-    vs = 0.0
+    # vs = 0.0
 
     if opts == sub:
-        vs = vc
+        # vs = vc
+        pass
 
     if jri <= 0 or jri > 340:
         inpdat.write("# end of input data\n")
@@ -898,19 +897,21 @@ def phsh_rel(
 
     l = 0
     e = es
-    ipt = 2
+    # ipt = 2
 
     if opt == record:
-        ipt = -2  # label 23
-        wrd = ss1
+        # ipt = -2  # label 23
+        # wrd = ss1
+        pass
     else:
-        wrd = ss2
+        # wrd = ss2
+        pass
 
     kap = -1
     l = 1
 
     for j in range(1, n + 1):  # label 30
-        dxaz = 0.0
+        # dxaz = 0.0
         ttr = dlgkap[e][kap] / 12.5663706
         sbfit(ttr, e, l - 1, rmaxi, jfs)
         jf[j][l] = jfs
@@ -978,7 +979,7 @@ def phsh_rel(
 
     inpdat.write("# end of input data\n")
 
-    return
+    return jfs
 
 
 def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
@@ -1159,4 +1160,4 @@ def sbfit(t, e, l, r, jfs):
     if abs(ad) - 1.0e-8 > 0:
         jfs = atan(an / ad)
 
-    return
+    return jfs
