@@ -7,7 +7,9 @@ MIT License (see LICENSE file for details)
 Test Atorb - checks whether the Atorb class functions as expected
 """
 
-import unittest, sys, os
+import os
+import sys
+import unittest
 
 
 def print_test_message(text):

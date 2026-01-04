@@ -101,12 +101,6 @@ INCLUDE_DIRS = []
 # WARNING: numpy.distutils is completely removed in python 3.12 and deprecated for removal in python 3.11 by Oct 2025
 # The project will therefore need to be migrated to use a different build backend, see
 # https://numpy.org/doc/stable/reference/distutils_status_migration.html#distutils-status-migration
-with suppress(ImportError):
-    import skbuild  # noqa: F401
-
-# Select build backend. Modern builds require scikit-build and CMake (default)
-BUILD_BACKEND = "skbuild"  # type: Literal["skbuild", "numpy.distutils"]
-
 BUILD_BACKEND = None  # will be set below based on available tooling
 
 
@@ -115,7 +109,6 @@ if tuple(sys.version_info[:2]) <= (3, 11):
     ensure_distutils()
     # Try modern build first: scikit-build + CMake
     try:
-        import skbuild
         from skbuild import setup  # noqa: F811
 
         BUILD_BACKEND = "skbuild"

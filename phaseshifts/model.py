@@ -140,7 +140,7 @@ class Atom(object):
         try:
             self.radius = float(radius)
             self._radius = self.radius / 0.529  # in Bohr radii
-        except:
+        except Exception:
             pass
 
 
@@ -548,7 +548,7 @@ class MTZ_model(Model):
         """Sets the alpha exchange term for muffin-tin calculation"""
         try:
             self.exchange = float(alpha)
-        except:
+        except Exception:
             pass
 
     # set form of muffin-tin calculation: 0=cav, 1=wil, 2=rel
@@ -600,7 +600,7 @@ class MTZ_model(Model):
         try:
             self.c = float(c)
             self._c = self.c / 0.529
-        except:
+        except Exception:
             pass
 
     def _load_input_file(self, filename):
@@ -838,7 +838,7 @@ class MTZ_model(Model):
         with open(output_file, "w") as f:
             # loop through each atomic charge density file in list
             for input_file in files:
-                if not os.path.isfile(str(input_file)) or input_file == None:
+                if not os.path.isfile(str(input_file)) or input_file is None:
                     raise IOError("Radial charge density file " "'%s' does not exist!" % input_file)
 
                 # append next input file to output
@@ -1105,7 +1105,7 @@ class MTZ_model(Model):
 
                         # avoid duplicate tags for different atoms
                         while ineq_atom.tag in tags:
-                            number = "".join([ch for ch in atom.tag if ch.isdigit()])
+                            number = "".join([ch for ch in ineq_atom.tag if ch.isdigit()])
                             try:
                                 number = int(number)
                                 number += 1

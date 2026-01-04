@@ -198,7 +198,6 @@ def test_phshift2007_full_workflow_re():
         # Step 0: phsh0 (atorb_Re -> at_Re.i)
         atorb_path = os.path.join(testdata, "atorb_Re")
         phsh0 = os.path.join(bin_dir, "phsh0")
-        at_re_i = os.path.join(tmpdir, "at_Re.i")
         assert os.path.isfile(atorb_path)
         assert os.path.isfile(phsh0)
         # Copy atorb_Re to 'atorb' as required by phsh0

@@ -200,7 +200,7 @@ class Wrapper(object):
         """
         verbose = kwargs.get("verbose", False)
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        if model_name == None:
+        if model_name is None:
             model_name = "atomic"
 
         # check formatting
@@ -282,7 +282,8 @@ class Wrapper(object):
             print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        # bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
@@ -312,7 +313,8 @@ class Wrapper(object):
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
-        slab_mtz_file = slab_mtz.calculate_MTZ(
+        # slab_mtz_file = slab_mtz.calculate_MTZ(
+        slab_mtz.calculate_MTZ(
             cluster_file=slab_file,
             output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
             atomic_file=slab_atomic_file,
@@ -780,7 +782,7 @@ def main(argv=None):
             args.range = list(args.range) + [5]
 
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt
         return 0
     except Exception as err:
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
