@@ -2105,6 +2105,291 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
+def _integ_find_turning_point(e, v, nr):
+    """
+    Find the classical turning point for the trial energy.
+
+    Parameters
+    ----------
+    e : float
+        Trial eigenvalue.
+    v : list of float
+        Effective potential array.
+    nr : int
+        Number of radial grid points.
+
+    Returns
+    -------
+    tuple
+        ``(istop, energy_flag)`` where ``energy_flag`` is ``-1`` if no turning
+        point is found.
+    """
+    for j in range(nr - 1, 2 - 1, -1):
+        if e > v[j]:
+            return j, 0
+    return 0, -1
+
+
+def _integ_initial_conditions(e, l, xkappa, ss2, a2, xl4, dl2, ctx, phi):
+    """
+    Initialize the first two Numerov points.
+
+    Parameters
+    ----------
+    e, l, xkappa : float
+        Orbital parameters.
+    ss2 : float
+        Leading power exponent adjustment.
+    a2, xl4, dl2 : float
+        Precomputed constants used in the recurrence.
+    ctx : IntegContext
+        Integration context with grid and potential arrays.
+    phi : list of float
+        Radial wavefunction buffer (updated in-place).
+
+    Returns
+    -------
+    tuple
+        ``(p0, p1, xk2, dk2)`` recurrence state for subsequent steps.
+    """
+    v = ctx.v
+    xm1 = ctx.xm1
+    xm2 = ctx.xm2
+    r = ctx.r
+    r2 = ctx.r2
+    z = ctx.z
+    xlp = l + 1
+
+    t = e - v[1]
+    xm0 = 1.0 + a2 * t
+    tm = xm0 + xm0
+    xmx = xm1[1] / xm0
+    xk0 = r2[1] * (tm * t - xmx * (xkappa / r[1] + 0.75 * xmx) + xm2[1] / tm) - xl4
+    dk0 = 1.0 + dl2 * xk0
+    p0 = dk0
+    phi[1] = p0 * sqrt(xm0 * r[1]) / dk0
+
+    t = e - v[2]
+    xm = 1.0 + a2 * t
+    tm = xm + xm
+    xmx = xm1[2] / xm
+    xk2 = r2[2] * (tm * t - xmx * (xkappa / r[2] + 0.75 * xmx) + xm2[2] / tm) - xl4
+    dk2 = 1.0 + dl2 * xk2
+    p1 = dk2 * (pow(r[2] / r[1], ss2) - (r[2] - r[1]) * z / xlp) * sqrt(xm0 / xm)
+    phi[2] = p1 * sqrt(xm * r[2]) / dk2
+    return p0, p1, xk2, dk2
+
+
+def _integ_predict_p2(p0, p1, dk2, xk2, dl5):
+    """
+    Predict the next Numerov coefficient before updating the potential term.
+
+    Parameters
+    ----------
+    p0, p1, dk2, xk2 : float
+        Recurrence state from the previous step.
+    dl5 : float
+        Scaled logarithmic spacing constant.
+
+    Returns
+    -------
+    float
+        Predicted ``p2`` value.
+    """
+    return (2.0 - dl5 * xk2) * p1 / dk2 - p0
+
+
+def _integ_step(e, xkappa, a2, xl4, dl2, dl5, idx, ctx, p0, p1, dk2, xk2, p2=None):
+    """
+    Advance one Numerov step and compute the next wavefunction value.
+
+    Parameters
+    ----------
+    e, xkappa : float
+        Orbital parameters.
+    a2, xl4, dl2, dl5 : float
+        Precomputed constants used in the recurrence.
+    idx : int
+        Grid index for the next step.
+    ctx : IntegContext
+        Integration context with grid and potential arrays.
+    p0, p1, dk2, xk2 : float
+        Recurrence state from the previous step.
+
+    Returns
+    -------
+    tuple
+        ``(p2, xk2, dk2, phi_i)`` updated recurrence values and wavefunction.
+    """
+    v = ctx.v
+    xm1 = ctx.xm1
+    xm2 = ctx.xm2
+    r = ctx.r
+    r2 = ctx.r2
+
+    t = e - v[idx]
+    xm = 1.0 + a2 * t
+    tm = xm + xm
+    xmx = xm1[idx] / xm
+    if p2 is None:
+        p2 = _integ_predict_p2(p0, p1, dk2, xk2, dl5)
+    xk2 = r2[idx] * (tm * t - xmx * (xkappa / r[idx] + 0.75 * xmx) + xm2[idx] / tm) - xl4
+    dk2 = 1.0 + dl2 * xk2
+    phi_i = p2 * sqrt(xm * r[idx]) / dk2
+    return p2, xk2, dk2, phi_i
+
+
+def _integ_scale_phi(phi, p0, p1, p2, i):
+    """
+    Rescale the wavefunction values to avoid overflow.
+
+    Parameters
+    ----------
+    phi : list of float
+        Wavefunction buffer (updated in-place).
+    p0, p1, p2 : float
+        Recurrence state to rescale.
+    i : int
+        Upper index of the rescale region.
+
+    Returns
+    -------
+    tuple
+        ``(p0, p1, p2)`` rescaled recurrence values.
+    """
+    for j in range(1, i + 1):
+        phi[j] /= p2
+    p0 /= p2
+    p1 /= p2
+    p2 /= p2
+    return p0, p1, p2
+
+
+def _integ_log_derivative(phi, dl, r, istop):
+    """
+    Compute the log-derivative at the turning point.
+
+    Parameters
+    ----------
+    phi : list of float
+        Radial wavefunction buffer.
+    dl : float
+        Logarithmic grid spacing.
+    r : list of float
+        Radial grid.
+    istop : int
+        Turning-point index.
+
+    Returns
+    -------
+    float
+        Log-derivative value ``x0``.
+    """
+    psip2 = phi[istop + 2] - phi[istop - 2]
+    psip1 = phi[istop + 1] - phi[istop - 1]
+    psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
+    return psip / phi[istop]
+
+
+def _integ_integrate_core(e, l, xkappa, n, istop, phi, ctx, p0, p1, xk2, dk2, a2, xl4, dl2, dl5):
+    """
+    Integrate outward to the turning point while counting nodes.
+
+    Parameters
+    ----------
+    e, l, xkappa, n : float or int
+        Orbital parameters.
+    istop : int
+        Turning-point index.
+    phi : list of float
+        Radial wavefunction buffer (updated in-place).
+    ctx : IntegContext
+        Integration context with grid and potential arrays.
+    p0, p1, xk2, dk2 : float
+        Recurrence state from initialization.
+    a2, xl4, dl2, dl5 : float
+        Precomputed constants for the recurrence.
+
+    Returns
+    -------
+    tuple
+        ``(node_count, energy_flag, p0, p1, xk2, dk2)``.
+    """
+    node_count = 0
+    nnideal = n - l - 1
+    energy_flag = 0
+    for i in range(3, istop + 2 + 1):
+        p2, xk2, dk2, phi[i] = _integ_step(e, xkappa, a2, xl4, dl2, dl5, i, ctx, p0, p1, dk2, xk2)
+        if abs(p2) > 10000000000.0:
+            p0, p1, p2 = _integ_scale_phi(phi, p0, p1, p2, i)
+
+        if p2 * p1 < 0.0:
+            node_count += 1
+            if node_count > nnideal:
+                energy_flag = 1
+                return node_count, energy_flag, p0, p1, xk2, dk2
+
+        p0 = p1
+        p1 = p2
+
+    return node_count, energy_flag, p0, p1, xk2, dk2
+
+
+def _integ_integrate_tail(e, xkappa, nnideal, istop, phi, ctx, p0, p1, xk2, dk2, a2, xl4, dl2, dl5, node_count):
+    """
+    Integrate beyond the turning point and check for divergence.
+
+    Parameters
+    ----------
+    e, xkappa : float
+        Orbital parameters.
+    nnideal : int
+        Ideal number of nodes.
+    istop : int
+        Turning-point index.
+    phi : list of float
+        Radial wavefunction buffer (updated in-place).
+    ctx : IntegContext
+        Integration context with grid and potential arrays.
+    p0, p1, xk2, dk2 : float
+        Recurrence state from the core integration.
+    a2, xl4, dl2, dl5 : float
+        Precomputed constants for the recurrence.
+    node_count : int
+        Current node count.
+
+    Returns
+    -------
+    tuple
+        ``(node_count, energy_flag, p0, p1, xk2, dk2)``.
+    """
+    energy_flag = 0
+    for i in range(istop + 3, ctx.nr - 1 + 1):
+        p2 = _integ_predict_p2(p0, p1, dk2, xk2, dl5)
+        if p2 / p1 > 1.0:
+            energy_flag = -1
+            return node_count, energy_flag, p0, p1, xk2, dk2
+        p2, xk2, dk2, phi[i] = _integ_step(e, xkappa, a2, xl4, dl2, dl5, i, ctx, p0, p1, dk2, xk2, p2=p2)
+        if abs(p2) > 10000000000.0:
+            for j in range(1, i + 1):
+                phi[j] /= p2
+
+                p0 = p2
+                p1 /= p2
+                p2 /= p2
+
+                if p2 * p1 < 0.0:
+                    node_count += 1
+                    if node_count > nnideal:
+                        energy_flag = 1
+                        return node_count, energy_flag, p0, p1, xk2, dk2
+
+            p0 = p1
+            p1 = p2
+
+    return node_count, energy_flag, p0, p1, xk2, dk2
+
+
 def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
     """
     Integrate the radial equation and count nodes.
@@ -2188,103 +2473,65 @@ def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
 
     # see Desclaux and documentation to see the origin of the below equations.
     # here, we set up the first two points.
-    t = e - v[1]
-    xm0 = 1.0 + a2 * t
-    tm = xm0 + xm0
-    xmx = xm1[1] / xm0
-    xk0 = r2[1] * (tm * t - xmx * (xkappa / r[1] + 0.75 * xmx) + xm2[1] / tm) - xl4
-    dk0 = 1.0 + dl2 * xk0
-    p0 = dk0
-    phi[1] = p0 * sqrt(xm0 * r[1]) / dk0
-
-    t = e - v[2]
-    xm = 1.0 + a2 * t
-    tm = xm + xm
-    xmx = xm1[2] / xm
-    xk2 = r2[2] * (tm * t - xmx * (xkappa / r[2] + 0.75 * xmx) + xm2[2] / tm) - xl4
-    dk2 = 1.0 + dl2 * xk2
-    p1 = dk2 * (pow(r[2] / r[1], ss2) - (r[2] - r[1]) * z / xlp) * sqrt(xm0 / xm)
-    phi[2] = p1 * sqrt(xm * r[2]) / dk2
+    p0, p1, xk2, dk2 = _integ_initial_conditions(e, l, xkappa, ss2, a2, xl4, dl2, ctx, phi)
 
     # if istop is set, the we know to stop there.  If it is zero, it shall
     # be set to the classical turning point.
     is0 = istop
     if not istop:
-        for j in range(nr - 1, 2 - 1, -1):
-            if e > v[j]:
-                break
-            energy_flag = -1
+        istop, energy_flag = _integ_find_turning_point(e, v, nr)
+        if energy_flag == -1:
             return (node_count, istop, energy_flag, x0)
-        istop = j
 
     # initialize number of nodes, and determine the ideal number.
     nnideal = n - l - 1
 
     # integrate out count nodes, and stop along the way if there are too many
-    for i in range(3, istop + 2 + 1):
-        t = e - v[i]
-        xm = 1.0 + a2 * t
-        tm = xm + xm
-        xmx = xm1[i] / xm
-        p2 = (2.0 - dl5 * xk2) * p1 / dk2 - p0
-        xk2 = r2[i] * (tm * t - xmx * (xkappa / r[i] + 0.75 * xmx) + xm2[i] / tm) - xl4
-        dk2 = 1.0 + dl2 * xk2
-        phi[i] = p2 * sqrt(xm * r[i]) / dk2
-        if abs(p2) > 10000000000.0:
-            for j in range(1, i + 1):
-                phi[j] /= p2
-
-            p0 /= p2
-            p1 /= p2
-            p2 /= p2
-
-        if p2 * p1 < 0.0:
-            node_count += 1
-            if node_count > nnideal:
-                energy_flag = 1
-                return (node_count, istop, energy_flag, x0)
-
-        p0 = p1
-        p1 = p2
+    node_count, energy_flag, p0, p1, xk2, dk2 = _integ_integrate_core(
+        e,
+        l,
+        xkappa,
+        n,
+        istop,
+        phi,
+        ctx,
+        p0,
+        p1,
+        xk2,
+        dk2,
+        a2,
+        xl4,
+        dl2,
+        dl5,
+    )
+    if energy_flag:
+        return (node_count, istop, energy_flag, x0)
 
     if istop > 0:
-        psip2 = phi[istop + 2] - phi[istop - 2]
-        psip1 = phi[istop + 1] - phi[istop - 1]
-        psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
-        x0 = psip / phi[istop]
+        x0 = _integ_log_derivative(phi, dl, r, istop)
 
     if is0:
         return (node_count, istop, energy_flag, x0)
 
-    for i in range(istop + 3, nr - 1 + 1):
-        t = e - v[i]
-        xm = 1.0 + a2 * t
-        tm = xm + xm
-        xmx = xm1[i] / xm
-        p2 = (2.0 - dl5 * xk2) * p1 / dk2 - p0
-        if p2 / p1 > 1.0:
-            energy_flag = -1
-            return (node_count, istop, energy_flag, x0)
-
-        xk2 = r2[i] * (tm * t - xmx * (xkappa / r[i] + 0.75 * xmx) + xm2[i] / tm) - xl4
-        dk2 = 1.0 + dl2 * xk2
-        phi[i] = p2 * sqrt(xm * r[i]) / dk2
-        if abs(p2) > 10000000000.0:
-            for j in range(1, i + 1):
-                phi[j] /= p2
-
-                p0 = p2
-                p1 /= p2
-                p2 /= p2
-
-                if p2 * p1 < 0.0:
-                    node_count += 1
-                    if node_count > nnideal:
-                        energy_flag = 1
-                        return (node_count, istop, energy_flag, x0)
-
-            p0 = p1
-            p1 = p2
+    node_count, energy_flag, p0, p1, xk2, dk2 = _integ_integrate_tail(
+        e,
+        xkappa,
+        nnideal,
+        istop,
+        phi,
+        ctx,
+        p0,
+        p1,
+        xk2,
+        dk2,
+        a2,
+        xl4,
+        dl2,
+        dl5,
+        node_count,
+    )
+    if energy_flag:
+        return (node_count, istop, energy_flag, x0)
 
     return (node_count, istop, energy_flag, x0)
 

@@ -115,6 +115,76 @@ def _pseudize_iteration(
     xi2: float,
     c00: float,
 ) -> Tuple[float, float]: ...
+def _integ_find_turning_point(e: float, v: List[float], nr: int) -> Tuple[int, int]: ...
+def _integ_initial_conditions(
+    e: float,
+    l: int,
+    xkappa: float,
+    ss2: float,
+    a2: float,
+    xl4: float,
+    dl2: float,
+    ctx: Any,
+    phi: List[float],
+) -> Tuple[float, float, float, float]: ...
+def _integ_predict_p2(p0: float, p1: float, dk2: float, xk2: float, dl5: float) -> float: ...
+def _integ_step(
+    e: float,
+    xkappa: float,
+    a2: float,
+    xl4: float,
+    dl2: float,
+    dl5: float,
+    idx: int,
+    ctx: Any,
+    p0: float,
+    p1: float,
+    dk2: float,
+    xk2: float,
+    p2: Optional[float] = ...,
+) -> Tuple[float, float, float, float]: ...
+def _integ_scale_phi(
+    phi: List[float],
+    p0: float,
+    p1: float,
+    p2: float,
+    i: int,
+) -> Tuple[float, float, float]: ...
+def _integ_log_derivative(phi: List[float], dl: float, r: List[float], istop: int) -> float: ...
+def _integ_integrate_core(
+    e: float,
+    l: int,
+    xkappa: float,
+    n: int,
+    istop: int,
+    phi: List[float],
+    ctx: Any,
+    p0: float,
+    p1: float,
+    xk2: float,
+    dk2: float,
+    a2: float,
+    xl4: float,
+    dl2: float,
+    dl5: float,
+) -> Tuple[int, int, float, float, float, float]: ...
+def _integ_integrate_tail(
+    e: float,
+    xkappa: float,
+    nnideal: int,
+    istop: int,
+    phi: List[float],
+    ctx: Any,
+    p0: float,
+    p1: float,
+    xk2: float,
+    dk2: float,
+    a2: float,
+    xl4: float,
+    dl2: float,
+    dl5: float,
+    node_count: int,
+) -> Tuple[int, int, float, float, float, float]: ...
 def pseudize(
     i: int,
     orb: List[List[float]],
