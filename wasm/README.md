@@ -171,6 +171,7 @@ cd wasm
 python3 -m http.server 8080
 
 # Open http://localhost:8080/web/
+# Note: serve from the wasm/ root so module imports like ../shared/elements.js resolve.
 ```
 
 ### Running Tests
@@ -187,6 +188,8 @@ wasm/
 ├── README.md           # This file
 ├── build.sh            # Main build script
 ├── CMakeLists.txt      # CMake configuration (optional)
+├── shared/
+│   └── elements.js      # Shared element map (used by src/ and web/)
 ├── src/
 │   ├── phaseshifts.js  # JavaScript API wrapper
 │   └── libf2c/         # f2c runtime library (if bundled)

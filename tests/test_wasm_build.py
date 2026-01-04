@@ -173,6 +173,27 @@ class TestJavaScriptAPI:
             assert method in content, f"Missing method: {method}"
 
 
+class TestSharedModules:
+    """Tests for shared WASM modules."""
+
+    def test_shared_elements_exists(self):
+        """Shared elements map should exist."""
+        shared_elements = WASM_DIR / "shared" / "elements.js"
+        assert shared_elements.exists(), "wasm/shared/elements.js not found"
+
+    def test_web_app_imports_shared_elements(self):
+        """web/app.js should import the shared elements map."""
+        app_js = WEB_DIR / "app.js"
+        content = app_js.read_text(encoding="utf-8")
+        assert "../shared/elements.js" in content, "web/app.js should import ../shared/elements.js"
+
+    def test_src_reexports_shared_elements(self):
+        """src/elements.js should re-export the shared elements map."""
+        src_elements = SRC_DIR / "elements.js"
+        content = src_elements.read_text(encoding="utf-8")
+        assert "../shared/elements.js" in content, "src/elements.js should re-export ../shared/elements.js"
+
+
 class TestBuildTools:
     """Tests for build tool detection."""
 
