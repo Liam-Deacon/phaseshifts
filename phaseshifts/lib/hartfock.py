@@ -1399,8 +1399,6 @@ def setqmm(i, orb, l, ns, idoflag, ctx):  # noqa: E741
 
     ctx.zeff = zeff_value
 
-    return
-
 
 def initiali(
     zorig,

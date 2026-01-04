@@ -9,7 +9,10 @@ let phaseShiftsModule = null;
 let chart = null;
 let currentResults = null;
 
-const globalScope = typeof globalThis !== 'undefined' ? globalThis : null;
+let globalScope = null;
+if (typeof globalThis === 'object') {
+  globalScope = globalThis;
+}
 
 const listenerController = new AbortController();
 const listenerSignal = listenerController.signal;

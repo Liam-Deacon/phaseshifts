@@ -362,7 +362,10 @@ async function createPhaseShifts(options = {}) {
   return phsh;
 }
 
-const globalScope = typeof globalThis !== 'undefined' ? globalThis : null;
+let globalScope = null;
+if (typeof globalThis === 'object') {
+  globalScope = globalThis;
+}
 if (globalScope) {
   Object.assign(globalScope, {
     PhaseShifts,
