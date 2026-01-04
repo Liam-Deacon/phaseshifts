@@ -78,6 +78,7 @@ Examples
 # pylint: disable=wrong-import-position
 import argparse
 import datetime
+from io import open
 import os
 import platform
 import subprocess
@@ -85,7 +86,6 @@ import sys
 import tempfile
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from glob import glob
-from shutil import copy
 
 import phaseshifts
 import phaseshifts.backends as _backend_registry
@@ -93,6 +93,10 @@ import phaseshifts.settings
 from phaseshifts import atorb, model
 from phaseshifts.conphas import Conphas
 from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
+from phaseshifts.utils import FileUtils
+
+BMTZ_SUFFIX = ".bmtz"
+MUFFTIN_SUFFIX = "_mufftin.d"
 
 try:
     from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
@@ -152,191 +156,93 @@ class Wrapper(object):
         self.__dict__.update(kwargs)
 
     @staticmethod
-    def autogen_from_input(
-        bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs
-    ):
-        """
-           Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
+    def _resolve_output_format(kwargs):
+        fmt = kwargs.get("format")
+        return fmt.lower() if fmt else None
 
-           This method automates the full sequence described in:
-           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
-        <https://doi.org/10.1016/0039-6028(79)90470-7>`_
-           - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
-           - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+    @staticmethod
+    def _resolve_lmax(kwargs, default_lmax=10):
+        return kwargs.get("lmax", default_lmax)
 
-           Steps:
-           1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
-           2. Muffin-tin potential generation
-           3. Phase shift calculation (relativistic/non-relativistic)
-           4. Removal of phase discontinuities (pi-jumps)
-           5. Output formatting for LEED analysis
-
-           Parameters
-           ----------
-           bulk_file : str
-               Path to the bulk MTZ or CLEED input file.
-           slab_file : str
-               Path to the slab/cluster MTZ or CLEED input file.
-           tmp_dir : str, optional
-               Temporary directory for intermediate files.
-           model_name : str, optional
-               Name of the model.
-           store : bool or str, optional
-               Whether to keep generated files and where to store them.
-           format : str, optional
-               Output format for phase shift files ('cleed', 'curve', etc.).
-           range : tuple(float, float, float), optional
-               Energy range for phase shift calculation (start, stop, step in eV).
-
-           Returns
-           -------
-           output_files : list of str
-               List of generated phase shift output filenames.
-
-           Scientific Context
-           ------------------
-           This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
-           ensuring all physical and computational steps are performed in the correct order. For further details,
-           see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
-
-        """
-        verbose = kwargs.get("verbose", False)
-        dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        if model_name == None:
-            model_name = "atomic"
-
-        # check formatting
-        if "format" in kwargs:
-            out_format = kwargs["format"].lower()
-        else:
-            out_format = None
-
-        # check lmax
-        if "lmax" in kwargs:
-            lmax = kwargs["lmax"]
-        else:
-            lmax = 10
-
-        # check for intermediate storage directory, temp folder otherwise
-        tmp_dir = str(tmp_dir)  # ensure string does not have escape chars
+    @staticmethod
+    def _normalize_tmp_dir(tmp_dir):
+        tmp_dir = str(tmp_dir)
         if not os.path.isdir(tmp_dir):
             tmp_dir = tempfile.gettempdir()
+        return tmp_dir
 
-        # Load bulk model and calculate MTZ
-        bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEEDInputValidator.is_cleed_file(bulk_file):
-            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
-            full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
-            bulk_mtz.gen_input(filename=bulk_file)
+    @staticmethod
+    def _load_mtz_model(input_file, tmp_dir, dummycell, verbose, suffix, use_verbose=False):
+        mtz = model.MTZ_model(dummycell, atoms=[])
+        if CLEEDInputValidator.is_cleed_file(input_file):
+            if use_verbose:
+                mtz = Converter.import_CLEED(input_file, verbose=verbose)
+            else:
+                mtz = Converter.import_CLEED(input_file)
+            full_fname = glob(os.path.expanduser(os.path.expandvars(input_file)))[0]
+            input_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + suffix + ".i")
+            mtz.gen_input(filename=input_file)
         else:
-            bulk_mtz.load_from_file(bulk_file)
+            mtz.load_from_file(input_file)
+        return mtz, input_file
 
-        # Load slab model and calculate MTZ
-        slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEEDInputValidator.is_cleed_file(slab_file):
-            slab_mtz = Converter.import_CLEED(slab_file)
-            full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
-            slab_mtz.gen_input(filename=slab_file)
-        else:
-            slab_mtz.load_from_file(slab_file)
-
-        # generate atomic charge densities for each element in bulk model
-        if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model")
-
-        # get unique elements in bulk and slab
+    @staticmethod
+    def _build_atomic_dict(bulk_mtz, slab_mtz, tmp_dir):
         atomic_dict = {}
-        bulk_elements = [
-            getattr(atom.element, "symbol", str(atom.element))
-            for atom in bulk_mtz.atoms
-        ]
-        slab_elements = [
-            getattr(atom.element, "symbol", str(atom.element))
-            for atom in slab_mtz.atoms
-        ]
+        bulk_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms]
+        slab_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in slab_mtz.atoms]
         for elem in set(bulk_elements + slab_elements):
             at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                    element=elem, output_dir=tmp_dir
-                )
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
             else:
                 atomic_dict[elem] = at_file
+        return atomic_dict
 
-        # prepare at files for appending into atomic file
-        bulk_at_files = [
-            atomic_dict[getattr(atom.element, "symbol", str(atom.element))]
-            for atom in set(bulk_mtz.atoms)
-        ]
+    @staticmethod
+    def _collect_atomic_files(mtz, atomic_dict):
+        return [atomic_dict[getattr(atom.element, "symbol", str(atom.element))] for atom in set(mtz.atoms)]
 
-        # create atomic.i input file from mtz model
-        bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
-        bulk_atomic_file = bulk_mtz.gen_atomic(
-            input_files=bulk_at_files,
-            output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
+    @staticmethod
+    def _build_atomic_input(mtz, at_files, tmp_dir, model_name, suffix):
+        return mtz.gen_atomic(
+            input_files=at_files,
+            output_file=os.path.join(tmp_dir, model_name + suffix + ".i"),
         )
 
-        if verbose:
-            print("\nModel")
-            print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
-            print("slab atoms: %s" % [s for s in slab_mtz.atoms])
-
-        # calculate muffin-tin potential for bulk model
+    @staticmethod
+    def _calculate_bulk_mtz(bulk_mtz, bulk_file, bulk_atomic_file, tmp_dir, bulk_model_name, verbose):
         print("\nCalculating bulk muffin-tin potential...")
         if verbose:
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz")
-            )
-            print(
-                "\tmufftin file: '%s'"
-                % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX))
 
-        bulk_mtz_file = bulk_mtz.calculate_MTZ(
+        bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
-            output_file=os.path.join(tmp_dir, bulk_model_name + ".bmtz"),
-            mufftin_file=os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX),
+            mufftin_file=os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX),
         )
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
-        # prepare at files for appending into atomic file
-        slab_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)
-        ]
-
-        # create atomic.i input file from mtz model
-        slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
-        slab_atomic_file = slab_mtz.gen_atomic(
-            input_files=slab_at_files,
-            output_file=os.path.join(tmp_dir, slab_model_name + "_slab.i"),
-        )
-
-        # calculate muffin-tin potential for slab model
-        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
+    @staticmethod
+    def _calculate_slab_mtz(slab_mtz, slab_file, slab_atomic_file, tmp_dir, slab_model_name, bulk_mtz, verbose):
+        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + MUFFTIN_SUFFIX)
         print("\nCalculating slab muff-tin potential...")
         if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + BMTZ_SUFFIX))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
-        slab_mtz_file = slab_mtz.calculate_MTZ(
+        slab_mtz.calculate_MTZ(
             cluster_file=slab_file,
             output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
             atomic_file=slab_atomic_file,
@@ -344,210 +250,241 @@ class Wrapper(object):
             mtz_string=str(bulk_mtz.mtz),
             slab=True,
         )
+        return mufftin_filepath
 
-        # create raw phase shift files
-        print(
-            "\nGenerating phase shifts from '%s'..."
-            % os.path.basename(mufftin_filepath)
-        )
-        filepath = os.path.join(tmp_dir, slab_model_name)
-        phasout_filepath = filepath + "_phasout.i"
-        dataph_filepath = filepath + "_dataph.d"
-
-        phaseshifts = [atom.tag for atom in set(slab_mtz.atoms)]
-        phasout_files = [
-            os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)
-        ]
-        phsh_files = []
-
-        # assign phase shift specific lmax values
+    @staticmethod
+    def _build_lmax_dict(slab_mtz, bulk_mtz, default_lmax):
         lmax_dict = {}
         for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
             try:
                 lmax_dict[atom.tag] = atom.lmax
             except AttributeError:
-                print(atom.tag, "default lmax used:", lmax)
-                lmax_dict[atom.tag] = lmax
+                print(atom.tag, "default lmax used:", default_lmax)
+                lmax_dict[atom.tag] = default_lmax
+        return lmax_dict
 
+    @staticmethod
+    def _apply_energy_range(mufftin_filepath, energy_range):
+        try:
+            with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
+                lines = [line for line in f]
+
+            ei, de, ef, lsm, vc = [
+                t(s) for t, s in zip((float, float, float, int, float), lines[1].replace("D", "E").split()[:5])
+            ]
+            ei, ef, de = [t(s) for t, s in zip((float, float, float), energy_range)]
+            lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace("e", "D")
+
+            with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
+                f.write("".join([str(line) for line in lines]))
+
+            return True
+        except Exception:
+            sys.stderr.write(
+                "Unable to change phase shift energy range - using Barbieri/Van Hove "
+                "default of 20-300eV in 5eV steps\n"
+            )
+            sys.stderr.flush()
+            return False
+
+    @staticmethod
+    def _remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict):
+        phsh_files = []
+        for i, phaseshift in enumerate(phaseshifts):
+            filename = os.path.splitext(phasout_files[i])[0]
+            if out_format == "curve":
+                filename += ".cur"
+            else:
+                filename += ".phs"
+            phsh_files.append(filename)
+            print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
+            phsh = Conphas(
+                input_files=[phasout_files[i]],
+                output_file=filename,
+                formatting=out_format,
+                lmax=lmax_dict[phaseshift],
+            )
+            phsh.calculate()
+        return phsh_files
+
+    @staticmethod
+    def _generate_phase_shifts(
+        slab_mtz,
+        mufftin_filepath,
+        phasout_filepath,
+        dataph_filepath,
+        filepath,
+        out_format,
+        phasout_files,
+        phaseshifts,
+        lmax_dict,
+        kwargs,
+    ):
+        phsh_files = []
         try:
             if slab_mtz.nform == 0 or str(slab_mtz.nform).lower().startswith("cav"):
-                # calculate phase shifts
-                phsh_cav(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_zph.o",
-                )
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
-
-                # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                phsh_cav(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_zph.o")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phsh_files.extend(Wrapper._remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict))
 
             if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
-                # calculate phase shifts
-                phsh_wil(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_zph.o",
-                )
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phsh_wil(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_zph.o")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
             if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
-                # check energy range
                 if "range" in kwargs:
-                    try:
-                        # get values
-                        with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
-                            lines = [line for line in f]
+                    Wrapper._apply_energy_range(mufftin_filepath, kwargs["range"])
 
-                        ei, de, ef, lsm, vc = [
-                            t(s)
-                            for t, s in zip(
-                                (float, float, float, int, float),
-                                lines[1].replace("D", "E").split()[:5],
-                            )
-                        ]
-
-                        # assign new values
-                        (ei, ef, de) = [
-                            t(s) for t, s in zip((float, float, float), kwargs["range"])
-                        ]
-
-                        # edit energy range
-                        lines[1] = str(
-                            "%12.4f%12.4f%12.4f    %3i    %12.4f\n"
-                            % (ei, de, ef, lsm, vc)
-                        ).replace("e", "D")
-                        #                         lines[1] = ff.FortranRecordWriter(
-                        #                                         '(3D12.4,4X,I3,4X,D12.4)'
-                        #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
-
-                        with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
-                            f.write("".join([str(line) for line in lines]))
-
-                    except Exception:
-                        sys.stderr.write(
-                            "Unable to change phase shift energy "
-                            "range - using Barbieri/Van Hove "
-                            "default of 20-300eV in 5eV steps\n"
-                        )
-                        sys.stderr.flush()
-
-                # calculate phase shifts
-                # print("Current time " + time.strftime("%X"))
-                phsh_rel(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_inpdat.txt",
-                )
-                # print("Current time " + time.strftime("%X"))
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
-
-                # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                phsh_rel(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_inpdat.txt")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phsh_files.extend(Wrapper._remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict))
 
         except AttributeError:
             raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
 
-        # copy files to storage location
+        return phsh_files
+
+    @staticmethod
+    def _resolve_copy_destination(out_format, kwargs):
         if "store" in kwargs and out_format != "cleed":
             if kwargs["store"] != ".":
-                dst = os.path.abspath(
-                    os.path.expanduser(os.path.expandvars(kwargs["store"]))
-                )
-            else:
-                dst = os.path.abspath(".")
-            Wrapper._copy_files(phsh_files, dst, verbose=True)
+                return os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
+            return os.path.abspath(".")
 
-        elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(
-                os.path.expanduser(os.path.expandvars("$CLEED_PHASE"))
-            )
-            Wrapper._copy_files(phsh_files, dst, verbose=True)
+        if "CLEED_PHASE" in os.environ and out_format == "cleed":
+            return os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
 
-        else:
-            Wrapper._copy_files(phsh_files, os.path.abspath("."), verbose=True)
+        return os.path.abspath(".")
 
+    @staticmethod
+    def _copy_output_files(phsh_files, out_format, kwargs):
+        dst = Wrapper._resolve_copy_destination(out_format, kwargs)
+        Wrapper._copy_files(phsh_files, dst, verbose=True)
+
+    @staticmethod
+    def autogen_from_input(bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs):
+        """
+        Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
+
+        This method automates the full sequence described in:
+        - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED."
+          Surf. Sci. 90, 1-25.
+          <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+        - Moritz, W. (SATLEED code):
+          http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+        - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+        Steps:
+        1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+        2. Muffin-tin potential generation
+        3. Phase shift calculation (relativistic/non-relativistic)
+        4. Removal of phase discontinuities (pi-jumps)
+        5. Output formatting for LEED analysis
+
+        Parameters
+        ----------
+        bulk_file : str
+            Path to the bulk MTZ or CLEED input file.
+        slab_file : str
+            Path to the slab/cluster MTZ or CLEED input file.
+        tmp_dir : str, optional
+            Temporary directory for intermediate files.
+        model_name : str, optional
+            Name of the model.
+        store : bool or str, optional
+            Whether to keep generated files and where to store them.
+        format : str, optional
+            Output format for phase shift files ('cleed', 'curve', etc.).
+        range : tuple(float, float, float), optional
+            Energy range for phase shift calculation (start, stop, step in eV).
+
+        Returns
+        -------
+        output_files : list of str
+            List of generated phase shift output filenames.
+
+        Scientific Context
+        ------------------
+        This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
+        ensuring all physical and computational steps are performed in the correct order. For further details,
+        see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+
+        """
+        verbose = kwargs.get("verbose", False)
+        dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        model_name = model_name or "atomic"
+
+        out_format = Wrapper._resolve_output_format(kwargs)
+        lmax = Wrapper._resolve_lmax(kwargs)
+        tmp_dir = Wrapper._normalize_tmp_dir(tmp_dir)
+
+        bulk_mtz, bulk_file = Wrapper._load_mtz_model(
+            bulk_file,
+            tmp_dir,
+            dummycell,
+            verbose,
+            "_bulk",
+            use_verbose=True,
+        )
+        slab_mtz, slab_file = Wrapper._load_mtz_model(
+            slab_file,
+            tmp_dir,
+            dummycell,
+            verbose,
+            "_slab",
+            use_verbose=False,
+        )
+
+        if not isinstance(bulk_mtz, model.MTZ_model):
+            raise AttributeError("bulk_mtz is not an MTZ_model")
+
+        atomic_dict = Wrapper._build_atomic_dict(bulk_mtz, slab_mtz, tmp_dir)
+        bulk_at_files = Wrapper._collect_atomic_files(bulk_mtz, atomic_dict)
+        slab_at_files = Wrapper._collect_atomic_files(slab_mtz, atomic_dict)
+
+        bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
+        slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
+        bulk_atomic_file = Wrapper._build_atomic_input(bulk_mtz, bulk_at_files, tmp_dir, bulk_model_name, "_bulk")
+        slab_atomic_file = Wrapper._build_atomic_input(slab_mtz, slab_at_files, tmp_dir, slab_model_name, "_slab")
+
+        if verbose:
+            print("\nModel")
+            print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
+            print("slab atoms: %s" % [s for s in slab_mtz.atoms])
+
+        Wrapper._calculate_bulk_mtz(bulk_mtz, bulk_file, bulk_atomic_file, tmp_dir, bulk_model_name, verbose)
+        mufftin_filepath = Wrapper._calculate_slab_mtz(
+            slab_mtz, slab_file, slab_atomic_file, tmp_dir, slab_model_name, bulk_mtz, verbose
+        )
+
+        print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
+        filepath = os.path.join(tmp_dir, slab_model_name)
+        phasout_filepath = filepath + "_phasout.i"
+        dataph_filepath = filepath + "_dataph.d"
+        phaseshifts = [atom.tag for atom in set(slab_mtz.atoms)]
+        phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)]
+
+        lmax_dict = Wrapper._build_lmax_dict(slab_mtz, bulk_mtz, lmax)
+        phsh_files = Wrapper._generate_phase_shifts(
+            slab_mtz,
+            mufftin_filepath,
+            phasout_filepath,
+            dataph_filepath,
+            filepath,
+            out_format,
+            phasout_files,
+            phaseshifts,
+            lmax_dict,
+            kwargs,
+        )
+
+        Wrapper._copy_output_files(phsh_files, out_format, kwargs)
         return phsh_files
 
     @staticmethod
     def _copy_files(files, dst, verbose=False):
-        """copy list of files into destination directory"""
-        # check if using native Windows Python with cygwin
-        env = ""
-        if platform.system() == "Windows" and dst.startswith("/cygdrive"):
-            if os.environ["CLEED_PHASE"] == dst:
-                env = "CLEED_PHASE="
-            dst = '"%s"' % (
-                dst.split("/")[2] + ":" + os.path.sep.join(dst.split("/")[3:])
-            )
-
-        # do check and create directory if needed
-        if os.path.isfile(dst):
-            dst = os.path.dirname(dst)
-        if not os.path.exists(dst):
-            try:
-                os.makedirs(dst)
-            except (PermissionError, OSError):
-                pass
-
-        # copy each phase shift file to directory
-        if verbose:
-            print("\nCopying files to %s'%s'" % (env, dst))
-        for filename in files:
-            try:
-                copy(filename, dst)
-                if verbose:
-                    print(os.path.basename(filename))
-            except IOError:
-                sys.stderr.write("Cannot copy file '%s'\n" % filename)
-                sys.stderr.flush()
+        """Copy list of files into destination directory."""
+        FileUtils.copy_files(files, dst, verbose=verbose)
 
 
 class CLIError(Exception):
@@ -564,9 +501,45 @@ class CLIError(Exception):
         return self.msg
 
 
+def _generate_atomic_orbitals(bulk_file, slab_file, tmp_dir=None, verbose=False):
+    """Generate atomic charge density files for elements in bulk and slab inputs."""
+    if not bulk_file or not slab_file:
+        raise CLIError("--atorbs-only requires both bulk and slab inputs.")
+
+    tmp_dir = tmp_dir or tempfile.gettempdir()
+    if not os.path.isdir(tmp_dir):
+        os.makedirs(tmp_dir)
+
+    dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    bulk_mtz = model.MTZ_model(dummycell, atoms=[])
+    if CLEEDInputValidator.is_cleed_file(bulk_file):
+        bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
+    else:
+        bulk_mtz.load_from_file(bulk_file)
+
+    slab_mtz = model.MTZ_model(dummycell, atoms=[])
+    if CLEEDInputValidator.is_cleed_file(slab_file):
+        slab_mtz = Converter.import_CLEED(slab_file, verbose=verbose)
+    else:
+        slab_mtz.load_from_file(slab_file)
+
+    elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms + slab_mtz.atoms]
+
+    atomic_dict = {}
+    for elem in sorted(set(elements)):
+        at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
+        if not os.path.isfile(at_file):
+            if verbose:
+                sys.stdout.write("\nCalculating atomic charge density for %s...\n" % elem)
+            atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
+        else:
+            atomic_dict[elem] = at_file
+
+    return atomic_dict
+
+
 def main(argv=None):
-    """
-    Main command-line interface for phase shift generation.
+    """Run the command-line interface for phase shift generation.
 
     Parses user arguments, sets up the workflow, and executes the full Barbieri/Van Hove phase shift
     calculation sequence. Supports options for input files, output formatting, energy range, and
@@ -595,7 +568,6 @@ def main(argv=None):
     - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
     """
-
     if argv is None:
         argv = sys.argv
     else:
@@ -634,9 +606,7 @@ def main(argv=None):
 
     try:
         # Setup argument parser
-        parser = ArgumentParser(
-            description=program_license, formatter_class=RawDescriptionHelpFormatter
-        )
+        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument(
             "-b",
             "--bulk",
@@ -664,7 +634,7 @@ def main(argv=None):
             "--tmpdir",
             dest="tmpdir",
             metavar="<temp_dir>",
-            help="temporary directory for intermediate " "file generation",
+            help="temporary directory for intermediate file generation",
         )
         parser.add_argument(
             "-l",
@@ -673,7 +643,7 @@ def main(argv=None):
             metavar="<lmax>",
             default=10,
             type=int,
-            help="Maximum angular momentum " "quantum number [default: %(default)s]",
+            help="Maximum angular momentum quantum number [default: %(default)s]",
         )
         parser.add_argument(
             "-f",
@@ -681,32 +651,34 @@ def main(argv=None):
             dest="format",
             metavar="<format>",
             default="CLEED",
-            help="Use specific phase shift format "
-            "i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
-            "[default: %(default)s]",
+            help=(
+                "Use specific phase shift format i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
+                + "[default: %(default)s]"
+            ),
         )
         parser.add_argument(
             "--backend",
             dest="backend",
             metavar="<backend>",
             default="bvh",
-            help="Phase shift backend to use: 'bvh' (default), "
-            "'eeasisss' (native or ViPErLEED; alias: viperleed).",
+            help=(
+                "Phase shift backend to use: 'bvh' (default), " + "'eeasisss' (native or ViPErLEED; alias: viperleed)."
+            ),
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For viperleed mode, pass "
-            "the ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX "
-            "file.",
+            help=(
+                "Backend-specific parameters file. For viperleed mode, pass the ViPErLEED PARAMETERS file. "
+                + "For native eeasisss, pass an inputX file."
+            ),
         )
         parser.add_argument(
             "--backend-workdir",
             dest="backend_workdir",
             metavar="<dir>",
-            help="Backend working directory (eeasisss/viperleed uses it for "
-            "EEASiSSS files).",
+            help="Backend working directory (eeasisss/viperleed uses it for EEASiSSS files).",
         )
         parser.add_argument(
             "-r",
@@ -768,12 +740,10 @@ def main(argv=None):
             dest="verbose",
             action="count",
             help="Set verbosity level. Note this will also "
-            "produce postscript graphs when using the EEASiSSS"
+            "produce postscript graphs when using the EEASiSSS "
             "backend. [default: %(default)s]",
         )
-        parser.add_argument(
-            "-V", "--version", action="version", version=program_version_message
-        )
+        parser.add_argument("-V", "--version", action="version", version=program_version_message)
 
         # Process arguments
         args, unknown = parser.parse_known_args()
@@ -789,26 +759,27 @@ def main(argv=None):
                 sys.stderr.write("phsh - warning: Unknown option '%s'\n" % arg)
             sys.stderr.flush()
 
-        backend_name = str(getattr(args, "backend", None) or "bvh").lower()
+        default_backend = parser.get_default("backend")
+        backend_name = str(getattr(args, "backend", None) or default_backend).lower()
+        package_name = str(getattr(args, "package", "") or "").lower()
+        if package_name and backend_name == str(default_backend).lower():
+            if package_name in ("vht", "bvh", "van hove", "barbieri"):
+                backend_name = "bvh"
+            elif package_name in ("rundgren", "eeasisss"):
+                backend_name = "eeasisss"
 
         # Structured input support: auto-generate bulk and slab inputs from geometry
         if getattr(args, "input", None):
             if args.bulk or args.slab:
-                sys.stderr.write(
-                    "phsh: --input provided; ignoring --bulk/--slab arguments\n"
-                )
+                sys.stderr.write("phsh: --input provided; ignoring --bulk/--slab arguments\n")
                 sys.stderr.flush()
             try:
-                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(
-                    args.input, tmp_dir=args.tmpdir
-                )
+                bulk_file, slab_file, metadata = Converter.cleedpy_to_inputs(args.input, tmp_dir=args.tmpdir)
             except ImportError as exc:
                 raise CLIError(str(exc))
             args.bulk = bulk_file
             args.slab = slab_file
-            if metadata.get(
-                "maximum_angular_momentum"
-            ) and args.lmax == parser.get_default("lmax"):
+            if metadata.get("maximum_angular_momentum") and args.lmax == parser.get_default("lmax"):
                 args.lmax = int(metadata["maximum_angular_momentum"])
 
         if not args.input and args.slab is None:
@@ -824,7 +795,7 @@ def main(argv=None):
             args.range = list(args.range) + [5]
 
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt
         return 0
     except Exception as err:
         sys.stderr.write("{}: '{}'\n".format(program_name, err))
@@ -857,22 +828,29 @@ def main(argv=None):
     ):
         args.bulk = str(os.path.splitext(args.slab)[0] + ".bul")
 
+    if args.atorbs_only:
+        try:
+            atomic_dict = _generate_atomic_orbitals(args.bulk, args.slab, tmp_dir=args.tmpdir, verbose=verbose)
+        except Exception as err:  # pylint: disable=broad-exception-caught
+            return _fatal(err)
+        if verbose:
+            sys.stdout.write("\nGenerated atomic orbitals:\n")
+            for at_file in sorted(atomic_dict.values()):
+                sys.stdout.write("\t{}\n".format(at_file))
+        return 0
+
     # create phase shifts (warning: black magic within - needs testing)
     if verbose:
-        print("Phase shift auto-generation parameters")
-        print("\tbulk input file: {}".format(args.bulk))
-        print("\tslab input file: {}".format(args.slab))
-        print("\tformat: {}".format(args.format))
-        print("\tbackend: {}".format(args.backend))
-        print("\tlmax: {}".format(args.lmax))
-        print("\trange: {} eV".format([s for s in args.range]))
+        sys.stdout.write("Phase shift auto-generation parameters\n")
+        sys.stdout.write("\tbulk input file: {}\n".format(args.bulk))
+        sys.stdout.write("\tslab input file: {}\n".format(args.slab))
+        sys.stdout.write("\tformat: {}\n".format(args.format))
+        sys.stdout.write("\tbackend: {}\n".format(args.backend))
+        sys.stdout.write("\tlmax: {}\n".format(args.lmax))
+        sys.stdout.write("\trange: {} eV\n".format(args.range))
 
     backend_workdir = args.backend_workdir or args.tmpdir or args.store
-    output_file = (
-        os.path.join(args.store, "PHASESHIFTS")
-        if backend_name in ("eeasisss", "viperleed")
-        else None
-    )
+    output_file = os.path.join(args.store, "PHASESHIFTS") if backend_name in ("eeasisss", "viperleed") else None
 
     try:
         phsh_files = backend.autogen_from_input(
@@ -897,13 +875,7 @@ def main(argv=None):
         csearch = CSearch(os.path.splitext(args.slab)[0])
         last_iteration = csearch.getIteration(-1)
         if last_iteration is not None:
-            it = (
-                str(last_iteration)
-                .split("par:", 1)[0]
-                .replace(" ", "")
-                .replace("#", "")
-                .rjust(3, "0")
-            )
+            it = str(last_iteration).split("par:", 1)[0].replace(" ", "").replace("#", "").rjust(3, "0")
             model = os.path.splitext(os.path.basename(args.slab))[0]
             parent = os.path.dirname(args.slab)
             name, ext = os.path.splitext(os.path.basename(args.slab))
@@ -914,11 +886,7 @@ def main(argv=None):
         leed_cmd = [os.environ.get("PHASESHIFTS_LEED") or "cleed"]
         # check if using native Windows Python with cygwin
         if platform.system() == "Windows" and leed_cmd[0].startswith("/cygdrive"):
-            leed_cmd[0] = '"%s"' % (
-                leed_cmd[0].split("/")[2]
-                + ":"
-                + os.path.sep.join(leed_cmd[0].split("/")[3:])
-            )
+            leed_cmd[0] = '"%s"' % (leed_cmd[0].split("/")[2] + ":" + os.path.sep.join(leed_cmd[0].split("/")[3:]))
 
         leed_cmd.extend(argv)
 

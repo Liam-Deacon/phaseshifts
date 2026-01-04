@@ -55,7 +55,7 @@ import sys
 import os
 import argparse
 
-from ..libhartfock import hartfock  # TODO: Handle import more gracefully
+from ..hartfock import hartfock  # NOTE: Handle import more gracefully.
 
 __date__ = "2015-04-26"
 __updated__ = "2015-04-26"
@@ -144,9 +144,7 @@ def main(argv=None):
             action="count",
             help="Set verbosity level. [default: %(default)s]",
         )
-        parser.add_argument(
-            "-V", "--version", action="version", version=program_version_message
-        )
+        parser.add_argument("-V", "--version", action="version", version=program_version_message)
 
         # Process arguments
         args, unknown = parser.parse_known_args(argv)
@@ -168,10 +166,7 @@ def main(argv=None):
         args.chgden_dir = os.path.expanduser(os.path.expandvars(args.chgden_dir))
         if not os.path.isdir(args.chgden_dir):
             if verbose:
-                sys.stderr.write(
-                    "hf - warning: '%s' does not exist. "
-                    "Creating directory..." % args.chgden_dir
-                )
+                sys.stderr.write("hf - warning: '%s' does not exist. " "Creating directory..." % args.chgden_dir)
                 sys.stderr.flush()
             os.makedirs(args.chgden_dir)
 
@@ -179,11 +174,11 @@ def main(argv=None):
         hartfock(args.input, args.log, args.chgden_dir)
 
     except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
+        # handle keyboard interrupt
         pass
     except Exception as err:  # pylint: disable=broad-except
         if DEBUG or TEST_RUN:
-            raise (err)
+            raise
         indent = len(program_name) * " "
         sys.stderr.write(program_name + ": " + repr(err) + "\n")
         sys.stderr.write(indent + "  for help use --help")

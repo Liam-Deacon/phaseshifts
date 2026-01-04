@@ -54,10 +54,10 @@ import webbrowser
 import wxversion
 
 wxversion.ensureMinimal("2.8")
-import wx
-from wx.lib import fancytext, buttons, rcsizer
+import wx  # noqa: E402
+from wx.lib import fancytext, buttons, rcsizer  # noqa: E402
 
-from phaseshifts.elements import ELEMENTS, SERIES
+from phaseshifts.elements import ELEMENTS, SERIES  # noqa: E402
 
 
 class MainApp(wx.App):
@@ -66,11 +66,7 @@ class MainApp(wx.App):
     name = "Periodic Table of Elements"
     version = "2012.04.05"
     website = "http://www.lfd.uci.edu/~gohlke/"
-    copyright = (
-        "Christoph Gohlke\n"
-        "Laboratory for Fluorescence Dynamics\n"
-        "University of California, Irvine"
-    )
+    copyright = "Christoph Gohlke\nLaboratory for Fluorescence Dynamics\nUniversity of California, Irvine"
     icon = "elements"
 
     def OnInit(self):
@@ -114,9 +110,7 @@ class MainFrame(wx.Frame):
         )
         self.menu.Append(menu, "Edit")
         menu = wx.Menu()
-        menu.Append(
-            wx.ID_VIEW_DETAILS, "Details", "Show or hide details", wx.ITEM_CHECK
-        )
+        menu.Append(wx.ID_VIEW_DETAILS, "Details", "Show or hide details", wx.ITEM_CHECK)
         self.menu.Append(menu, "View")
         menu = wx.Menu()
         menu.Append(
@@ -151,15 +145,7 @@ class MainFrame(wx.Frame):
         self.sizer.Add(
             self.table,
             1,
-            (
-                wx.LEFT
-                | wx.TOP
-                | wx.RIGHT
-                | wx.EXPAND
-                | wx.ALIGN_CENTER_HORIZONTAL
-                | wx.EXPAND
-                | wx.ADJUST_MINSIZE
-            ),
+            (wx.LEFT | wx.TOP | wx.RIGHT | wx.EXPAND | wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ADJUST_MINSIZE),
             BORDER - 5,
         )
         self.sizer.Add((BORDER, BORDER))
@@ -220,14 +206,10 @@ class MainFrame(wx.Frame):
         webbrowser.open(MainApp.website)
 
     def OnWikipedia(self, evt):
-        webbrowser.open(
-            "http://en.wikipedia.org/wiki/%s" % (ELEMENTS[self.selected].name), 1
-        )
+        webbrowser.open("https://en.wikipedia.org/wiki/%s" % (ELEMENTS[self.selected].name), 1)
 
     def OnWebElements(self, evt):
-        webbrowser.open(
-            "http://www.webelements.com/%s/" % (ELEMENTS[self.selected].name.lower())
-        )
+        webbrowser.open("https://www.webelements.com/%s/" % (ELEMENTS[self.selected].name.lower()))
 
     def OnSelect(self, evt):
         self.SetSelection(evt.GetSelection())
@@ -285,18 +267,11 @@ class PeriodicPanel(wx.Panel):
                 if col == ".":
                     self.sizer.Add((SPACER, SPACER))
                 elif col[0] in "123456789*":
-                    static = wx.StaticText(
-                        self, -1, col, style=wx.ALIGN_CENTER | wx.ALIGN_BOTTOM
-                    )
+                    static = wx.StaticText(self, -1, col, style=wx.ALIGN_CENTER | wx.ALIGN_BOTTOM)
                     self.sizer.Add(
                         static,
                         0,
-                        (
-                            wx.ALL
-                            | wx.ALIGN_CENTER_HORIZONTAL
-                            | wx.ALIGN_CENTER_VERTICAL
-                            | wx.FIXED_MINSIZE
-                        ),
+                        (wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE),
                         SPACER // 2,
                     )
                 else:
@@ -403,19 +378,13 @@ class ElementPanel(wx.Panel):
         self.number = wx.StaticText(self, -1, "808", style=wx.ALIGN_RIGHT)
         self.position = wx.StaticText(self, -1, "6, 88, 9", style=wx.ALIGN_LEFT)
         self.symbol = wx.StaticText(self, -1, "Mm", style=wx.ALIGN_CENTER_HORIZONTAL)
-        self.name = wx.StaticText(
-            self, -1, "Praseodymium ", style=wx.ALIGN_CENTER_HORIZONTAL
-        )
-        self.mass = wx.StaticText(
-            self, -1, "123.4567890 ", style=wx.ALIGN_CENTER_HORIZONTAL
-        )
+        self.name = wx.StaticText(self, -1, "Praseodymium ", style=wx.ALIGN_CENTER_HORIZONTAL)
+        self.mass = wx.StaticText(self, -1, "123.4567890 ", style=wx.ALIGN_CENTER_HORIZONTAL)
         self.massnumber = wx.StaticText(self, -1, "123 A ", style=wx.ALIGN_RIGHT)
         self.protons = wx.StaticText(self, -1, "123 P ", style=wx.ALIGN_RIGHT)
         self.neutrons = wx.StaticText(self, -1, "123 N ", style=wx.ALIGN_RIGHT)
         self.electrons = wx.StaticText(self, -1, "123 e ", style=wx.ALIGN_RIGHT)
-        self.eleshell = wx.StaticText(
-            self, -1, "2, 8, 18, 32, 32, 15, 2", style=wx.ALIGN_LEFT
-        )
+        self.eleshell = wx.StaticText(self, -1, "2, 8, 18, 32, 32, 15, 2", style=wx.ALIGN_LEFT)
         self.eleconfig = StaticFancyText(
             self,
             -1,
@@ -468,9 +437,7 @@ class ElementPanel(wx.Panel):
             col=0,
             rowspan=2,
             colspan=2,
-            flag=(
-                wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE
-            ),
+            flag=(wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE),
         )
         sizer.Add(
             self.name,
@@ -636,12 +603,8 @@ class DetailsPanel(wx.Panel):
             style=wx.CB_READONLY,
             size=(1, -1),
         )
-        self.ionpot = LabeledCtrl(
-            self, wx.Choice, "Ionization Potentials (eV)", choices=[], size=(1, -1)
-        )
-        self.isotopes = LabeledCtrl(
-            self, wx.Choice, "Isotopes", choices=[], size=(1, -1)
-        )
+        self.ionpot = LabeledCtrl(self, wx.Choice, "Ionization Potentials (eV)", choices=[], size=(1, -1))
+        self.isotopes = LabeledCtrl(self, wx.Choice, "Isotopes", choices=[], size=(1, -1))
 
         # layout
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -714,9 +677,7 @@ class DetailsPanel(wx.Panel):
         self.isotopes.ctrl.Clear()
         for index, massnum in enumerate(sorted(ele.isotopes)):
             iso = ele.isotopes[massnum]
-            self.isotopes.ctrl.Append(
-                "%3i:  %8.4f , %8.4f%%" % (massnum, iso.mass, iso.abundance * 100.0)
-            )
+            self.isotopes.ctrl.Append("%3i:  %8.4f , %8.4f%%" % (massnum, iso.mass, iso.abundance * 100.0))
             if massnum == ele.nominalmass:
                 self.isotopes.ctrl.SetSelection(index)
 
@@ -752,9 +713,7 @@ class DecriptionPanel(wx.Panel):
         wx.Panel.__init__(self, *args, **kwds)
         self.selected = -1
 
-        self.description = wx.TextCtrl(
-            self, -1, " \n \n", style=wx.TE_MULTILINE | wx.TE_READONLY
-        )
+        self.description = wx.TextCtrl(self, -1, " \n \n", style=wx.TE_MULTILINE | wx.TE_READONLY)
         font = self.description.GetFont()
         font.SetPointSize((font.GetPointSize() + 1))
         self.description.SetFont(font)
@@ -833,9 +792,7 @@ class ElementButton(buttons.GenToggleButton):
         dc.SetFont(font)
         label = "%i" % (self.GetId() - 100)
         txtwidth, txtheight = dc.GetTextExtent(label)
-        dc.DrawText(
-            label, (width - txtwidth) // 2, 4 + ypos + (height - txtheight) // 2
-        )
+        dc.DrawText(label, (width - txtwidth) // 2, 4 + ypos + (height - txtheight) // 2)
 
 
 class LabeledCtrl(wx.BoxSizer):
@@ -849,20 +806,12 @@ class LabeledCtrl(wx.BoxSizer):
         self.Add(
             self.ctrl,
             1,
-            (
-                wx.LEFT
-                | wx.EXPAND
-                | wx.ALIGN_CENTER_VERTICAL
-                | wx.ALIGN_RIGHT
-                | wx.ADJUST_MINSIZE
-            ),
+            (wx.LEFT | wx.EXPAND | wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ADJUST_MINSIZE),
             0,
         )
         if unit:
             self.unit = wx.StaticText(parent, -1, unit)
-            self.Add(
-                self.unit, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE, 0
-            )
+            self.Add(self.unit, 0, wx.RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.FIXED_MINSIZE, 0)
         else:
             self.unit = None
 
@@ -871,9 +820,7 @@ class StaticFancyText(fancytext.StaticFancyText):
     """StaticFancyText with SetLabel function."""
 
     def SetLabel(self, label):
-        bmp = fancytext.RenderToBitmap(
-            label, wx.Brush(self.GetBackgroundColour(), wx.SOLID)
-        )
+        bmp = fancytext.RenderToBitmap(label, wx.Brush(self.GetBackgroundColour(), wx.SOLID))
         self.SetBitmap(bmp)
 
 
@@ -915,16 +862,10 @@ class DisclosureCtrl(buttons.GenBitmapTextToggleButton):
 
     def __init__(self, parent, winid, label, *args, **kwds):
         kwds["style"] = wx.BORDER_NONE | wx.BU_EXACTFIT
-        buttons.GenBitmapTextToggleButton.__init__(
-            self, parent, winid, None, label, *args, **kwds
-        )
+        buttons.GenBitmapTextToggleButton.__init__(self, parent, winid, None, label, *args, **kwds)
         if isinstance(self.bmp0, type(b"")):
-            self.__class__.bmp0 = wx.BitmapFromImage(
-                wx.ImageFromStream(io.BytesIO(self.bmp0))
-            )
-            self.__class__.bmp1 = wx.BitmapFromImage(
-                wx.ImageFromStream(io.BytesIO(self.bmp1))
-            )
+            self.__class__.bmp0 = wx.BitmapFromImage(wx.ImageFromStream(io.BytesIO(self.bmp0)))
+            self.__class__.bmp1 = wx.BitmapFromImage(wx.ImageFromStream(io.BytesIO(self.bmp1)))
 
         self.SetBitmapLabel(self.bmp0)
         self.SetBitmapSelected(self.bmp1)
@@ -986,11 +927,7 @@ class DisclosureCtrl(buttons.GenBitmapTextToggleButton):
             bmpwidth = bmpheight = 0
 
         dc.SetFont(self.GetFont())
-        color = (
-            self.GetForegroundColour()
-            if self.IsEnabled()
-            else wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-        )
+        color = self.GetForegroundColour() if self.IsEnabled() else wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
         dc.SetTextForeground(color)
 
         label = self.GetLabel()

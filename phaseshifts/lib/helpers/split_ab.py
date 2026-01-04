@@ -2,9 +2,10 @@
 
 """Helper script to split the Barbieri/Van Hove phshift2007 package AB files into individual program files."""
 
-import sys
+from io import open
 import os
 import re
+import sys
 
 
 def split_ab(input_path, output_dir):
@@ -12,7 +13,6 @@ def split_ab(input_path, output_dir):
     with open(input_path, "r") as f:
         lines = f.readlines()
     prog_re = re.compile(r"^C\s+program\s+(\S+)")
-    current_file = None
     out_f = None
     for line in lines:
         m = prog_re.match(line)

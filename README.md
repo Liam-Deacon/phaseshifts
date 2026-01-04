@@ -14,10 +14,12 @@
 ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/Liam-Deacon/phaseshifts?logo=codeclimate)
 ![Code Climate issues](https://img.shields.io/codeclimate/issues/Liam-Deacon/phaseshifts?logo=codeclimate)
 ![Codecov](https://img.shields.io/codecov/c/github/Liam-Deacon/phaseshifts?logo=codecov&logoColor=white)
+[![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/Liam-Deacon/phaseshifts?logo=snyk&logoColor=white)](https://snyk.io/test/github/Liam-Deacon/phaseshifts)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Liam-Deacon/phaseshifts/total?logo=github)
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/phaseshifts?logo=pypi&logoColor=white)](https://pypi.org/project/phaseshifts/)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/Liam-Deacon/phaseshifts/codeql.yml?label=codeql&logo=github)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml)
 
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
 <!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
@@ -93,39 +95,49 @@ in several works on oxides from the mid-2000s to early-2010s [^4] [^5]. In the
 words of the package's
 author, John Rundgren, the main qualifications of the program are:
 
-+ The program accepts three sources of atomic potentials:
-    1. E. L. Shirley's atomic program [^6] applied together with Mattheiss's
-    superposition method.
-    2. The DFT-SCF program of V. Eyert using the full-potential
-    Augmented Spherical Wave method [^7].
-    3. The DFT-SCF program [WIEN2k](http://www.wien2k.at/) using the
-    full-potential Augmented Plane Wave method.
+- The program accepts three sources of atomic potentials:
+  1. E. L. Shirley's atomic program [^6] applied together with Mattheiss's
+     superposition method.
+  2. The DFT-SCF program of V. Eyert using the full-potential
+     Augmented Spherical Wave method [^7].
+  3. The DFT-SCF program [WIEN2k](http://www.wien2k.at/) using the
+     full-potential Augmented Plane Wave method.
 
-+ The exchange-correlation interaction between the scattered electron and the
+- The exchange-correlation interaction between the scattered electron and the
   crystal's electron gas generates an energy-dependent inner potential.
   The phase shifts are referred to the in-crystal kinetic energy, and it is
   supposed that an associated LEED code uses the same standard.
-+ The crystal potential is everywhere continuous so as to exclude fortuitous
+- The crystal potential is everywhere continuous so as to exclude fortuitous
   standing-wave electron resonances in the muffin-tin spheres and pertaining
   fortuitous wobblings in the phase shift versus energy curves.
-+ The optimization of the muffin-tin radii is made using the method of
+- The optimization of the muffin-tin radii is made using the method of
   [Differential Evolution](https://en.wikipedia.org/wiki/Differential_evolution),
   an extremely efficient minimizer.
 
->[!NOTE]
+> [!NOTE]
 > A short EEASiSSS users guide is appended to the input template files
->`inputA` and `inputX` distributed with the program package.
+> `inputA` and `inputX` distributed with the program package.
 
 [^1]: J Rundgren, Phys. Rev. B 68, 125405 (2003).
+
 [^2]: J Rundgren, Phys. Rev. B 76, 195441 (2007).
-[^3]: E. A. Soares, C. M. C. De Castillho, and V. E. Carvalho, J. Phys.: Condens. Matter
-   23,303001 (2011).
-[^4]: R. Pentcheva, W. Moritz, J. Rundgren, S. Frank, D. Schrupp, and M. Scheffler, Surf. Sci
-   602, 1299 (2008).
-[^5]: V.B. Nascimento, R.G. Moore, J. Rundgren, J. Zhang, L. Cai, R. Jin, D.G. Mandrus,
-   and E.W. Plummer, Phys. Rev. B 75, 035408 (2007).
-[^6]: S. Kotochigova, Z. H. Levine, E. L. Shirley, M. D. Stiles, and C. W. Clark, Phys. Rev. B
-   55, 191 (1997).
+
+[^3]:
+    E. A. Soares, C. M. C. De Castillho, and V. E. Carvalho, J. Phys.: Condens. Matter
+    23,303001 (2011).
+
+[^4]:
+    R. Pentcheva, W. Moritz, J. Rundgren, S. Frank, D. Schrupp, and M. Scheffler, Surf. Sci
+    602, 1299 (2008).
+
+[^5]:
+    V.B. Nascimento, R.G. Moore, J. Rundgren, J. Zhang, L. Cai, R. Jin, D.G. Mandrus,
+    and E.W. Plummer, Phys. Rev. B 75, 035408 (2007).
+
+[^6]:
+    S. Kotochigova, Z. H. Levine, E. L. Shirley, M. D. Stiles, and C. W. Clark, Phys. Rev. B
+    55, 191 (1997).
+
 [^7]: R Storn and K. Price, J. Global Optimization 11, 341 (1997).
 
 Please contact John Rundgren <jru@kth.se> for queries, comments or suggestions
@@ -255,6 +267,13 @@ pip install -e '.[gui,dev,test]' # extra deps are only needed for development/te
 phsh --help
 ```
 
+To enable pre-commit hooks (recommended for local development):
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
 ### Windows Installation
 
 For Windows users, here's a step-by-step guide to install phaseshifts with all necessary build dependencies:
@@ -341,6 +360,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
 - **DLL import errors**: Try installing the Visual C++ Redistributable from Microsoft
 
 <!--lint disable no-unused-definitions-->
+
 > [!TIP]
 > Windows users can also use [Anaconda](https://www.anaconda.com/download) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) which includes most scientific packages and build tools pre-installed:
 >
@@ -349,6 +369,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
 > conda activate phaseshifts
 > pip install phaseshifts
 > ```
+
 <!--lint enable no-unused-definitions-->
 
 ### Details
@@ -538,7 +559,7 @@ A number of alternatives are available, notably the following:
    [cleedpy](https://github.com/empa-scientific-it/cleedpy).
 2. [ViPErLEED](https://github.com/viperleed/viperleed) is a modern LEED I(V)
    workflow covering spot tracking, extraction, and structural optimization.
-   See the 2025 package papers in *Phys. Rev. Research*:
+   See the 2025 package papers in _Phys. Rev. Research_:
    [Package I](https://doi.org/10.1103/PhysRevResearch.7.013005) and
    [Package II](https://doi.org/10.1103/PhysRevResearch.7.013006).
 3. Elastic Electron-Atom Scattering in Solids and Solid Surfaces
@@ -559,7 +580,8 @@ A number of alternatives are available, notably the following:
 
 > [!NOTE]
 > A pre-alpha EEASiSSS backend is now included in phaseshifts as an optional extra.
-> See https://phaseshifts.readthedocs.io/en/latest/eeasisss_package.html for usage details.
+> See [EEASiSSS package docs](https://phaseshifts.readthedocs.io/en/latest/eeasisss_package.html)
+> for usage details.
 > Ongoing work is tracked in [issue #92](https://github.com/Liam-Deacon/phaseshifts/issues/92).
 
 <!--lint enable no-unused-definitions-->

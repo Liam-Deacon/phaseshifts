@@ -4,10 +4,7 @@ import inspect
 import textwrap
 import re
 import pydoc
-from StringIO import StringIO
 from warnings import warn
-
-4
 
 
 class Reader(object):
@@ -115,7 +112,7 @@ class NumpyDocString(object):
         return self._parsed_data[key]
 
     def __setitem__(self, key, val):
-        if not self._parsed_data.has_key(key):
+        if key not in self._parsed_data:
             warn("Unknown section %s" % key)
         else:
             self._parsed_data[key] = val
@@ -188,8 +185,7 @@ class NumpyDocString(object):
         return params
 
     _name_rgx = re.compile(
-        r"^\s*(:(?P<role>\w+):`(?P<name>[a-zA-Z0-9_.-]+)`|"
-        r" (?P<name2>[a-zA-Z0-9_.-]+))\s*",
+        r"^\s*(:(?P<role>\w+):`(?P<name>[a-zA-Z0-9_.-]+)`| (?P<name2>[a-zA-Z0-9_.-]+))\s*",
         re.X,
     )
 
@@ -273,7 +269,7 @@ class NumpyDocString(object):
 
         summary = self._doc.read_to_next_empty_line()
         summary_str = " ".join([s.strip() for s in summary]).strip()
-        if re.compile("^([\w., ]+=)?\s*[\w\.]+\(.*\)$").match(summary_str):
+        if re.compile(r"^([\w., ]+=)?\s*[\w\.]+\(.*\)$").match(summary_str):
             self["Signature"] = summary_str
             if not self._is_at_section():
                 self["Summary"] = self._doc.read_to_next_empty_line()
@@ -319,7 +315,7 @@ class NumpyDocString(object):
 
     def _str_signature(self):
         if self["Signature"]:
-            return [self["Signature"].replace("*", "\*")] + [""]
+            return [self["Signature"].replace("*", r"\*")] + [""]
         else:
             return [""]
 
@@ -443,9 +439,9 @@ class FunctionDoc(NumpyDocString):
                 # try to read signature
                 argspec = inspect.getargspec(func)
                 argspec = inspect.formatargspec(*argspec)
-                argspec = argspec.replace("*", "\*")
+                argspec = argspec.replace("*", r"\*")
                 signature = "%s%s" % (func_name, argspec)
-            except TypeError as err:
+            except TypeError:
                 signature = "%s()" % func_name
             self["Signature"] = signature
 
@@ -461,12 +457,10 @@ class FunctionDoc(NumpyDocString):
         out = ""
 
         func, func_name = self.get_func()
-        signature = self["Signature"].replace("*", "\*")
-
         roles = {"func": "function", "meth": "method"}
 
         if self._role:
-            if not roles.has_key(self._role):
+            if self._role not in roles:
                 print("Warning: invalid role %s" % self._role)
             out += ".. %s:: %s\n \n\n" % (roles.get(self._role, ""), func_name)
 
@@ -493,11 +487,7 @@ class ClassDoc(NumpyDocString):
 
     @property
     def methods(self):
-        return [
-            name
-            for name, func in inspect.getmembers(self._cls)
-            if not name.startswith("_") and callable(func)
-        ]
+        return [name for name, func in inspect.getmembers(self._cls) if not name.startswith("_") and callable(func)]
 
     def __str__(self):
         out = ""

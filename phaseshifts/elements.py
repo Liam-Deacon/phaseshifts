@@ -185,14 +185,10 @@ class Element(object):
         isotopes = []
         for massnum in sorted(self.isotopes):
             iso = self.isotopes[massnum]
-            isotopes.append(
-                "%i: Isotope(%s, %s, %i)" % (massnum, iso.mass, iso.abundance, massnum)
-            )
+            isotopes.append("%i: Isotope(%s, %s, %i)" % (massnum, iso.mass, iso.abundance, massnum))
         isotopes = ",\n              ".join(isotopes)
 
-        description = word_wrap(
-            self.description, linelen=66, indent=0, joinstr=""" "\n        \""""
-        )
+        description = word_wrap(self.description, linelen=66, indent=0, joinstr=""" "\n        \"""")
         description = """    e['%s'].description = (\n        "%s\")""" % (
             self.symbol,
             description,
@@ -201,8 +197,7 @@ class Element(object):
 
         result = [
             "Element(\n    %i, '%s', '%s'" % (self.number, self.symbol, self.name),
-            "group=%s, period=%s, block='%s', series=%i"
-            % (self.group, self.period, self.block, self.series),
+            "group=%s, period=%s, block='%s', series=%i" % (self.group, self.period, self.block, self.series),
             "mass=%s, eleneg=%s, eleaffin=%s" % (self.mass, self.eleneg, self.eleaffin),
             "covrad=%s, atmrad=%s, vdwrad=%s" % (self.covrad, self.atmrad, self.vdwrad),
             "tboil=%s, tmelt=%s, density=%s" % (self.tboil, self.tmelt, self.density),
@@ -266,13 +261,9 @@ class Element(object):
         assert self.series in SERIES
 
         if self.number != self.protons:
-            raise ValueError(
-                "%s - atomic number must equal proton number" % self.symbol
-            )
+            raise ValueError("%s - atomic number must equal proton number" % self.symbol)
         if self.protons != sum(self.eleshells):
-            raise ValueError(
-                "%s - number of protons must equal electrons" % self.symbol
-            )
+            raise ValueError("%s - number of protons must equal electrons" % self.symbol)
 
         mass = 0.0
         frac = 0.0
@@ -280,10 +271,7 @@ class Element(object):
             mass += iso.abundance * iso.mass
             frac += iso.abundance
         if abs(mass - self.mass) > 0.03:
-            raise ValueError(
-                "%s - average of isotope masses (%.4f) != mass (%.4f)"
-                % (self.symbol, mass, self.mass)
-            )
+            raise ValueError("%s - average of isotope masses (%.4f) != mass (%.4f)" % (self.symbol, mass, self.mass))
         if abs(frac - 1.0) > 1e-9:
             raise ValueError("%s - sum of isotope abundances != 1.0" % self.symbol)
 
@@ -345,7 +333,7 @@ class ElementsDict(Mapping):
             try:
                 start, stop, step = key.indices(len(self._list))
                 return self._list[slice(start - 1, stop - 1, step)]
-            except:
+            except Exception:
                 raise KeyError
 
 
@@ -4029,8 +4017,7 @@ def _descriptions(symbol):
         "considered highly toxic. May cause lung cancer if inhaled."
     )
     e["Cr"].description = (
-        "Hard silvery transition element. Used in decorative "
-        "electroplating. Discovered in 1797 by Vauquelin."
+        "Hard silvery transition element. Used in decorative electroplating. " + "Discovered in 1797 by Vauquelin."
     )
     e["Mn"].description = (
         "Grey brittle metallic transition element. Rather "
@@ -4053,10 +4040,7 @@ def _descriptions(symbol):
         "radioactive tracer and cancer-treatment agent. Discovered by G. "
         "Brandt in 1737."
     )
-    e["Ni"].description = (
-        "Malleable ductile silvery metallic transition element. "
-        "Discovered by A.F. Cronstedt in 1751."
-    )
+    e["Ni"].description = "Malleable ductile silvery metallic transition element. Discovered by A.F. Cronstedt in 1751."
     e["Cu"].description = (
         "Red-brown transition element. Known by the Romans as 'cuprum.' "
         "Extracted and used for thousands of years. Malleable, ductile and "
@@ -4823,7 +4807,7 @@ def sqlite_script():
     for key, (label, descr) in GROUPS.items():
         sql.append(
             """INSERT INTO "group" VALUES (%i, '%s', '%s');""" % (key, label, descr)
-        )
+        )  # nosec - static data, not user input
 
     for data in BLOCKS.items():
         sql.append("""INSERT INTO "block" VALUES ('%s', '%s');""" % data)
@@ -4831,7 +4815,7 @@ def sqlite_script():
     for series in sorted(SERIES):
         sql.append(
             """INSERT INTO "series" VALUES (%i, '%s', '');""" % (series, SERIES[series])
-        )
+        )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         sql.append(
@@ -4875,19 +4859,19 @@ def sqlite_script():
             sql.append(
                 """INSERT INTO "isotope" VALUES (%i, %i, %.10f, %.8f);"""
                 % (ele.number, iso.massnumber, iso.mass, iso.abundance)
-            )
+            )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         for (shell, subshell), count in ele.eleconfig_dict.items():
             sql.append(
-                """INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);"""
+                """INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);"""  # nosec - static data, not user input
                 % (ele.number, shell, subshell, count)
             )
 
     for ele in ELEMENTS:
         for i, ionenergy in enumerate(ele.ionenergy):
             sql.append(
-                """INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);"""
+                """INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);"""  # nosec - static data, not user input
                 % (ele.number, i + 1, ionenergy)
             )
 

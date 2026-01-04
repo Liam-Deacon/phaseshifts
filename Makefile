@@ -254,3 +254,18 @@ venv:
 	uv pip install -e '.[dev,test,doc]'
 	@echo "Virtual environment created in 'venv/'"
 	@echo "Activate it with: source venv/bin/activate"
+
+#: Build WebAssembly version (requires Emscripten + f2c)
+.PHONY: wasm wasm-clean wasm-serve
+wasm:
+	@echo "Building WebAssembly version..."
+	cd wasm && ./build.sh
+
+#: Clean WebAssembly build artifacts
+wasm-clean:
+	rm -rf wasm/build wasm/dist
+
+#: Serve WASM web interface locally
+wasm-serve:
+	@echo "Starting local server at http://localhost:8080/web/"
+	cd wasm && $(PYTHON) -m http.server 8080

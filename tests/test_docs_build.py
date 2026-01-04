@@ -32,12 +32,8 @@ def docs_build_available():
     return sphinx_installed() and numpydoc_installed()
 
 
-@pytest.mark.skipif(
-    not docs_build_available(), reason="Sphinx/numpydoc is not installed"
-)
+@pytest.mark.skipif(not docs_build_available(), reason="Sphinx/numpydoc is not installed")
 def test_docs_html_build():
-    result = subprocess.run(
-        ["make", "html"], cwd=DOCS_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
+    result = subprocess.run(["make", "html"], cwd=DOCS_DIR, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     assert result.returncode == 0, f"make html failed: {result.stderr.decode()}"
     assert os.path.isfile(HTML_INDEX), "HTML index file not found after build"

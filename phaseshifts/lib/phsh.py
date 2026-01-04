@@ -49,9 +49,7 @@ def phsh_cav(mufftin_file, phasout_file, dataph_file):
         for ix in range(1, ntab + 1):  # 19
             rx[ix], v[ix] = mtz.readline().split()  # 219
         zph.write("{} {} {} {}".format(name, z, rmt, mtz))  # 200
-        phasout.write(
-            "non-relativistic phase shifts for %s\n" % "".join([part for part in name])
-        )
+        phasout.write("non-relativistic phase shifts for %s\n" % "".join(name))
         phasout.write("  %9.4f  %9.4f  %3i  %3i\n" % (emin, estep, ianz, nl))
         e = emin
         ncount = 0
@@ -124,7 +122,6 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
     # tabulation of spherical Bessel functions in bj and bn
     es = sqrt(e)
     x = es * rad
-    z = x
     ll = nl + 1
     calcbf(bj, bn, ll, x)
 
@@ -138,7 +135,7 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
         ff = fl2 * fl2
         y1 = pow(x1, fl2)
         y2 = exp(dx * fl2) * y1
-        zph.write("0l?%5.1fy1,y2?%14.5f%14.5f\n".format(fl, y1, y2))  # 60
+        zph.write("0l?%5.1fy1,y2?%14.5f%14.5f\n" % (fl, y1, y2))  # 60
         gam1 = ff + rx[0] * rx[0] * (v[0] - e)
         gam2 = ff + rx[1] * rx[1] * (v[1] - e)
         wf[0] = y1 * sqrt(rx[0])
@@ -171,12 +168,7 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
 
         for i in range(5):  # 5
             term = (
-                a
-                / (x - xr[i])
-                / (xr[i] - xr[i + 1])
-                / (xr[i] - xr[i + 2])
-                / (xr[i] - xr[i + 3])
-                / (xr[i] - xr[i + 4])
+                a / (x - xr[i]) / (xr[i] - xr[i + 1]) / (xr[i] - xr[i + 2]) / (xr[i] - xr[i + 3]) / (xr[i] - xr[i + 4])
             )
             sum = 0.0
 
@@ -320,21 +312,10 @@ def phsh_wil(
                 tlp1 = 2 * l + 1
                 t5 = pow(r[nr], lp1)
                 ut = f[tlp1][ilst] / tx + float(l) * y[tlp1][ilst] / r[nr]
-                t1 = (
-                    f44(l, t4) * y[2 * lp1][ilst]
-                    + t3 * f44(lp1, t4) * y[tlp1][ilst] * t5
-                )
-                t2 = (
-                    (f45(l, t4) * ut - t3 * f45(l - 1, t4) * y[tlp1][ilst]) * r[nr] / t5
-                )
+                t1 = f44(l, t4) * y[2 * lp1][ilst] + t3 * f44(lp1, t4) * y[tlp1][ilst] * t5
+                t2 = (f45(l, t4) * ut - t3 * f45(l - 1, t4) * y[tlp1][ilst]) * r[nr] / t5
                 s[i][lp1] = t1
                 c[i][lp1] = t2
-
-            iss = 2
-            i4 = 9
-            if ip < 1:
-                pass
-                # go to 15
 
             # produce phase shifts
             for lp in range(1, nl + 1):  # 8
@@ -346,19 +327,9 @@ def phsh_wil(
 
                 # remove discontinuities by multiples of pi
                 for lp in range(1, nl + 1):
-                    ls = 0
                     deldif = delta[lp] - delold[lp]  # label 111
 
-                if abs(deldif) < 0.7:
-                    # go to 117
-                    pass
-
-                ls += 1
                 delta[lp] = delta[lp] - (copysign(pi, deldif) * abs(pi))
-
-                if ls < 5:
-                    # go to 111
-                    pass
 
                 zph.write(
                     "too large change in phase shift [l = {l}]"
@@ -371,9 +342,7 @@ def phsh_wil(
 
         # print phase shifts
         for lp in range(1, nl + 1):
-            zph.write(
-                "%14.7e%14.7e\n" % (e[i], delta[lp])
-            )  # format(1p8e14.7,  / , 14x, 1p7e14.7,  / )
+            zph.write("%14.7e%14.7e\n" % (e[i], delta[lp]))  # format(1p8e14.7,  / , 14x, 1p7e14.7,  / )
             # write phase shifts in format used by leed program
             # 71    format(1f7.4)
             # 72    format(10f7.4)
@@ -393,9 +362,7 @@ def phsh_wil(
             for kk in range(1, nl + 1):  # 145
                 dataph.write('"l = %2i\n' % kk - 1)  # format(3h"l = ,i2)
                 for ii in range(1, ne + 1):  # 146
-                    dataph.write(
-                        "{e} {delta}\n".format(e=e[ii], delta=delstore[kkk][ii][kk])
-                    )
+                    dataph.write("{e} {delta}\n".format(e=e[ii], delta=delstore[kkk][ii][kk]))
                 dataph.write("\n")  # 15 continue
         # 2 continue
 
@@ -442,20 +409,15 @@ def s16(r, rt, v, z, mtz=sys.stdin, zph=sys.stdout):
     potyp = 1: radial input as v[r)
     potyp = 2: radial input as r*v[r)
     """
-    # common / cm16 / e1, e2, ne, ix, neuo
-    # common / cmrv / r, v, nr, nl, z
     # dimension r(201), v[201, 15)
     rs = zs = ztt = [None] * 202
-    fmt = [None] * 18
     # set default values of variables in namelist  / nl16 /
     ix = 1
     e1 = 4.0
     e2 = 24.0
-    ne = 30
     nl = 9
     nr = 101
     neui = 1
-    neuo = 2
     potyp = 2
     if mtz == sys.stdin:  # read from standard input
         nl16 = mtz.readline()
@@ -478,9 +440,7 @@ def s16(r, rt, v, z, mtz=sys.stdin, zph=sys.stdout):
     # read format used for input of r vs. v[r) or r vs. r*v[r)
     # (v is assumed positive)
     for i in range(1, 200 + 1):  # 16
-        rs[i], zs[i] = [
-            t(s) for t, s in zip((float, float), mtz.readline().split()[:1])
-        ]
+        rs[i], zs[i] = [t(s) for t, s in zip((float, float), mtz.readline().split()[:1])]
         # the next lines assume that the input potential and cs are negative
         zs[i] = -zs[i]
         if rs[i] < 0:
@@ -535,9 +495,7 @@ def f12(x, y, z, n):
             k = ip1 - j
             w[k] = w[k + 1] + u * (w[k] - w[k + 1]) / (x[k] - x[i])
 
-    f12 = w[1]
-
-    return
+    return w[1]
 
 
 def s5(e, nl, nr, v, r, f, y):
@@ -556,7 +514,7 @@ def s5(e, nl, nr, v, r, f, y):
 
     for i in range(5, nr + 1):
         for lp1 in range(1, nl + 1):
-            vme[lp1] = (v[i, lp1] - e) * r[i]
+            vme[lp1] = (v[i][lp1] - e) * r[i]
         t1 = 2.0 / (i - 1.0)
         ip1 = (i - 1 % 4) + 1
         im2 = (ip1 % 4) + 1
@@ -575,16 +533,8 @@ def s5(e, nl, nr, v, r, f, y):
             f[jp1][ip1] = (vme[lp1] * y[j][ip1] - flp1 * y[jp1][ip1]) * t1
 
         for j in range(1, nj + 1):
-            y[j][ip1] = (
-                y[j][ip0]
-                + (
-                    y[j][ip0]
-                    - y[j][im2]
-                    + 3.0 * (f[j][ip1] + 2.0 * f[j][ip0] - f[j][im1])
-                )
-                / 8.0
-            )
-            eest[j] = f(j, im2) - y(j, ip1)
+            y[j][ip1] = y[j][ip0] + (y[j][ip0] - y[j][im2] + 3.0 * (f[j][ip1] + 2.0 * f[j][ip0] - f[j][im1])) / 8.0
+            eest[j] = f[j][im2] - y[j][ip1]
             y[j][ip1] += 0.743801653e-1 * eest[j]
 
         for j in range(1, nj + 1, 2):
@@ -636,7 +586,7 @@ def s10(e, cmrv, r, v, nr, nl, z, cm5, y, f, ilst, zph=sys.stdout):
                 break
 
         for k in range(1, 10):
-            zph.write(" %10.2pe%10i 11%e10.2e" % (e, lp1, r[4], a[k]))
+            zph.write(" %10.2e%10i %11e%10.2e" % (e, lp1, r[4], a[k]))
             # 4  format(1pe10.2, i10, 11e10.2)
 
     for j in range(2, 4 + 1):  # 6
@@ -711,7 +661,6 @@ def f45(l, x):
     if l < 0:
         return -f44(l + 1, x)
 
-    lp1 = l + 1
     js = l + l + 1
 
     if abs(x / float(js)) <= 10.0:
@@ -824,43 +773,14 @@ def phsh_rel(
     jf = [[None] * 19] * 251
     energ = [None] * 251
 
-    # common / zzzz / zp(340),vs,ipt,jri
-    # common  / z /  rmaxi
-
     adata = [None] * 7
 
     zero = 0.0
     one = 1.0
-    two = 2.0
-    anine = 9.0
     half = 0.5
-    zilch = 1.0e-4
-    tol = 0.005e0
     des = 0.025e0
-    ams = "nc =  ", "l =  ", " es = ", " de = ", "id =  "
-    tl = "l"
-    sl = "s"
-    ss1 = "nospin"
-    ss2 = " spin "
-    sub = "sub"
-    record = "nos"
-
-    opt = opt1 = opts = None  # dummy variables
+    opt = opt1 = None  # dummy variables
     rmaxi = lsm1 = 1  # dummy
-
-    """
-    1 format (3d12.4,4x,i3,4x,d12.4)
-    2 format (5e14.6)
- 3    format    ( / / / ,10x,a6, / / /  / ,10x,18hmuffin-tin radius = ,
-     1f10.6,4x,14hconstant pot. = ,f10.6, /  / ,10x,'atomic data set for z = ',
-     2i3,' and l = ',i3,4x,'     ',a2, /  / ,14x,5he(ev),12x,7hl - 0.5,13x,
-     37hl + 0.5,12x,10hs-averaged, / )
-  4   format (10x,f10.6,3f20.8)
-  9   format (1x,a1,i3,3d15.7,22x,a3)
-   12 format (5d14.6)
-   15 format (a28,t29,a2,t35,a30,t65,f10.7,t76,a3)
-   17 format (1h1, / ,10x,'relativistic phase shifts for ',a30, /  / ,10x,'exca  = ',f10.6,4x,'excb  = ',f10.6,4x,'exco  = ',f10.6 /  / ,10x,'lattice constant  = ',f10.6,' ,',f10.6,' ,',f10.6)
-    """
 
     # sort input and output streams
     inpdat = open(inpdat_file, "w")  # unit=4
@@ -870,27 +790,18 @@ def phsh_rel(
 
     inpdat.write("input data\n")  # 13 format (1h1, /  / ,t61,'input data',)
     name = mtz.readline().split()  # 10
-    (es, de, ue, lsm, vc) = [
-        t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())
-    ]
+    (es, de, ue, lsm, _vc) = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
 
     nl = 8  # nl is the number of plotted phase shifts
     inpdat.write("%12.4d%12.4d%12.4d    %s%s%3i\n" % (es, de, ue, opt, opt1, lsm))
 
     # 75 format (a28, a2, 4x, a30, f10.7, 1x, a3)
-    (nz, adata[1], jri, alc, blc, clc, exca, excb, exco) = slices(
-        mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10
-    )
+    (nz, adata[1], jri, alc, blc, clc, exca, excb, exco) = slices(mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10)
     # 16 format (i4,f10.6,i4,t21,6f10.6)
     inpdat.write(
-        "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f"
-        % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
+        "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f" % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
     )  # 4,76
     # 76 format (i4,f10.6,i4,2x,6f10.6)
-    vs = 0.0
-
-    if opts == sub:
-        vs = vc
 
     if jri <= 0 or jri > 340:
         inpdat.write("# end of input data\n")
@@ -917,9 +828,7 @@ def phsh_rel(
     n = (ue - es) / de + half
     n += 1
 
-    phasout.write(
-        "relativistic phase shifts for {}\n".format("".join([s for s in name]))
-    )
+    phasout.write("relativistic phase shifts for {}\n".format("".join(name)))
     phasout.write("%10.4f%9.4f%5i%5i\n" % (es, de, n, lsm))
 
     es /= 13.6
@@ -931,19 +840,11 @@ def phsh_rel(
 
     l = 0
     e = es
-    ipt = 2
-
-    if opt == record:
-        ipt = -2  # label 23
-        wrd = ss1
-    else:
-        wrd = ss2
 
     kap = -1
     l = 1
 
     for j in range(1, n + 1):  # label 30
-        dxaz = 0.0
         ttr = dlgkap[e][kap] / 12.5663706
         sbfit(ttr, e, l - 1, rmaxi, jfs)
         jf[j][l] = jfs
@@ -951,10 +852,6 @@ def phsh_rel(
         energ[j] = e
         e /= 13.6
         e += de
-
-    if l > lsm:  # label 40
-        # go to 80
-        pass
 
     kap = -(l + 1)
     lind = l + 1
@@ -990,13 +887,9 @@ def phsh_rel(
             e += de
 
     l += 1
-    # go to 40
     for i in range(1, n + 1):  # 90 or 80
         lsm1 += 1
-        phasout.write(
-            "%9.4f%s\n"
-            % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)]))
-        )
+        phasout.write("%9.4f%s\n" % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)])))  # noqa: E741
 
     for kk in range(1, nl + 1):  # label 145
         dataph.write('"l = %2i\n' % kk - 1)
@@ -1009,12 +902,11 @@ def phsh_rel(
         es *= 13.6
         de *= 13.6
         ue *= 13.6
-        # go to 10
         continue  # 999
 
     inpdat.write("# end of input data\n")
 
-    return
+    return jfs
 
 
 def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
@@ -1051,7 +943,6 @@ def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
     t14 = 14.0e0
     t26 = 26.0e0
     t32 = 32.0e0
-    # zero = 0.1e+0
 
     # 83 format (10h hard test,d20.8, i5, 4d20.8 )
     # **********set up for relativistic or no relativistic effect************
@@ -1127,27 +1018,15 @@ def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
         nm5 = n - 5
         tc = (e + vcz) * t + pot[np1]
         vc = cin * tc
-        unp = u[nm5] + x20 * (
-            t11 * (up[n] + up[nm4]) + t26 * up[nm2] - c - t14 * (up[nm1] + up[nm3])
-        )  # label 27
-        wnp = w[nm5] + x20 * (
-            t11 * (wp[n] + wp[nm4]) + t26 * wp[nm2] - c - t14 * (wp[nm1] + wp[nm3])
-        )
+        unp = u[nm5] + x20 * (t11 * (up[n] + up[nm4]) + t26 * up[nm2] - c - t14 * (up[nm1] + up[nm3]))  # label 27
+        wnp = w[nm5] + x20 * (t11 * (wp[n] + wp[nm4]) + t26 * wp[nm2] - c - t14 * (wp[nm1] + wp[nm3]))
         nit = 0
 
         while n < jri:
             up[np1] = (vc + t) * wnp - xk * unp  # label 33
             wp[np1] = xk * wnp - tc * unp
-            unp2 = (
-                u[nm3]
-                + (t7 * (up[np1] + up[nm3]) + t32 * (up[nm2] + up[n]) + t12 * up[nm1])
-                - c * xmft
-            )
-            wnp2 = (
-                w[nm3]
-                + (t7 * (wp[np1] + wp[nm3]) + t32 * (wp[nm2] + wp[n]) + t12 * wp[nm1])
-                - c * xmft
-            )
+            unp2 = u[nm3] + (t7 * (up[np1] + up[nm3]) + t32 * (up[nm2] + up[n]) + t12 * up[nm1]) - c * xmft
+            wnp2 = w[nm3] + (t7 * (wp[np1] + wp[nm3]) + t32 * (wp[nm2] + wp[n]) + t12 * wp[nm1]) - c * xmft
 
             # compare predictor with corrector
             if abs(test * (unp2 - unp)) > abs(unp2):
@@ -1207,4 +1086,4 @@ def sbfit(t, e, l, r, jfs):
     if abs(ad) - 1.0e-8 > 0:
         jfs = atan(an / ad)
 
-    return
+    return jfs

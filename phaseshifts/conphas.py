@@ -54,14 +54,13 @@ Examples
 
 import ntpath
 import os
-import sys
 import platform
 import re
 from numpy import loadtxt
 from math import pi
 from getpass import getuser
 from time import gmtime, strftime
-from copy import copy, deepcopy
+from copy import deepcopy
 
 # Constants
 HARTREE = 27.21  # 139 eV in Van Hove LEED program
@@ -87,15 +86,7 @@ class Conphas:
 
     """
 
-    def __init__(
-        self,
-        input_files=[],
-        output_file=[],
-        formatting=None,
-        lmax=10,
-        v0_params=None,
-        **kwargs
-    ):
+    def __init__(self, input_files=None, output_file=None, formatting=None, lmax=10, v0_params=None, **kwargs):
         """
         Parameters
         ----------
@@ -112,9 +103,11 @@ class Conphas:
             (default None)
 
         """
-        self.input_files = [
-            filename for filename in input_files if os.path.isfile(filename)
-        ]
+        if input_files is None:
+            input_files = []
+        if output_file is None:
+            output_file = []
+        self.input_files = [filename for filename in input_files if os.path.isfile(filename)]
         self.output_file = os.path.abspath(str(output_file))
         if int(lmax) >= 0 and int(lmax) <= 18:
             self.lmax = int(lmax)
@@ -161,22 +154,17 @@ class Conphas:
         try:
             with open(filename) as f:
                 data = []
-                data = [
-                    data.append(line.replace("-", " -").replace("\n", "").split())
-                    for line in f
-                ]
+                data = [data.append(line.replace("-", " -").replace("\n", "").split()) for line in f]
                 data = "".join(line.replace("-", " -").rstrip() for line in f)
                 filename = "C:\\Users\\Liam\\Desktop\\leedph.d"
                 data = "".join(line.rstrip() for line in f)
-            self.data = loadtxt(
-                "C:\\Users\\Liam\\Desktop\\leedph.d", dtype=float, comments="#"
-            )
+            self.data = loadtxt("C:\\Users\\Liam\\Desktop\\leedph.d", dtype=float, comments="#")
         except IOError:
             assert IOError
 
     # Set internal data for conphas
     def __set_data(self, data=None):
-        if data != None:
+        if data is not None:
             self.data = data
 
     # Load phase shift data from file
@@ -204,84 +192,77 @@ class Conphas:
 
         """
         with open(filename, "r") as f:
-            title = f.readline()  # skip first line
+            f.readline()  # skip first line
             (initial_energy, energy_step, n_phases, lmf) = [
-                t(s)
-                for (t, s) in zip(
-                    (float, float, int, int), f.readline().replace("-", " -").split()
-                )
+                t(s) for (t, s) in zip((float, float, int, int), f.readline().replace("-", " -").split())
             ]
             # get parameters
-            data_lines = [
-                line.replace("-", " -").replace("\n", "") for line in f.readlines()
-            ]
+            data_lines = [line.replace("-", " -").replace("\n", "") for line in f.readlines()]
             data = [float(number) for number in "".join(data_lines).split()]
         return (initial_energy, energy_step, n_phases, lmf, data)
 
     @staticmethod
-    def split_phasout(filename, output_filenames=[]):
+    def split_phasout(filename, output_filenames=None):
         """split phasout input file into separate files"""
+        if output_filenames is None:
+            output_filenames = []
+        lines = Conphas._read_phasout_lines(filename)
+        phsh_list = Conphas._get_phasout_indices(lines)
+        guessed_filenames = Conphas._guess_phasout_filenames(lines, phsh_list)
+        phsh_filenames = Conphas._resolve_phasout_filenames(output_filenames, guessed_filenames, phsh_list)
+        Conphas._write_phasout_files(lines, phsh_list, phsh_filenames)
+        return phsh_filenames[: len(phsh_list)]  # return written files
+
+    @staticmethod
+    def _read_phasout_lines(filename):
         try:
             with open(filename, "r") as phasout:
-                lines = phasout.readlines()
-
+                return phasout.readlines()
         except IOError:
-            assert IOError("Cannot open file '%s'" % filename)
+            raise IOError("Cannot open file '%s'" % filename)
 
-        # get list of phase shifts in phasout
-        phsh_list = []
-        [
-            phsh_list.append(i)
-            for (i, line) in enumerate(lines)
-            if re.match("^[A-Za-z]", line.replace(" ", ""))
-        ]
+    @staticmethod
+    def _get_phasout_indices(lines):
+        indices = []
+        for i, line in enumerate(lines):
+            if re.match("^[A-Za-z]", line.replace(" ", "")):
+                indices.append(i)
+        return indices
 
-        # try to guess filenames from header lines in file
-        guessed_filenames = [
-            lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "")
-            + ".ph"
-            for i in phsh_list
-        ]
+    @staticmethod
+    def _guess_phasout_filenames(lines, indices):
+        return [lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "") + ".ph" for i in indices]
 
-        # determine list of output filenames
-        phsh_filenames = []
+    @staticmethod
+    def _resolve_phasout_filenames(output_filenames, guessed_filenames, indices):
         if isinstance(output_filenames, list):
-            # generate list of filenames from list
             phsh_filenames = [name for name in output_filenames]
-            if len(phsh_filenames) < len(phsh_list):  # not enough names
-                for i in range(len(phsh_filenames), len(phsh_list)):
-                    phsh_filenames.append(guessed_filenames[i])
-        elif isinstance(output_filenames, str):
-            # generate list of filenames from trunk filename
-            output_filenames = os.path.splitext(output_filenames)[0]
-            phsh_filenames = [
-                output_filenames + "_%i.ph" % i for i, name in enumerate(phsh_filenames)
-            ]
-        else:
-            # try to guess from header lines in file
-            phsh_filenames = guessed_filenames
+            if len(phsh_filenames) < len(indices):
+                phsh_filenames.extend(guessed_filenames[len(phsh_filenames) :])
+            return phsh_filenames
+        if isinstance(output_filenames, str):
+            base = os.path.splitext(output_filenames)[0]
+            return [base + "_%i.ph" % i for i in range(len(indices))]
+        return guessed_filenames
 
-        # write separate files for each phase shift
-        phsh_list.append(len(lines))
-        for i_phsh in range(1, len(phsh_list)):
+    @staticmethod
+    def _write_phasout_files(lines, phsh_list, phsh_filenames):
+        indices = list(phsh_list) + [len(lines)]
+        for i_phsh in range(1, len(indices)):
             try:
                 with open(phsh_filenames[i_phsh - 1], "w") as phsh_file:
-                    [
+                    for i in range(indices[i_phsh - 1], indices[i_phsh]):
                         phsh_file.write(lines[i])
-                        for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh])
-                    ]
             except IOError:
                 raise IOError
 
-        return phsh_filenames[: len(phsh_list) - 1]  # return written files
-
-    def set_input_files(self, input_files=[]):
+    def set_input_files(self, input_files=None):
         """set list of input filenames"""
+        if input_files is None:
+            input_files = []
         if input_files:
             input_files = [self.__fix_path(filename) for filename in input_files]
-            temp_input_files = [
-                filename for filename in input_files if ntpath.isfile(filename)
-            ]
+            temp_input_files = [filename for filename in input_files if ntpath.isfile(filename)]
             if temp_input_files is not None and temp_input_files != []:
                 self.input_files = temp_input_files
 
@@ -359,8 +340,7 @@ class Conphas:
             return tuple(float(value) for value in params[:4])
         except (TypeError, ValueError) as exc:
             raise ValueError(
-                "Invalid v0_params configuration: all first four elements must be "
-                "numeric, got {!r}".format(params)
+                "Invalid v0_params configuration: all first four elements must be " "numeric, got {!r}".format(params)
             ) from exc
 
     def _write_viper_output(self, file_handle, conpha, energy, n_phases):
@@ -381,18 +361,14 @@ class Conphas:
         n_blocks = len(self.input_files)
         c0, c1, c2, c3 = self._resolve_v0_params()
         timestamp = strftime("%y%m%d-%H%M%S", gmtime())
-        file_handle.write(
-            f"{n_blocks:d} {c0:8.2f} {c1:8.2f} {c2:8.2f} {c3:8.2f} phaseshifts {timestamp}\n"
-        )
+        file_handle.write(f"{n_blocks:d} {c0:8.2f} {c1:8.2f} {c2:8.2f} {c3:8.2f} phaseshifts {timestamp}\n")
 
         for ie in range(n_phases):
             file_handle.write(f"{energy[ie] / HARTREE:7.4f}\n")
             for ii in range(len(self.input_files)):
                 block = [conpha[ii][ie][l] for l in range(self.lmax + 1)]
                 for chunk in self._chunked(block):
-                    file_handle.write(
-                        " ".join(f"{value:7.4f}" for value in chunk).rstrip() + "\n"
-                    )
+                    file_handle.write(" ".join(f"{value:7.4f}" for value in chunk).rstrip() + "\n")
 
     # process to create continuous phase shifts
     def calculate(self):
@@ -431,17 +407,10 @@ class Conphas:
 
         # read phase scattering
         for i, input_file in enumerate(self.input_files):
-            (initial_energy, energy_step, n_phases, lmf, data) = self.load_data(
-                input_file
-            )
+            (_, _energy_step, n_phases, lmf, data) = self.load_data(input_file)
 
             if n_phases > 250:
                 n_phases = 250
-            if i == 0:
-                initial_energy0 = copy(initial_energy)
-                energy_step0 = copy(energy_step)
-                n_phases0 = copy(n_phases)
-                lmf0 = copy(lmf)
 
             # increase dimensions of array for input
             phas.append([])
@@ -479,19 +448,11 @@ class Conphas:
                     if dif >= pi / 2.0:
                         ifak -= 1
                         if VERBOSE:
-                            print(
-                                "jump between {} eV and {} eV; IFAK = {}".format(
-                                    energy[ie - 1], energy[ie], ifak
-                                )
-                            )
+                            print("jump between {} eV and {} eV; IFAK = {}".format(energy[ie - 1], energy[ie], ifak))
                     elif dif <= -pi / 2.0:
                         ifak += 1
                         if VERBOSE:
-                            print(
-                                "jump between {} eV and {} eV; IFAK = {}".format(
-                                    energy[ie - 1], energy[ie], ifak
-                                )
-                            )
+                            print("jump between {} eV and {} eV; IFAK = {}".format(energy[ie - 1], energy[ie], ifak))
                     conpha[i][ie][l] = phas[i][ie][l] + (pi * ifak)
 
             # get root name of output
@@ -499,12 +460,10 @@ class Conphas:
                 root = os.path.dirname(self.input_files[i])
                 name = os.path.splitext(os.path.basename(self.input_files[i]))[0]
                 dataph = os.path.join(root, str("dataph_" + name + ".d"))
-                leedph = os.path.join(root, str("leedph_" + name + ".d"))
             else:
                 root = os.path.dirname(self.output_file)
                 name = os.path.splitext(os.path.basename(self.output_file))[0]
                 dataph = os.path.join(root, "dataph_{0}_{1}.d".format(name, i))
-                leedph = os.path.join(root, "leedph_{0}_{1}.d".format(name, i))
 
             # write datafile 'dataph.d'
             try:
@@ -512,10 +471,7 @@ class Conphas:
                     for kk in range(0, self.lmax + 1):
                         f.write('"L = {0}\n'.format(kk))
                         for ii in range(0, n_phases):
-                            f.write(
-                                "%9.7f\t%9.7f\n"
-                                % (energy[ii] / HARTREE, conpha[i][ii][kk])
-                            )
+                            f.write("%9.7f\t%9.7f\n" % (energy[ii] / HARTREE, conpha[i][ii][kk]))
                         f.write("\n")
             except IOError:
                 from tempfile import gettempdir
@@ -525,10 +481,7 @@ class Conphas:
                     for kk in range(self.lmax + 1):
                         f.write('"L = {0}\n'.format(kk))
                         for ii in range(0, n_phases):
-                            f.write(
-                                "%9.7f\t%9.7f\n"
-                                % (energy[ii] / HARTREE, conpha[i][ii][kk])
-                            )
+                            f.write("%9.7f\t%9.7f\n" % (energy[ii] / HARTREE, conpha[i][ii][kk]))
                         f.write("\n")
 
         fmt = str(self.format).lower()
@@ -537,9 +490,7 @@ class Conphas:
                 self._write_viper_output(f, conpha, energy, n_phases)
             elif fmt == "curve":
                 # write output in "x y y ..." format
-                f.write(
-                    "# phase shift curve: %s\n" % os.path.basename(self.output_file)
-                )
+                f.write("# phase shift curve: %s\n" % os.path.basename(self.output_file))
                 f.write("#energy ")
                 for l in range(self.lmax + 1):
                     f.write("l=%i " % l)

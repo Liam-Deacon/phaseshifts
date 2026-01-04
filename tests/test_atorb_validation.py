@@ -1,6 +1,9 @@
+import io
+from configparser import ConfigParser
+
 import pytest
 
-from phaseshifts.atorb import Atorb, validate_atorb_file
+from phaseshifts.atorb import Atorb, get_substr_positions, validate_atorb_file
 from phaseshifts.validation.atorb import (
     AtorbElectron,
     AtorbInputModel,
@@ -20,9 +23,7 @@ def test_gen_input_cl_has_safe_comment_spacing(tmp_path):
     for line in orbital_lines:
         assert "!" in line
         bang_index = line.index("!")
-        assert line[
-            bang_index - 1
-        ].isspace(), "Inline comments must be separated from data by whitespace"
+        assert line[bang_index - 1].isspace(), "Inline comments must be separated from data by whitespace"
 
     validated = Atorb.validate_input_file(str(dest))
     assert validated.nlevels == len(validated.orbitals) == 7
@@ -224,9 +225,7 @@ def test_parser_failure_modes(tmp_path):
     check_failure("i\n1 100\nd\n1\nx\n0.d0\nz", "Expected 'a' line")
 
     # Unexpected EOF before a
-    check_failure(
-        "i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'"
-    )
+    check_failure("i\n1 100\nd\n1\nx\n0.d0", "Unexpected end of file while expecting 'a'")
 
     # Bad SCF
     check_failure("i\n1 100\nd\n1\nx\n0.d0\na\nbad", "Unable to parse SCF")
@@ -277,17 +276,13 @@ def test_render_with_header(tmp_path):
 
     content = dest.read_text()
     assert "Custom Header" in content
-    assert (
-        "atorb input file" not in content
-    )  # Should override default if present, or at least appear
+    assert "atorb input file" not in content  # Should override default if present, or at least appear
 
 
 def test_validate_comment_spacing_at_start(tmp_path):
     # ! at start of line should be fine (no preceding char to check)
     f = tmp_path / "comment_start.txt"
-    f.write_text(
-        "i\n!comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq"
-    )
+    f.write_text("i\n!comment\n1 100\nd\n1\nx\n0.d0\na\n0 1 0.5 1e-5 100\n1 0 0 0.5 1 1.0\nw\nout.i\nq")
 
     # We just want to ensure it doesn't warn.
     import warnings
@@ -330,3 +325,54 @@ def test_render_without_header(tmp_path):
 
     content = dest.read_text()
     assert "atorb input file" in content
+
+
+def test_get_substr_positions():
+    assert get_substr_positions("a\nb\nc", "\n") == [1, 3]
+    assert get_substr_positions("abc", "\n") == []
+    assert get_substr_positions("", "\n") == []
+    assert get_substr_positions("a,b,c", ",") == [1, 3]
+
+
+def test_gen_conf_file_uses_rel_value(tmp_path):
+    conf_path = tmp_path / "hf.conf"
+    at = Atorb(rel=False, ngrid=123)
+    at.gen_conf_file(str(conf_path))
+
+    config = ConfigParser(allow_no_value=True)
+    config.read(str(conf_path))
+
+    assert config["DEFAULT"]["rel"] == "False"
+
+    conf_true = tmp_path / "hf_true.conf"
+    at_true = Atorb(rel=True, ngrid=123)
+    at_true.gen_conf_file(str(conf_true))
+
+    config_true = ConfigParser(allow_no_value=True)
+    config_true.read(str(conf_true))
+
+    assert config_true["DEFAULT"]["rel"] == "True"
+
+
+def test_render_atorb_file_returns_handle_name():
+    orb = AtorbElectron(n=1, l=0, m=0, j=0.5, s=1, occ=2.0)
+    model = AtorbInputModel(
+        header="test",
+        z=1,
+        nr=10,
+        rel=0,
+        method="HF",
+        relic=0,
+        nlevels=1,
+        mixing_scf=0.05,
+        eigen_tol=0.0005,
+        ech=100,
+        orbitals=[orb],
+        output="at_Cl.i",
+    )
+
+    handle = io.StringIO()
+    result = render_atorb_file(model, "unused.txt", file_handle=handle)
+
+    assert result == "unused.txt"
+    assert "C test" in handle.getvalue()

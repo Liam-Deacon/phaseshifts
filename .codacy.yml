@@ -10,10 +10,11 @@ engines:
       - C0103 # Invalid name
       - C0301 # Line too long
   flake8:
-    base_sub_dir: "."
+    base_sub_dir: '.'
 exclude_paths:
-  - "tests/**"
-  - "test/**"
-  - "docs/**"
-  - "build/**"
-  - "dist/**"
+  - 'tests/**'
+  - 'test/**'
+  - 'docs/**'
+  - 'build/**'
+  - 'dist/**'
+  - 'wasm/src/phase_shift_parser.js'

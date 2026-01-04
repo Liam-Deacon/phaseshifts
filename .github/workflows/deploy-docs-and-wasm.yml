@@ -1,0 +1,192 @@
+name: Deploy Documentation + WASM Calculator
+
+on:
+  push:
+    branches:
+      - master
+      - main
+      - feat/wasm-browser-support
+    paths:
+      - 'docs/**'
+      - 'wasm/**'
+      - 'phaseshifts/**'
+      - '.github/workflows/deploy-docs-and-wasm.yml'
+  workflow_dispatch:
+    inputs:
+      build_wasm:
+        description: 'Build WASM module (false = demo mode only)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # === Build Sphinx Documentation ===
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-docs-${{ hashFiles('requirements-doc.txt', 'pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-docs-
+            ${{ runner.os }}-pip-
+
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy setuptools wheel
+          pip install sphinx sphinx_rtd_theme numpydoc
+          pip install -r requirements-doc.txt || true
+        env:
+          PHASESHIFTS_COMPILE: 'false'
+
+      - name: Build Sphinx HTML documentation
+        run: |
+          cd docs
+          make html || sphinx-build -b html . _build/html
+        continue-on-error: false
+
+      # === Build WASM Calculator (optional, fault-tolerant) ===
+      - name: Setup Emscripten
+        if: ${{ github.event.inputs.build_wasm != 'false' }}
+        uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
+        with:
+          version: 'latest'
+          actions-cache-folder: 'emsdk-cache'
+        continue-on-error: true
+
+      - name: Install f2c
+        if: ${{ github.event.inputs.build_wasm != 'false' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y f2c libf2c2-dev
+        continue-on-error: true
+
+      - name: Verify WASM build tools
+        if: ${{ github.event.inputs.build_wasm != 'false' }}
+        id: wasm-tools
+        run: |
+          if command -v emcc &> /dev/null && command -v f2c &> /dev/null; then
+            echo "WASM_TOOLS_AVAILABLE=true" >> $GITHUB_OUTPUT
+            emcc --version
+            which f2c
+          else
+            echo "WASM_TOOLS_AVAILABLE=false" >> $GITHUB_OUTPUT
+            echo "::warning::WASM build tools not available, deploying demo mode"
+          fi
+        continue-on-error: true
+
+      - name: Build WASM module
+        if: ${{ steps.wasm-tools.outputs.WASM_TOOLS_AVAILABLE == 'true' }}
+        run: |
+          cd wasm
+          chmod +x build.sh
+          ./build.sh --method=f2c
+        env:
+          EMCC_CFLAGS: '-O2'
+        continue-on-error: true
+
+      # === Combine into single site ===
+      - name: Prepare combined site
+        run: |
+          mkdir -p _site
+
+          # Copy Sphinx docs to root
+          if [ -d "docs/_build/html" ]; then
+            cp -r docs/_build/html/* _site/
+            echo "✓ Sphinx documentation copied"
+          else
+            echo "::error::Sphinx build failed - no HTML output"
+            exit 1
+          fi
+
+          # Disable Jekyll processing
+          touch _site/.nojekyll
+
+          # Create calculator directory
+          mkdir -p _site/calculator/dist
+          mkdir -p _site/shared
+
+          # Copy WASM calculator web files
+          cp -r wasm/web/* _site/calculator/
+          cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
+          cp wasm/shared/elements.js _site/shared/ 2>/dev/null || true
+
+          # Copy built WASM if available, otherwise create demo mode placeholder
+          if [ -f "wasm/dist/phaseshifts.js" ] && [ -f "wasm/dist/phaseshifts.wasm" ]; then
+            cp -r wasm/dist/* _site/calculator/dist/
+            echo "✓ WASM module copied (full functionality)"
+            echo "full" > _site/calculator/dist/mode.txt
+          else
+            # Create demo mode placeholder
+            cat > _site/calculator/dist/phaseshifts.js << 'EOF'
+          // Demo mode - WASM module not built
+          // The app.js will generate synthetic phase shifts for demonstration
+          console.log('[phaseshifts] Running in demo mode - WASM module not available');
+          window.WASM_DEMO_MODE = true;
+          EOF
+            echo "⚠ WASM build unavailable, using demo mode"
+            echo "demo" > _site/calculator/dist/mode.txt
+          fi
+
+          # Create version info
+          cat > _site/calculator/version.txt << EOF
+          phaseshifts WASM Calculator
+          Built: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${{ github.sha }}
+          Mode: $(cat _site/calculator/dist/mode.txt)
+          EOF
+
+          echo ""
+          echo "=== Site structure ==="
+          find _site -type f -name "*.html" | head -20
+          echo "..."
+          ls -la _site/calculator/
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  deploy:
+    if: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "## Deployment Complete! 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Documentation**: ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Calculator**: ${{ steps.deployment.outputs.page_url }}calculator/" >> $GITHUB_STEP_SUMMARY

@@ -38,7 +38,7 @@ def main(argv=None):
 
     # Load the widget
     module = importlib.import_module("phaseshifts.gui.{}".format(args.widget))
-    _window = getattr(module, args.widget)()
+    getattr(module, args.widget)()
 
     return app.exec_()
 

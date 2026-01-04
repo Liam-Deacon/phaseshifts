@@ -2,6 +2,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
+EEASISSS_VIPERLEED_REQUIRED = "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
+
 
 class BackendError(Exception):
     """Error raised when backend selection or execution fails."""
@@ -27,9 +29,7 @@ class BVHBackend(PhaseShiftBackend):
     def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, **kwargs):
         from phaseshifts.phsh import Wrapper
 
-        return Wrapper.autogen_from_input(
-            bulk_file, slab_file, tmp_dir=tmp_dir, **kwargs
-        )
+        return Wrapper.autogen_from_input(bulk_file, slab_file, tmp_dir=tmp_dir, **kwargs)
 
 
 def _load_viperleed_modules():
@@ -54,9 +54,7 @@ def _load_native_eeasisss():
 def _run_viperleed(parameters_file, slab_file, workdir, output_file):
     modules = _load_viperleed_modules()
     if modules is None:
-        raise BackendError(
-            "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
-        )
+        raise BackendError(EEASISSS_VIPERLEED_REQUIRED)
 
     viper_params, viper_phaseshifts, viper_poscar, runPhaseshiftGen = modules
 
@@ -73,9 +71,7 @@ def _run_viperleed(parameters_file, slab_file, workdir, output_file):
         result = runPhaseshiftGen(slab, rparams)
         firstline = result[0]
         phaseshifts = result[1]
-        viper_phaseshifts.writePHASESHIFTS(
-            firstline, phaseshifts, file_path=output_path
-        )
+        viper_phaseshifts.writePHASESHIFTS(firstline, phaseshifts, file_path=output_path)
     finally:
         os.chdir(cwd)
 
@@ -91,9 +87,7 @@ def _run_native_eeasisss(parameters_file, workdir, output_file):
         )
 
     if not os.path.isfile(parameters_file):
-        raise BackendError(
-            "eeasisss backend input file not found: {}".format(parameters_file)
-        )
+        raise BackendError("eeasisss backend input file not found: {}".format(parameters_file))
 
     os.makedirs(workdir, exist_ok=True)
 
@@ -106,9 +100,7 @@ def _run_native_eeasisss(parameters_file, workdir, output_file):
         os.chdir(cwd)
 
     if not os.path.exists(output_path):
-        raise BackendError(
-            "EEASiSSS did not produce '{}' in '{}'.".format(output_file, workdir)
-        )
+        raise BackendError("EEASiSSS did not produce '{}' in '{}'.".format(output_file, workdir))
     return [output_path]
 
 
@@ -131,26 +123,16 @@ class EEASiSSSBackend(PhaseShiftBackend):
         mode = str(self.mode or "auto").lower()
 
         if mode not in self._valid_modes:
-            raise BackendError(
-                "eeasisss backend mode must be one of: {}.".format(
-                    ", ".join(sorted(self._valid_modes))
-                )
-            )
+            raise BackendError("eeasisss backend mode must be one of: {}.".format(", ".join(sorted(self._valid_modes))))
 
         if not parameters_file:
-            raise BackendError(
-                "eeasisss backend requires --backend-params <PARAMETERS|inputX>."
-            )
+            raise BackendError("eeasisss backend requires --backend-params <PARAMETERS|inputX>.")
 
         if mode == "viperleed":
             if not slab_file:
-                raise BackendError(
-                    "eeasisss backend in viperleed mode requires --slab <POSCAR>."
-                )
+                raise BackendError("eeasisss backend in viperleed mode requires --slab <POSCAR>.")
             if _load_viperleed_modules() is None:
-                raise BackendError(
-                    "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
-                )
+                raise BackendError(EEASISSS_VIPERLEED_REQUIRED)
             return _run_viperleed(parameters_file, slab_file, workdir, output_file)
 
         if mode == "native":
@@ -164,22 +146,15 @@ class EEASiSSSBackend(PhaseShiftBackend):
                 if verbose:
                     print("eeasisss: ViPErLEED not available; falling back to native.")
                 return _run_native_eeasisss(parameters_file, workdir, output_file)
-            raise BackendError(
-                "eeasisss backend requires 'phaseshifts[viperleed]' to be installed."
-            )
+            raise BackendError(EEASISSS_VIPERLEED_REQUIRED)
 
         if _load_native_eeasisss() is not None:
             return _run_native_eeasisss(parameters_file, workdir, output_file)
 
         if _load_viperleed_modules() is not None:
-            raise BackendError(
-                "eeasisss backend requires --slab <POSCAR> when using ViPErLEED."
-            )
+            raise BackendError("eeasisss backend requires --slab <POSCAR> when using ViPErLEED.")
 
-        raise BackendError(
-            "eeasisss backend requires a native EEASiSSS library or "
-            "'phaseshifts[viperleed]'."
-        )
+        raise BackendError("eeasisss backend requires a native EEASiSSS library or 'phaseshifts[viperleed]'.")
 
 
 DEFAULT_BACKENDS = {
@@ -222,9 +197,7 @@ def get_backend(name, registry=None, aliases=None):
     backend_cls = registry.get(key)
     if backend_cls is None:
         available = ", ".join(sorted(registry.keys()))
-        raise BackendError(
-            "Unknown backend '{}'. Available: {}.".format(name, available)
-        )
+        raise BackendError("Unknown backend '{}'. Available: {}.".format(name, available))
     if init_kwargs:
         return backend_cls(**init_kwargs)
     return backend_cls()

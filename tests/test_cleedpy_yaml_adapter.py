@@ -3,18 +3,21 @@ import pytest
 
 yaml = pytest.importorskip("yaml")
 
-from phaseshifts.io import (  # noqa: E402
-    AtomParameters,
-    CleedpyYamlAdapter,
-    EnergyRange,
-    InputParameters,
-    Position,
-    SuperstructureMatrix,
-    UnitCell,
-)
-
 
 def test_cleedpy_yaml_roundtrip(tmp_path):
+    from phaseshifts.io import (
+        AtomParameters,
+        CleedpyYamlAdapter,
+        EnergyRange,
+        InputParameters,
+        Position,
+        SuperstructureMatrix,
+        UnitCell,
+    )
+
+    if CleedpyYamlAdapter is None:
+        pytest.skip("CleedpyYamlAdapter optional dependency not available.")
+
     adapter = CleedpyYamlAdapter()
     unit_cell = UnitCell((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
     superstructure = SuperstructureMatrix((1.0, 0.0), (0.0, 1.0))

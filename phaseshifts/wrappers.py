@@ -36,8 +36,9 @@ Provides wrapper classes for phaseshift calculation backends
 from __future__ import absolute_import, division, with_statement
 from __future__ import print_function, unicode_literals
 
-import sys
+from io import open
 import os
+import sys
 import tempfile
 
 from glob import glob
@@ -51,6 +52,11 @@ from .leed import Converter, CLEEDInputValidator
 from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
 from .conphas import Conphas
 from .utils import FileUtils
+
+_BULK_INPUT_SUFFIX = "_bulk.i"
+_SLAB_INPUT_SUFFIX = "_slab.i"
+_BMTZ_SUFFIX = ".bmtz"
+_MUFFTIN_SUFFIX = "_mufftin.d"
 
 
 def _add_metaclass(metaclass):
@@ -70,16 +76,7 @@ class Wrapper(object):
     """Abstract base wrapper class for generating phase shifts"""
 
     @abstractmethod
-    def autogen_from_input(
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
-    ):
+    def autogen_from_input(self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs):
         pass
 
     @abstractmethod
@@ -120,8 +117,32 @@ class Wrapper(object):
         else:
             FileUtils.copy_files(phsh_files, os.path.abspath("."), verbose=True)
 
-    def _add_header(self, phsh_file=None, fmt=None):
-        """
+    @staticmethod
+    def _remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format):
+        """Remove pi/2 jumps from phase shift outputs and return new filenames."""
+        phsh_files = []
+        for i, phaseshift in enumerate(phaseshifts):
+            filename = os.path.splitext(phasout_files[i])[0]
+            if out_format == "curve":
+                filename += ".cur"
+            else:
+                filename += ".phs"
+            phsh_files.append(filename)
+            # pylint: disable=consider-using-f-string
+            sys.stdout.write("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
+            # pylint: enable=consider-using-f-string
+            phsh = Conphas(
+                input_files=[phasout_files[i]],
+                output_file=filename,
+                formatting=out_format,
+                lmax=lmax_dict[phaseshift],
+            )
+            phsh.calculate()
+        return phsh_files
+
+    def _add_header(self, phsh_file=None, fmt=None):  # pylint: disable=too-many-locals
+        """Prepend a header line to the beginning of the phase shift file.
+
         Description
         -----------
         Prepends a header line to the beginning of the phase shift file.
@@ -153,68 +174,88 @@ class Wrapper(object):
         estimate will be made from the input file given.
 
         """
-        fmt = str(getattr(self, "format", "") or "")
-        if fmt.lower() == "cleed":
-            # add formatted header for Held CLEED package
-            header = ""
-            neng = self.neng if "neng" in self.__dict__ else 0
-            lmax = self.lmax if "lmax" in self.__dict__ else 0
-            if phsh_file is not None:
-                lines = []
+        fmt_value = str(fmt or getattr(self, "format", "") or "")
+        if fmt_value.lower() != "cleed":
+            return ""
 
-                # get old content from file
-                with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
-                    lines = file_ptr.readlines()
-
-                if not lines:
-                    raise OSError("phase shift file '{}' is empty".format(phsh_file))
-
-                # remove trailing lines
-                while lines[-1] == "\n":
-                    lines.pop(-1)  # removes last element
-
-                # remove comments and empty lines for input
-                stripped_lines = []
-                for line in lines:
-                    stripped = line.strip()
-                    if not stripped:
-                        continue
-                    if stripped.startswith(("#", "!")):
-                        continue
-                    first = stripped[0]
-                    if not (first.isdigit() or first in "+-."):
-                        continue
-                    stripped_lines.append(line)
-
-                if lmax == 0:
-                    # very crude count of l elements in input line
-                    # uses multiple input lines to get best estimate
-                    n = 10 if len(lines) > 10 else len(lines)
-                    for i in range(n):
-                        num = self._get_phaseshift_input(stripped_lines[i])
-                        num = len(num.split())
-                        if num > lmax:
-                            lmax = num
-
-                if neng == 0:
-                    # guess that neng is half number of non-empty input lines
-                    neng = "".join(stripped_lines).count("\n") / 2
-
-                header = "%i %i neng lmax (calculated by %s on %s)\n" % (
-                    neng,
-                    lmax,
-                    getuser(),
-                    strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
-                )
-                lines.insert(0, header)
-
-                # write new contents to file
-                with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
-                    output_file_ptr.writelines(lines)
-
+        # add formatted header for Held CLEED package
+        header = ""
+        neng = self.neng if "neng" in self.__dict__ else 0
+        lmax = self.lmax if "lmax" in self.__dict__ else 0
+        if phsh_file is None:
             return header
 
-        return ""  # zero length string
+        lines = self._read_phsh_lines(phsh_file)
+        lines = self._strip_trailing_blank_lines(lines)
+        stripped_lines = self._filter_phsh_data_lines(lines)
+
+        if lmax == 0:
+            lmax = self._guess_lmax_from_lines(stripped_lines)
+
+        if neng == 0:
+            neng = self._guess_neng_from_lines(stripped_lines)
+
+        header = self._format_cleed_header(neng, lmax)
+        lines.insert(0, header)
+        self._write_phsh_lines(phsh_file, lines)
+        return header
+
+    @staticmethod
+    def _read_phsh_lines(phsh_file):
+        with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
+            lines = file_ptr.readlines()
+        if not lines:
+            raise OSError("phase shift file '{}' is empty".format(phsh_file))
+        return lines
+
+    @staticmethod
+    def _write_phsh_lines(phsh_file, lines):
+        with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
+            output_file_ptr.writelines(lines)
+
+    @staticmethod
+    def _strip_trailing_blank_lines(lines):
+        while lines and lines[-1] == "\n":
+            lines.pop(-1)
+        return lines
+
+    @staticmethod
+    def _filter_phsh_data_lines(lines):
+        stripped_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith(("#", "!")):
+                continue
+            first = stripped[0]
+            if not (first.isdigit() or first in "+-."):
+                continue
+            stripped_lines.append(line)
+        return stripped_lines
+
+    def _guess_lmax_from_lines(self, stripped_lines):
+        lmax = 0
+        n = min(10, len(stripped_lines))
+        for i in range(n):
+            num = self._get_phaseshift_input(stripped_lines[i])
+            count = len(num.split())
+            if count > lmax:
+                lmax = count
+        return lmax
+
+    @staticmethod
+    def _guess_neng_from_lines(stripped_lines):
+        return "".join(stripped_lines).count("\n") // 2
+
+    @staticmethod
+    def _format_cleed_header(neng, lmax):
+        return "%i %i neng lmax (calculated by %s on %s)\n" % (
+            neng,
+            lmax,
+            getuser(),
+            strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
+        )
 
     def _get_phaseshift_input(self, line):
         """
@@ -270,9 +311,7 @@ class EEASiSSSWrapper(Wrapper):
         """
         Convenience passthrough to the EEASiSSS-specific Atorb helper.
         """
-        return atorb.EEASiSSSAtorb.calculate_Q_density(
-            elements=elements, output_dir=output_dir
-        )
+        return atorb.EEASiSSSAtorb.calculate_Q_density(elements=elements, output_dir=output_dir)
 
     @staticmethod
     def _copy_files(files, dst, verbose=False):
@@ -282,14 +321,7 @@ class EEASiSSSWrapper(Wrapper):
         FileUtils.copy_files(files, dst, verbose=verbose)
 
     def autogen_from_input(  # noqa: MC0001
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
+        self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
     ):
         """
         Description
@@ -335,9 +367,7 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _BULK_INPUT_SUFFIX)
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -347,23 +377,19 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _SLAB_INPUT_SUFFIX)
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
 
         # generate atomic charge densities for each element in bulk model
         if not isinstance(bulk_mtz, model.MTZ_model):
-            raise AttributeError("bulk_mtz is not an MTZ_model() instance")
+            raise TypeError("bulk_mtz is not an MTZ_model() instance")
 
         # get unique elements in bulk and slab
         bulk_elements = [atom.element for atom in bulk_mtz.atoms]
         slab_elements = [atom.element for atom in slab_mtz.atoms]
-        EEASiSSSWrapper().autogen_atorbs(
-            elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
-        )
+        EEASiSSSWrapper().autogen_atorbs(elements=set(bulk_elements + slab_elements), output_dir=tmp_dir)
 
         if verbose:
             print("\nModel")
@@ -389,17 +415,13 @@ class EEASiSSSWrapper(Wrapper):
         # copy files to storage location
         if "store" in kwargs and out_format != "cleed":
             if kwargs["store"] != ".":
-                dst = os.path.abspath(
-                    os.path.expanduser(os.path.expandvars(kwargs["store"]))
-                )
+                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
             else:
                 dst = os.path.abspath(".")
             EEASiSSSWrapper._copy_files(phsh_files, dst, verbose=True)
 
         elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(
-                os.path.expanduser(os.path.expandvars("$CLEED_PHASE"))
-            )
+            dst = os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
             EEASiSSSWrapper._copy_files(phsh_files, dst, verbose=True)
 
         else:
@@ -442,22 +464,13 @@ class BVHWrapper(Wrapper):
             at_file = os.path.join(output_dir, "at_%s.i" % elem)
             if not os.path.isfile(at_file):
                 print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(
-                    element=elem, output_dir=output_dir
-                )
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=output_dir)
             else:
                 atomic_dict[elem] = at_file
         return atomic_dict
 
     def autogen_from_input(  # noqa: MC0001
-        self,
-        bulk_file,
-        slab_file,
-        tmp_dir=None,
-        model_name=None,
-        lmax=10,
-        verbose=False,
-        **kwargs
+        self, bulk_file, slab_file, tmp_dir=None, model_name=None, lmax=10, verbose=False, **kwargs
     ):
         """
         Description
@@ -506,9 +519,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i"
-            )
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _BULK_INPUT_SUFFIX)
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -518,9 +529,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(
-                tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i"
-            )
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _SLAB_INPUT_SUFFIX)
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -533,20 +542,16 @@ class BVHWrapper(Wrapper):
         atomic_dict = {}
         bulk_elements = [atom.element.symbol for atom in bulk_mtz.atoms]
         slab_elements = [atom.element.symbol for atom in slab_mtz.atoms]
-        atomic_dict = self.autogen_atorbs(
-            elements=set(bulk_elements + slab_elements), output_dir=tmp_dir
-        )
+        atomic_dict = self.autogen_atorbs(elements=set(bulk_elements + slab_elements), output_dir=tmp_dir)
 
         # prepare at files for appending into atomic file
-        bulk_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)
-        ]
+        bulk_at_files = [atomic_dict[atom.element.symbol] for atom in set(bulk_mtz.atoms)]
 
         # create atomic.i input file from mtz model
         bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
         bulk_atomic_file = bulk_mtz.gen_atomic(
             input_files=bulk_at_files,
-            output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + _BULK_INPUT_SUFFIX),
         )
 
         if verbose:
@@ -560,45 +565,36 @@ class BVHWrapper(Wrapper):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz")
-            )
-            print(
-                "\tmufftin file: '%s'"
-                % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + _BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + _MUFFTIN_SUFFIX))
 
         bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
-            output_file=os.path.join(tmp_dir, bulk_model_name + ".bmtz"),
-            mufftin_file=os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + _BMTZ_SUFFIX),
+            mufftin_file=os.path.join(tmp_dir, bulk_model_name + _MUFFTIN_SUFFIX),
         )
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
         # prepare at files for appending into atomic file
-        slab_at_files = [
-            atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)
-        ]
+        slab_at_files = [atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)]
 
         # create atomic.i input file from mtz model
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
         slab_atomic_file = slab_mtz.gen_atomic(
             input_files=slab_at_files,
-            output_file=os.path.join(tmp_dir, slab_model_name + "_slab.i"),
+            output_file=os.path.join(tmp_dir, slab_model_name + _SLAB_INPUT_SUFFIX),
         )
 
         # calculate muffin-tin potential for slab model
-        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
+        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + _MUFFTIN_SUFFIX)
         print("\nCalculating slab muff-tin potential...")
         if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print(
-                "\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz")
-            )
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + _BMTZ_SUFFIX))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 
@@ -612,19 +608,13 @@ class BVHWrapper(Wrapper):
         )
 
         # create raw phase shift files
-        print(
-            "\nGenerating phase shifts from '%s'..."
-            % os.path.basename(mufftin_filepath)
-        )
+        print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
         filepath = os.path.join(tmp_dir, slab_model_name)
         phasout_filepath = filepath + "_phasout.i"
         dataph_filepath = filepath + "_dataph.d"
 
         phaseshifts = [atom.tag for atom in set(slab_mtz.atoms + bulk_mtz.atoms)]
-        phasout_files = [
-            os.path.join(tmp_dir, atom.tag + ".ph")
-            for atom in set(slab_mtz.atoms + bulk_mtz.atoms)
-        ]
+        phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms + bulk_mtz.atoms)]
         phsh_files = []
 
         # assign phase shift specific lmax values
@@ -647,28 +637,10 @@ class BVHWrapper(Wrapper):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                phsh_files.extend(Wrapper._remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format))
 
             if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
                 # calculate phase shifts
@@ -680,9 +652,7 @@ class BVHWrapper(Wrapper):
                 )
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
             if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
                 # check energy range
@@ -701,15 +671,12 @@ class BVHWrapper(Wrapper):
                         ]
 
                         # assign new values
-                        (ei, ef, de) = [
-                            t(s) for t, s in zip((float, float, float), kwargs["range"])
-                        ]
+                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
 
                         # edit energy range
-                        lines[1] = str(
-                            "%12.4f%12.4f%12.4f    %3i    %12.4f\n"
-                            % (ei, de, ef, lsm, vc)
-                        ).replace("e", "D")
+                        lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(
+                            "e", "D"
+                        )
 
                         with open(mufftin_filepath, "w") as f:
                             f.write("".join([str(line) for line in lines]))
@@ -733,28 +700,10 @@ class BVHWrapper(Wrapper):
                 # print("Current time " + time.strftime("%X"))
 
                 # split phasout
-                phasout_files = Conphas.split_phasout(
-                    filename=phasout_filepath, output_filenames=phasout_files
-                )
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
 
                 # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print(
-                        "\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename)
-                    )
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
+                phsh_files.extend(Wrapper._remove_pi_jumps(phaseshifts, phasout_files, lmax_dict, out_format))
 
         except AttributeError as err:
             raise AttributeError("MTZ_model has no NFORM (0-2) specified!") from err

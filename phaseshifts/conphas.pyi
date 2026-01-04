@@ -46,9 +46,7 @@ class Conphas:
 
     """
 
-    def __init__(
-        self, input_files=..., output_file=..., formatting=..., lmax=..., **kwargs
-    ) -> None:
+    def __init__(self, input_files=..., output_file=..., formatting=..., lmax=..., **kwargs) -> None:
         """
         Parameters
         ----------
@@ -78,9 +76,7 @@ class Conphas:
         """
         ...
 
-    def load_data(
-        self, filename
-    ):  # -> tuple[float | int, float | int, float | int, float | int, list[float]]:
+    def load_data(self, filename):  # -> tuple[float | int, float | int, float | int, float | int, list[float]]:
         """
         Load (discontinuous) phase shift data from file
 

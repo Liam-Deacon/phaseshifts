@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# encoding: utf-8
+
 ##############################################################################
 # Author: Liam Deacon                                                        #
 #                                                                            #
@@ -36,11 +38,12 @@ from .wrappers import BVHWrapper, EEASiSSSWrapper
 
 
 class PhaseshiftFactory(object):
-    """Class for backend selection"""
+    """Class for backend selection."""
 
     backend = None  # type: object
 
     def __init__(self, backend, **kwargs):
+        """Initialize the factory with a backend identifier."""
         package = str(backend).lower()
         self.__dict__.update(kwargs)
         self.phsh_files = []
@@ -64,15 +67,14 @@ class PhaseshiftFactory(object):
     def _require_attrs(self, *names):
         missing = [name for name in names if not hasattr(self, name)]
         if missing:
-            raise AttributeError(
-                "Missing required phaseshift inputs: {}".format(", ".join(missing))
-            )
+            raise AttributeError("Missing required phaseshift inputs: {}".format(", ".join(missing)))
 
-    def createAtorbFiles(self):
-        pass
+    def create_atorb_files(self):
+        """Generate atomic orbital input files for the configured backend."""
+        raise NotImplementedError("create_atorb_files is not implemented.")
 
-    def getPhaseShiftFiles(self):
-        """Returns a list of generated phase shift files"""
+    def get_phase_shift_files(self):
+        """Return a list of generated phase shift files."""
         self._require_attrs(
             "bulk_file",
             "slab_file",

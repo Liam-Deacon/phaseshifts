@@ -27,9 +27,7 @@ def find_python_dll() -> pathlib.Path:
         or ""
     )
     if not libname:
-        libname = "python{}{}.dll".format(
-            sys.version_info.major, sys.version_info.minor
-        )
+        libname = "python{}{}.dll".format(sys.version_info.major, sys.version_info.minor)
 
     bindir: str = sysconfig.get_config_var("BINDIR") or sys.exec_prefix
     candidates: List[pathlib.Path] = []
@@ -53,9 +51,7 @@ def find_python_dll() -> pathlib.Path:
         if candidate.exists():
             return candidate.resolve()
 
-    raise FileNotFoundError(
-        "Python DLL {!r} not found in {}".format(libname, candidates)
-    )
+    raise FileNotFoundError("Python DLL {!r} not found in {}".format(libname, candidates))
 
 
 def main() -> int:

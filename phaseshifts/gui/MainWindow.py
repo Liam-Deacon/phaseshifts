@@ -54,9 +54,7 @@ from phaseshifts.model import MTZ_model, Unitcell, Atom
 
 # Define globals
 __APP_AUTHOR__ = "Liam Deacon"
-__APP_COPYRIGHT__ = "\xa92013-{year} {author}".format(
-    year=datetime.date.today().year, author=__APP_AUTHOR__
-)
+__APP_COPYRIGHT__ = "\xa92013-{year} {author}".format(year=datetime.date.today().year, author=__APP_AUTHOR__)
 __APP_DESCRIPTION__ = "A simple Python-based program\nfor generation of phase shifts"
 __APP_DISTRIBUTION__ = phaseshifts.__package__
 __APP_CONTACT__ = phaseshifts.__contact__
@@ -115,9 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_handler = logging.FileHandler(
             os.path.join(tempfile.gettempdir(), __APP_NAME__ + str(".log"))
         )  # temp directory is emptied on system reboot
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         file_handler.setFormatter(formatter)
         file_handler.setLevel(logging.INFO)  # change to taste
 
@@ -138,8 +134,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # tree dictionaries
         # self.treeRootDict = self.ui.getChildItems(self.ui.treeWidgetBulk)
-        _bulk_tree = self.ui.treeWidgetBulk.invisibleRootItem()
-        _slab_tree = self.ui.treeWidgetSlab.invisibleRootItem()
+        # _bulk_tree = self.ui.treeWidgetBulk.invisibleRootItem()
+        # _slab_tree = self.ui.treeWidgetSlab.invisibleRootItem()
         # bulk = OrderedDict([str(_bulk_tree.child(i).text(0)) for i in range(_bulk_tree.childCount())])
         # slab = OrderedDict([str(_slab_tree.child(i).text(0)) for i in range(_slab_tree.childCount())])
         # print(bulk)
@@ -212,12 +208,10 @@ class MainWindow(QtWidgets.QMainWindow):
     # change main tab
     def changeMainTab(self):
         """Change main tab selection"""
-        tabText = str(
-            self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())
-        ).lower()
-        if tabText == "bulk":  # bulk
+        tab_text = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
+        if tab_text == "bulk":  # bulk
             self.model = "bulk"
-        elif tabText == "slab":  # slab
+        elif tab_text == "slab":  # slab
             self.model = "slab"
         else:
             self.model = None
@@ -233,18 +227,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.actionTextView.setChecked(False)
             self.ui.stackedWidgetBulk.setCurrentIndex(1)
             self.ui.stackedWidgetSlab.setCurrentIndex(1)
-        elif (
-            self.sender() is self.ui.pushBulkToText
-            or self.sender() is self.ui.pushSlabToText
-        ):
+        elif self.sender() is self.ui.pushBulkToText or self.sender() is self.ui.pushSlabToText:
             self.ui.actionTextView.setChecked(True)
             self.ui.actionTreeView.setChecked(False)
             self.ui.stackedWidgetBulk.setCurrentIndex(1)
             self.ui.stackedWidgetSlab.setCurrentIndex(1)
-        elif (
-            self.sender() is self.ui.pushBulkToTree
-            or self.sender() is self.ui.pushSlabToTree
-        ):
+        elif self.sender() is self.ui.pushBulkToTree or self.sender() is self.ui.pushSlabToTree:
             self.ui.actionTextView.setChecked(False)
             self.ui.actionTreeView.setChecked(True)
             self.ui.stackedWidgetBulk.setCurrentIndex(0)
@@ -259,9 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Open dialog and radio options"""
         importDialog = ImportDialog(
             parent=self,
-            model=str(
-                self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())
-            ).lower(),
+            model=str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower(),
         )
         importDialog.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         importDialog.finished.connect(self.parseInput)
@@ -280,9 +266,7 @@ class MainWindow(QtWidgets.QMainWindow):
             helpDialog.exec_()
 
         except NameError:
-            QtWidgets.QMessageBox.information(
-                self, "Help", "Help is not currently available"
-            )
+            QtWidgets.QMessageBox.information(self, "Help", "Help is not currently available")
             self.logger.error("unable to create Help dialog")
 
     # model builder
@@ -298,9 +282,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """Returns file path of input."""
         if startpath is None:
             startpath = str(
-                QtCore.QStandardPaths.standardLocations(
-                    QtCore.QStandardPaths.StandardLocation.HomeLocation
-                )[0]
+                QtCore.QStandardPaths.standardLocations(QtCore.QStandardPaths.StandardLocation.HomeLocation)[0]
             )
         if model is None:
             model = ""
@@ -317,9 +299,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 startpath = self.lastpath
 
         filepath = str(
-            QtWidgets.QFileDialog.getOpenFileName(
-                parent=None, caption="Open %sInput File" % model, directory=startpath
-            )
+            QtWidgets.QFileDialog.getOpenFileName(parent=None, caption="Open %sInput File" % model, directory=startpath)
         )
 
         return filepath
@@ -339,11 +319,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 model = "slab"
 
         else:  # guess from active tab
-            tabText = str(
-                self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())
-            ).lower()
-            if tabText in ("bulk", "slab"):
-                model = tabText
+            tab_text = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
+            if tab_text in ("bulk", "slab"):
+                model = tab_text
             else:  # unknown
                 return self.importDialog()  # start dialog
 
@@ -359,7 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
             uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
             mtz = MTZ_model(uc, atoms=[atom])  # initialise muffin-tin model
             mtz.load_from_file(filename)  # load file
-            exec("self.%s = mtz" % model)  # pylint: disable=exec-used
+            setattr(self, model, mtz)
             self.updateModelUi(model)
 
         except IOError:
@@ -378,18 +356,14 @@ class MainWindow(QtWidgets.QMainWindow):
         """Update model in gui"""
         if isinstance(model, str):
             model = model.lower()
-            mtz = MTZ_model(
-                Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), atoms=[Atom("H")]
-            )
+            mtz = MTZ_model(Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), atoms=[Atom("H")])
             if model == "bulk":
                 tree = self.ui.treeWidgetBulk
-                mtz = eval(
-                    "self.%s" % model, {"self": self}, {}
-                )  # pylint: disable=eval-used
             elif model == "slab":
                 tree = self.ui.treeWidgetSlab
             else:
                 return
+            mtz = getattr(self, model, mtz)
 
             root = tree.invisibleRootItem()
             trunk = self.getChildItemsDict(tree)
@@ -406,10 +380,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     item.clear()
 
                 elif branch == "Parameters":
-                    params = self.getChildItemsDict(
-                        tree.topLevelItem(trunk.get(branch))
-                    )
-                    _parent = root.child(trunk.get(branch))
+                    params = self.getChildItemsDict(tree.topLevelItem(trunk.get(branch)))
                     for param in params:
                         node = item.child(self.treeRootDict.get(model).get(branch))
                         if param == "nh":  # update nh

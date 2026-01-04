@@ -53,7 +53,7 @@ class ApiDocWriter(object):
         if *package_name* is ``sphinx``, then ``sphinx.util`` will
         result in ``.util`` being passed for earching by these
         regexps. If is None, gives default. Default is:
-        ['\.tests$']
+        ['\\.tests$']
         module_skip_patterns : None or sequence
         Sequence of strings giving URIs of modules to be excluded
         Operates on the module name including preceding URI path,
@@ -61,7 +61,7 @@ class ApiDocWriter(object):
         ``sphinx.util.console`` results in the string to search of
         ``.util.console``
         If is None, gives default. Default is:
-        ['\.setup$', '\._']"""
+        ['\\.setup$', '\\._']"""
         if package_skip_patterns is None:
             package_skip_patterns = ["\\.tests$"]
         if module_skip_patterns is None:
@@ -91,9 +91,7 @@ class ApiDocWriter(object):
         self.root_path = self.root_module.__path__[0]
         self.written_modules = None
 
-    package_name = property(
-        get_package_name, set_package_name, None, "get/set package_name"
-    )
+    package_name = property(get_package_name, set_package_name, None, "get/set package_name")
 
     def _get_object_name(self, line):
         """Get second token in line
@@ -238,13 +236,7 @@ class ApiDocWriter(object):
         elif len(classes) and multi_fx:
             ad += "\n" + "Class" + "\n" + self.rst_section_levels[2] * 5 + "\n"
         for c in classes:
-            ad += (
-                "\n:class:`"
-                + c
-                + "`\n"
-                + self.rst_section_levels[multi_class + 2] * (len(c) + 9)
-                + "\n\n"
-            )
+            ad += "\n:class:`" + c + "`\n" + self.rst_section_levels[multi_class + 2] * (len(c) + 9) + "\n\n"
             ad += "\n.. autoclass:: " + c + "\n"
             # must NOT exclude from index to keep cross-refs working
             ad += (
@@ -322,7 +314,7 @@ class ApiDocWriter(object):
         >>> mods = dw.discover_modules()
         >>> 'sphinx.util' in mods
         True
-        >>> dw.package_skip_patterns.append('\.util$')
+        >>> dw.package_skip_patterns.append('\\.util$')
         >>> 'sphinx.util' in dw.discover_modules()
         False
         >>>"""
@@ -333,9 +325,7 @@ class ApiDocWriter(object):
             root_uri = self._path2uri(os.path.join(self.root_path, dirpath))
             for dirname in dirnames[:]:  # copy list - we modify inplace
                 package_uri = ".".join((root_uri, dirname))
-                if self._uri2path(package_uri) and self._survives_exclude(
-                    package_uri, "package"
-                ):
+                if self._uri2path(package_uri) and self._survives_exclude(package_uri, "package"):
                     modules.append(package_uri)
                 else:
                     dirnames.remove(dirname)
@@ -343,9 +333,7 @@ class ApiDocWriter(object):
             for filename in filenames:
                 module_name = filename[:-3]
                 module_uri = ".".join((root_uri, module_name))
-                if self._uri2path(module_uri) and self._survives_exclude(
-                    module_uri, "module"
-                ):
+                if self._uri2path(module_uri) and self._survives_exclude(module_uri, "module"):
                     modules.append(module_uri)
         return sorted(modules)
 

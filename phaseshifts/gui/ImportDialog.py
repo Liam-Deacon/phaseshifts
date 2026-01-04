@@ -47,9 +47,7 @@ class ImportDialog(QtWidgets.QDialog):
         self.action = None
 
         # dynamically load ui
-        self.ui = uic.loadUi(
-            os.path.join(os.path.dirname(__file__), "ImportDialog.ui"), self
-        )
+        self.ui = uic.loadUi(os.path.join(os.path.dirname(__file__), "ImportDialog.ui"), self)
         self.initUi()
 
         if isinstance(model, str):

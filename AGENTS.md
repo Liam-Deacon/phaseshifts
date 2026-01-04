@@ -11,7 +11,7 @@
 - **Build Fortran extension:** `make libphsh` or `python setup.py build_ext --inplace`
 - **Run all tests:** `pytest tests/ test/ --verbose`
 - **Run a single test:** `pytest tests/test_phshift2007.py::test_e2e`
-- **Lint:** `flake8 . --max-line-length=127`
+- **Lint:** `flake8 . --max-line-length=120`
 - **Build wheel:** `make wheel`
 - **Build all:** `make build`
 - **Clean artifacts:** `make clean`
@@ -48,12 +48,13 @@
 ## Code Style Guidelines
 
 - **Imports:** Use absolute imports; group stdlib, third-party, and local imports separately.
-- **Formatting:** Follow PEP8; max line length 127 (flake8 config).
+- **Formatting:** Follow PEP8; max line length 120 (flake8 config).
 - **Types:** Use type hints where possible, especially for public APIs.
 - **Naming:** Use snake_case for functions/variables, PascalCase for classes.
 - **Error Handling:** Prefer explicit exceptions; use custom exceptions for CLI errors.
 - **Tests:** Place in `tests/` or `test/` directories; use `pytest` or `unittest`.
 - **Docstrings:** Use NumPy or Google style for functions/classes.
+- **JavaScript docs:** Add JSDoc for exported/public functions, especially in `wasm/src/**`.
 - **Compatibility:** Support Python 2.7+ and 3.5–3.11 (see README and requirements).
 - **Fortran Extensions:** Ensure `libphsh` is built before running tests that require it. For fixed-format Fortran, use the `.f` extension and update all build references accordingly. For Fortran 90 free-format code, use `.f90`.
 - **Pre-commit:** Use flake8 and pytest for linting and testing before commits.

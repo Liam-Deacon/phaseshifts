@@ -7,7 +7,8 @@ MIT License (see LICENSE file for details)
 Test Imports - checks whether key modules and extensions can be imported
 """
 
-import sys, os
+import os
+import sys
 import unittest
 
 
@@ -49,9 +50,7 @@ class Test(unittest.TestCase):
         """
         for packages in imports:
             sys.stderr.write("Inspecting package: %s\n" % packages)
-            successes = [
-                imp for imp in imports.get(packages) if isimportable(packages, imp)
-            ]
+            successes = [imp for imp in imports.get(packages) if isimportable(packages, imp)]
             self.assertFalse(
                 len(successes) < len(imports.get(packages)),
                 "Failed to import some modules from package: %s" % packages,
@@ -68,11 +67,7 @@ class Test(unittest.TestCase):
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testimports']
-    sys.stderr.write(
-        "======================================================================\n"
-    )
+    sys.stderr.write("======================================================================\n")
     sys.stderr.write("TESTING: %s\n" % os.path.basename(__file__))
-    sys.stderr.write(
-        "======================================================================\n"
-    )
+    sys.stderr.write("======================================================================\n")
     unittest.main()

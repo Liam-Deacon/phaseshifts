@@ -1,6 +1,6 @@
 import argparse
 import sys
-from phaseshifts import phsh, atorb
+from phaseshifts import phsh
 
 
 def main():
@@ -19,9 +19,7 @@ def main():
     phsh_parser.add_argument("phsh_args", nargs=argparse.REMAINDER)
 
     # atorb subcommand
-    atorb_parser = subparsers.add_parser(
-        "atorb", help="Generate atomic orbital input files for all known elements"
-    )
+    atorb_parser = subparsers.add_parser("atorb", help="Generate atomic orbital input files for all known elements")
     atorb_parser.add_argument(
         "--output-dir",
         type=str,
@@ -34,9 +32,7 @@ def main():
         default=False,
         help="Use relativistic calculation (default: False)",
     )
-    atorb_parser.add_argument(
-        "--ngrid", type=int, default=1000, help="Number of grid points (default: 1000)"
-    )
+    atorb_parser.add_argument("--ngrid", type=int, default=1000, help="Number of grid points (default: 1000)")
     atorb_parser.add_argument(
         "--method",
         type=str,
