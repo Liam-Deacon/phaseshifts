@@ -2130,7 +2130,7 @@ def _integ_find_turning_point(e, v, nr):
     return 0, -1
 
 
-def _integ_initial_conditions(e, l, xkappa, ss2, a2, xl4, dl2, ctx, phi):
+def _integ_initial_conditions(e, l, xkappa, ss2, a2, xl4, dl2, ctx, phi):  # noqa: E741
     """
     Initialize the first two Numerov points.
 
@@ -2291,7 +2291,7 @@ def _integ_log_derivative(phi, dl, r, istop):
     return psip / phi[istop]
 
 
-def _integ_integrate_core(e, l, xkappa, n, istop, phi, ctx, p0, p1, xk2, dk2, a2, xl4, dl2, dl5):
+def _integ_integrate_core(e, l, xkappa, n, istop, phi, ctx, p0, p1, xk2, dk2, a2, xl4, dl2, dl5):  # noqa: E741
     """
     Integrate outward to the turning point while counting nodes.
 
@@ -2435,11 +2435,8 @@ def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
     rel = ctx.rel
     z = ctx.z
     v = ctx.v
-    xm1 = ctx.xm1
-    xm2 = ctx.xm2
     nr = ctx.nr
     r = ctx.r
-    r2 = ctx.r2
 
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
