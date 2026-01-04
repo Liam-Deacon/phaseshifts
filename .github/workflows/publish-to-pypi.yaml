@@ -187,7 +187,7 @@ jobs:
           sed -i.bak "s/^__version__ = .*/__version__ = \"${PHASESHIFTS_VERSION}\"/" phaseshifts/__init__.py
           rm -f phaseshifts/__init__.py.bak
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc # v3.3.0
         with:
           output-dir: dist/
         env:
@@ -235,7 +235,7 @@ jobs:
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc # v3.3.0
         with:
           output-dir: dist/
         env:
@@ -286,7 +286,7 @@ jobs:
           # FC, CC, and CXX environment variables will be set for subsequent steps
           # See https://github.com/fortran-lang/setup-fortran for details
       - name: Build x86_64 wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc # v3.3.0
         if: ${{ false && github.event.inputs.build_legacy }} # FIXME: Unable to build x86_64 wheels on macOS due to gfortran architecture being arm64
         continue-on-error: true
         with:
@@ -295,7 +295,7 @@ jobs:
           CIBW_ARCHS_MACOS: x86_64
           CIBW_BUILD: ${{ matrix.cibw_build }}
       - name: Build arm64 wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc # v3.3.0
         with:
           output-dir: dist/
         env:
@@ -475,7 +475,7 @@ jobs:
             mingw-w64-i686-gcc-fortran
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc # v3.3.0
         with:
           output-dir: dist/
         env:
