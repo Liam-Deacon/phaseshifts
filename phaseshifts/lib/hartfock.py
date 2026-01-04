@@ -1348,6 +1348,7 @@ def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
 
 def setqmm(i, orb, l, idoflag, ctx):  # noqa: E741
     """setqmm subroutine"""
+    # ns parameter removed; it was unused in the original signature.
     c = 137.038
     alpha = ctx.rel / c
     aa = alpha * alpha
@@ -1490,6 +1491,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
 
 def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901, MC0001
     """integrate out count nodes"""
+    # x0 parameter removed; it was unused in the original signature.
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
     c = 137.038
@@ -2596,6 +2598,12 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
     trd = 1.0 / 3.0
     ft = 4.0 / 3.0
+    # ex_val = ex
+    # ec_val = ec
+    # ux1_val = ux1
+    # ux2_val = ux2
+    # uc1_val = uc1
+    # uc2_val = uc2
     rh = rh1 + rh2
 
     # if one spin type, average polarization
@@ -2700,6 +2708,8 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
     ex_val = (xn1 * fe1 * ex1 + xn2 * fe2 * ex2) / xn
     ux1_val = fu1 * ux1_val
     ux2_val = fu2 * ux2_val
+    # uc1_val = uc1_val
+    # uc2_val = uc2_val
 
     return (nst, rel, rr, rh1, rh2, ex_val, ec_val, ux1_val, ux2_val, uc1_val, uc2_val)
 
