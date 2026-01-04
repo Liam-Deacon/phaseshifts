@@ -206,51 +206,57 @@ class Conphas:
         """split phasout input file into separate files"""
         if output_filenames is None:
             output_filenames = []
+        lines = Conphas._read_phasout_lines(filename)
+        phsh_list = Conphas._get_phasout_indices(lines)
+        guessed_filenames = Conphas._guess_phasout_filenames(lines, phsh_list)
+        phsh_filenames = Conphas._resolve_phasout_filenames(output_filenames, guessed_filenames, phsh_list)
+        Conphas._write_phasout_files(lines, phsh_list, phsh_filenames)
+        return phsh_filenames[: len(phsh_list)]  # return written files
+
+    @staticmethod
+    def _read_phasout_lines(filename):
         try:
             with open(filename, "r") as phasout:
-                lines = phasout.readlines()
-
+                return phasout.readlines()
         except IOError:
-            assert IOError("Cannot open file '%s'" % filename)
+            raise IOError("Cannot open file '%s'" % filename)
 
-        # get list of phase shifts in phasout
-        phsh_list = []
+    @staticmethod
+    def _get_phasout_indices(lines):
+        indices = []
         for i, line in enumerate(lines):
             if re.match("^[A-Za-z]", line.replace(" ", "")):
-                phsh_list.append(i)
+                indices.append(i)
+        return indices
 
-        # try to guess filenames from header lines in file
-        guessed_filenames = [
-            lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "") + ".ph" for i in phsh_list
+    @staticmethod
+    def _guess_phasout_filenames(lines, indices):
+        return [
+            lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "") + ".ph" for i in indices
         ]
 
-        # determine list of output filenames
-        phsh_filenames = []
+    @staticmethod
+    def _resolve_phasout_filenames(output_filenames, guessed_filenames, indices):
         if isinstance(output_filenames, list):
-            # generate list of filenames from list
             phsh_filenames = [name for name in output_filenames]
-            if len(phsh_filenames) < len(phsh_list):  # not enough names
-                for i in range(len(phsh_filenames), len(phsh_list)):
-                    phsh_filenames.append(guessed_filenames[i])
-        elif isinstance(output_filenames, str):
-            # generate list of filenames from trunk filename
-            output_filenames = os.path.splitext(output_filenames)[0]
-            phsh_filenames = [output_filenames + "_%i.ph" % i for i, name in enumerate(phsh_filenames)]
-        else:
-            # try to guess from header lines in file
-            phsh_filenames = guessed_filenames
+            if len(phsh_filenames) < len(indices):
+                phsh_filenames.extend(guessed_filenames[len(phsh_filenames) :])
+            return phsh_filenames
+        if isinstance(output_filenames, str):
+            base = os.path.splitext(output_filenames)[0]
+            return [base + "_%i.ph" % i for i in range(len(indices))]
+        return guessed_filenames
 
-        # write separate files for each phase shift
-        phsh_list.append(len(lines))
-        for i_phsh in range(1, len(phsh_list)):
+    @staticmethod
+    def _write_phasout_files(lines, phsh_list, phsh_filenames):
+        indices = list(phsh_list) + [len(lines)]
+        for i_phsh in range(1, len(indices)):
             try:
                 with open(phsh_filenames[i_phsh - 1], "w") as phsh_file:
-                    for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh]):
+                    for i in range(indices[i_phsh - 1], indices[i_phsh]):
                         phsh_file.write(lines[i])
             except IOError:
                 raise IOError
-
-        return phsh_filenames[: len(phsh_list) - 1]  # return written files
 
     def set_input_files(self, input_files=None):
         """set list of input filenames"""

@@ -94,6 +94,9 @@ from phaseshifts.conphas import Conphas
 from phaseshifts.leed import CLEEDInputValidator, Converter, CSearch
 from phaseshifts.utils import FileUtils
 
+BMTZ_SUFFIX = ".bmtz"
+MUFFTIN_SUFFIX = "_mufftin.d"
+
 try:
     from phaseshifts.lib.libphsh import (  # type: ignore [import-untyped]
         phsh_cav,
@@ -279,16 +282,16 @@ class Wrapper(object):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
-            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX))
 
         # bulk_mtz_file = bulk_mtz.calculate_MTZ(
         bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
-            output_file=os.path.join(tmp_dir, bulk_model_name + ".bmtz"),
-            mufftin_file=os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX),
+            mufftin_file=os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX),
         )
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
@@ -303,13 +306,13 @@ class Wrapper(object):
         )
 
         # calculate muffin-tin potential for slab model
-        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
+        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + MUFFTIN_SUFFIX)
         print("\nCalculating slab muff-tin potential...")
         if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz"))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + BMTZ_SUFFIX))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 

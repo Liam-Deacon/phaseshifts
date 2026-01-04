@@ -52,6 +52,11 @@ from .lib.libphsh import phsh_rel, phsh_wil, phsh_cav
 from .conphas import Conphas
 from .utils import FileUtils
 
+_BULK_INPUT_SUFFIX = "_bulk.i"
+_SLAB_INPUT_SUFFIX = "_slab.i"
+_BMTZ_SUFFIX = ".bmtz"
+_MUFFTIN_SUFFIX = "_mufftin.d"
+
 
 def _add_metaclass(metaclass):
     """Create a class decorator for Py2/Py3 compatible metaclasses."""
@@ -168,68 +173,88 @@ class Wrapper(object):
         estimate will be made from the input file given.
 
         """
-        fmt = str(getattr(self, "format", "") or "")
-        if fmt.lower() == "cleed":
-            # add formatted header for Held CLEED package
-            header = ""
-            neng = self.neng if "neng" in self.__dict__ else 0
-            lmax = self.lmax if "lmax" in self.__dict__ else 0
-            if phsh_file is not None:
-                lines = []
+        fmt = str(fmt or getattr(self, "format", "") or "")
+        if fmt.lower() != "cleed":
+            return ""
 
-                # get old content from file
-                with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
-                    lines = file_ptr.readlines()
-
-                if not lines:
-                    raise OSError("phase shift file '{}' is empty".format(phsh_file))
-
-                # remove trailing lines
-                while lines[-1] == "\n":
-                    lines.pop(-1)  # removes last element
-
-                # remove comments and empty lines for input
-                stripped_lines = []
-                for line in lines:
-                    stripped = line.strip()
-                    if not stripped:
-                        continue
-                    if stripped.startswith(("#", "!")):
-                        continue
-                    first = stripped[0]
-                    if not (first.isdigit() or first in "+-."):
-                        continue
-                    stripped_lines.append(line)
-
-                if lmax == 0:
-                    # very crude count of l elements in input line
-                    # uses multiple input lines to get best estimate
-                    n = 10 if len(lines) > 10 else len(lines)
-                    for i in range(n):
-                        num = self._get_phaseshift_input(stripped_lines[i])
-                        num = len(num.split())
-                        if num > lmax:
-                            lmax = num
-
-                if neng == 0:
-                    # guess that neng is half number of non-empty input lines
-                    neng = "".join(stripped_lines).count("\n") / 2
-
-                header = "%i %i neng lmax (calculated by %s on %s)\n" % (
-                    neng,
-                    lmax,
-                    getuser(),
-                    strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
-                )
-                lines.insert(0, header)
-
-                # write new contents to file
-                with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
-                    output_file_ptr.writelines(lines)
-
+        # add formatted header for Held CLEED package
+        header = ""
+        neng = self.neng if "neng" in self.__dict__ else 0
+        lmax = self.lmax if "lmax" in self.__dict__ else 0
+        if phsh_file is None:
             return header
 
-        return ""  # zero length string
+        lines = self._read_phsh_lines(phsh_file)
+        lines = self._strip_trailing_blank_lines(lines)
+        stripped_lines = self._filter_phsh_data_lines(lines)
+
+        if lmax == 0:
+            lmax = self._guess_lmax_from_lines(stripped_lines)
+
+        if neng == 0:
+            neng = self._guess_neng_from_lines(stripped_lines)
+
+        header = self._format_cleed_header(neng, lmax)
+        lines.insert(0, header)
+        self._write_phsh_lines(phsh_file, lines)
+        return header
+
+    @staticmethod
+    def _read_phsh_lines(phsh_file):
+        with open(phsh_file, mode="r", encoding="ascii") as file_ptr:
+            lines = file_ptr.readlines()
+        if not lines:
+            raise OSError("phase shift file '{}' is empty".format(phsh_file))
+        return lines
+
+    @staticmethod
+    def _write_phsh_lines(phsh_file, lines):
+        with open(phsh_file, mode="w", encoding="ascii") as output_file_ptr:
+            output_file_ptr.writelines(lines)
+
+    @staticmethod
+    def _strip_trailing_blank_lines(lines):
+        while lines and lines[-1] == "\n":
+            lines.pop(-1)
+        return lines
+
+    @staticmethod
+    def _filter_phsh_data_lines(lines):
+        stripped_lines = []
+        for line in lines:
+            stripped = line.strip()
+            if not stripped:
+                continue
+            if stripped.startswith(("#", "!")):
+                continue
+            first = stripped[0]
+            if not (first.isdigit() or first in "+-."):
+                continue
+            stripped_lines.append(line)
+        return stripped_lines
+
+    def _guess_lmax_from_lines(self, stripped_lines):
+        lmax = 0
+        n = min(10, len(stripped_lines))
+        for i in range(n):
+            num = self._get_phaseshift_input(stripped_lines[i])
+            count = len(num.split())
+            if count > lmax:
+                lmax = count
+        return lmax
+
+    @staticmethod
+    def _guess_neng_from_lines(stripped_lines):
+        return "".join(stripped_lines).count("\n") / 2
+
+    @staticmethod
+    def _format_cleed_header(neng, lmax):
+        return "%i %i neng lmax (calculated by %s on %s)\n" % (
+            neng,
+            lmax,
+            getuser(),
+            strftime("%Y-%m-%d at %H:%M:%S", gmtime()),
+        )
 
     def _get_phaseshift_input(self, line):
         """
@@ -341,7 +366,7 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _BULK_INPUT_SUFFIX)
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -351,7 +376,7 @@ class EEASiSSSWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _SLAB_INPUT_SUFFIX)
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -493,7 +518,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(bulk_file):
             bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
             full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
+            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _BULK_INPUT_SUFFIX)
             bulk_mtz.gen_input(filename=bulk_file)
         else:
             bulk_mtz.load_from_file(bulk_file)
@@ -503,7 +528,7 @@ class BVHWrapper(Wrapper):
         if CLEEDInputValidator.is_cleed_file(slab_file):
             slab_mtz = Converter.import_CLEED(slab_file)
             full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
+            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + _SLAB_INPUT_SUFFIX)
             slab_mtz.gen_input(filename=slab_file)
         else:
             slab_mtz.load_from_file(slab_file)
@@ -525,7 +550,7 @@ class BVHWrapper(Wrapper):
         bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
         bulk_atomic_file = bulk_mtz.gen_atomic(
             input_files=bulk_at_files,
-            output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + _BULK_INPUT_SUFFIX),
         )
 
         if verbose:
@@ -539,15 +564,15 @@ class BVHWrapper(Wrapper):
             print("\tcluster file: '%s'" % bulk_file)
             print("\tatomic file: '%s'" % bulk_atomic_file)
             print("\tslab calculation: '%s'" % str(False))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + ".bmtz"))
-            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + _BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + _MUFFTIN_SUFFIX))
 
         bulk_mtz.calculate_MTZ(
             cluster_file=bulk_file,
             atomic_file=bulk_atomic_file,
             slab=False,
-            output_file=os.path.join(tmp_dir, bulk_model_name + ".bmtz"),
-            mufftin_file=os.path.join(tmp_dir, bulk_model_name + "_mufftin.d"),
+            output_file=os.path.join(tmp_dir, bulk_model_name + _BMTZ_SUFFIX),
+            mufftin_file=os.path.join(tmp_dir, bulk_model_name + _MUFFTIN_SUFFIX),
         )
         print("Bulk MTZ = %f" % bulk_mtz.mtz)
 
@@ -558,17 +583,17 @@ class BVHWrapper(Wrapper):
         slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
         slab_atomic_file = slab_mtz.gen_atomic(
             input_files=slab_at_files,
-            output_file=os.path.join(tmp_dir, slab_model_name + "_slab.i"),
+            output_file=os.path.join(tmp_dir, slab_model_name + _SLAB_INPUT_SUFFIX),
         )
 
         # calculate muffin-tin potential for slab model
-        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + "_mufftin.d")
+        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + _MUFFTIN_SUFFIX)
         print("\nCalculating slab muff-tin potential...")
         if verbose:
             print("\tcluster file: '%s'" % slab_file)
             print("\tatomic file: '%s'" % slab_atomic_file)
             print("\tslab calculation: %s" % str(True))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + ".bmtz"))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + _BMTZ_SUFFIX))
             print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
             print("\tmtz value: %s" % str(bulk_mtz.mtz))
 

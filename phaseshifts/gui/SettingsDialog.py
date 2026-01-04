@@ -43,6 +43,10 @@ from qtpy import QtCore, QtWidgets, uic
 
 from .settings import Settings
 
+ERROR_TITLE = "Error!"
+ERROR_LOADING_CONFIG = "Error loading %s in config file - %s\n"
+UNABLE_CREATE_DIR = "Unable to create directory '%s'"
+
 
 class SettingsDialog(QtWidgets.QDialog):
     """
@@ -195,7 +199,7 @@ class SettingsDialog(QtWidgets.QDialog):
         try:
             config.read(filepath)
         except IOError:
-            QtWidgets.QMessageBox.critical(self, "Error!", "Unable to read ini file '%s'" % filepath)
+            QtWidgets.QMessageBox.critical(self, ERROR_TITLE, "Unable to read ini file '%s'" % filepath)
             return
 
         general_dict = {
@@ -229,7 +233,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = general_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
+                sys.stderr.write(ERROR_LOADING_CONFIG % (option, err))
                 sys.stderr.flush()
 
         for option in atorb_dict:  # load each setting from atorb section
@@ -238,7 +242,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = atorb_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, err))
+                sys.stderr.write(ERROR_LOADING_CONFIG % (option, err))
                 sys.stderr.flush()
 
         for option in phsh_dict:  # load each setting from phaseshifts section
@@ -247,7 +251,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 line = phsh_dict.get(option)
                 eval(line % value)  # pylint: disable=eval-used
             except Exception as err:  # pylint: disable=broad-except
-                sys.stderr.write("Error loading %s in config file - %s\n" % (option, str(err)))
+                sys.stderr.write(ERROR_LOADING_CONFIG % (option, str(err)))
                 sys.stderr.flush()
 
     def saveConfig(self):
@@ -267,7 +271,7 @@ class SettingsDialog(QtWidgets.QDialog):
             try:
                 os.makedirs(filepath)
             except IOError:
-                QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % filepath)
+                QtWidgets.QMessageBox.critical(self, ERROR_TITLE, UNABLE_CREATE_DIR % filepath)
                 return
 
         config.add_section("GENERAL")
@@ -317,7 +321,7 @@ class SettingsDialog(QtWidgets.QDialog):
             with open(filepath, "w") as configfile:  # save
                 config.write(configfile)
         except IOError:
-            QtWidgets.QMessageBox.critical(self, "Error!", "Unable to write settings file '%s'" % filepath)
+            QtWidgets.QMessageBox.critical(self, ERROR_TITLE, "Unable to write settings file '%s'" % filepath)
 
     def getWritePath(self):
         """use file dialog to set path to generated files"""
@@ -338,7 +342,7 @@ class SettingsDialog(QtWidgets.QDialog):
                     try:
                         os.makedirs(path)
                     except IOError:
-                        QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % path)
+                        QtWidgets.QMessageBox.critical(self, ERROR_TITLE, UNABLE_CREATE_DIR % path)
                         return
                 else:
                     return  # do not create directory, nor store new path
@@ -527,7 +531,7 @@ class SettingsDialog(QtWidgets.QDialog):
             try:
                 os.makedirs(path)
             except IOError:
-                QtWidgets.QMessageBox.critical(self, "Error!", "Unable to create directory '%s'" % path)
+                QtWidgets.QMessageBox.critical(self, ERROR_TITLE, UNABLE_CREATE_DIR % path)
                 return
 
         self.ui.lineWritePath.setText(path)

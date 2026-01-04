@@ -1335,6 +1335,40 @@ def augment(e, l, xj, phi, v, nr, r, dl):
     return
 
 
+def _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v):
+    for j in range(1, nr + 1):
+        v[j] = -zeff / r[j] + orb[j][i]
+
+
+def _setqmm_fill_v_from_vi(vi, orb, lp2, i, nr, v):
+    for j in range(1, nr + 1):
+        v[j] = vi[j][lp2] + orb[j][i]
+
+
+def _setqmm_update_xm_from_orb(orb, i, nr, dl, r, r2, a2, za2, zaa, xm1, xm2):
+    for j in range(2, nr - 1):
+        dvdl = (orb[j + 1][i] - orb[j - 1][i]) / (2.0 * dl)
+        ddvdrr = ((orb[j + 1][i] + orb[j - 1][i] - 2.0 * orb[j][i]) / (dl * dl) - dvdl) / r2[j]
+        xm1[j] = -a2 * dvdl / r[j] - za2 / r2[j]
+        xm2[j] = -a2 * ddvdrr + zaa / r2[j] / r[j]
+    xm1[nr] = xm1[nr - 1]
+    xm2[nr] = xm2[nr - 1]
+    xm1[1] = xm1[2] + za2 / r2[2] - za2 / r2[1]
+    xm2[1] = xm2[2] - zaa / r2[2] / r[2] + zaa / r2[1] / r[1]
+
+
+def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
+    for j in range(2, nr):
+        dvdl = (v[j + 1] - v[j - 1]) / (2.0 * dl)
+        ddvdrr = ((v[j + 1] + v[j - 1] - 2.0 * v[j]) / (dl * dl) - dvdl) / r2[j]
+        xm1[j] = -a2 * dvdl / r[j]
+        xm2[j] = -a2 * ddvdrr
+    xm1[nr] = xm1[nr - 1]
+    xm2[nr] = xm2[nr - 1]
+    xm1[1] = xm1[2]
+    xm2[1] = xm2[2]
+
+
 def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi):  # noqa: E741
     """setqmm subroutine"""
     c = 137.038
@@ -1358,34 +1392,12 @@ def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, 
     if idoflag:
         if not njrc[lpx]:
             if idoflag == 1:
-                for j in range(1, nr + 1):
-                    v[j] = -zeff / r[j] + orb[j][i]
-
-            for j in range(2, nr - 1):
-                dvdl = (orb[j + 1][i] - orb[j - 1][i]) / (2.0 * dl)
-                ddvdrr = ((orb[j + 1][i] + orb[j - 1][i] - 2.0 * orb[j][i]) / (dl * dl) - dvdl) / r2[j]
-                xm1[j] = -a2 * dvdl / r[j] - za2 / r2[j]
-                xm2[j] = -a2 * ddvdrr + zaa / r2[j] / r[j]
-
-            xm1[nr] = xm1[nr - 1]
-            xm2[nr] = xm2[nr - 1]
-            xm1[1] = xm1[2] + za2 / r2[2] - za2 / r2[1]
-            xm2[1] = xm2[2] - zaa / r2[2] / r[2] + zaa / r2[1] / r[1]
+                _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v)
+            _setqmm_update_xm_from_orb(orb, i, nr, dl, r, r2, a2, za2, zaa, xm1, xm2)
     else:
         if idoflag == 1:
-            for j in range(1, nr + 1):
-                v[j] = vi[j][lp2] + orb[j][i]
-
-        for j in range(2, nr - 1 + 1):
-            dvdl = (v[j + 1] - v[j - 1]) / (2.0 * dl)
-            ddvdrr = ((v[j + 1] + v[j - 1] - 2.0 * v[j]) / (dl * dl) - dvdl) / r2[j]
-            xm1[j] = -a2 * dvdl / r[j]
-            xm2[j] = -a2 * ddvdrr
-
-        xm1[nr] = xm1[nr - 1]
-        xm2[nr] = xm2[nr - 1]
-        xm1[1] = xm1[2]
-        xm2[1] = xm2[2]
+            _setqmm_fill_v_from_vi(vi, orb, lp2, i, nr, v)
+        _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2)
 
     # figure out the (Desclaux-Numerov) effective potential.
     xlb = l + pow(0.5, 2.0) / 2.0

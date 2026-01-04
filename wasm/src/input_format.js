@@ -1,4 +1,3 @@
-// eslint-disable-next-line -- Browser ESM uses relative paths for local modules.
 import { elements } from './elements.js';
 
 /**
