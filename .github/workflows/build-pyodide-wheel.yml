@@ -1,0 +1,65 @@
+name: Build Pyodide Wheels
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: ['master']
+    paths:
+      - '.github/workflows/build-pyodide-wheel.yml'
+      - 'phaseshifts/**'
+      - 'setup.py'
+      - 'pyproject.toml'
+      - 'phaseshifts_build_backend.py'
+      - 'wasm/**'
+
+jobs:
+  build_pyodide:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@6ab9eb1bda2574c4ddb79809fc9247783eaf9021
+        with:
+          version: 'latest'
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Install f2c
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y f2c libf2c2-dev
+
+      - name: Build WASM artifacts (f2c)
+        run: |
+          cd wasm
+          ./build.sh --method=f2c
+        continue-on-error: true
+
+      - name: Build pyodide wheels
+        uses: pypa/cibuildwheel@v3.3.0
+        env:
+          CIBW_PLATFORM: pyodide
+          # NOTE: Pyodide 3.14 is not yet available in cibuildwheel.
+          CIBW_BUILD: cp313-pyodide_wasm32
+          CIBW_TEST_COMMAND: python -c "import phaseshifts; print(phaseshifts.__version__)"
+          PHASESHIFTS_DISABLE_SKBUILD: '1'
+          PHASESHIFTS_SKIP_FORTRAN: '1'
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyodide-wheels
+          path: dist/
+
+      - name: Upload wasm artifacts
+        if: ${{ hashFiles('wasm/dist/*') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: wasm-f2c-artifacts
+          path: wasm/dist
