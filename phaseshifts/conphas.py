@@ -231,9 +231,7 @@ class Conphas:
 
     @staticmethod
     def _guess_phasout_filenames(lines, indices):
-        return [
-            lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "") + ".ph" for i in indices
-        ]
+        return [lines[i].split("#")[0].split(" ")[-1].replace("\n", "").replace("\r", "") + ".ph" for i in indices]
 
     @staticmethod
     def _resolve_phasout_filenames(output_filenames, guessed_filenames, indices):
