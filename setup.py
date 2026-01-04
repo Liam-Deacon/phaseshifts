@@ -73,6 +73,7 @@ F2PY_SIGNATURE_PATH = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", F2PY_SIGN
 IS_PYODIDE = os.environ.get("CIBW_PLATFORM") == "pyodide" or sys.platform == "emscripten"
 SKIP_SKBUILD = os.environ.get("PHASESHIFTS_DISABLE_SKBUILD") or IS_PYODIDE
 SKIP_FORTRAN = os.environ.get("PHASESHIFTS_SKIP_FORTRAN") or IS_PYODIDE
+INCLUDE_WASM_ASSETS = os.environ.get("PHASESHIFTS_INCLUDE_WASM_ASSETS") or IS_PYODIDE
 
 
 def _pythonpath_env(extra_path):
@@ -403,6 +404,22 @@ except OSError:
     pass
 
 # --- Fallback logic for build ---
+package_data = (
+    {}
+    if BUILD_BACKEND == "skbuild"
+    else {
+        # If any package contains *.f or *.pyd files, include them:
+        "": ["*.f", "*.pyd", "*.so", "*.dll"],
+        # If any package contains *.txt or *.rst files, include them:
+        ".": ["*.txt", "*.rst", "*.pyw", "ChangeLog"],
+        "lib": ["lib/*.f", "lib/*.c", "lib/*.h"] + ["*.so", "*.pyd"],
+        "gui": ["gui/*.ui", "gui/*.bat"],
+        "gui/res": ["gui/res/*.*"],
+    }
+)
+if INCLUDE_WASM_ASSETS:
+    package_data.setdefault("wasm", []).append("dist/*")
+
 setup_args = dict(
     name="phaseshifts",
     packages=find_packages(),
@@ -452,19 +469,7 @@ setup_args = dict(
     },
     keywords="phaseshifts atomic scattering muffin-tin diffraction",
     include_package_data=True,
-    package_data=(
-        {}
-        if BUILD_BACKEND == "skbuild"
-        else {
-            # If any package contains *.f or *.pyd files, include them:
-            "": ["*.f", "*.pyd", "*.so", "*.dll"],
-            # If any package contains *.txt or *.rst files, include them:
-            ".": ["*.txt", "*.rst", "*.pyw", "ChangeLog"],
-            "lib": ["lib/*.f", "lib/*.c", "lib/*.h"] + ["*.so", "*.pyd"],
-            "gui": ["gui/*.ui", "gui/*.bat"],
-            "gui/res": ["gui/res/*.*"],
-        }
-    ),
+    package_data=package_data,
     scripts=["phaseshifts/phsh.py"],
     install_requires=[
         "scipy >= 0.7",

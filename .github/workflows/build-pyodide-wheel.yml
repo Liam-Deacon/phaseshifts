@@ -41,15 +41,25 @@ jobs:
           ./build.sh --method=f2c
         continue-on-error: true
 
+      - name: Stage WASM assets for wheel
+        run: |
+          mkdir -p phaseshifts/wasm/dist
+          if [ -d "wasm/dist" ] && [ "$(ls -A wasm/dist 2>/dev/null)" ]; then
+            cp -r wasm/dist/* phaseshifts/wasm/dist/
+          else
+            echo "::warning::WASM dist directory is empty; wheel will ship without artifacts."
+          fi
+
       - name: Build pyodide wheels
         uses: pypa/cibuildwheel@v3.3.0
         env:
           CIBW_PLATFORM: pyodide
           # NOTE: Pyodide 3.14 is not yet available in cibuildwheel.
-          CIBW_BUILD: cp313-pyodide_wasm32
+          CIBW_BUILD: cp312-pyodide_wasm32 cp313-pyodide_wasm32
           CIBW_TEST_COMMAND: python -c "import phaseshifts; print(phaseshifts.__version__)"
           PHASESHIFTS_DISABLE_SKBUILD: '1'
           PHASESHIFTS_SKIP_FORTRAN: '1'
+          PHASESHIFTS_INCLUDE_WASM_ASSETS: '1'
 
       - name: Upload wheels
         uses: actions/upload-artifact@v4

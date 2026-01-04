@@ -275,7 +275,8 @@ pre-commit run --all-files
 ```
 
 > [!NOTE]
-> Experimental Pyodide (WASM) wheels are built for `cp313-pyodide_wasm32` and
+> Experimental Pyodide (WASM) wheels are built for `cp312-pyodide_wasm32` and
+> `cp313-pyodide_wasm32`, and
 > currently omit the Fortran extension (`libphsh`). For WebAssembly execution
 > today, use the browser calculator build in `wasm/`.
 
