@@ -158,11 +158,7 @@ class hartfock(object):
                 if os.path.isfile(input_stream):
                     alfa = float("".join([ch for ch in f.next().split("!")[0] if ch.lower() != "d"]))
                 else:
-                    alfa = float(
-                        get_input(
-                            "Enter exchange correlation method (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): "
-                        )
-                    )
+                    alfa = float(get_input("Enter exchange correlation method (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): "))
 
             elif ichar == "a":
                 (

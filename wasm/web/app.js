@@ -470,14 +470,19 @@ async function runCalculation() {
 
     // Get input parameters
     const params = {
-      atomicNumber: Number.parseInt(document.getElementById('element').value, 10),
+      atomicNumber: Number.parseInt(
+        document.getElementById('element').value,
+        10,
+      ),
       muffinTinRadius: Number.parseFloat(
         document.getElementById('muffin-tin-radius').value,
       ),
       lmax: Number.parseInt(document.getElementById('lmax').value, 10),
       energyMin: Number.parseFloat(document.getElementById('energy-min').value),
       energyMax: Number.parseFloat(document.getElementById('energy-max').value),
-      energyStep: Number.parseFloat(document.getElementById('energy-step').value),
+      energyStep: Number.parseFloat(
+        document.getElementById('energy-step').value,
+      ),
       method: document.getElementById('method').value,
     };
 

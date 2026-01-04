@@ -364,50 +364,50 @@ class Wrapper(object):
     @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs):
         """
-           Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
+        Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
-           This method automates the full sequence described in:
-           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED."
-             Surf. Sci. 90, 1-25.
-             <https://doi.org/10.1016/0039-6028(79)90470-7>`_
-           - Moritz, W. (SATLEED code):
-             http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
-           - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+        This method automates the full sequence described in:
+        - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED."
+          Surf. Sci. 90, 1-25.
+          <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+        - Moritz, W. (SATLEED code):
+          http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+        - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
-           Steps:
-           1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
-           2. Muffin-tin potential generation
-           3. Phase shift calculation (relativistic/non-relativistic)
-           4. Removal of phase discontinuities (pi-jumps)
-           5. Output formatting for LEED analysis
+        Steps:
+        1. Atomic charge density calculation (Dirac-Fock/Hartree-Fock)
+        2. Muffin-tin potential generation
+        3. Phase shift calculation (relativistic/non-relativistic)
+        4. Removal of phase discontinuities (pi-jumps)
+        5. Output formatting for LEED analysis
 
-           Parameters
-           ----------
-           bulk_file : str
-               Path to the bulk MTZ or CLEED input file.
-           slab_file : str
-               Path to the slab/cluster MTZ or CLEED input file.
-           tmp_dir : str, optional
-               Temporary directory for intermediate files.
-           model_name : str, optional
-               Name of the model.
-           store : bool or str, optional
-               Whether to keep generated files and where to store them.
-           format : str, optional
-               Output format for phase shift files ('cleed', 'curve', etc.).
-           range : tuple(float, float, float), optional
-               Energy range for phase shift calculation (start, stop, step in eV).
+        Parameters
+        ----------
+        bulk_file : str
+            Path to the bulk MTZ or CLEED input file.
+        slab_file : str
+            Path to the slab/cluster MTZ or CLEED input file.
+        tmp_dir : str, optional
+            Temporary directory for intermediate files.
+        model_name : str, optional
+            Name of the model.
+        store : bool or str, optional
+            Whether to keep generated files and where to store them.
+        format : str, optional
+            Output format for phase shift files ('cleed', 'curve', etc.).
+        range : tuple(float, float, float), optional
+            Energy range for phase shift calculation (start, stop, step in eV).
 
-           Returns
-           -------
-           output_files : list of str
-               List of generated phase shift output filenames.
+        Returns
+        -------
+        output_files : list of str
+            List of generated phase shift output filenames.
 
-           Scientific Context
-           ------------------
-           This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
-           ensuring all physical and computational steps are performed in the correct order. For further details,
-           see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
+        Scientific Context
+        ------------------
+        This workflow implements the full Barbieri/Van Hove methodology for LEED phase shift generation,
+        ensuring all physical and computational steps are performed in the correct order. For further details,
+        see the references above and the user guide at https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
         """
         verbose = kwargs.get("verbose", False)
@@ -662,8 +662,7 @@ def main(argv=None):
             metavar="<backend>",
             default="bvh",
             help=(
-                "Phase shift backend to use: 'bvh' (default), "
-                + "'eeasisss' (native or ViPErLEED; alias: viperleed)."
+                "Phase shift backend to use: 'bvh' (default), " + "'eeasisss' (native or ViPErLEED; alias: viperleed)."
             ),
         )
         parser.add_argument(

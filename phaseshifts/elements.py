@@ -4017,8 +4017,7 @@ def _descriptions(symbol):
         "considered highly toxic. May cause lung cancer if inhaled."
     )
     e["Cr"].description = (
-        "Hard silvery transition element. Used in decorative electroplating. "
-        + "Discovered in 1797 by Vauquelin."
+        "Hard silvery transition element. Used in decorative electroplating. " + "Discovered in 1797 by Vauquelin."
     )
     e["Mn"].description = (
         "Grey brittle metallic transition element. Rather "

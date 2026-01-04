@@ -63,9 +63,7 @@ def test_python_vs_fortran_density():
         pytest.fail("Fortran output '{}' has {} lines; expected at least 4.".format(fortran_file, len(lines)))
     tokens = lines[3].split()
     if len(tokens) != 4:
-        pytest.fail(
-            "Fortran grid params line must have 4 tokens; got {} in line 4: {!r}".format(len(tokens), lines[3])
-        )
+        pytest.fail("Fortran grid params line must have 4 tokens; got {} in line 4: {!r}".format(len(tokens), lines[3]))
     try:
         rmin, rmax, nr_value, Z = [float(x) for x in tokens]
         nr = int(nr_value)
