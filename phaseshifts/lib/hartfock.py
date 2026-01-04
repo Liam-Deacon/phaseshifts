@@ -1168,51 +1168,14 @@ def elsolve(
 
     ief = float
     nn = int
+    integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
 
     while True:
         e = (el + eh) / 2.0  # label 155
         istop = 0
-        (
-            e,
-            l,
-            xkappa,
-            n,
-            nn,
-            istop,
-            ief,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            rel,
-        ) = integ(
-            e,
-            l,
-            xkappa,
-            n,
-            nn,
-            istop,
-            ief,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            rel,
-        )
+        integ_result = integ(e, l, xkappa, n, istop, phi, integ_ctx)
+        nn = integ_result[0]
+        ief = integ_result[2]
         if nn < n - l - 1:
             ief = -1
             if ief != 1:  # label 200
@@ -1310,6 +1273,19 @@ class SetqmmContext(object):
         self.xm2 = xm2
         self.njrc = njrc
         self.vi = vi
+
+
+class IntegContext(object):
+    def __init__(self, z, v, xm1, xm2, nr, r, r2, dl, rel):
+        self.z = z
+        self.v = v
+        self.xm1 = xm1
+        self.xm2 = xm2
+        self.nr = nr
+        self.r = r
+        self.r2 = r2
+        self.dl = dl
+        self.rel = rel
 
 
 def _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v):
@@ -1489,9 +1465,19 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
-def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901, MC0001
+def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
     """integrate out count nodes"""
-    # x0 parameter removed; it was unused in the original signature.
+    # x0 is returned as the log-derivative at the turning point when available.
+    dl = ctx.dl
+    rel = ctx.rel
+    z = ctx.z
+    v = ctx.v
+    xm1 = ctx.xm1
+    xm2 = ctx.xm2
+    nr = ctx.nr
+    r = ctx.r
+    r2 = ctx.r2
+
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
     c = 137.038
@@ -1518,11 +1504,13 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
     ss2 = ss - 0.5
 
     # we shall set ief to -1 if energy is too low, +1 if too high.
-    ief = 0
+    energy_flag = 0
+    node_count = 0
+    x0 = None
 
     # see Desclaux and documentation to see the origin of the below equations.
     # here, we set up the first two points.
-    t = e - v(1)
+    t = e - v[1]
     xm0 = 1.0 + a2 * t
     tm = xm0 + xm0
     xmx = xm1[1] / xm0
@@ -1537,7 +1525,7 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
     xmx = xm1[2] / xm
     xk2 = r2[2] * (tm * t - xmx * (xkappa / r[2] + 0.75 * xmx) + xm2[2] / tm) - xl4
     dk2 = 1.0 + dl2 * xk2
-    p1 = dk2 * pow((r[2] / r[1], ss2) - (r[2] - r[1]) * z / xlp) * sqrt(xm0 / xm)
+    p1 = dk2 * (pow(r[2] / r[1], ss2) - (r[2] - r[1]) * z / xlp) * sqrt(xm0 / xm)
     phi[2] = p1 * sqrt(xm * r[2]) / dk2
 
     # if istop is set, the we know to stop there.  If it is zero, it shall
@@ -1547,12 +1535,11 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
         for j in range(nr - 1, 2 - 1, -1):
             if e > v[j]:
                 break
-            ief = -1
-            return ief
+            energy_flag = -1
+            return (node_count, istop, energy_flag, x0)
         istop = j
 
     # initialize number of nodes, and determine the ideal number.
-    nn = 0
     nnideal = n - l - 1
 
     # integrate out count nodes, and stop along the way if there are too many
@@ -1574,16 +1561,22 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
             p2 /= p2
 
         if p2 * p1 < 0.0:
-            nn += 1
-            if nn > nnideal:
-                ief = 1
-                return ief
+            node_count += 1
+            if node_count > nnideal:
+                energy_flag = 1
+                return (node_count, istop, energy_flag, x0)
 
         p0 = p1
         p1 = p2
 
-    if not is0:
-        return
+    if istop > 0:
+        psip2 = phi[istop + 2] - phi[istop - 2]
+        psip1 = phi[istop + 1] - phi[istop - 1]
+        psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
+        x0 = psip / phi[istop]
+
+    if is0:
+        return (node_count, istop, energy_flag, x0)
 
     for i in range(istop + 3, nr - 1 + 1):
         t = e - v[i]
@@ -1592,8 +1585,8 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
         xmx = xm1[i] / xm
         p2 = (2.0 - dl5 * xk2) * p1 / dk2 - p0
         if p2 / p1 > 1.0:
-            ief = -1
-            return ief
+            energy_flag = -1
+            return (node_count, istop, energy_flag, x0)
 
         xk2 = r2[i] * (tm * t - xmx * (xkappa / r[i] + 0.75 * xmx) + xm2[i] / tm) - xl4
         dk2 = 1.0 + dl2 * xk2
@@ -1607,15 +1600,15 @@ def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r
                 p2 /= p2
 
                 if p2 * p1 < 0.0:
-                    nn += 1
-                    if nn > nnideal:
-                        ief = 1
-                        return
+                    node_count += 1
+                    if node_count > nnideal:
+                        energy_flag = 1
+                        return (node_count, istop, energy_flag, x0)
 
             p0 = p1
             p1 = p2
 
-    return ief
+    return (node_count, istop, energy_flag, x0)
 
 
 def clebschgordan(nel, nl, cg, si, fa):
@@ -1954,48 +1947,8 @@ def fitx0(
         setqmm(i, orb, l, idoflag, ctx)
         zeff = ctx.zeff
 
-        (
-            e,
-            l,
-            xkappa,
-            n,
-            nn,
-            jrt,
-            ief,
-            xactual,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            rel,
-        ) = integ(
-            e,
-            l,
-            xkappa,
-            n,
-            nn,
-            jrt,
-            ief,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            rel,
-        )
+        integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
+        nn, jrt, ief, xactual = integ(e, l, xkappa, n, jrt, phi, integ_ctx)
 
         if int(nn):
             vl = v[1]
@@ -2048,8 +2001,7 @@ def pseudize(
     factor=None,
 ):
     """pseudize subroutine"""
-    nn = ief = x0 = x00 = xm = xp = fp = fpp = psi = psip = psipp = None
-    xdummy = [None] * len(phi)
+    x0 = x00 = xm = xp = fp = fpp = psi = psip = psipp = None
     rf = vf = [None] * len(njrc) - 1
 
     lp = l + 1
@@ -2058,48 +2010,9 @@ def pseudize(
     while ev > q0[istop]:
         istop -= 1
 
-    (
-        ev,
-        l,
-        xkappa,
-        n,
-        nn,
-        istop,
-        ief,
-        xdummy,
-        phi,
-        zeff,
-        v,
-        q0,
-        xm1,
-        xm2,
-        nr,
-        r,
-        dr,
-        r2,
-        dl,
-        rel,
-    ) = integ(
-        ev,
-        l,
-        xkappa,
-        n,
-        nn,
-        istop,
-        ief,
-        phi,
-        zeff,
-        v,
-        q0,
-        xm1,
-        xm2,
-        nr,
-        r,
-        dr,
-        r2,
-        dl,
-        rel,
-    )
+    integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
+    integ_result = integ(ev, l, xkappa, n, istop, phi, integ_ctx)
+    istop = integ_result[1]
 
     if rcut is None or factor is None:
         (rcut, factor) = get_input("Please enter the cutoff radius, and factor: ").split()
@@ -2127,27 +2040,7 @@ def pseudize(
     # switch = phi[jrt] / abs(phi[jrt])
     print("RCUTOFF = %8.4f  JRC = %5i" % (rcut, jrc))  # 94 format(1x,2d15.8)
     print("RTEST   = %8.4f  JRT = %5i" % (rtest, jrt))  # 1x,1a10,1f8.4,1a8,1i5
-    integ(
-        ev,
-        l,
-        xkappa,
-        n,
-        nn,
-        jrt,
-        ief,
-        phi,
-        zeff,
-        v,
-        q0,
-        xm1,
-        xm2,
-        nr,
-        r,
-        dr,
-        r2,
-        dl,
-        rel,
-    )
+    x00 = integ(ev, l, xkappa, n, jrt, phi, integ_ctx)[3]
     for ii in range(len(phi)):
         phi[ii] /= phi[jrt]
 
@@ -2159,53 +2052,14 @@ def pseudize(
     xn00 += dr[jrt] * phi[jrt] * phi[jrt] / 2.0
     de = 0.0001
     ee = ev + de / 2.0
-    integ(
-        ee,
-        l,
-        xkappa,
-        n,
-        nn,
-        jrt,
-        ief,
-        phi,
-        zeff,
-        v,
-        q0,
-        xm1,
-        xm2,
-        nr,
-        r,
-        dr,
-        r2,
-        dl,
-        rel,
-    )
+    xp = integ(ee, l, xkappa, n, jrt, phi, integ_ctx)[3]
     ee = ev - de / 2.0
-    integ(
-        ee,
-        l,
-        xkappa,
-        n,
-        nn,
-        jrt,
-        ief,
-        phi,
-        zeff,
-        v,
-        q0,
-        xm1,
-        xm2,
-        nr,
-        r,
-        dr,
-        r2,
-        dl,
-        rel,
-    )
+    xm = integ(ee, l, xkappa, n, jrt, phi, integ_ctx)[3]
     c00 = (xm - xp) / (2.0 * de)
     print(c00, x00)  # format 94
     print(xn00)  # format 94
     ruse = 0.0
+    integ_ruse_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, ruse)
     v0 = v[jrc]
     dvdl = (8.0 * (v[jrc + 1] - v[jrc - 1]) - (v[jrc + 2] - v[jrc - 2])) / (12.0 * dl)
     ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (12.0 * dl * dl)
@@ -2322,27 +2176,7 @@ def pseudize(
                 ruse,
                 factor,
             )
-            integ(
-                ev,
-                l,
-                xkappa,
-                n,
-                nn,
-                jrt,
-                ief,
-                phi,
-                zeff,
-                v,
-                q0,
-                xm1,
-                xm2,
-                nr,
-                r,
-                dr,
-                r2,
-                dl,
-                ruse,
-            )
+            x0 = integ(ev, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
 
         for ii in range(1, jrt + 1):
             phi[ii] = phi[ii] / phi[jrt]
@@ -2355,49 +2189,9 @@ def pseudize(
         xn0 = xn0 + dr[jrt] * phi[jrt] * phi[jrt] / 2.0
         de = 0.0001
         ee = ev + de / 2.0
-        integ(
-            ee,
-            l,
-            xkappa,
-            n,
-            nn,
-            jrt,
-            ief,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            ruse,
-        )
+        xp = integ(ee, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
         ee = ev - de / 2.0
-        integ(
-            ee,
-            l,
-            xkappa,
-            n,
-            nn,
-            jrt,
-            ief,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            ruse,
-        )
+        xm = integ(ee, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
         c0 = (xm - xp) / (2.0 * de)
         print(c0, x0)
         print(xn0)

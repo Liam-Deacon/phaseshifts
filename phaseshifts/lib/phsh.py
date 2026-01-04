@@ -327,10 +327,8 @@ def phsh_wil(
 
                 # remove discontinuities by multiples of pi
                 for lp in range(1, nl + 1):
-                    ls = 0
                     deldif = delta[lp] - delold[lp]  # label 111
 
-                ls += 1
                 delta[lp] = delta[lp] - (copysign(pi, deldif) * abs(pi))
 
                 zph.write(
@@ -781,9 +779,7 @@ def phsh_rel(
     one = 1.0
     half = 0.5
     des = 0.025e0
-    # sub = "sub"
     # record = "nos"
-    # opts = None
     opt = opt1 = None  # dummy variables
     rmaxi = lsm1 = 1  # dummy
 
