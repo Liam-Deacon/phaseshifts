@@ -452,7 +452,8 @@ setup_args = dict(
     install_requires=[
         "scipy >= 0.7",
         "numpy >= 1.3",
-        "periodictable",
+        "periodictable>=1.6.1; python_version < '3.14'",
+        "periodictable==2.0.2; python_version >= '3.14'",
         "typing_extensions",
     ],
     ext_modules=f2py_exts,
