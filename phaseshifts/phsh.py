@@ -156,6 +156,212 @@ class Wrapper(object):
         self.__dict__.update(kwargs)
 
     @staticmethod
+    def _resolve_output_format(kwargs):
+        fmt = kwargs.get("format")
+        return fmt.lower() if fmt else None
+
+    @staticmethod
+    def _resolve_lmax(kwargs, default_lmax=10):
+        return kwargs.get("lmax", default_lmax)
+
+    @staticmethod
+    def _normalize_tmp_dir(tmp_dir):
+        tmp_dir = str(tmp_dir)
+        if not os.path.isdir(tmp_dir):
+            tmp_dir = tempfile.gettempdir()
+        return tmp_dir
+
+    @staticmethod
+    def _load_mtz_model(input_file, tmp_dir, dummycell, verbose, suffix, use_verbose=False):
+        mtz = model.MTZ_model(dummycell, atoms=[])
+        if CLEEDInputValidator.is_cleed_file(input_file):
+            if use_verbose:
+                mtz = Converter.import_CLEED(input_file, verbose=verbose)
+            else:
+                mtz = Converter.import_CLEED(input_file)
+            full_fname = glob(os.path.expanduser(os.path.expandvars(input_file)))[0]
+            input_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + suffix + ".i")
+            mtz.gen_input(filename=input_file)
+        else:
+            mtz.load_from_file(input_file)
+        return mtz, input_file
+
+    @staticmethod
+    def _build_atomic_dict(bulk_mtz, slab_mtz, tmp_dir):
+        atomic_dict = {}
+        bulk_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms]
+        slab_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in slab_mtz.atoms]
+        for elem in set(bulk_elements + slab_elements):
+            at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
+            if not os.path.isfile(at_file):
+                print("\nCalculating atomic charge density for %s..." % elem)
+                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
+            else:
+                atomic_dict[elem] = at_file
+        return atomic_dict
+
+    @staticmethod
+    def _collect_atomic_files(mtz, atomic_dict):
+        return [atomic_dict[getattr(atom.element, "symbol", str(atom.element))] for atom in set(mtz.atoms)]
+
+    @staticmethod
+    def _build_atomic_input(mtz, at_files, tmp_dir, model_name, suffix):
+        return mtz.gen_atomic(
+            input_files=at_files,
+            output_file=os.path.join(tmp_dir, model_name + suffix + ".i"),
+        )
+
+    @staticmethod
+    def _calculate_bulk_mtz(bulk_mtz, bulk_file, bulk_atomic_file, tmp_dir, bulk_model_name, verbose):
+        print("\nCalculating bulk muffin-tin potential...")
+        if verbose:
+            print("\tcluster file: '%s'" % bulk_file)
+            print("\tatomic file: '%s'" % bulk_atomic_file)
+            print("\tslab calculation: '%s'" % str(False))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX))
+
+        bulk_mtz.calculate_MTZ(
+            cluster_file=bulk_file,
+            atomic_file=bulk_atomic_file,
+            slab=False,
+            output_file=os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX),
+            mufftin_file=os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX),
+        )
+        print("Bulk MTZ = %f" % bulk_mtz.mtz)
+
+    @staticmethod
+    def _calculate_slab_mtz(slab_mtz, slab_file, slab_atomic_file, tmp_dir, slab_model_name, bulk_mtz, verbose):
+        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + MUFFTIN_SUFFIX)
+        print("\nCalculating slab muff-tin potential...")
+        if verbose:
+            print("\tcluster file: '%s'" % slab_file)
+            print("\tatomic file: '%s'" % slab_atomic_file)
+            print("\tslab calculation: %s" % str(True))
+            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + BMTZ_SUFFIX))
+            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
+            print("\tmtz value: %s" % str(bulk_mtz.mtz))
+
+        slab_mtz.calculate_MTZ(
+            cluster_file=slab_file,
+            output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
+            atomic_file=slab_atomic_file,
+            mufftin_file=mufftin_filepath,
+            mtz_string=str(bulk_mtz.mtz),
+            slab=True,
+        )
+        return mufftin_filepath
+
+    @staticmethod
+    def _build_lmax_dict(slab_mtz, bulk_mtz, default_lmax):
+        lmax_dict = {}
+        for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
+            try:
+                lmax_dict[atom.tag] = atom.lmax
+            except AttributeError:
+                print(atom.tag, "default lmax used:", default_lmax)
+                lmax_dict[atom.tag] = default_lmax
+        return lmax_dict
+
+    @staticmethod
+    def _apply_energy_range(mufftin_filepath, energy_range):
+        try:
+            with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
+                lines = [line for line in f]
+
+            ei, de, ef, lsm, vc = [
+                t(s) for t, s in zip((float, float, float, int, float), lines[1].replace("D", "E").split()[:5])
+            ]
+            ei, ef, de = [t(s) for t, s in zip((float, float, float), energy_range)]
+            lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace("e", "D")
+
+            with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
+                f.write("".join([str(line) for line in lines]))
+
+            return True
+        except Exception:
+            sys.stderr.write(
+                "Unable to change phase shift energy range - using Barbieri/Van Hove "
+                "default of 20-300eV in 5eV steps\n"
+            )
+            sys.stderr.flush()
+            return False
+
+    @staticmethod
+    def _remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict):
+        phsh_files = []
+        for i, phaseshift in enumerate(phaseshifts):
+            filename = os.path.splitext(phasout_files[i])[0]
+            if out_format == "curve":
+                filename += ".cur"
+            else:
+                filename += ".phs"
+            phsh_files.append(filename)
+            print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
+            phsh = Conphas(
+                input_files=[phasout_files[i]],
+                output_file=filename,
+                formatting=out_format,
+                lmax=lmax_dict[phaseshift],
+            )
+            phsh.calculate()
+        return phsh_files
+
+    @staticmethod
+    def _generate_phase_shifts(
+        slab_mtz,
+        mufftin_filepath,
+        phasout_filepath,
+        dataph_filepath,
+        filepath,
+        out_format,
+        phasout_files,
+        phaseshifts,
+        lmax_dict,
+        kwargs,
+    ):
+        phsh_files = []
+        try:
+            if slab_mtz.nform == 0 or str(slab_mtz.nform).lower().startswith("cav"):
+                phsh_cav(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_zph.o")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phsh_files.extend(Wrapper._remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict))
+
+            if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
+                phsh_wil(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_zph.o")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+
+            if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
+                if "range" in kwargs:
+                    Wrapper._apply_energy_range(mufftin_filepath, kwargs["range"])
+
+                phsh_rel(mufftin_filepath, phasout_filepath, dataph_filepath, filepath + "_inpdat.txt")
+                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
+                phsh_files.extend(Wrapper._remove_pi_jumps(phasout_files, phaseshifts, out_format, lmax_dict))
+
+        except AttributeError:
+            raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
+
+        return phsh_files
+
+    @staticmethod
+    def _resolve_copy_destination(out_format, kwargs):
+        if "store" in kwargs and out_format != "cleed":
+            if kwargs["store"] != ".":
+                return os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
+            return os.path.abspath(".")
+
+        if "CLEED_PHASE" in os.environ and out_format == "cleed":
+            return os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
+
+        return os.path.abspath(".")
+
+    @staticmethod
+    def _copy_output_files(phsh_files, out_format, kwargs):
+        dst = Wrapper._resolve_copy_destination(out_format, kwargs)
+        Wrapper._copy_files(phsh_files, dst, verbose=True)
+
+    @staticmethod
     def autogen_from_input(bulk_file, slab_file, tmp_dir=None, model_name=None, **kwargs):
         """
            Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
@@ -206,276 +412,73 @@ class Wrapper(object):
         """
         verbose = kwargs.get("verbose", False)
         dummycell = model.Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-        if model_name is None:
-            model_name = "atomic"
+        model_name = model_name or "atomic"
 
-        # check formatting
-        if "format" in kwargs:
-            out_format = kwargs["format"].lower()
-        else:
-            out_format = None
+        out_format = Wrapper._resolve_output_format(kwargs)
+        lmax = Wrapper._resolve_lmax(kwargs)
+        tmp_dir = Wrapper._normalize_tmp_dir(tmp_dir)
 
-        # check lmax
-        if "lmax" in kwargs:
-            lmax = kwargs["lmax"]
-        else:
-            lmax = 10
+        bulk_mtz, bulk_file = Wrapper._load_mtz_model(
+            bulk_file,
+            tmp_dir,
+            dummycell,
+            verbose,
+            "_bulk",
+            use_verbose=True,
+        )
+        slab_mtz, slab_file = Wrapper._load_mtz_model(
+            slab_file,
+            tmp_dir,
+            dummycell,
+            verbose,
+            "_slab",
+            use_verbose=False,
+        )
 
-        # check for intermediate storage directory, temp folder otherwise
-        tmp_dir = str(tmp_dir)  # ensure string does not have escape chars
-        if not os.path.isdir(tmp_dir):
-            tmp_dir = tempfile.gettempdir()
-
-        # Load bulk model and calculate MTZ
-        bulk_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEEDInputValidator.is_cleed_file(bulk_file):
-            bulk_mtz = Converter.import_CLEED(bulk_file, verbose=verbose)
-            full_fname = glob(os.path.expanduser(os.path.expandvars(bulk_file)))[0]
-            bulk_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_bulk.i")
-            bulk_mtz.gen_input(filename=bulk_file)
-        else:
-            bulk_mtz.load_from_file(bulk_file)
-
-        # Load slab model and calculate MTZ
-        slab_mtz = model.MTZ_model(dummycell, atoms=[])
-        if CLEEDInputValidator.is_cleed_file(slab_file):
-            slab_mtz = Converter.import_CLEED(slab_file)
-            full_fname = glob(os.path.expanduser(os.path.expandvars(slab_file)))[0]
-            slab_file = os.path.join(tmp_dir, os.path.splitext(os.path.basename(full_fname))[0] + "_slab.i")
-            slab_mtz.gen_input(filename=slab_file)
-        else:
-            slab_mtz.load_from_file(slab_file)
-
-        # generate atomic charge densities for each element in bulk model
         if not isinstance(bulk_mtz, model.MTZ_model):
             raise AttributeError("bulk_mtz is not an MTZ_model")
 
-        # get unique elements in bulk and slab
-        atomic_dict = {}
-        bulk_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in bulk_mtz.atoms]
-        slab_elements = [getattr(atom.element, "symbol", str(atom.element)) for atom in slab_mtz.atoms]
-        for elem in set(bulk_elements + slab_elements):
-            at_file = os.path.join(tmp_dir, "at_%s.i" % elem)
-            if not os.path.isfile(at_file):
-                print("\nCalculating atomic charge density for %s..." % elem)
-                atomic_dict[elem] = atorb.Atorb.calculate_Q_density(element=elem, output_dir=tmp_dir)
-            else:
-                atomic_dict[elem] = at_file
+        atomic_dict = Wrapper._build_atomic_dict(bulk_mtz, slab_mtz, tmp_dir)
+        bulk_at_files = Wrapper._collect_atomic_files(bulk_mtz, atomic_dict)
+        slab_at_files = Wrapper._collect_atomic_files(slab_mtz, atomic_dict)
 
-        # prepare at files for appending into atomic file
-        bulk_at_files = [
-            atomic_dict[getattr(atom.element, "symbol", str(atom.element))] for atom in set(bulk_mtz.atoms)
-        ]
-
-        # create atomic.i input file from mtz model
         bulk_model_name = os.path.basename(os.path.splitext(bulk_file)[0])
-        bulk_atomic_file = bulk_mtz.gen_atomic(
-            input_files=bulk_at_files,
-            output_file=os.path.join(tmp_dir, bulk_model_name + "_bulk.i"),
-        )
+        slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
+        bulk_atomic_file = Wrapper._build_atomic_input(bulk_mtz, bulk_at_files, tmp_dir, bulk_model_name, "_bulk")
+        slab_atomic_file = Wrapper._build_atomic_input(slab_mtz, slab_at_files, tmp_dir, slab_model_name, "_slab")
 
         if verbose:
             print("\nModel")
             print("bulk atoms: %s" % [s for s in bulk_mtz.atoms])
             print("slab atoms: %s" % [s for s in slab_mtz.atoms])
 
-        # calculate muffin-tin potential for bulk model
-        print("\nCalculating bulk muffin-tin potential...")
-        if verbose:
-            print("\tcluster file: '%s'" % bulk_file)
-            print("\tatomic file: '%s'" % bulk_atomic_file)
-            print("\tslab calculation: '%s'" % str(False))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX))
-            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX))
-
-        # bulk_mtz_file = bulk_mtz.calculate_MTZ(
-        bulk_mtz.calculate_MTZ(
-            cluster_file=bulk_file,
-            atomic_file=bulk_atomic_file,
-            slab=False,
-            output_file=os.path.join(tmp_dir, bulk_model_name + BMTZ_SUFFIX),
-            mufftin_file=os.path.join(tmp_dir, bulk_model_name + MUFFTIN_SUFFIX),
-        )
-        print("Bulk MTZ = %f" % bulk_mtz.mtz)
-
-        # prepare at files for appending into atomic file
-        slab_at_files = [atomic_dict[atom.element.symbol] for atom in set(slab_mtz.atoms)]
-
-        # create atomic.i input file from mtz model
-        slab_model_name = os.path.basename(os.path.splitext(slab_file)[0])
-        slab_atomic_file = slab_mtz.gen_atomic(
-            input_files=slab_at_files,
-            output_file=os.path.join(tmp_dir, slab_model_name + "_slab.i"),
+        Wrapper._calculate_bulk_mtz(bulk_mtz, bulk_file, bulk_atomic_file, tmp_dir, bulk_model_name, verbose)
+        mufftin_filepath = Wrapper._calculate_slab_mtz(
+            slab_mtz, slab_file, slab_atomic_file, tmp_dir, slab_model_name, bulk_mtz, verbose
         )
 
-        # calculate muffin-tin potential for slab model
-        mufftin_filepath = os.path.join(tmp_dir, slab_model_name + MUFFTIN_SUFFIX)
-        print("\nCalculating slab muff-tin potential...")
-        if verbose:
-            print("\tcluster file: '%s'" % slab_file)
-            print("\tatomic file: '%s'" % slab_atomic_file)
-            print("\tslab calculation: %s" % str(True))
-            print("\toutput file: '%s'" % os.path.join(tmp_dir, slab_model_name + BMTZ_SUFFIX))
-            print("\tmufftin file: '%s'" % os.path.join(tmp_dir, mufftin_filepath))
-            print("\tmtz value: %s" % str(bulk_mtz.mtz))
-
-        # slab_mtz_file = slab_mtz.calculate_MTZ(
-        slab_mtz.calculate_MTZ(
-            cluster_file=slab_file,
-            output_file=os.path.join(tmp_dir, slab_model_name + ".mtz"),
-            atomic_file=slab_atomic_file,
-            mufftin_file=mufftin_filepath,
-            mtz_string=str(bulk_mtz.mtz),
-            slab=True,
-        )
-
-        # create raw phase shift files
         print("\nGenerating phase shifts from '%s'..." % os.path.basename(mufftin_filepath))
         filepath = os.path.join(tmp_dir, slab_model_name)
         phasout_filepath = filepath + "_phasout.i"
         dataph_filepath = filepath + "_dataph.d"
-
         phaseshifts = [atom.tag for atom in set(slab_mtz.atoms)]
         phasout_files = [os.path.join(tmp_dir, atom.tag + ".ph") for atom in set(slab_mtz.atoms)]
-        phsh_files = []
 
-        # assign phase shift specific lmax values
-        lmax_dict = {}
-        for atom in set(slab_mtz.atoms + bulk_mtz.atoms):
-            try:
-                lmax_dict[atom.tag] = atom.lmax
-            except AttributeError:
-                print(atom.tag, "default lmax used:", lmax)
-                lmax_dict[atom.tag] = lmax
+        lmax_dict = Wrapper._build_lmax_dict(slab_mtz, bulk_mtz, lmax)
+        phsh_files = Wrapper._generate_phase_shifts(
+            slab_mtz,
+            mufftin_filepath,
+            phasout_filepath,
+            dataph_filepath,
+            filepath,
+            out_format,
+            phasout_files,
+            phaseshifts,
+            lmax_dict,
+            kwargs,
+        )
 
-        try:
-            if slab_mtz.nform == 0 or str(slab_mtz.nform).lower().startswith("cav"):
-                # calculate phase shifts
-                phsh_cav(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_zph.o",
-                )
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
-
-                # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
-
-            if slab_mtz.nform == 1 or str(slab_mtz.nform).lower().startswith("wil"):
-                # calculate phase shifts
-                phsh_wil(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_zph.o",
-                )
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
-
-            if slab_mtz.nform == 2 or str(slab_mtz.nform).lower().startswith("rel"):
-                # check energy range
-                if "range" in kwargs:
-                    try:
-                        # get values
-                        with open(mufftin_filepath, mode="r", encoding="utf-8") as f:
-                            lines = [line for line in f]
-
-                        ei, de, ef, lsm, vc = [
-                            t(s)
-                            for t, s in zip(
-                                (float, float, float, int, float),
-                                lines[1].replace("D", "E").split()[:5],
-                            )
-                        ]
-
-                        # assign new values
-                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
-
-                        # edit energy range
-                        lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(
-                            "e", "D"
-                        )
-                        #                         lines[1] = ff.FortranRecordWriter(
-                        #                                         '(3D12.4,4X,I3,4X,D12.4)'
-                        #                                         ).write([ei, de, ef, lsm, vc]) + '\n'
-
-                        with open(mufftin_filepath, mode="w", encoding="utf-8") as f:
-                            f.write("".join([str(line) for line in lines]))
-
-                    except Exception:
-                        sys.stderr.write(
-                            "Unable to change phase shift energy "
-                            "range - using Barbieri/Van Hove "
-                            "default of 20-300eV in 5eV steps\n"
-                        )
-                        sys.stderr.flush()
-
-                # calculate phase shifts
-                # print("Current time " + time.strftime("%X"))
-                phsh_rel(
-                    mufftin_filepath,
-                    phasout_filepath,
-                    dataph_filepath,
-                    filepath + "_inpdat.txt",
-                )
-                # print("Current time " + time.strftime("%X"))
-
-                # split phasout
-                phasout_files = Conphas.split_phasout(filename=phasout_filepath, output_filenames=phasout_files)
-
-                # eliminate pi-jumps
-                for i, phaseshift in enumerate(phaseshifts):
-                    filename = os.path.splitext(phasout_files[i])[0]
-                    if out_format == "curve":
-                        filename += ".cur"
-                    else:
-                        filename += ".phs"
-                    phsh_files.append(filename)
-                    print("\nRemoving pi/2 jumps in '%s':\n" % os.path.basename(filename))
-                    phsh = Conphas(
-                        input_files=[phasout_files[i]],
-                        output_file=filename,
-                        formatting=out_format,
-                        lmax=lmax_dict[phaseshift],
-                    )
-                    phsh.calculate()
-
-        except AttributeError:
-            raise AttributeError("MTZ_model has no NFORM (0-2) specified!")
-
-        # copy files to storage location
-        if "store" in kwargs and out_format != "cleed":
-            if kwargs["store"] != ".":
-                dst = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs["store"])))
-            else:
-                dst = os.path.abspath(".")
-            Wrapper._copy_files(phsh_files, dst, verbose=True)
-
-        elif "CLEED_PHASE" in os.environ and out_format == "cleed":
-            dst = os.path.abspath(os.path.expanduser(os.path.expandvars("$CLEED_PHASE")))
-            Wrapper._copy_files(phsh_files, dst, verbose=True)
-
-        else:
-            Wrapper._copy_files(phsh_files, os.path.abspath("."), verbose=True)
-
+        Wrapper._copy_output_files(phsh_files, out_format, kwargs)
         return phsh_files
 
     @staticmethod
