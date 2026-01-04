@@ -1681,6 +1681,7 @@ class SetqmmContext(object):
     - Consider converting this structure to a small ``dataclass`` once Python
       2.7 support is dropped.
     """
+
     def __init__(self, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi=None):
         self.v = v
         self.zeff = zeff
@@ -1727,6 +1728,7 @@ class IntegContext(object):
     - Consider converting this structure to a ``dataclass`` after Python 2.7
       deprecation to simplify typing and defaults.
     """
+
     def __init__(self, z, v, xm1, xm2, nr, r, r2, dl, rel):
         self.z = z
         self.v = v
