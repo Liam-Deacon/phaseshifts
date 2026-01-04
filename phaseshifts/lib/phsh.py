@@ -781,10 +781,10 @@ def phsh_rel(
     one = 1.0
     half = 0.5
     des = 0.025e0
-    sub = "sub"
+    # sub = "sub"
     # record = "nos"
-
-    opt = opt1 = opts = None  # dummy variables
+    # opts = None
+    opt = opt1 = None  # dummy variables
     rmaxi = lsm1 = 1  # dummy
 
     """
