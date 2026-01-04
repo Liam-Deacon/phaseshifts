@@ -66,14 +66,28 @@ except Exception:  # pragma: no cover - fallback for very early import failures
         return True
 
 
+#: True-like command line flags
+TRUE_OPTS = {"y", "yes", "on", "true", "1"}
+
+
+def _env_flag(var_name, default=False):
+    raw_value = os.environ.get(var_name)
+    if raw_value is None:
+        return default
+    value = raw_value.strip().lower()
+    if not value:
+        return default
+    return value in TRUE_OPTS
+
+
 PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 F2PY_SOURCE = "libphsh.f"
 F2PY_SIGNATURE = "libphsh.pyf"
 F2PY_SIGNATURE_PATH = os.path.join(PROJECT_ROOT, "phaseshifts", "lib", F2PY_SIGNATURE)
 IS_PYODIDE = os.environ.get("CIBW_PLATFORM") == "pyodide" or sys.platform == "emscripten"
-SKIP_SKBUILD = os.environ.get("PHASESHIFTS_DISABLE_SKBUILD") or IS_PYODIDE
-SKIP_FORTRAN = os.environ.get("PHASESHIFTS_SKIP_FORTRAN") or IS_PYODIDE
-INCLUDE_WASM_ASSETS = os.environ.get("PHASESHIFTS_INCLUDE_WASM_ASSETS") or IS_PYODIDE
+SKIP_SKBUILD = _env_flag("PHASESHIFTS_DISABLE_SKBUILD") or IS_PYODIDE
+SKIP_FORTRAN = _env_flag("PHASESHIFTS_SKIP_FORTRAN") or IS_PYODIDE
+INCLUDE_WASM_ASSETS = _env_flag("PHASESHIFTS_INCLUDE_WASM_ASSETS") or IS_PYODIDE
 
 
 def _pythonpath_env(extra_path):
@@ -255,9 +269,6 @@ if len(sys.argv) == 1:
     sys.argv.append("install")
 
 CMAKE_ARGS = {}
-
-#: True-like command line flags
-TRUE_OPTS = {"y", "yes", "on", "true", "1"}
 
 # Read environment variable to control phshift2007 binary build
 BUILD_PHSHIFT2007 = os.environ.get("PHASESHIFTS_BUILD_PHSHIFT2007_BINARIES", "OFF").lower() in TRUE_OPTS
