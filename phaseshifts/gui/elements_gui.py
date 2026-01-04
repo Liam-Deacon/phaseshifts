@@ -206,10 +206,10 @@ class MainFrame(wx.Frame):
         webbrowser.open(MainApp.website)
 
     def OnWikipedia(self, evt):
-        webbrowser.open("http://en.wikipedia.org/wiki/%s" % (ELEMENTS[self.selected].name), 1)
+        webbrowser.open("https://en.wikipedia.org/wiki/%s" % (ELEMENTS[self.selected].name), 1)
 
     def OnWebElements(self, evt):
-        webbrowser.open("http://www.webelements.com/%s/" % (ELEMENTS[self.selected].name.lower()))
+        webbrowser.open("https://www.webelements.com/%s/" % (ELEMENTS[self.selected].name.lower()))
 
     def OnSelect(self, evt):
         self.SetSelection(evt.GetSelection())
