@@ -216,9 +216,10 @@ class PhaseShifts {
    * @param {string} [options.encoding='utf8'] - File encoding
    * @returns {string|Uint8Array} File content
    */
-  readFile(path, options = { encoding: 'utf8' }) {
+  readFile(path, options) {
     this._ensureInitialized();
-    return this.FS.readFile(path, options);
+    const readOptions = options || { encoding: 'utf8' };
+    return this.FS.readFile(path, readOptions);
   }
 
   /**
@@ -345,7 +346,7 @@ async function createPhaseShifts(options = {}) {
   // In browser, this relies on the Emscripten-generated loader
   let createModule;
 
-  if (typeof createPhaseShiftsModule !== 'undefined') {
+  if (typeof createPhaseShiftsModule === 'function') {
     // Module already loaded (via script tag)
     createModule = createPhaseShiftsModule;
   } else {
@@ -361,8 +362,8 @@ async function createPhaseShifts(options = {}) {
   return phsh;
 }
 
-const globalScope = typeof window === 'undefined' ? null : window;
-globalScope &&
+const globalScope = typeof globalThis !== 'undefined' ? globalThis : null;
+if (globalScope) {
   Object.assign(globalScope, {
     PhaseShifts,
     createPhaseShifts,
@@ -370,7 +371,9 @@ globalScope &&
     ELEMENTS: elements,
     IO_PATHS,
   });
+}
 
-export { PhaseShifts, createPhaseShifts, elements };
-export { elements as ELEMENTS };
-export { IO_PATHS };
+export { PhaseShifts, createPhaseShifts };
+export { elements } from './elements.js';
+export { elements as ELEMENTS } from './elements.js';
+export { IO_PATHS } from './io_paths.js';

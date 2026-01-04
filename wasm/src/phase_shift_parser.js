@@ -26,8 +26,8 @@ export function parsePhaseShiftData(output, lmax) {
 
     const values = trimmed
       .split(/\s+/)
-      .map(parseFloat)
-      .filter((v) => !isNaN(v));
+      .map(Number.parseFloat)
+      .filter((v) => !Number.isNaN(v));
     if (values.length < 2) continue;
 
     const energy = values[0];

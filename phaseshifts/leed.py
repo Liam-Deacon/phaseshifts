@@ -174,8 +174,6 @@ class CLEEDInputValidator:
                         sys.stderr.write("warning: commented out line " "%i\n" % i)
                         sys.stderr.flush()
                         line = "#" + line
-                    if filetype == "bulk" or filetype == "surface":
-                        pass
                 f.write(line + "\r\n")  # playing it safe with line endings
                 sys.stderr.flush()
         # unit cell

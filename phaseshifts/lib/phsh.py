@@ -49,7 +49,7 @@ def phsh_cav(mufftin_file, phasout_file, dataph_file):
         for ix in range(1, ntab + 1):  # 19
             rx[ix], v[ix] = mtz.readline().split()  # 219
         zph.write("{} {} {} {}".format(name, z, rmt, mtz))  # 200
-        phasout.write("non-relativistic phase shifts for %s\n" % "".join([part for part in name]))
+        phasout.write("non-relativistic phase shifts for %s\n" % "".join(name))
         phasout.write("  %9.4f  %9.4f  %3i  %3i\n" % (emin, estep, ianz, nl))
         e = emin
         ncount = 0
@@ -122,7 +122,6 @@ def ps(v, rx, ngrid, rad, e, phs, nl, zph=sys.stdout):
     # tabulation of spherical Bessel functions in bj and bn
     es = sqrt(e)
     x = es * rad
-    # z = x
     ll = nl + 1
     calcbf(bj, bn, ll, x)
 
@@ -318,12 +317,6 @@ def phsh_wil(
                 s[i][lp1] = t1
                 c[i][lp1] = t2
 
-            # iss = 2
-            # i4 = 9
-            if ip < 1:
-                pass
-                # go to 15
-
             # produce phase shifts
             for lp in range(1, nl + 1):  # 8
                 delold[lp] = 0.0
@@ -338,14 +331,12 @@ def phsh_wil(
                     deldif = delta[lp] - delold[lp]  # label 111
 
                 if abs(deldif) < 0.7:
-                    # go to 117
                     pass
 
                 ls += 1
                 delta[lp] = delta[lp] - (copysign(pi, deldif) * abs(pi))
 
                 if ls < 5:
-                    # go to 111
                     pass
 
                 zph.write(
@@ -426,20 +417,15 @@ def s16(r, rt, v, z, mtz=sys.stdin, zph=sys.stdout):
     potyp = 1: radial input as v[r)
     potyp = 2: radial input as r*v[r)
     """
-    # common / cm16 / e1, e2, ne, ix, neuo
-    # common / cmrv / r, v, nr, nl, z
     # dimension r(201), v[201, 15)
     rs = zs = ztt = [None] * 202
-    # fmt = [None] * 18
     # set default values of variables in namelist  / nl16 /
     ix = 1
     e1 = 4.0
     e2 = 24.0
-    # ne = 30
     nl = 9
     nr = 101
     neui = 1
-    # neuo = 2
     potyp = 2
     if mtz == sys.stdin:  # read from standard input
         nl16 = mtz.readline()
@@ -683,7 +669,6 @@ def f45(l, x):
     if l < 0:
         return -f44(l + 1, x)
 
-    # lp1 = l + 1
     js = l + l + 1
 
     if abs(x / float(js)) <= 10.0:
@@ -796,24 +781,12 @@ def phsh_rel(
     jf = [[None] * 19] * 251
     energ = [None] * 251
 
-    # common / zzzz / zp(340),vs,ipt,jri
-    # common  / z /  rmaxi
-
     adata = [None] * 7
 
     zero = 0.0
     one = 1.0
-    # two = 2.0
-    # anine = 9.0
     half = 0.5
-    # zilch = 1.0e-4
-    # tol = 0.005e0
     des = 0.025e0
-    # ams = "nc =  ", "l =  ", " es = ", " de = ", "id =  "
-    # tl = "l"
-    # sl = "s"
-    # ss1 = "nospin"
-    # ss2 = " spin "
     sub = "sub"
     record = "nos"
 
@@ -831,7 +804,9 @@ def phsh_rel(
   9   format (1x,a1,i3,3d15.7,22x,a3)
    12 format (5d14.6)
    15 format (a28,t29,a2,t35,a30,t65,f10.7,t76,a3)
-   17 format (1h1, / ,10x,'relativistic phase shifts for ',a30, /  / ,10x,'exca  = ',f10.6,4x,'excb  = ',f10.6,4x,'exco  = ',f10.6 /  / ,10x,'lattice constant  = ',f10.6,' ,',f10.6,' ,',f10.6)
+   17 format (1h1, / ,10x,'relativistic phase shifts for ',a30, /  / ,10x,
+     'exca  = ',f10.6,4x,'excb  = ',f10.6,4x,'exco  = ',f10.6 /  / ,10x,
+     'lattice constant  = ',f10.6,' ,',f10.6,' ,',f10.6)
     """
 
     # sort input and output streams
@@ -885,7 +860,7 @@ def phsh_rel(
     n = (ue - es) / de + half
     n += 1
 
-    phasout.write("relativistic phase shifts for {}\n".format("".join([s for s in name])))
+    phasout.write("relativistic phase shifts for {}\n".format("".join(name)))
     phasout.write("%10.4f%9.4f%5i%5i\n" % (es, de, n, lsm))
 
     es /= 13.6
@@ -897,21 +872,11 @@ def phsh_rel(
 
     l = 0
     e = es
-    # ipt = 2
-
-    if opt == record:
-        # ipt = -2  # label 23
-        # wrd = ss1
-        pass
-    else:
-        # wrd = ss2
-        pass
 
     kap = -1
     l = 1
 
     for j in range(1, n + 1):  # label 30
-        # dxaz = 0.0
         ttr = dlgkap[e][kap] / 12.5663706
         sbfit(ttr, e, l - 1, rmaxi, jfs)
         jf[j][l] = jfs
@@ -919,10 +884,6 @@ def phsh_rel(
         energ[j] = e
         e /= 13.6
         e += de
-
-    if l > lsm:  # label 40
-        # go to 80
-        pass
 
     kap = -(l + 1)
     lind = l + 1
@@ -958,7 +919,6 @@ def phsh_rel(
             e += de
 
     l += 1
-    # go to 40
     for i in range(1, n + 1):  # 90 or 80
         lsm1 += 1
         phasout.write("%9.4f%s\n" % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)])))  # noqa: E741
@@ -974,7 +934,6 @@ def phsh_rel(
         es *= 13.6
         de *= 13.6
         ue *= 13.6
-        # go to 10
         continue  # 999
 
     inpdat.write("# end of input data\n")

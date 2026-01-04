@@ -78,6 +78,7 @@ Examples
 # pylint: disable=wrong-import-position
 import argparse
 import datetime
+from io import open
 import os
 import platform
 import subprocess
@@ -160,9 +161,11 @@ class Wrapper(object):
            Generate phase shifts from slab/cluster and bulk input files, following the Barbieri/Van Hove workflow.
 
            This method automates the full sequence described in:
-           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED." Surf. Sci. 90, 1-25.
-        <https://doi.org/10.1016/0039-6028(79)90470-7>`_
-           - Moritz, W. (SATLEED code): http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
+           - `Barbieri, G., & Van Hove, M. A. (1979). "Phase shift calculation package for LEED."
+             Surf. Sci. 90, 1-25.
+             <https://doi.org/10.1016/0039-6028(79)90470-7>`_
+           - Moritz, W. (SATLEED code):
+             http://www.icts.hkbu.edu.hk/surfstructinfo/SurfStrucInfo_files/leed/leedpack.html
            - See also: https://phaseshifts.readthedocs.io/en/latest/phshift2007.html
 
            Steps:
@@ -628,7 +631,7 @@ def main(argv=None):
             "--tmpdir",
             dest="tmpdir",
             metavar="<temp_dir>",
-            help="temporary directory for intermediate " "file generation",
+            help="temporary directory for intermediate file generation",
         )
         parser.add_argument(
             "-l",
@@ -637,7 +640,7 @@ def main(argv=None):
             metavar="<lmax>",
             default=10,
             type=int,
-            help="Maximum angular momentum " "quantum number [default: %(default)s]",
+            help="Maximum angular momentum quantum number [default: %(default)s]",
         )
         parser.add_argument(
             "-f",
@@ -645,30 +648,35 @@ def main(argv=None):
             dest="format",
             metavar="<format>",
             default="CLEED",
-            help="Use specific phase shift format "
-            "i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
-            "[default: %(default)s]",
+            help=(
+                "Use specific phase shift format i.e. 'cleed', 'curve', 'viper', or 'viperleed' "
+                + "[default: %(default)s]"
+            ),
         )
         parser.add_argument(
             "--backend",
             dest="backend",
             metavar="<backend>",
             default="bvh",
-            help="Phase shift backend to use: 'bvh' (default), " "'eeasisss' (native or ViPErLEED; alias: viperleed).",
+            help=(
+                "Phase shift backend to use: 'bvh' (default), "
+                + "'eeasisss' (native or ViPErLEED; alias: viperleed)."
+            ),
         )
         parser.add_argument(
             "--backend-params",
             dest="backend_params",
             metavar="<parameters>",
-            help="Backend-specific parameters file. For viperleed mode, pass "
-            "the ViPErLEED PARAMETERS file. For native eeasisss, pass an inputX "
-            "file.",
+            help=(
+                "Backend-specific parameters file. For viperleed mode, pass the ViPErLEED PARAMETERS file. "
+                + "For native eeasisss, pass an inputX file."
+            ),
         )
         parser.add_argument(
             "--backend-workdir",
             dest="backend_workdir",
             metavar="<dir>",
-            help="Backend working directory (eeasisss/viperleed uses it for " "EEASiSSS files).",
+            help="Backend working directory (eeasisss/viperleed uses it for EEASiSSS files).",
         )
         parser.add_argument(
             "-r",

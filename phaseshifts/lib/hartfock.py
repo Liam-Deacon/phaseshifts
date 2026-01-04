@@ -159,7 +159,9 @@ class hartfock(object):
                     alfa = float("".join([ch for ch in f.next().split("!")[0] if ch.lower() != "d"]))
                 else:
                     alfa = float(
-                        get_input("Enter exchange correlation method" " (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): ")
+                        get_input(
+                            "Enter exchange correlation method (0=HARTREE-FOCK, >0=LDA, <0=XALPHA): "
+                        )
                     )
 
             elif ichar == "a":
@@ -705,45 +707,9 @@ def atsolve(
     for i in range(nel):
         if i > nfc:
             idoflag = 1
-            (
-                i,
-                orb,
-                nl[i],
-                iss[i],
-                idoflag,
-                v,
-                zeff,
-                zorig,
-                rel,
-                nr,
-                r,
-                r2,
-                dl,
-                q0,
-                xm1,
-                xm2,
-                njrc,
-                vi,
-            ) = setqmm(
-                i,
-                orb,
-                nl[i],
-                iss[i],
-                idoflag,
-                v,
-                zeff,
-                zorig,
-                rel,
-                nr,
-                r,
-                r2,
-                dl,
-                q0,
-                xm1,
-                xm2,
-                njrc,
-                vi,
-            )
+            ctx = SetqmmContext(v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi)
+            setqmm(i, orb, nl[i], iss[i], idoflag, ctx)
+            zeff = ctx.zeff
 
         xkappa = -1.0
         if abs(xnj[i]) > nl[i] + 0.25:
@@ -1335,6 +1301,23 @@ def augment(e, l, xj, phi, v, nr, r, dl):
     return
 
 
+class SetqmmContext(object):
+    def __init__(self, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi=None):
+        self.v = v
+        self.zeff = zeff
+        self.zorig = zorig
+        self.rel = rel
+        self.nr = nr
+        self.r = r
+        self.r2 = r2
+        self.dl = dl
+        self.q0 = q0
+        self.xm1 = xm1
+        self.xm2 = xm2
+        self.njrc = njrc
+        self.vi = vi
+
+
 def _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v):
     for j in range(1, nr + 1):
         v[j] = -zeff / r[j] + orb[j][i]
@@ -1369,10 +1352,10 @@ def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
     xm2[1] = xm2[2]
 
 
-def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi):  # noqa: E741
+def setqmm(i, orb, l, ns, idoflag, ctx):  # noqa: E741
     """setqmm subroutine"""
     c = 137.038
-    alpha = rel / c
+    alpha = ctx.rel / c
     aa = alpha * alpha
     a2 = aa / 2.0
 
@@ -1383,48 +1366,44 @@ def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, 
     lp2 = l + l + 1
     if lp2 > 7:
         lp2 = 7
-    zeff = zorig
-    if njrc[lpx] > 0:
-        zeff = 0.0
-    zaa = zeff * aa
-    za2 = zeff * a2
+    zeff_value = ctx.zorig
+    if ctx.njrc[lpx] > 0:
+        zeff_value = 0.0
+    zaa = zeff_value * aa
+    za2 = zeff_value * a2
+    v = ctx.v
 
     if idoflag:
-        if not njrc[lpx]:
+        if not ctx.njrc[lpx]:
             if idoflag == 1:
-                _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v)
-            _setqmm_update_xm_from_orb(orb, i, nr, dl, r, r2, a2, za2, zaa, xm1, xm2)
+                _setqmm_fill_v_from_orb(orb, i, ctx.nr, ctx.r, zeff_value, v)
+            _setqmm_update_xm_from_orb(
+                orb,
+                i,
+                ctx.nr,
+                ctx.dl,
+                ctx.r,
+                ctx.r2,
+                a2,
+                za2,
+                zaa,
+                ctx.xm1,
+                ctx.xm2,
+            )
     else:
-        if idoflag == 1:
-            _setqmm_fill_v_from_vi(vi, orb, lp2, i, nr, v)
-        _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2)
+        if idoflag == 1 and ctx.vi is not None:
+            _setqmm_fill_v_from_vi(ctx.vi, orb, lp2, i, ctx.nr, v)
+        _setqmm_update_xm_from_v(ctx.nr, ctx.dl, ctx.r, ctx.r2, a2, v, ctx.xm1, ctx.xm2)
 
     # figure out the (Desclaux-Numerov) effective potential.
     xlb = l + pow(0.5, 2.0) / 2.0
-    for j in range(1, nr + 1):
+    for j in range(1, ctx.nr + 1):
         vj = v[j]
-        q0[j] = vj * (1.0 - a2 * vj) + xlb / r2[j]
+        ctx.q0[j] = vj * (1.0 - a2 * vj) + xlb / ctx.r2[j]
 
-    return (
-        i,
-        orb,
-        l,
-        ns,
-        idoflag,
-        v,
-        zeff,
-        zorig,
-        rel,
-        nr,
-        r,
-        r2,
-        dl,
-        q0,
-        xm1,
-        xm2,
-        njrc,
-        vi,
-    )
+    ctx.zeff = zeff_value
+
+    return
 
 
 def initiali(
@@ -1611,13 +1590,6 @@ def integ(
         p0 = p1
         p1 = p2
 
-    if istop > 0:
-        # psip2 = phi[istop + 2] - phi[istop - 2]
-        # psip1 = phi[istop + 1] - phi[istop - 1]
-        # psip = (8.0 * psip1 - psip2) / (12.0 * dl * r[istop])
-        # x0 = psip / phi[istop]
-        pass
-
     if not is0:
         return
 
@@ -1777,26 +1749,9 @@ def pseudo(
                 orb[j][i] += vctab[j][nl[i]]
             idoflag = 1
             ns = 1
-            setqmm(
-                i,
-                orb,
-                nl[i],
-                ns,
-                idoflag,
-                vi[1][lp2],
-                zeff,
-                zorig,
-                rel,
-                nr,
-                r,
-                r2,
-                dl,
-                q0,
-                xm1,
-                xm2,
-                njrcdummy,
-                vi,
-            )
+            ctx = SetqmmContext(vi[1][lp2], zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrcdummy, vi)
+            setqmm(i, orb, nl[i], ns, idoflag, ctx)
+            zeff = ctx.zeff
             for j in range(1, nr + 1):
                 orb[j][i] = 0.0
 
@@ -2005,43 +1960,9 @@ def fitx0(
         ns = 1
         xkappa = -1.0
 
-        (
-            i,
-            orb,
-            l,
-            ns,
-            idoflag,
-            v,
-            zeff,
-            dummy,
-            rel,
-            nr,
-            r,
-            r2,
-            dl,
-            q0,
-            xm1,
-            xm2,
-            njrc,
-        ) = setqmm(
-            i,
-            orb,
-            l,
-            ns,
-            idoflag,
-            v,
-            zeff,
-            dummy,
-            rel,
-            nr,
-            r,
-            r2,
-            dl,
-            q0,
-            xm1,
-            xm2,
-            njrc,
-        )
+        ctx = SetqmmContext(v, zeff, dummy, rel, nr, r, r2, dl, q0, xm1, xm2, njrc)
+        setqmm(i, orb, l, ns, idoflag, ctx)
+        zeff = ctx.zeff
 
         (
             e,
@@ -2695,6 +2616,12 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
     trd = 1.0 / 3.0
     ft = 4.0 / 3.0
+    ex_val = ex
+    ec_val = ec
+    ux1_val = ux1
+    ux2_val = ux2
+    uc1_val = uc1
+    uc2_val = uc2
 
     rh = rh1 + rh2
 
@@ -2711,7 +2638,7 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
     # effect cutoff, to avoid overflow
     if nst == 3 or xn < 0.00000001:
-        ex = ec = ux1 = ux2 = uc1 = uc2 = 0.0
+        ex_val = ec_val = ux1_val = ux2_val = uc1_val = uc2_val = 0.0
     else:
         rs = pow(3.0 / (fp * xn), trd)
         zeta = (xn1 - xn2) / xn
@@ -2722,7 +2649,7 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
         fe1 = 1.0
         fu1 = 1.0
         ex1 = 0.0
-        ux1 = 0.0
+        ux1_val = 0.0
     else:
         beta = 0.028433756 * pow(xn1, trd)
         b2 = beta * beta
@@ -2731,13 +2658,13 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
         fe1 = 1.0 - 1.5 * (pow(beta * eta - xl) / b2, 2.0)
         fu1 = -0.5 + 1.5 * xl / beta / eta
         ex1 = exchfactor * pow(xn1, trd)
-        ux1 = 4.0 * ex1 / 3.0
+        ux1_val = 4.0 * ex1 / 3.0
 
     if xn2 == 0.0:
         fe2 = 1.0
         fu2 = 1.0
         ex2 = 0.0
-        ux2 = 0.0
+        ux2_val = 0.0
     else:
         beta = 0.028433756 * pow(xn2, trd)
         b2 = beta * beta
@@ -2746,7 +2673,7 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
         fe2 = 1.0 - 1.5 * pow((beta * eta - xl) / b2, 2.0)
         fu2 = -0.5 + 1.5 * xl / beta / eta
         ex2 = exchfactor * pow(xn2, trd)
-        ux2 = 4.0 * ex2 / 3.0
+        ux2_val = 4.0 * ex2 / 3.0
 
     # these next lines do the Ceperley-Alder correlation
     if rs > 1.0:
@@ -2792,18 +2719,18 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
     denom = pow(2.0, ft) - 2.0
     f = (pow(1.0 + zeta), ft + pow((1.0 - zeta), ft) - 2.0) / denom
     dfdz = ft / denom * (pow(1.0 + zeta), trd) - pow((1.0 - zeta), trd)
-    ec = ecu + f * (ecp - ecu)
-    uc1 = ucu + f * (ucp - ucu) + (ecp - ecu) * (1.0 - zeta) * dfdz
-    uc2 = ucu + f * (ucp - ucu) + (ecp - ecu) * -(1.0 + zeta) * dfdz
+    ec_val = ecu + f * (ecp - ecu)
+    uc1_val = ucu + f * (ucp - ucu) + (ecp - ecu) * (1.0 - zeta) * dfdz
+    uc2_val = ucu + f * (ucp - ucu) + (ecp - ecu) * -(1.0 + zeta) * dfdz
 
     # get the final functional and potential.
-    ex = (xn1 * fe1 * ex1 + xn2 * fe2 * ex2) / xn
-    ux1 = fu1 * ux1
-    ux2 = fu2 * ux2
-    uc1 = uc1
-    uc2 = uc2
+    ex_val = (xn1 * fe1 * ex1 + xn2 * fe2 * ex2) / xn
+    ux1_val = fu1 * ux1_val
+    ux2_val = fu2 * ux2_val
+    uc1_val = uc1_val
+    uc2_val = uc2_val
 
-    return (nst, rel, rr, rh1, rh2, ex, ec, ux1, ux2, uc1, uc2)
+    return (nst, rel, rr, rh1, rh2, ex_val, ec_val, ux1_val, ux2_val, uc1_val, uc2_val)
 
 
 def test():

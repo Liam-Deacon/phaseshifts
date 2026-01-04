@@ -2,9 +2,10 @@
 
 """Helper script to split the Barbieri/Van Hove phshift2007 package AB files into individual program files."""
 
-import sys
+from io import open
 import os
 import re
+import sys
 
 
 def split_ab(input_path, output_dir):

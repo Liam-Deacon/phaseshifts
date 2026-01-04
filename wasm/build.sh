@@ -69,9 +69,9 @@ done
 # Install f2c from source if requested
 install_f2c_from_source() {
     echo "Installing f2c from source..."
-    local F2C_BUILD_DIR="$BUILD_DIR/f2c-source"
-    mkdir -p "$F2C_BUILD_DIR"
-    cd "$F2C_BUILD_DIR"
+    local f2c_build_dir="$BUILD_DIR/f2c-source"
+    mkdir -p "$f2c_build_dir"
+    cd "$f2c_build_dir"
 
     # Download f2c source
     if [[ ! -f "src.tgz" ]]; then
@@ -89,37 +89,40 @@ install_f2c_from_source() {
     tar xzf src.tgz
     cd src
     make -f makefile.u f2c 2>&1 | tail -5
-    F2C_BIN="$F2C_BUILD_DIR/src/f2c"
+    F2C_BIN="$f2c_build_dir/src/f2c"
 
     # Build libf2c
     echo "  Building libf2c..."
-    cd "$F2C_BUILD_DIR"
+    cd "$f2c_build_dir"
     unzip -q -o libf2c.zip -d libf2c
     cd libf2c
     cp makefile.u Makefile
     make 2>&1 | tail -5 || true
-    F2C_LIB_DIR="$F2C_BUILD_DIR/libf2c"
+    F2C_LIB_DIR="$f2c_build_dir/libf2c"
 
     cd "$SCRIPT_DIR"
     echo "  ✓ f2c built at: $F2C_BIN"
     echo "  ✓ libf2c built at: $F2C_LIB_DIR"
 
     # Export for use in build
-    export PATH="$F2C_BUILD_DIR/src:$PATH"
-    export F2C_INCLUDE="$F2C_BUILD_DIR/src"
+    export PATH="$f2c_build_dir/src:$PATH"
+    export F2C_INCLUDE="$f2c_build_dir/src"
     export F2C_LIB="$F2C_LIB_DIR/libf2c.a"
+    return 0
 }
 
 # Check if a command exists
 has_command() {
-    command -v "$1" &> /dev/null
+    local cmd="$1"
+    command -v "$cmd" &> /dev/null
+    return $?
 }
 
 # Auto-detect best build method
 detect_build_method() {
     if [[ -n "$METHOD" ]]; then
         echo "$METHOD"
-        return
+        return 0
     fi
 
     # Prefer LFortran (native WASM support)
@@ -137,6 +140,7 @@ detect_build_method() {
     else
         echo "none"
     fi
+    return 0
 }
 
 # Print installation instructions
@@ -164,6 +168,7 @@ print_install_instructions() {
     echo "  brew install docker"
     echo "  # or: https://docs.docker.com/get-docker/"
     echo ""
+    return 0
 }
 
 # ============================================================
@@ -252,6 +257,7 @@ const char* get_version(void) {
 }
 EOF
     echo "  ✓ Generated wrapper.c"
+    return 0
 }
 
 build_with_lfortran() {
@@ -261,7 +267,7 @@ build_with_lfortran() {
     cd "$BUILD_DIR"
 
     if [[ ! -f "$FORTRAN_SRC" ]]; then
-        echo "Error: Fortran source not found: $FORTRAN_SRC"
+        echo "Error: Fortran source not found: $FORTRAN_SRC" >&2
         exit 1
     fi
 
@@ -287,6 +293,7 @@ JSEOF
 
     echo "  ✓ Generated phaseshifts.wasm (LFortran)"
     echo "  ✓ Generated phaseshifts.js"
+    return 0
 }
 
 build_with_f2c() {
@@ -295,11 +302,11 @@ build_with_f2c() {
 
     # Verify tools
     if ! has_command emcc; then
-        echo "Error: emcc not found"
+        echo "Error: emcc not found" >&2
         exit 1
     fi
     if ! has_command f2c; then
-        echo "Error: f2c not found"
+        echo "Error: f2c not found" >&2
         exit 1
     fi
 
@@ -312,7 +319,7 @@ build_with_f2c() {
     cd "$BUILD_DIR"
 
     if [[ ! -f "$FORTRAN_SRC" ]]; then
-        echo "Error: Fortran source not found: $FORTRAN_SRC"
+        echo "Error: Fortran source not found: $FORTRAN_SRC" >&2
         exit 1
     fi
 
@@ -323,7 +330,7 @@ build_with_f2c() {
     f2c -a -A -C++ libphsh.f 2>&1 | head -20 || true
 
     if [[ ! -f "libphsh.c" ]]; then
-        echo "Error: f2c conversion failed"
+        echo "Error: f2c conversion failed" >&2
         exit 1
     fi
     echo "  ✓ Generated libphsh.c"
@@ -345,7 +352,11 @@ build_with_f2c() {
 
     # Locate f2c library
     F2C_LIB=""
-    for libpath in "/usr/local/lib/libf2c.a" "/opt/homebrew/lib/libf2c.a" "/usr/lib/libf2c.a" "$BUILD_DIR/f2c-source/libf2c/libf2c.a"; do
+    for libpath in \
+        "/usr/local/lib/libf2c.a" \
+        "/opt/homebrew/lib/libf2c.a" \
+        "/usr/lib/libf2c.a" \
+        "$BUILD_DIR/f2c-source/libf2c/libf2c.a"; do
         if [[ -f "$libpath" ]]; then
             F2C_LIB="$libpath"
             break
@@ -361,6 +372,11 @@ build_with_f2c() {
         F2C_LINK="$F2C_LIB"
     fi
 
+    EXPORTED_FUNCTIONS="['_run_hartfock', '_run_phsh_cav', '_run_phsh_rel', '_run_phsh_wil', "
+    EXPORTED_FUNCTIONS+="'_init_phaseshifts', '_get_version', '_main']"
+    EXPORTED_RUNTIME_METHODS="['FS', 'ccall', 'cwrap', 'UTF8ToString', "
+    EXPORTED_RUNTIME_METHODS+="'stringToUTF8']"
+
     # Main compilation
     emcc "${EMCC_FLAGS[@]}" \
         libphsh.c \
@@ -369,8 +385,8 @@ build_with_f2c() {
         -s WASM=1 \
         -s MODULARIZE=1 \
         -s EXPORT_NAME="createPhaseShiftsModule" \
-        -s EXPORTED_FUNCTIONS="['_run_hartfock', '_run_phsh_cav', '_run_phsh_rel', '_run_phsh_wil', '_init_phaseshifts', '_get_version', '_main']" \
-        -s EXPORTED_RUNTIME_METHODS="['FS', 'ccall', 'cwrap', 'UTF8ToString', 'stringToUTF8']" \
+        -s EXPORTED_FUNCTIONS="$EXPORTED_FUNCTIONS" \
+        -s EXPORTED_RUNTIME_METHODS="$EXPORTED_RUNTIME_METHODS" \
         -s FORCE_FILESYSTEM=1 \
         -s ALLOW_MEMORY_GROWTH=1 \
         -s INITIAL_MEMORY=67108864 \
@@ -381,6 +397,7 @@ build_with_f2c() {
 
     echo "  ✓ Generated phaseshifts.js"
     echo "  ✓ Generated phaseshifts.wasm"
+    return 0
 }
 
 build_with_docker() {
@@ -411,6 +428,7 @@ DOCKERFILE
         bash -lc "/work/wasm/build.sh --method=f2c"
 
     echo "  ✓ Build completed in Docker"
+    return 0
 }
 
 # ============================================================

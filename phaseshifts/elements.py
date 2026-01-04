@@ -4017,7 +4017,8 @@ def _descriptions(symbol):
         "considered highly toxic. May cause lung cancer if inhaled."
     )
     e["Cr"].description = (
-        "Hard silvery transition element. Used in decorative " "electroplating. Discovered in 1797 by Vauquelin."
+        "Hard silvery transition element. Used in decorative electroplating. "
+        + "Discovered in 1797 by Vauquelin."
     )
     e["Mn"].description = (
         "Grey brittle metallic transition element. Rather "
@@ -4040,9 +4041,7 @@ def _descriptions(symbol):
         "radioactive tracer and cancer-treatment agent. Discovered by G. "
         "Brandt in 1737."
     )
-    e["Ni"].description = (
-        "Malleable ductile silvery metallic transition element. " "Discovered by A.F. Cronstedt in 1751."
-    )
+    e["Ni"].description = "Malleable ductile silvery metallic transition element. Discovered by A.F. Cronstedt in 1751."
     e["Cu"].description = (
         "Red-brown transition element. Known by the Romans as 'cuprum.' "
         "Extracted and used for thousands of years. Malleable, ductile and "

@@ -36,8 +36,9 @@ Provides wrapper classes for phaseshift calculation backends
 from __future__ import absolute_import, division, with_statement
 from __future__ import print_function, unicode_literals
 
-import sys
+from io import open
 import os
+import sys
 import tempfile
 
 from glob import glob
@@ -173,8 +174,8 @@ class Wrapper(object):
         estimate will be made from the input file given.
 
         """
-        fmt = str(fmt or getattr(self, "format", "") or "")
-        if fmt.lower() != "cleed":
+        fmt_value = str(fmt or getattr(self, "format", "") or "")
+        if fmt_value.lower() != "cleed":
             return ""
 
         # add formatted header for Held CLEED package

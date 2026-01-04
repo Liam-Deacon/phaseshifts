@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 from __future__ import print_function  # noqa
 
+from io import open
 import os
+import shutil
+import subprocess  # nosec
 import sys
 import sysconfig
-import subprocess  # nosec
-import shutil
 
 try:
     from contextlib import suppress
@@ -285,7 +286,7 @@ if BUILD_BACKEND == "skbuild":
 
         if not gfortran_found:
             print(
-                "WARNING: gfortran not found in common locations. " "Please ensure MinGW-w64 is installed and in PATH.",
+                "WARNING: gfortran not found in common locations. Please ensure MinGW-w64 is installed and in PATH.",
                 file=sys.stderr,
             )
 

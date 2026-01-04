@@ -98,7 +98,7 @@ def pytest_sessionfinish(session, exitstatus):
     if not gcda_files:
         _write_terminal(
             session.config,
-            "[fortran-coverage] No gcov data (.gcda) found. " "Ensure the build used PHASESHIFTS_FORTRAN_COVERAGE=1.",
+            "[fortran-coverage] No gcov data (.gcda) found. Ensure the build used PHASESHIFTS_FORTRAN_COVERAGE=1.",
         )
         return
 

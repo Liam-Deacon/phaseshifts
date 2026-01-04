@@ -208,10 +208,10 @@ class MainWindow(QtWidgets.QMainWindow):
     # change main tab
     def changeMainTab(self):
         """Change main tab selection"""
-        tabText = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
-        if tabText == "bulk":  # bulk
+        tab_text = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
+        if tab_text == "bulk":  # bulk
             self.model = "bulk"
-        elif tabText == "slab":  # slab
+        elif tab_text == "slab":  # slab
             self.model = "slab"
         else:
             self.model = None
@@ -319,9 +319,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 model = "slab"
 
         else:  # guess from active tab
-            tabText = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
-            if tabText in ("bulk", "slab"):
-                model = tabText
+            tab_text = str(self.ui.tabWidget.tabText(self.ui.tabWidget.currentIndex())).lower()
+            if tab_text in ("bulk", "slab"):
+                model = tab_text
             else:  # unknown
                 return self.importDialog()  # start dialog
 
@@ -381,7 +381,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
                 elif branch == "Parameters":
                     params = self.getChildItemsDict(tree.topLevelItem(trunk.get(branch)))
-                    # _parent = root.child(trunk.get(branch))
                     for param in params:
                         node = item.child(self.treeRootDict.get(model).get(branch))
                         if param == "nh":  # update nh

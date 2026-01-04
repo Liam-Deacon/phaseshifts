@@ -66,7 +66,7 @@ class MainApp(wx.App):
     name = "Periodic Table of Elements"
     version = "2012.04.05"
     website = "http://www.lfd.uci.edu/~gohlke/"
-    copyright = "Christoph Gohlke\n" "Laboratory for Fluorescence Dynamics\n" "University of California, Irvine"
+    copyright = "Christoph Gohlke\nLaboratory for Fluorescence Dynamics\nUniversity of California, Irvine"
     icon = "elements"
 
     def OnInit(self):

@@ -6,8 +6,8 @@ import { elements } from './elements.js';
  */
 const defaultPhshParams = Object.freeze({
   muffinTinRadius: 2.5,
-  energyMin: 1.0,
-  energyMax: 12.0,
+  energyMin: 1,
+  energyMax: 12,
   energyStep: 0.25,
   lmax: 10,
 });
@@ -123,8 +123,10 @@ function expandOrbitals(orbitals) {
     const occLower = (occ * (2 * l)) / denom;
     const occUpper = (occ * (2 * l + 2)) / denom;
 
-    expanded.push({ n, l, m, j: -(l - 0.5), s, occ: occLower });
-    expanded.push({ n, l, m, j: -(l + 0.5), s, occ: occUpper });
+    expanded.push(
+      { n, l, m, j: -(l - 0.5), s, occ: occLower },
+      { n, l, m, j: -(l + 0.5), s, occ: occUpper },
+    );
   }
 
   return expanded;
@@ -196,22 +198,18 @@ function buildAtorbInput(params) {
   const nlevels = expanded.length;
 
   const lines = [];
-  lines.push('C'.padEnd(70, '*'));
-  lines.push(`C ${header}`);
-  lines.push('C'.padEnd(70, '*'));
-  lines.push('i');
   lines.push(
+    'C'.padEnd(70, '*'),
+    `C ${header}`,
+    'C'.padEnd(70, '*'),
+    'i',
     `${atomicNumber} ${ngrid}`.padEnd(30, ' ') +
       ' ! Z NR (number of points in radial grid)',
-  );
-  lines.push('d');
-  lines.push(`${rel}`.padEnd(30, ' ') + ' ! 1=rel, 0=n.r.');
-  lines.push('x');
-  lines.push(
+    'd',
+    `${rel}`.padEnd(30, ' ') + ' ! 1=rel, 0=n.r.',
+    'x',
     `${method}`.padEnd(30, ' ') + ' ! 0.d0=HF, 1.d0=LDA, -alfa = xalfa...',
-  );
-  lines.push('a');
-  lines.push(
+    'a',
     `${relic} ${nlevels} ${mixingScf} ${eigenTol} ${ech}`.padEnd(30, ' ') +
       ' ! relic,levels,mixing SCF, eigen. tol,for ech.',
   );
@@ -223,9 +221,7 @@ function buildAtorbInput(params) {
     );
   }
 
-  lines.push('w');
-  lines.push(output);
-  lines.push('q');
+  lines.push('w', output, 'q');
 
   return lines.join('\n') + '\n';
 }

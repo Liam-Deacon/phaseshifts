@@ -1,10 +1,11 @@
 """A collection of utilities to assist with extracting phshift2007 in a cross-platform manner."""
 
 import argparse
+from io import open
 import os
 import os.path
-import sys
 import subprocess  # nosec
+import sys
 import urllib.request
 import zipfile
 

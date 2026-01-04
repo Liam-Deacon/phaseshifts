@@ -69,11 +69,11 @@ class PhaseshiftFactory(object):
         if missing:
             raise AttributeError("Missing required phaseshift inputs: {}".format(", ".join(missing)))
 
-    def createAtorbFiles(self):  # noqa: N802  # pylint: disable=invalid-name
+    def create_atorb_files(self):
         """Generate atomic orbital input files for the configured backend."""
-        raise NotImplementedError("createAtorbFiles is not implemented.")
+        raise NotImplementedError("create_atorb_files is not implemented.")
 
-    def getPhaseShiftFiles(self):  # noqa: N802  # pylint: disable=invalid-name
+    def get_phase_shift_files(self):
         """Return a list of generated phase shift files."""
         self._require_attrs(
             "bulk_file",

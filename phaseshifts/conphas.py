@@ -411,12 +411,6 @@ class Conphas:
 
             if n_phases > 250:
                 n_phases = 250
-            if i == 0:
-                # initial_energy0 = copy(initial_energy)
-                # energy_step0 = copy(energy_step)
-                # n_phases0 = copy(n_phases)
-                # lmf0 = copy(lmf)
-                pass
 
             # increase dimensions of array for input
             phas.append([])
@@ -466,12 +460,10 @@ class Conphas:
                 root = os.path.dirname(self.input_files[i])
                 name = os.path.splitext(os.path.basename(self.input_files[i]))[0]
                 dataph = os.path.join(root, str("dataph_" + name + ".d"))
-                # leedph = os.path.join(root, str("leedph_" + name + ".d"))
             else:
                 root = os.path.dirname(self.output_file)
                 name = os.path.splitext(os.path.basename(self.output_file))[0]
                 dataph = os.path.join(root, "dataph_{0}_{1}.d".format(name, i))
-                # leedph = os.path.join(root, "leedph_{0}_{1}.d".format(name, i))
 
             # write datafile 'dataph.d'
             try:

@@ -154,7 +154,7 @@ class EEASiSSSBackend(PhaseShiftBackend):
         if _load_viperleed_modules() is not None:
             raise BackendError("eeasisss backend requires --slab <POSCAR> when using ViPErLEED.")
 
-        raise BackendError("eeasisss backend requires a native EEASiSSS library or " "'phaseshifts[viperleed]'.")
+        raise BackendError("eeasisss backend requires a native EEASiSSS library or 'phaseshifts[viperleed]'.")
 
 
 DEFAULT_BACKENDS = {

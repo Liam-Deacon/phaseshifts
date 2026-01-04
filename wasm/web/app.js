@@ -9,6 +9,8 @@ let phaseShiftsModule = null;
 let chart = null;
 let currentResults = null;
 
+const globalScope = typeof globalThis !== 'undefined' ? globalThis : null;
+
 const listenerController = new AbortController();
 const listenerSignal = listenerController.signal;
 
@@ -167,14 +169,14 @@ const methodDescriptions = Object.freeze({
 });
 
 function getPreset(presetName) {
-  if (!Object.prototype.hasOwnProperty.call(presets, presetName)) {
+  if (!Object.hasOwn(presets, presetName)) {
     return null;
   }
   return presets[presetName];
 }
 
 function getMethodDescription(method) {
-  if (!Object.prototype.hasOwnProperty.call(methodDescriptions, method)) {
+  if (!Object.hasOwn(methodDescriptions, method)) {
     return '';
   }
   return methodDescriptions[method];
@@ -214,6 +216,45 @@ function pushPhaseShiftValue(series, index, value) {
   }
 }
 
+function handleCalculateClick() {
+  runCalculation();
+}
+
+function handleClearClick() {
+  clearResults();
+}
+
+function handleMethodChange(event) {
+  const description = getMethodDescription(event.target.value);
+  document.getElementById('method-help').textContent = description;
+}
+
+function handlePresetClick(event) {
+  const presetName = event.currentTarget.dataset.preset;
+  loadPreset(presetName);
+}
+
+function handleTabClick(event) {
+  const tabName = event.currentTarget.dataset.tab;
+  switchTab(tabName);
+}
+
+function handleDownloadCleed() {
+  downloadResults('cleed');
+}
+
+function handleDownloadViperLeed() {
+  downloadResults('viperleed');
+}
+
+function handleDownloadCsv() {
+  downloadResults('csv');
+}
+
+function handleChartChange() {
+  updateChart();
+}
+
 // Initialize application
 async function handleDomContentLoaded() {
   setupEventListeners();
@@ -224,51 +265,14 @@ async function handleDomContentLoaded() {
 addListener(document, 'DOMContentLoaded', handleDomContentLoaded, {
   once: true,
 });
-addListener(window, 'beforeunload', handleBeforeUnload, { once: true });
+if (globalScope && typeof globalScope.addEventListener === 'function') {
+  addListener(globalScope, 'beforeunload', handleBeforeUnload, { once: true });
+}
 
 /**
  * Set up all event listeners
  */
 function setupEventListeners() {
-  function handleCalculateClick() {
-    runCalculation();
-  }
-
-  function handleClearClick() {
-    clearResults();
-  }
-
-  function handleMethodChange(event) {
-    const description = getMethodDescription(event.target.value);
-    document.getElementById('method-help').textContent = description;
-  }
-
-  function handlePresetClick(event) {
-    const presetName = event.currentTarget.dataset.preset;
-    loadPreset(presetName);
-  }
-
-  function handleTabClick(event) {
-    const tabName = event.currentTarget.dataset.tab;
-    switchTab(tabName);
-  }
-
-  function handleDownloadCleed() {
-    downloadResults('cleed');
-  }
-
-  function handleDownloadViperLeed() {
-    downloadResults('viperleed');
-  }
-
-  function handleDownloadCsv() {
-    downloadResults('csv');
-  }
-
-  function handleChartChange() {
-    updateChart();
-  }
-
   // Calculate button
   addListener(
     document.getElementById('calculate-btn'),
@@ -350,9 +354,12 @@ async function initializeWasmModule() {
 
   try {
     // Check if the WASM module loader is available
-    const moduleFactory = window.createPhaseShiftsModule;
+    const moduleFactory =
+      globalScope && typeof globalScope.createPhaseShiftsModule === 'function'
+        ? globalScope.createPhaseShiftsModule
+        : null;
     if (typeof moduleFactory !== 'function') {
-      throw new Error(
+      throw new TypeError(
         'WASM module not found. Please build the WASM files first.',
       );
     }
@@ -463,14 +470,14 @@ async function runCalculation() {
 
     // Get input parameters
     const params = {
-      atomicNumber: parseInt(document.getElementById('element').value, 10),
-      muffinTinRadius: parseFloat(
+      atomicNumber: Number.parseInt(document.getElementById('element').value, 10),
+      muffinTinRadius: Number.parseFloat(
         document.getElementById('muffin-tin-radius').value,
       ),
-      lmax: parseInt(document.getElementById('lmax').value, 10),
-      energyMin: parseFloat(document.getElementById('energy-min').value),
-      energyMax: parseFloat(document.getElementById('energy-max').value),
-      energyStep: parseFloat(document.getElementById('energy-step').value),
+      lmax: Number.parseInt(document.getElementById('lmax').value, 10),
+      energyMin: Number.parseFloat(document.getElementById('energy-min').value),
+      energyMax: Number.parseFloat(document.getElementById('energy-max').value),
+      energyStep: Number.parseFloat(document.getElementById('energy-step').value),
       method: document.getElementById('method').value,
     };
 
@@ -550,7 +557,14 @@ async function calculatePhaseShifts(params) {
 function generateInputFile(params) {
   // This would generate the proper Fortran input format
   // Simplified for now
-  return `${params.atomicNumber} ${params.muffinTinRadius} ${params.energyMin} ${params.energyMax} ${params.energyStep} ${params.lmax}`;
+  return [
+    params.atomicNumber,
+    params.muffinTinRadius,
+    params.energyMin,
+    params.energyMax,
+    params.energyStep,
+    params.lmax,
+  ].join(' ');
 }
 
 /**
@@ -574,8 +588,8 @@ function parsePhaseShiftOutput(output, params) {
 
     const values = trimmed
       .split(/\s+/)
-      .map(parseFloat)
-      .filter((v) => !isNaN(v));
+      .map(Number.parseFloat)
+      .filter((v) => !Number.isNaN(v));
     if (values.length >= 2) {
       const energy = values[0];
       energies.push(energy);
@@ -795,9 +809,9 @@ function updateChart() {
   if (!chart || !currentResults) return;
 
   const showAll = document.getElementById('show-all-l').checked;
-  const lMin = parseInt(document.getElementById('l-min').value, 10) || 0;
+  const lMin = Number.parseInt(document.getElementById('l-min').value, 10) || 0;
   const lMax =
-    parseInt(document.getElementById('l-max-display').value, 10) || 0;
+    Number.parseInt(document.getElementById('l-max-display').value, 10) || 0;
 
   chart.data.datasets.forEach((dataset, index) => {
     if (showAll) {
@@ -960,7 +974,7 @@ function downloadFile(content, filename, mimeType) {
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
+  a.remove();
   URL.revokeObjectURL(url);
 }
 

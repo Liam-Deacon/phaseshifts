@@ -419,7 +419,7 @@ class Model(object):
         """
         positions = [str(atom.coordinates) for atom in self.atoms]
         info = ""
-        for position in set([position for position in positions if positions.count(position) > 1]):
+        for position in {position for position in positions if positions.count(position) > 1}:
             for i, atom in enumerate([atom for atom in self.atoms if str(atom.coordinates) == position]):
                 info += "%s, coordinates=%s, index=%i\n" % (
                     str(atom),
@@ -1095,7 +1095,7 @@ class MTZ_model(Model):
                         # get list of atoms of this type
                         # i.e. same element, radius & valence
                         ineq_atoms = [atom for atom in atoms if atom == ineq_atom]
-                        ineq_tags = set([atom.tag for atom in ineq_atoms if atom.tag not in tags])
+                        ineq_tags = {atom.tag for atom in ineq_atoms if atom.tag not in tags}
 
                         # select first unused tag from list
                         for tag in ineq_tags:
@@ -1217,7 +1217,9 @@ class MTZ_model(Model):
 # print(set([at, ab, ac]))
 #
 # mtz = MTZ_model(uc, atoms=[at, ab, ac])
-# mtz.load_from_file('C:\\Users\\Liam\\Dropbox\\Programming\\Python\\LEED-PyV\\phaseshifts\\test\\Re0001\\cluster_Re_bulk.i')
+# mtz.load_from_file(
+#     'C:\\Users\\Liam\\Dropbox\\Programming\\Python\\LEED-PyV\\phaseshifts\\test\\Re0001\\cluster_Re_bulk.i'
+# )
 # print(mtz.get_elements())
 # mtz.load_from_file('C:\\Users\\kss07698\\Desktop\\test_cluster.bak.i')
 # mtz.gen_input(filename='C:\\Users\\kss07698\\Desktop\\test_cluster.bak.i')
