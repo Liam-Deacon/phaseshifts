@@ -514,7 +514,7 @@ def s5(e, nl, nr, v, r, f, y):
 
     for i in range(5, nr + 1):
         for lp1 in range(1, nl + 1):
-            vme[lp1] = (v[i, lp1] - e) * r[i]
+            vme[lp1] = (v[i][lp1] - e) * r[i]
         t1 = 2.0 / (i - 1.0)
         ip1 = (i - 1 % 4) + 1
         im2 = (ip1 % 4) + 1
@@ -534,7 +534,7 @@ def s5(e, nl, nr, v, r, f, y):
 
         for j in range(1, nj + 1):
             y[j][ip1] = y[j][ip0] + (y[j][ip0] - y[j][im2] + 3.0 * (f[j][ip1] + 2.0 * f[j][ip0] - f[j][im1])) / 8.0
-            eest[j] = f(j, im2) - y(j, ip1)
+            eest[j] = f[j][im2] - y[j][ip1]
             y[j][ip1] += 0.743801653e-1 * eest[j]
 
         for j in range(1, nj + 1, 2):
@@ -779,25 +779,8 @@ def phsh_rel(
     one = 1.0
     half = 0.5
     des = 0.025e0
-    # record = "nos"
     opt = opt1 = None  # dummy variables
     rmaxi = lsm1 = 1  # dummy
-
-    """
-    1 format (3d12.4,4x,i3,4x,d12.4)
-    2 format (5e14.6)
- 3    format    ( / / / ,10x,a6, / / /  / ,10x,18hmuffin-tin radius = ,
-     1f10.6,4x,14hconstant pot. = ,f10.6, /  / ,10x,'atomic data set for z = ',
-     2i3,' and l = ',i3,4x,'     ',a2, /  / ,14x,5he(ev),12x,7hl - 0.5,13x,
-     37hl + 0.5,12x,10hs-averaged, / )
-  4   format (10x,f10.6,3f20.8)
-  9   format (1x,a1,i3,3d15.7,22x,a3)
-   12 format (5d14.6)
-   15 format (a28,t29,a2,t35,a30,t65,f10.7,t76,a3)
-   17 format (1h1, / ,10x,'relativistic phase shifts for ',a30, /  / ,10x,
-     'exca  = ',f10.6,4x,'excb  = ',f10.6,4x,'exco  = ',f10.6 /  / ,10x,
-     'lattice constant  = ',f10.6,' ,',f10.6,' ,',f10.6)
-    """
 
     # sort input and output streams
     inpdat = open(inpdat_file, "w")  # unit=4
@@ -960,7 +943,6 @@ def dlgkap(e, kappa, z, t, radfun, u, w, zzzz, pot, vcz, ipt, jri):
     t14 = 14.0e0
     t26 = 26.0e0
     t32 = 32.0e0
-    # zero = 0.1e+0
 
     # 83 format (10h hard test,d20.8, i5, 4d20.8 )
     # **********set up for relativistic or no relativistic effect************

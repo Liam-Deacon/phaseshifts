@@ -172,14 +172,23 @@ class hartfock(object):
         """
 
         # initialise class variables
-        # io2 = iorbs * (iorbs + 1) / 2.0
-        # ijive = io2 * (io2 + 1) / 2.0
-        no = nl = nm = xnj = iss = ev = ek = occ = [None] * iorbs
-        r = dr = r2 = rho = [None] * nrmax
+        no = [None] * iorbs
+        nl = [None] * iorbs
+        nm = [None] * iorbs
+        xnj = [None] * iorbs
+        iss = [None] * iorbs
+        ev = [None] * iorbs
+        ek = [None] * iorbs
+        occ = [None] * iorbs
+        r = [None] * nrmax
+        dr = [None] * nrmax
+        r2 = [None] * nrmax
+        rho = [None] * nrmax
         njrc = [None] * 4
-        vi = [[None] * 7] * nrmax
-        phe = orb = [[None] * iorbs] * nrmax
-        rpower = [[None] * 16] * nrmax
+        vi = [[None] * 7 for _ in range(nrmax)]
+        phe = [[None] * iorbs for _ in range(nrmax)]
+        orb = [[None] * iorbs for _ in range(nrmax)]
+        rpower = [[None] * 16 for _ in range(nrmax)]
 
         vctab = []
         nr = nel = rd = nst = iuflag = int
@@ -1509,8 +1518,6 @@ def elsolve(
     eh = 0.0
     etol = 0.0000000001
 
-    ief = float
-    nn = int
     integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
 
     while True:
@@ -2835,7 +2842,7 @@ def fitx0(
 
     vl = -1000000.0
     vh = 1000000.0
-    dummy = nn = ief = xactual = None  # initialise
+    dummy = nn = xactual = None  # initialise
     while True:
         idoflag = 2  # label 115
         xkappa = -1.0
@@ -2845,7 +2852,7 @@ def fitx0(
         zeff = ctx.zeff
 
         integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
-        nn, jrt, ief, xactual = integ(e, l, xkappa, n, jrt, phi, integ_ctx)
+        nn, jrt, _unused_ief, xactual = integ(e, l, xkappa, n, jrt, phi, integ_ctx)
 
         if int(nn):
             vl = v[1]
@@ -2868,8 +2875,459 @@ def fitx0(
         vmaybe = v[1] + xla
         if vmaybe > vh or vmaybe < vl:
             xla = (vl + vh) / (2.0 - v[1])
-        for ii in range(1, jrt - 1 + 1):
-            v[ii] += xla * hb(r[ii] / rcut, factor)
+    for ii in range(1, jrt - 1 + 1):
+        v[ii] += xla * hb(r[ii] / rcut, factor)
+
+
+def _pseudize_prompt_cutoff(rcut, factor):
+    """
+    Get cutoff radius and smoothing factor from input if missing.
+
+    Parameters
+    ----------
+    rcut : float or None
+        Cutoff radius; when ``None`` prompts for input.
+    factor : float or None
+        Smoothing factor; when ``None`` prompts for input.
+
+    Returns
+    -------
+    tuple
+        ``(rcut, factor)`` populated with floats.
+    """
+    if rcut is None or factor is None:
+        while True:
+            try:
+                values = get_input("Please enter the cutoff radius, and factor: ").split()[:2]
+                rcut = float(values[0])
+                factor = float(values[1])
+                break
+            except (ValueError, IndexError):
+                print("Invalid input - please retry...")
+    return rcut, factor
+
+
+def _pseudize_select_cutoff(rcut, phi, r, istop, n, l):
+    """
+    Select a cutoff radius based on node position when requested.
+
+    Parameters
+    ----------
+    rcut : float
+        Input cutoff value; negative values encode node fraction selection.
+    phi : list of float
+        Radial wavefunction values.
+    r : list of float
+        Radial grid.
+    istop : int
+        Index used for the node search.
+    n, l : int
+        Principal and angular momentum quantum numbers.
+
+    Returns
+    -------
+    float
+        Updated cutoff radius.
+    """
+    if rcut < 0.0:
+        xnodefrac = -rcut
+        j = istop
+        while phi[j - 1] / phi[j] <= 1.0:
+            j -= 1
+        if n > l + 1:
+            k = j
+        while phi[k - 1] / phi[k] <= 1.0:
+            k -= 1
+        rcut = r[k] + xnodefrac * (r[j] - r[k])
+    return rcut
+
+
+def _pseudize_indices(rcut, rmin, rmax, nr, r, njrc, lp):
+    """
+    Compute matching indices for the cutoff and test radii.
+
+    Parameters
+    ----------
+    rcut : float
+        Cutoff radius.
+    rmin, rmax : float
+        Radial grid bounds.
+    nr : int
+        Number of grid points.
+    r : list of float
+        Radial grid.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    lp : int
+        Angular momentum index in ``njrc`` to update.
+
+    Returns
+    -------
+    tuple
+        ``(rcut, jrc, jrt, rtest)`` updated cutoff, indices, and test radius.
+    """
+    jrc = 1.0 + float(nr - 1) * log(rcut / rmin) / log(rmax / rmin)
+    rcut = r[jrc]
+    rtest = 2.0 * rcut
+    jrt = 1.0 + float(nr - 1) * log(rtest / rmin) / log(rmax / rmin)
+    njrc[lp] = jrt
+    return rcut, jrc, jrt, r[jrt]
+
+
+def _pseudize_normalize_phi(phi, jrt):
+    """
+    Normalize ``phi`` so that ``phi[jrt]`` equals one.
+
+    Parameters
+    ----------
+    phi : list of float
+        Radial wavefunction (updated in-place).
+    jrt : int
+        Normalization index.
+    """
+    for ii in range(len(phi)):
+        phi[ii] /= phi[jrt]
+
+
+def _pseudize_integral_norm(phi, dr, jrt):
+    """
+    Compute the trapezoidal norm integral up to ``jrt``.
+
+    Parameters
+    ----------
+    phi : list of float
+        Radial wavefunction values.
+    dr : list of float
+        Radial spacing values.
+    jrt : int
+        Matching index.
+
+    Returns
+    -------
+    float
+        Approximate norm integral up to ``jrt``.
+    """
+    total = 0.0
+    for ii in range(1, jrt - 1 + 1):
+        total += dr[ii] * phi[ii] * phi[ii]
+    total += dr[jrt] * phi[jrt] * phi[jrt] / 2.0
+    return total
+
+
+def _pseudize_reference_values(ev, l, xkappa, n, jrt, phi, integ_ctx, dr):
+    """
+    Compute reference log-derivative and norm for the all-electron orbital.
+
+    Parameters
+    ----------
+    ev : float
+        Eigenvalue.
+    l : int
+        Angular momentum quantum number.
+    xkappa : float
+        Relativistic kappa parameter.
+    n : int
+        Principal quantum number.
+    jrt : int
+        Matching index.
+    phi : list of float
+        Radial wavefunction (updated in-place).
+    integ_ctx : IntegContext
+        Integration context for ``integ``.
+    dr : list of float
+        Radial spacing values.
+
+    Returns
+    -------
+    tuple
+        ``(x00, xn00, c00)`` reference log-derivative, norm, and slope.
+    """
+    x00 = integ(ev, l, xkappa, n, jrt, phi, integ_ctx)[3]
+    _pseudize_normalize_phi(phi, jrt)
+    xn00 = _pseudize_integral_norm(phi, dr, jrt)
+    de = 0.0001
+    xp = integ(ev + de / 2.0, l, xkappa, n, jrt, phi, integ_ctx)[3]
+    xm = integ(ev - de / 2.0, l, xkappa, n, jrt, phi, integ_ctx)[3]
+    c00 = (xm - xp) / (2.0 * de)
+    return x00, xn00, c00
+
+
+def _pseudize_apply_polynomial_potential(v, r, r2, dl, rcut, jrc):
+    """
+    Replace the core potential with a smooth polynomial inside ``rcut``.
+
+    Parameters
+    ----------
+    v : list of float
+        Potential array (updated in-place).
+    r, r2 : list of float
+        Radial grid and squared radii.
+    dl : float
+        Logarithmic grid spacing.
+    rcut : float
+        Cutoff radius.
+    jrc : int
+        Cutoff index on the radial grid.
+    """
+    v0 = v[jrc]
+    dvdl = (8.0 * (v[jrc + 1] - v[jrc - 1]) - (v[jrc + 2] - v[jrc - 2])) / (12.0 * dl)
+    ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (
+        12.0 * dl * dl
+    )
+    dldr = 1.0 / r[jrc]
+    ddldrr = -1.0 / r2[jrc]
+    v1 = dvdl * dldr
+    v2 = dvdl * ddldrr + ddvdll * dldr * dldr
+    b4 = (v2 * rcut - v1) / (8.0 * pow(rcut, 3.0))
+    b2 = (v1 - 4.0 * b4 * pow(rcut, 3.0)) / (2.0 * rcut)
+    b0 = v0 - b4 * pow(rcut, 4.0) - b2 * pow(rcut, 2.0)
+    for ii in range(1, jrc + 1):
+        rr = r[ii]
+        v[ii] = b0 + b2 * pow(rr, 2.0) + b4 * pow(rr, 4.0)
+
+
+def _pseudize_compute_xi(phi0, dr, r, rcut, factor, jrt):
+    """
+    Compute normalization integrals used for the delta-l update.
+
+    Parameters
+    ----------
+    phi0 : list of float
+        Reference radial wavefunction.
+    dr : list of float
+        Radial spacing values.
+    r : list of float
+        Radial grid.
+    rcut : float
+        Cutoff radius.
+    factor : float
+        Smoothing factor.
+    jrt : int
+        Matching index.
+
+    Returns
+    -------
+    tuple
+        ``(xi0, xi1, xi2)`` integral coefficients.
+    """
+    xi0 = xi1 = xi2 = 0.0
+    for ii in range(1, jrt + 1):
+        f = hb(r[ii] / rcut, factor)
+        ph2 = dr[ii] * phi0[ii] * phi0[ii]
+        xi0 += ph2
+        xi1 += ph2 * f
+        xi2 += ph2 * f * f
+    ph2 = phi0[jrt] * phi0[jrt]
+    return xi0 / ph2, xi1 / ph2, xi2 / ph2
+
+
+def _pseudize_compute_deltal(xi0, xi1, xi2, c00):
+    """
+    Compute the delta-l correction for the norm-conserving update.
+
+    Parameters
+    ----------
+    xi0, xi1, xi2 : float
+        Integral coefficients from ``_pseudize_compute_xi``.
+    c00 : float
+        Target slope value from the all-electron solution.
+
+    Returns
+    -------
+    float
+        Delta-l update value.
+    """
+    quant = xi1 * xi1 + xi2 * (c00 - xi0)
+    if quant > 0.0:
+        return (sqrt(xi1 * xi1 + xi2 * (c00 - xi0)) - xi1) / xi2
+    return (c00 - xi0) / (2.0 * xi1)
+
+
+def _pseudize_update_phi(phi, phi0, yl, r, rcut, factor, deltal, jrt):
+    """
+    Update the pseudo-orbital using the current delta-l correction.
+
+    Parameters
+    ----------
+    phi : list of float
+        Pseudo-orbital values (updated in-place).
+    phi0 : list of float
+        Reference orbital values.
+    yl : list of float
+        Work buffer for the cutoff function.
+    r : list of float
+        Radial grid.
+    rcut : float
+        Cutoff radius.
+    factor : float
+        Smoothing factor.
+    deltal : float
+        Delta-l correction.
+    jrt : int
+        Matching index.
+    """
+    for ii in range(1, jrt):
+        yl[ii] = phi0[ii] * hb(r[ii] / rcut, factor)
+        phi[ii] = phi0[ii] + deltal * yl[ii]
+        if phi[ii] < 0.0:
+            print("Big trouble# # #  cross axis# # # ")
+            sys.exit(1)
+
+
+def _pseudize_update_potential(
+    v,
+    vraw,
+    phi,
+    phi0,
+    yl,
+    rf,
+    vf,
+    r,
+    rcut,
+    factor,
+    jrt,
+    fitx0_args,
+    integ_args,
+):
+    """
+    Update the local potential for the pseudo-orbital iteration.
+
+    Parameters
+    ----------
+    v, vraw : list of float
+        Working and reference potentials (``v`` updated in-place).
+    phi, phi0 : list of float
+        Current and reference orbitals.
+    yl : list of float
+        Cutoff buffer values.
+    rf, vf : list of float
+        Local interpolation buffers.
+    r : list of float
+        Radial grid.
+    rcut : float
+        Cutoff radius.
+    factor : float
+        Smoothing factor.
+    jrt : int
+        Matching index.
+    fitx0_args : tuple
+        Arguments for ``fitx0``.
+    integ_args : tuple
+        Arguments for ``integ``.
+
+    Returns
+    -------
+    float
+        Updated log-derivative value ``x0``.
+    """
+    (f, fp, fpp, psi, psip, psipp) = (None, None, None, None, None, None)
+    for ii in range(1, jrt - 1 + 1):
+        if phi[ii] == 0.0 or yl[ii] == 0.0:
+            break
+        jj = 2 if ii == 1 else ii
+        for j in range(jj - 1, jj + 1 + 1):
+            rf[2 + j - jj] = r[j]
+            vf[2 + j - jj] = hb(r[j] / rcut, factor)
+        (f, fp, fpp, rf, vf) = parabreg(f, fp, fpp, rf, vf)
+        for j in range(jj - 1, jj + 1):
+            vf[2 + j - jj] = phi0[j]
+        (psi, psip, psipp, rf, vf) = parabreg(psi, psip, psipp, rf, vf)
+        v[ii] = vraw[ii] + (1.0 - phi0[ii] / phi[ii]) * (2.0 * psip / psi * fp / f + fpp / f) / 2.0
+    fitx0(*fitx0_args)
+    return integ(*integ_args)[3]
+
+
+def _pseudize_iteration(
+    phi,
+    phi0,
+    v,
+    vraw,
+    yl,
+    rf,
+    vf,
+    r,
+    dr,
+    rcut,
+    factor,
+    jrt,
+    ev,
+    l,
+    xkappa,
+    n,
+    integ_ruse_ctx,
+    fitx0_args,
+    xi0,
+    xi1,
+    xi2,
+    c00,
+):
+    """
+    Iterate the pseudo-orbital until the log-derivative matches the target.
+
+    Parameters
+    ----------
+    phi, phi0 : list of float
+        Working and reference orbitals.
+    v, vraw : list of float
+        Working and reference potentials.
+    yl, rf, vf : list of float
+        Work buffers used in the update.
+    r, dr : list of float
+        Radial grid and spacing.
+    rcut : float
+        Cutoff radius.
+    factor : float
+        Smoothing factor.
+    jrt : int
+        Matching index.
+    ev, l, xkappa, n : float or int
+        Orbital parameters for ``integ``.
+    integ_ruse_ctx : IntegContext
+        Integration context with ``ruse`` enabled.
+    fitx0_args : tuple
+        Arguments for ``fitx0``.
+    xi0, xi1, xi2 : float
+        Integral coefficients.
+    c00 : float
+        Target slope from the all-electron solution.
+
+    Returns
+    -------
+    tuple
+        ``(c0, x0)`` final slope and log-derivative values.
+    """
+    deltal = _pseudize_compute_deltal(xi0, xi1, xi2, c00)
+    print("DELTAL = %11.8f" % deltal)  # format (1x,1a9,1f11.8)
+    while True:
+        _pseudize_update_phi(phi, phi0, yl, r, rcut, factor, deltal, jrt)
+        x0 = _pseudize_update_potential(
+            v,
+            vraw,
+            phi,
+            phi0,
+            yl,
+            rf,
+            vf,
+            r,
+            rcut,
+            factor,
+            jrt,
+            fitx0_args,
+            (ev, l, xkappa, n, jrt, phi, integ_ruse_ctx),
+        )
+        _pseudize_normalize_phi(phi, jrt)
+        xn0 = _pseudize_integral_norm(phi, dr, jrt)
+        de = 0.0001
+        xp = integ(ev + de / 2.0, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
+        xm = integ(ev - de / 2.0, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
+        c0 = (xm - xp) / (2.0 * de)
+        print(c0, x0)
+        print(xn0)
+        if abs(c0 - c00) > 0.000000001:
+            dqddel = 2.0 * (xi1 + deltal * xi2)
+            deltal = deltal + (c00 - c0) / dqddel
+        else:
+            return c0, x0
 
 
 def pseudize(
@@ -2958,8 +3416,9 @@ def pseudize(
     - Factor this routine into smaller NumPy-friendly kernels to simplify
       testing and maintenance.
     """
-    x0 = x00 = xm = xp = fp = fpp = psi = psip = psipp = None
-    rf = vf = [None] * len(njrc) - 1
+    x0 = x00 = None
+    rf = [None] * len(njrc)
+    vf = [None] * len(njrc)
 
     lp = l + 1
     xkappa = -1.0
@@ -2968,195 +3427,75 @@ def pseudize(
         istop -= 1
 
     integ_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, rel)
-    integ_result = integ(ev, l, xkappa, n, istop, phi, integ_ctx)
-    istop = integ_result[1]
+    istop = integ(ev, l, xkappa, n, istop, phi, integ_ctx)[1]
 
-    if rcut is None or factor is None:
-        (rcut, factor) = get_input("Please enter the cutoff radius, and factor: ").split()
-
-    if rcut < 0.0:
-        xnodefrac = -rcut
-        j = istop
-        while phi[j - 1] / phi[j] <= 1.0:
-            j -= 1
-        if n > l + 1:
-            k = j
-        while phi[k - 1] / phi[k] <= 1.0:
-            k -= 1
-    else:
-        k = 1
-
-    rcut = r[k] + xnodefrac * (r[j] - r[k])
-
-    jrc = 1.0 + float(nr - 1) * log(rcut / rmin) / log(rmax / rmin)
-    rcut = r[jrc]
-    rtest = 2.0 * rcut
-    jrt = 1.0 + float(nr - 1) * log(rtest / rmin) / log(rmax / rmin)
-    njrc[lp] = jrt
-    rtest = r[jrt]
-    # switch = phi[jrt] / abs(phi[jrt])
+    rcut, factor = _pseudize_prompt_cutoff(rcut, factor)
+    rcut = _pseudize_select_cutoff(rcut, phi, r, istop, n, l)
+    rcut, jrc, jrt, rtest = _pseudize_indices(rcut, rmin, rmax, nr, r, njrc, lp)
     print("RCUTOFF = %8.4f  JRC = %5i" % (rcut, jrc))  # 94 format(1x,2d15.8)
     print("RTEST   = %8.4f  JRT = %5i" % (rtest, jrt))  # 1x,1a10,1f8.4,1a8,1i5
-    x00 = integ(ev, l, xkappa, n, jrt, phi, integ_ctx)[3]
-    for ii in range(len(phi)):
-        phi[ii] /= phi[jrt]
-
-    xn00 = 0.0
-
-    for ii in range(1, jrt - 1 + 1):
-        xn00 += dr[ii] * phi[ii] * phi[ii]
-
-    xn00 += dr[jrt] * phi[jrt] * phi[jrt] / 2.0
-    de = 0.0001
-    ee = ev + de / 2.0
-    xp = integ(ee, l, xkappa, n, jrt, phi, integ_ctx)[3]
-    ee = ev - de / 2.0
-    xm = integ(ee, l, xkappa, n, jrt, phi, integ_ctx)[3]
-    c00 = (xm - xp) / (2.0 * de)
+    x00, xn00, c00 = _pseudize_reference_values(ev, l, xkappa, n, jrt, phi, integ_ctx, dr)
     print(c00, x00)  # format 94
     print(xn00)  # format 94
     ruse = 0.0
     integ_ruse_ctx = IntegContext(zeff, v, xm1, xm2, nr, r, r2, dl, ruse)
-    v0 = v[jrc]
-    dvdl = (8.0 * (v[jrc + 1] - v[jrc - 1]) - (v[jrc + 2] - v[jrc - 2])) / (12.0 * dl)
-    ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (12.0 * dl * dl)
-    dldr = 1.0 / r[jrc]
-    ddldrr = -1.0 / r2[jrc]
-    v1 = dvdl * dldr
-    v2 = dvdl * ddldrr + ddvdll * dldr * dldr
-    b4 = (v2 * rcut - v1) / (8.0 * pow(rcut, 3.0))
-    b2 = (v1 - 4.0 * b4 * pow(rcut, 3.0)) / (2.0 * rcut)
-    b0 = v0 - b4 * pow(rcut, 4.0) - b2 * pow(rcut, 2.0)
-    for ii in range(1, jrc + 1):
-        rr = r[ii]
-        v[ii] = b0 + b2 * pow(rr, 2.0) + b4 * pow(rr, 4.0)
-
-        fitx0(
-            i,
-            orb,
-            rcut,
-            njrc,
-            ev,
-            l,
-            xj,
-            lp,
-            jrt,
-            x00,
-            phi,
-            zeff,
-            v,
-            q0,
-            xm1,
-            xm2,
-            nr,
-            r,
-            dr,
-            r2,
-            dl,
-            ruse,
-            factor,
-        )
+    _pseudize_apply_polynomial_potential(v, r, r2, dl, rcut, jrc)
+    fitx0_args = (
+        i,
+        orb,
+        rcut,
+        njrc,
+        ev,
+        l,
+        xj,
+        lp,
+        jrt,
+        x00,
+        phi,
+        zeff,
+        v,
+        q0,
+        xm1,
+        xm2,
+        nr,
+        r,
+        dr,
+        r2,
+        dl,
+        ruse,
+        factor,
+    )
+    fitx0(*fitx0_args)
 
     phi0 = deepcopy(phi)
     vraw = deepcopy(v)
 
-    xi0 = 0.0
-    xi1 = 0.0
-    xi2 = 0.0
-    for ii in range(1, jrt + 1):
-        f = hb(r[ii] / rcut, factor)
-        ph2 = dr[ii] * phi0[ii] * phi0[ii]
-        xi0 = xi0 + ph2
-        if ii <= jrt:
-            xi1 += ph2 * f
-            xi2 += ph2 * f * f
-
-    ph2 = phi0[jrt] * phi0[jrt]
-    xi0 /= ph2
-    xi1 /= ph2
-    xi2 /= ph2
-    quant = xi1 * xi1 + xi2 * (c00 - xi0)
-    if quant > 0.0:
-        deltal = (sqrt(xi1 * xi1 + xi2 * (c00 - xi0)) - xi1) / xi2
-    else:
-        deltal = (c00 - xi0) / (2.0 * xi1)
-
-    print("DELTAL = %11.8f" % deltal)  # format (1x,1a9,1f11.8)
-
+    xi0, xi1, xi2 = _pseudize_compute_xi(phi0, dr, r, rcut, factor, jrt)
     yl = [None] * len(phi0)
-
-    while True:  # 225
-        for ii in range(1, jrt):
-            yl[ii] = phi0[ii] * hb(r[ii] / rcut, factor)
-            phi[ii] = phi0[ii] + deltal * yl[ii]
-            if phi[ii] < 0.0:
-                print("Big trouble# # #  cross axis# # # ")
-                sys.exit(1)
-
-        for ii in range(1, jrt - 1 + 1):
-            if phi[ii] == 0.0 or yl[ii] == 0.0:
-                break
-            jj = ii
-            if ii == 1:
-                jj = 2
-            for j in range(jj - 1, jj + 1 + 1):
-                rf[2 + j - jj] = r[j]
-                vf[2 + j - jj] = hb(r[j] / rcut, factor)
-            (f, fp, fpp, rf, vf) = parabreg(f, fp, fpp, rf, vf)
-            for j in range(jj - 1, jj + 1):
-                vf[2 + j - jj] = phi0[j]
-            (psi, psip, psipp, rf, vf) = parabreg(psi, psip, psipp, rf, vf)
-            v[ii] = vraw[ii] + (1.0 - phi0[ii] / phi[ii]) * (2.0 * psip / psi * fp / f + fpp / f) / 2.0
-
-            fitx0(
-                i,
-                orb,
-                rcut,
-                njrc,
-                ev,
-                l,
-                xj,
-                lp,
-                jrt,
-                x00,
-                phi,
-                zeff,
-                v,
-                q0,
-                xm1,
-                xm2,
-                nr,
-                r,
-                dr,
-                r2,
-                dl,
-                ruse,
-                factor,
-            )
-            x0 = integ(ev, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
-
-        for ii in range(1, jrt + 1):
-            phi[ii] = phi[ii] / phi[jrt]
-
-        xn0 = 0.0
-
-        for ii in range(1, jrt - 1 + 1):
-            xn0 = xn0 + dr[ii] * phi[ii] * phi[ii]
-
-        xn0 = xn0 + dr[jrt] * phi[jrt] * phi[jrt] / 2.0
-        de = 0.0001
-        ee = ev + de / 2.0
-        xp = integ(ee, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
-        ee = ev - de / 2.0
-        xm = integ(ee, l, xkappa, n, jrt, phi, integ_ruse_ctx)[3]
-        c0 = (xm - xp) / (2.0 * de)
-        print(c0, x0)
-        print(xn0)
-        if abs(c0 - c00) > 0.000000001:
-            dqddel = 2.0 * (xi1 + deltal * xi2)
-            deltal = deltal + (c00 - c0) / dqddel
-        else:
-            break
+    c0, x0 = _pseudize_iteration(
+        phi,
+        phi0,
+        v,
+        vraw,
+        yl,
+        rf,
+        vf,
+        r,
+        dr,
+        rcut,
+        factor,
+        jrt,
+        ev,
+        l,
+        xkappa,
+        n,
+        integ_ruse_ctx,
+        fitx0_args,
+        xi0,
+        xi1,
+        xi2,
+        c00,
+    )
 
     print(c0, x0)
     print("NCPP achieved # # # ")
@@ -3206,8 +3545,6 @@ def fourier(nr, r, dr, r2, vi, output="stdout"):
         lp2 = l + l + 1
         dl = log(r[2] / r[1])
         dl1 = 12.0 * dl
-        # dl2 = 12. * dl * dl
-
         for i in range(1, nr + 1):
             a[i] = r[i] * vi[i][lp2]
 
@@ -3388,7 +3725,6 @@ def hfdisk(
     - Replace manual file formatting with ``numpy.savetxt`` once NumPy is
       available in the runtime environment.
     """
-    # rden = 3.0
     if input_stream == "stdin":
         while True:
             filename = get_input("Please enter full filename: ")
@@ -3412,7 +3748,6 @@ def hfdisk(
             iprint = 0
             f.write("RELA\nRELAT. ATOMIC CHARGE DENSITY\n%i\n" % iprint)
             f.write("%15.8d%15.8d%5i%5.2f\n" % (rmin, rmax, nr, zorig))
-            # nden = nr * (log(rden / rmin) / log(rmax / rmin))
             for j in range(0, nr + 1):
                 file.write("%15.11f\n" % rho[j])
 
@@ -3482,12 +3817,6 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
     trd = 1.0 / 3.0
     ft = 4.0 / 3.0
-    # ex_val = ex
-    # ec_val = ec
-    # ux1_val = ux1
-    # ux2_val = ux2
-    # uc1_val = uc1
-    # uc2_val = uc2
     rh = rh1 + rh2
 
     # if one spin type, average polarization
@@ -3592,9 +3921,6 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
     ex_val = (xn1 * fe1 * ex1 + xn2 * fe2 * ex2) / xn
     ux1_val = fu1 * ux1_val
     ux2_val = fu2 * ux2_val
-    # uc1_val = uc1_val
-    # uc2_val = uc2_val
-
     return (nst, rel, rr, rh1, rh2, ex_val, ec_val, ux1_val, ux2_val, uc1_val, uc2_val)
 
 
