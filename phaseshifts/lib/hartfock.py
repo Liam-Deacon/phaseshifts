@@ -1488,9 +1488,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
-def integ(
-    e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel
-):  # noqa: E741, C901, MC0001
+def integ(e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901, MC0001
     """integrate out count nodes"""
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
