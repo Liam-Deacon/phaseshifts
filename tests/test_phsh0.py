@@ -59,9 +59,28 @@ def test_python_vs_fortran_density():
     with open(fortran_file) as f:
         lines = f.readlines()
     # Find grid params and density
-    rmin, rmax, nr, Z = [float(x) for x in lines[3].split()]
-    nr = int(nr)
-    density_fortran = np.array([float(x) for x in lines[4 : 4 + nr]])
+    if len(lines) < 4:
+        pytest.fail("Fortran output '{}' has {} lines; expected at least 4.".format(fortran_file, len(lines)))
+    tokens = lines[3].split()
+    if len(tokens) != 4:
+        pytest.fail(
+            "Fortran grid params line must have 4 tokens; got {} in line 4: {!r}".format(len(tokens), lines[3])
+        )
+    try:
+        rmin, rmax, nr_value, Z = [float(x) for x in tokens]
+        nr = int(nr_value)
+    except (TypeError, ValueError) as exc:
+        pytest.fail("Failed parsing grid params from line 4: {!r} ({})".format(lines[3], exc))
+    if len(lines) < 4 + nr:
+        pytest.fail(
+            "Fortran output '{}' has {} lines; expected at least {} for density data.".format(
+                fortran_file, len(lines), 4 + nr
+            )
+        )
+    try:
+        density_fortran = np.array([float(x) for x in lines[4 : 4 + nr]])
+    except ValueError as exc:
+        pytest.fail("Failed parsing density values from '{}' ({})".format(fortran_file, exc))
     # Reconstruct grid
     # h = np.log(rmax / rmin) / (nr - 1)
     # Run Python solver with matching grid
@@ -79,7 +98,7 @@ def test_python_vs_fortran_density():
     norm_fortran = density_fortran / np.max(density_fortran)
     # Compute mean absolute error
     mae = np.mean(np.abs(norm_py - norm_fortran))
-    print(f"Mean absolute error (normalized density): {mae:.3e}")
+    print("Mean absolute error (normalized density): {:.3e}".format(mae))
     # Qualitative check: both should peak near origin and decay
     peak_py = np.argmax(norm_py)
     peak_fortran = np.argmax(norm_fortran)

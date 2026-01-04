@@ -246,7 +246,7 @@ class Wrapper(object):
 
     @staticmethod
     def _guess_neng_from_lines(stripped_lines):
-        return "".join(stripped_lines).count("\n") / 2
+        return "".join(stripped_lines).count("\n") // 2
 
     @staticmethod
     def _format_cleed_header(neng, lmax):
