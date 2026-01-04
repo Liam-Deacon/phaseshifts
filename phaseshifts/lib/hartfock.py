@@ -1,5 +1,43 @@
 #!/usr/bin/env python
 # encoding: utf-8
+"""
+Hartree-Fock radial atomic solver (Python translation of legacy Fortran).
+
+This module implements the self-consistent, radial Hartree-Fock (and
+Dirac-Fock-style) workflow used by phaseshifts. The solver operates on a
+logarithmic radial grid, integrates radial equations using a Numerov-style
+scheme, and produces orbitals and charge densities suitable for LEED/XPD
+phase-shift generation.
+
+The logarithmic grid is defined as:
+
+    r_i = r_min * (r_max / r_min) ** (i / n_r)
+
+where ``i = 1..n_r`` (1-based indexing retained from the original Fortran).
+
+References
+----------
+.. [1] Hartree-Fock method,
+       https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method
+.. [2] Dirac equation (relativistic corrections),
+       https://en.wikipedia.org/wiki/Dirac_equation
+.. [3] Numerov integration scheme,
+       https://en.wikipedia.org/wiki/Numerov%27s_method
+.. [4] Clebsch-Gordan coefficients and angular momentum algebra,
+       https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients
+.. [5] J. P. Perdew and A. Zunger, "Self-interaction correction to density-
+       functional approximations for many-electron systems",
+       Phys. Rev. B 23, 5048 (1981), https://doi.org/10.1103/PhysRevB.23.5048
+.. [6] Local density approximation overview,
+       https://en.wikipedia.org/wiki/Local_density_approximation
+
+TODO
+----
+- Consider replacing tight Python loops with NumPy vectorized kernels to
+  accelerate grid operations and radial integrations.
+- Explore SciPy-based ODE solvers or specialized Numerov implementations to
+  validate stability and improve maintainability.
+"""
 
 from __future__ import print_function, division
 
@@ -19,6 +57,28 @@ file = getattr(builtins, "file", io.IOBase)  # type: ignore
 
 
 def get_input(prompt):
+    """
+    Read a line of user input with Python 2/3 compatibility.
+
+    Parameters
+    ----------
+    prompt : str
+        Prompt string displayed to the user.
+
+    Returns
+    -------
+    str
+        The raw input line.
+
+    Notes
+    -----
+    This helper preserves the historical interactive workflow used by the
+    original Fortran code.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+    """
     if sys.hexversion > 0x03000000:
         return input(prompt)
     else:
@@ -27,51 +87,39 @@ def get_input(prompt):
 
 class hartfock(object):
     """
-    hartfock class
-    -------------------
+    Hartree-Fock/Dirac-Fock radial solver.
 
-    there are nr grid points, and distances are in bohr radii...
+    Notes
+    -----
+    The solver operates on a logarithmic radial grid with distances in Bohr
+    radii. Orbitals are stored in ``phe`` with indices ``phe[i][j]`` for grid
+    point ``i`` and orbital index ``j``. The charge density is computed as:
 
-    r(i)=rmin*(rmax/rmin)**(float(i)/float(nr)) , i=1,2,3,...nr-1,nr
+    .. math::
 
+        \\rho(r_i) = \\sum_{j=1}^{n_{el}} \\frac{\\mathrm{occ}_j \\, \\phi_{ij}^2}
+        {4 \\pi r_i^2}
 
+    where ``occ_j`` is the orbital occupancy and ``phi_{ij}`` corresponds to
+    ``phe[i][j]`` in the code.
 
-    The orbitals are store in phe(), first index goes 1...nr, the
-    second index is the orbital index (i...nel)
+    The Dirac equation is solved for the orbitals, while the density is stored
+    as ``sqrt(F^2 + G^2)`` with the sign of ``G`` (large component). This
+    Dirac-Fock approximation is typically small for valence states. Breit
+    interaction terms are neglected.
 
-    Look at the atomic files after printing this out to see everything...
-
-    Suffice it to say, that the charge density at radius r(i)
-    in units of electrons per cubic Bohr radius is given by
-
-    sum of j=1...nel,
-    occ[j]*phe(i,j)*phe(i,j)/(4.*3.14159265....*r(i)*r(i))...
-
-    Think of the phe functions as plotting the radial wave-functions
-    as a function of radius...on our logarithmic mesh...
-
-    Final note
+    References
     ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
 
-    the Dirac equation is solved for the orbitals, whereas their density
-    is treated by setting phe to the square root of Dirac's F*F+G*G
-    times the sign of G...
+    TODO
+    ----
+    - Consider NumPy vectorization for orbital storage and density evaluation.
 
-    so we are doing Dirac-Fock, except that we are not treating exchange
-    exactly, in terms of working with major and minor components of the
-    orbitals, and the phe's give the CORRECT CHARGE DENSITY...
-
-    the above approximation ought to be very small for valence states,
-    so you need not worry about it...
-
-    the Breit interaction has been neglected altogether...it should not
-    have a huge effect on the charge density you are concerned with...
-
-    authors
+    Authors
     -------
     Eric Shirley - original implementation
-    Liam Deacon - python translation
-
+    Liam Deacon - Python translation
     """
 
     def __init__(
@@ -86,28 +134,41 @@ class hartfock(object):
         input_stream="stdin",
     ):
         """
-        Description
-        -----------
-        Performs calculation of Hartfock subroutine
+        Initialize and run the Hartree-Fock workflow.
 
         Parameters
         ----------
         iorbs : int
-            number of orbitals
+            Maximum number of orbitals allocated in arrays.
         iside : int
-            number of sides
+            Angular quadrature side parameter carried from the original code.
         lmax : int
-            maximum angular quantum number
+            Maximum angular quantum number used in expansions.
         ihmax : int
-            height?
+            Maximum number of history points used by iterative solvers.
         nrmax : int
-            number of radii in grid
+            Number of radial grid points allocated in arrays.
         ntmax : int
-            ?
+            Number of tabulation points for intermediate arrays.
         npmax : int
-            ?
+            Maximum number of pseudopotential entries to process.
         input_stream : str
-            may be either 'stdin' for user input or else a path to input file
+            Either ``"stdin"`` for interactive input or a file path.
+
+        Notes
+        -----
+        This initializer mirrors the legacy Fortran workflow: it allocates
+        arrays, reads control records, and dispatches to subroutines such as
+        ``abinitio`` to perform the self-consistent field steps.
+
+        References
+        ----------
+        See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+        TODO
+        ----
+        - Replace manual list-of-lists storage with NumPy arrays to enable
+          vectorized operations and reduce memory overhead.
         """
 
         # initialise class variables
@@ -515,7 +576,85 @@ def abinitio(
     etot2,
     input_stream="stdin",
 ):
-    """abinitio subroutine"""
+    """
+    Run the self-consistent-field (SCF) loop for atomic orbitals.
+
+    Parameters
+    ----------
+    etot : float
+        Total energy accumulator.
+    nst : int
+        Number of shells to process.
+    rel : int
+        Relativistic flag (0 for non-relativistic).
+    alfa : float
+        Exchange-correlation mixing parameter.
+    nr : int
+        Number of radial grid points.
+    r, dr, r2 : list of float
+        Radial grid, differential spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    e : list of float
+        Energy grid container.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    vi : list of list of float
+        Potential array by grid and channel.
+    zorig : float
+        Atomic number.
+    xntot : float
+        Total electron count accumulator.
+    nel : int
+        Number of electrons.
+    no, nl, nm : list of int
+        Principal, angular, and magnetic quantum numbers.
+    xnj : list of float
+        Total angular momentum values (j).
+    ev : list of float
+        Orbital eigenvalues.
+    occ : list of float
+        Orbital occupancies.
+    iss : list of int
+        Spin flags.
+    ek : list of float
+        Kinetic energy contributions.
+    orb : list of list of float
+        Orbital buffer for intermediate results.
+    iuflag : int
+        Output control flag.
+    rpower : list of list of float
+        Precomputed powers of radius.
+    nm : list of int
+        Magnetic quantum numbers array.
+    phe : list of list of float
+        Radial wavefunction storage.
+    etot2 : float
+        Second energy accumulator.
+    input_stream : str
+        Input source; ``"stdin"`` for interactive use or file handle.
+
+    Returns
+    -------
+    tuple
+        Updated SCF state (energies, grids, orbitals, and bookkeeping).
+
+    Notes
+    -----
+    The routine initializes radial powers, reads orbital quantum numbers,
+    and iteratively calls ``atsolve`` until the energy error falls below the
+    tolerance ``etol``.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace nested Python loops with NumPy vectorization for rpower
+      construction and orbital initialization.
+    - Consider SciPy-based mixing schemes for faster SCF convergence.
+    """
 
     xntot = 0.0
     eerror = evi = float
@@ -692,7 +831,88 @@ def atsolve(
     iuflag,
     evi,
 ):
-    """atsolve subroutine"""
+    """
+    Solve atomic orbitals for one SCF iteration.
+
+    Parameters
+    ----------
+    etot : float
+        Total energy accumulator (updated in-place).
+    nst : int
+        Number of shells to process.
+    rel : int
+        Relativistic flag (0 for non-relativistic).
+    alfa : float
+        Exchange-correlation mixing parameter.
+    eerror : float
+        Current eigenvalue error estimate.
+    nfc : int
+        Number of frozen core orbitals.
+    nr : int
+        Number of radial grid points.
+    r, dr, r2 : list of float
+        Radial grid, differential spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    phe : list of list of float
+        Radial wavefunction storage.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    vi : list of list of float
+        Potential array by grid and channel.
+    zorig : float
+        Atomic number.
+    xntot : float
+        Total electron count accumulator.
+    nel : int
+        Number of electrons.
+    no, nl, nm : list of int
+        Principal, angular, and magnetic quantum numbers.
+    xnj : list of float
+        Total angular momentum values (j).
+    ev : list of float
+        Orbital eigenvalues.
+    occ : list of float
+        Orbital occupancies.
+    iss : list of int
+        Spin flags.
+    ek : list of float
+        Kinetic energy contributions.
+    ratio : float
+        Mixing ratio for the potential update.
+    orb : list of list of float
+        Orbital buffer for intermediate results.
+    rpower : list of list of float
+        Precomputed powers of radius.
+    xnum : float
+        Mixing parameter for orbital updates.
+    etot2 : float
+        Second energy accumulator.
+    iuflag : int
+        Output control flag.
+    evi : float
+        Current eigenvalue estimate.
+
+    Returns
+    -------
+    tuple
+        Updated SCF state for the current iteration.
+
+    Notes
+    -----
+    This routine applies ``setqmm`` to construct effective potentials and
+    invokes ``elsolve`` for each orbital, updating eigenvalues and orbitals.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Evaluate NumPy-based storage for ``q0``, ``xm1``, and ``xm2`` to reduce
+      Python overhead in repeated loops.
+    - Consider SciPy root-finding methods to bracket eigenvalues in ``elsolve``.
+    """
     # initialise arrays
     q0 = xm1 = xm2 = v = [None] * len(r)
 
@@ -883,7 +1103,74 @@ def getpot(
     etot2,
     iuflag,
 ):
-    """getpot subroutine"""
+    """
+    Build the self-consistent potential and update orbital energies.
+
+    Parameters
+    ----------
+    etot : float
+        Total energy accumulator.
+    nst : int
+        Number of shells to process.
+    rel : int
+        Relativistic flag (0 for non-relativistic).
+    alfa : float
+        Exchange-correlation mixing parameter.
+    dl : float
+        Logarithmic grid spacing.
+    nr : int
+        Number of radial grid points.
+    dr, r, r2 : list of float
+        Radial grid spacing, coordinates, and squared radius arrays.
+    xntot : float
+        Total electron count.
+    phe : list of list of float
+        Radial wavefunction storage.
+    ratio : float
+        Mixing ratio for new vs. old potentials.
+    orb : list of list of float
+        Orbital buffer updated with mixed potentials.
+    occ : list of float
+        Orbital occupancies.
+    iss : list of int
+        Spin flags.
+    nel : int
+        Number of electrons.
+    nl, nm, no : list of int
+        Angular, magnetic, and principal quantum numbers.
+    xnj : list of float
+        Total angular momentum values (j).
+    rpower : list of list of float
+        Precomputed powers of radius.
+    xnum : float
+        Mixing parameter for orbital updates.
+    etot2 : float
+        Secondary energy accumulator.
+    iuflag : int
+        Output control flag.
+
+    Returns
+    -------
+    tuple
+        Updated potential, orbital, and energy state.
+
+    Notes
+    -----
+    The routine builds direct and exchange terms using Clebsch-Gordan
+    coefficients and radial integrals, then mixes the potential using
+    ``ratio`` to stabilize SCF convergence.
+
+    References
+    ----------
+    See `Clebsch-Gordan coefficients <https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients>`_
+    for angular coupling.
+
+    TODO
+    ----
+    - Replace Clebsch-Gordan loops with ``scipy.special.wigner_3j`` where
+      available for clarity and maintainability.
+    - Use NumPy vectorization for radial integrals and potential mixing.
+    """
 
     cg = [[[[[None] * 13] * 13] * 13] * 6] * 6
     pin = [[[None] * 17] * 9] * 9
@@ -1161,7 +1448,63 @@ def elsolve(
     dl,
     rel,
 ):
-    """elsolve subroutine"""
+    """
+    Solve a radial orbital eigenvalue using bracketing and Numerov steps.
+
+    Parameters
+    ----------
+    i : int
+        Orbital index.
+    occ : float
+        Orbital occupancy.
+    n : int
+        Principal quantum number.
+    l : int
+        Angular momentum quantum number.
+    xkappa : float
+        Relativistic kappa parameter.
+    xj : float
+        Total angular momentum value.
+    zorig : float
+        Atomic number.
+    zeff : float
+        Effective nuclear charge.
+    e : float
+        Trial eigenvalue (updated internally).
+    phi : list of float
+        Radial wavefunction (updated in-place).
+    v : list of float
+        Effective potential.
+    q0, xm1, xm2 : list of float
+        Auxiliary arrays for the Numerov scheme.
+    nr : int
+        Number of radial grid points.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    rel : float
+        Relativistic switch (0.0 for non-relativistic).
+
+    Returns
+    -------
+    tuple
+        Updated orbital state, including ``phi`` and eigenvalue ``e``.
+
+    Notes
+    -----
+    The routine uses a bisection-like update on the energy bracket and relies
+    on ``integ`` to count nodes and detect over/under-shooting.
+
+    References
+    ----------
+    See `Numerov's method <https://en.wikipedia.org/wiki/Numerov%27s_method>`_.
+
+    TODO
+    ----
+    - Consider SciPy root-finding (``scipy.optimize.bisect``) to improve
+      readability and convergence diagnostics.
+    """
     el = -zorig * zorig / float(n * n)
     eh = 0.0
     etol = 0.0000000001
@@ -1225,7 +1568,47 @@ def elsolve(
 
 
 def augment(e, l, xj, phi, v, nr, r, dl):
-    """augment subroutine"""
+    """
+    Apply relativistic augmentation to the radial wavefunction.
+
+    Parameters
+    ----------
+    e : float
+        Orbital eigenvalue.
+    l : int
+        Angular momentum quantum number.
+    xj : float
+        Total angular momentum value.
+    phi : list of float
+        Radial wavefunction (updated in-place).
+    v : list of float
+        Effective potential.
+    nr : int
+        Number of radial grid points.
+    r : list of float
+        Radial grid.
+    dl : float
+        Logarithmic grid spacing.
+
+    Returns
+    -------
+    None
+        Updates ``phi`` in-place.
+
+    Notes
+    -----
+    This routine computes the small-component correction using finite
+    differences on the logarithmic grid.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace finite-difference stencils with NumPy vectorization to reduce
+      per-grid-point overhead.
+    """
     phi2 = [None] * len(phi)
 
     c = 137.038
@@ -1259,6 +1642,45 @@ def augment(e, l, xj, phi, v, nr, r, dl):
 
 
 class SetqmmContext(object):
+    """
+    Context container for the ``setqmm`` routine.
+
+    Parameters
+    ----------
+    v : list of float
+        Effective potential array.
+    zeff : float
+        Effective nuclear charge (updated in-place).
+    zorig : float
+        Atomic number.
+    rel : float
+        Relativistic flag value.
+    nr : int
+        Number of radial grid points.
+    r, r2 : list of float
+        Radial grid and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    q0, xm1, xm2 : list of float
+        Auxiliary Numerov arrays.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    vi : list of list of float, optional
+        Potential table by grid and channel.
+
+    Notes
+    -----
+    This lightweight container reduces the argument count for ``setqmm``.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Consider converting this structure to a small ``dataclass`` once Python
+      2.7 support is dropped.
+    """
     def __init__(self, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi=None):
         self.v = v
         self.zeff = zeff
@@ -1276,6 +1698,35 @@ class SetqmmContext(object):
 
 
 class IntegContext(object):
+    """
+    Context container for ``integ`` radial integration.
+
+    Parameters
+    ----------
+    z : float
+        Effective nuclear charge.
+    v : list of float
+        Effective potential array.
+    xm1, xm2 : list of float
+        Auxiliary Numerov arrays.
+    nr : int
+        Number of radial grid points.
+    r, r2 : list of float
+        Radial grid and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    rel : float
+        Relativistic flag value.
+
+    References
+    ----------
+    See `Numerov's method <https://en.wikipedia.org/wiki/Numerov%27s_method>`_.
+
+    TODO
+    ----
+    - Consider converting this structure to a ``dataclass`` after Python 2.7
+      deprecation to simplify typing and defaults.
+    """
     def __init__(self, z, v, xm1, xm2, nr, r, r2, dl, rel):
         self.z = z
         self.v = v
@@ -1289,16 +1740,110 @@ class IntegContext(object):
 
 
 def _setqmm_fill_v_from_orb(orb, i, nr, r, zeff, v):
+    """
+    Fill the potential array from orbital data for a single channel.
+
+    Parameters
+    ----------
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    i : int
+        Orbital index.
+    nr : int
+        Number of radial grid points.
+    r : list of float
+        Radial grid.
+    zeff : float
+        Effective nuclear charge.
+    v : list of float
+        Potential array to update.
+
+    Returns
+    -------
+    None
+        Updates ``v`` in-place.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace the loop with NumPy vectorized operations once available.
+    """
     for j in range(1, nr + 1):
         v[j] = -zeff / r[j] + orb[j][i]
 
 
 def _setqmm_fill_v_from_vi(vi, orb, lp2, i, nr, v):
+    """
+    Fill the potential array using pre-tabulated ``vi`` values.
+
+    Parameters
+    ----------
+    vi : list of list of float
+        Potential table by grid and channel.
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    lp2 : int
+        Angular channel index.
+    i : int
+        Orbital index.
+    nr : int
+        Number of radial grid points.
+    v : list of float
+        Potential array to update.
+
+    Returns
+    -------
+    None
+        Updates ``v`` in-place.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Vectorize with NumPy for faster potential assembly.
+    """
     for j in range(1, nr + 1):
         v[j] = vi[j][lp2] + orb[j][i]
 
 
 def _setqmm_update_xm_from_orb(orb, i, nr, dl, r, r2, a2, za2, zaa, xm1, xm2):
+    """
+    Update ``xm1`` and ``xm2`` from orbital data via finite differences.
+
+    Parameters
+    ----------
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    i : int
+        Orbital index.
+    nr : int
+        Number of radial grid points.
+    dl : float
+        Logarithmic grid spacing.
+    r, r2 : list of float
+        Radial grid and squared radius arrays.
+    a2, za2, zaa : float
+        Relativistic coefficients for potential derivatives.
+    xm1, xm2 : list of float
+        Auxiliary Numerov arrays (updated in-place).
+
+    Returns
+    -------
+    None
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Consider NumPy-based finite differences for improved readability.
+    """
     for j in range(2, nr - 1):
         dvdl = (orb[j + 1][i] - orb[j - 1][i]) / (2.0 * dl)
         ddvdrr = ((orb[j + 1][i] + orb[j - 1][i] - 2.0 * orb[j][i]) / (dl * dl) - dvdl) / r2[j]
@@ -1311,6 +1856,36 @@ def _setqmm_update_xm_from_orb(orb, i, nr, dl, r, r2, a2, za2, zaa, xm1, xm2):
 
 
 def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
+    """
+    Update ``xm1`` and ``xm2`` from the potential array.
+
+    Parameters
+    ----------
+    nr : int
+        Number of radial grid points.
+    dl : float
+        Logarithmic grid spacing.
+    r, r2 : list of float
+        Radial grid and squared radius arrays.
+    a2 : float
+        Relativistic coefficient.
+    v : list of float
+        Potential array.
+    xm1, xm2 : list of float
+        Auxiliary Numerov arrays (updated in-place).
+
+    Returns
+    -------
+    None
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace explicit loops with NumPy gradients where possible.
+    """
     for j in range(2, nr):
         dvdl = (v[j + 1] - v[j - 1]) / (2.0 * dl)
         ddvdrr = ((v[j + 1] + v[j - 1] - 2.0 * v[j]) / (dl * dl) - dvdl) / r2[j]
@@ -1323,7 +1898,41 @@ def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
 
 
 def setqmm(i, orb, l, idoflag, ctx):  # noqa: E741
-    """setqmm subroutine"""
+    """
+    Construct effective potentials and Numerov coefficients for an orbital.
+
+    Parameters
+    ----------
+    i : int
+        Orbital index.
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    l : int
+        Angular momentum quantum number.
+    idoflag : int
+        Update flag controlling whether potentials are rebuilt.
+    ctx : SetqmmContext
+        Context holding potentials, grid, and auxiliary arrays.
+
+    Returns
+    -------
+    None
+        Updates context fields in-place (``v``, ``xm1``, ``xm2``, ``zeff``).
+
+    Notes
+    -----
+    The routine assembles the effective potential and Numerov coefficients,
+    optionally incorporating tabulated ``vi`` values when provided.
+
+    References
+    ----------
+    See `Numerov's method <https://en.wikipedia.org/wiki/Numerov%27s_method>`_.
+
+    TODO
+    ----
+    - Convert the internal loops to NumPy vector operations to reduce
+      per-orbital overhead.
+    """
     # ns parameter removed; it was unused in the original signature.
     c = 137.038
     alpha = ctx.rel / c
@@ -1390,46 +1999,45 @@ def initiali(
     input_stream="stdin",
 ):
     """
-    Description
-    -----------
-    Initialise the radial charge grid
+    Initialize the radial grid and core-radius indices.
 
     Parameters
     ----------
     zorig : float
-
+        Atomic number.
     nr : int
-        Number of radial grid points
-
-    rmin : float
-        Minimum radius
-
-    rmax : float
-        Maximum radius
-
-    r : list
-        Dummy list of radii
-
-    dr : list
-        Dummy list to be populated
-
-    r2 : list
-        Dummy list to be populated
-
+        Number of radial grid points.
+    rmin, rmax : float
+        Minimum and maximum radial bounds.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays (updated in-place).
     dl : float
-        Dummy float
-
-    njrc : list
-        Dummy list to be populated
-
-    xntot :
-
-    nel : int
+        Logarithmic grid spacing (updated in-place).
+    njrc : list of int, optional
+        Core radius indices per angular momentum channel.
+    xntot : float, optional
+        Total electron count accumulator.
+    nel : int, optional
+        Number of electrons.
+    input_stream : str
+        Input source; ``"stdin"`` or a file handle.
 
     Returns
     -------
-    tuple : (zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel)
+    tuple
+        ``(zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel)``.
 
+    Notes
+    -----
+    The grid spacing is computed by ``setgrid`` using a logarithmic mesh.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace the list-based grid with NumPy arrays for faster allocation.
     """
 
     if input_stream == "stdin":
@@ -1452,7 +2060,37 @@ def initiali(
 
 
 def setgrid(nr, rmin, rmax, r, dr, r2, dl):
-    """Set the radial grid values"""
+    """
+    Construct a logarithmic radial grid and its derived arrays.
+
+    Parameters
+    ----------
+    nr : int
+        Number of radial grid points.
+    rmin, rmax : float
+        Minimum and maximum radii.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays (updated in-place).
+    dl : float
+        Logarithmic grid spacing (updated in-place).
+
+    Returns
+    -------
+    tuple
+        ``(nr, rmin, rmax, r, dr, r2, dl)``.
+
+    Notes
+    -----
+    The grid uses the logarithmic spacing described in the module docstring.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace the loop with NumPy vectorized expressions for ``r`` and ``dr``.
+    """
     ratio = rmax / rmin
     dl = log(ratio) / float(nr)
     xratio = exp(dl)
@@ -1466,7 +2104,45 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
 
 
 def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
-    """integrate out count nodes"""
+    """
+    Integrate the radial equation and count nodes.
+
+    Parameters
+    ----------
+    e : float
+        Trial eigenvalue.
+    l : int
+        Angular momentum quantum number.
+    xkappa : float
+        Relativistic kappa parameter.
+    n : int
+        Principal quantum number.
+    istop : int
+        Turning-point index; 0 triggers automatic detection.
+    phi : list of float
+        Radial wavefunction buffer (updated in-place).
+    ctx : IntegContext
+        Context containing grid, potential, and auxiliary arrays.
+
+    Returns
+    -------
+    tuple
+        ``(node_count, istop, energy_flag, x0)`` where ``x0`` is the
+        log-derivative at the turning point when available.
+
+    Notes
+    -----
+    The Numerov-style scheme integrates outward and counts nodes to detect
+    whether the trial energy is too high or too low.
+
+    References
+    ----------
+    See `Numerov's method <https://en.wikipedia.org/wiki/Numerov%27s_method>`_.
+
+    TODO
+    ----
+    - Consider an explicit ODE solver (SciPy) for validation of edge cases.
+    """
     # x0 is returned as the log-derivative at the turning point when available.
     dl = ctx.dl
     rel = ctx.rel
@@ -1613,12 +2289,41 @@ def integ(e, l, xkappa, n, istop, phi, ctx):  # noqa: E741, C901, MC0001
 
 def clebschgordan(nel, nl, cg, si, fa):
     """
-    routine to generate Clebsch-Gordan coefficients, in the form of
-    cg(l1,l2,L,m1,m2) = <l1,m1;l2,m2|L,m1+m2>, according to Rose's
-    'Elementary Theory of Angular Momentum', p. 39, Wigner's formula.
-    those coefficients listed are only those for which l1.ge.l2.
-    coefficients known to be zero because of either the L or M
-    selection rules are not computed, and should not be sought.
+    Compute Clebsch-Gordan coefficients for angular momentum coupling.
+
+    Parameters
+    ----------
+    nel : int
+        Number of electron orbitals.
+    nl : list of int
+        Angular quantum numbers for each orbital.
+    cg : list
+        Preallocated coefficient tensor to update in-place.
+    si : list of float
+        Sign array (updated in-place).
+    fa : list of float
+        Factorial array (updated in-place).
+
+    Returns
+    -------
+    None
+        Updates ``cg``, ``si``, and ``fa`` in-place.
+
+    Notes
+    -----
+    The implementation follows Wigner's formula as described in Rose,
+    "Elementary Theory of Angular Momentum".
+
+    References
+    ----------
+    .. [1] Clebsch-Gordan coefficients,
+       https://en.wikipedia.org/wiki/Clebsch%E2%80%93Gordan_coefficients
+    .. [2] M. E. Rose, *Elementary Theory of Angular Momentum*, p. 39.
+
+    TODO
+    ----
+    - Replace this implementation with ``scipy.special.wigner_3j`` and related
+      routines once SciPy is a supported dependency.
     """
     lmx = 0
     for i in range(len(nl)):
@@ -1703,7 +2408,79 @@ def pseudo(
     nm,
     input_stream="stdin",
 ):
-    """pseudo subroutine"""
+    """
+    Generate pseudopotentials using the current SCF solution.
+
+    Parameters
+    ----------
+    etot : float
+        Total energy accumulator.
+    nst : int
+        Number of shells to process.
+    rel : int
+        Relativistic flag.
+    alfa : float
+        Exchange-correlation mixing parameter.
+    nr : int
+        Number of radial grid points.
+    rmin, rmax : float
+        Minimum and maximum radial bounds.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    phe, orb : list of list of float
+        Radial wavefunction and orbital buffers.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    vi : list of list of float
+        Potential table by grid and channel.
+    zorig : float
+        Atomic number.
+    xntot : float
+        Total electron count accumulator.
+    nel : int
+        Number of electrons.
+    no, nl : list of int
+        Principal and angular quantum numbers.
+    xnj : list of float
+        Total angular momentum values (j).
+    ev : list of float
+        Orbital eigenvalues.
+    occ : list of float
+        Orbital occupancies.
+    iss : list of int
+        Spin flags.
+    ek : list of float
+        Kinetic energy contributions.
+    iuflag : int
+        Output control flag.
+    vctab : list of list of float
+        Core potential corrections.
+    nm : list of int
+        Magnetic quantum numbers.
+    input_stream : str
+        Input source; ``"stdin"`` or a file handle.
+
+    Returns
+    -------
+    None
+        Updates orbital and pseudopotential data in-place.
+
+    Notes
+    -----
+    The routine calls ``pseudize`` for each eligible orbital and can be
+    adapted to alternative pseudopotential generation schemes.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Consider modularizing pseudopotential generation for alternative
+      approaches (e.g., Kleinman-Bylander forms).
+    """
 
     # initialise
     nm = [0] * nel
@@ -1891,6 +2668,35 @@ def pseudo(
 
 
 def parabreg(f, fp, fpp, rf, vf):
+    """
+    Fit a parabola through three points to approximate derivatives.
+
+    Parameters
+    ----------
+    f, fp, fpp : float
+        Function value, first derivative, and second derivative estimates.
+    rf : list of float
+        Radius samples.
+    vf : list of float
+        Function samples at ``rf``.
+
+    Returns
+    -------
+    tuple
+        ``(f, fp, fpp, rf, vf)`` updated with the fitted values.
+
+    Notes
+    -----
+    This helper is a local quadratic regression used in pseudization.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace with NumPy polynomial fitting or SciPy interpolation routines.
+    """
     f = vf[2]
     r21 = rf[2] - rf[1]
     r32 = rf[3] - rf[2]
@@ -1902,6 +2708,33 @@ def parabreg(f, fp, fpp, rf, vf):
 
 
 def hb(x, factor):
+    """
+    Evaluate the smooth cutoff function used in pseudization.
+
+    Parameters
+    ----------
+    x : float
+        Normalized radius (``r / r_cut``).
+    factor : float
+        Smoothing factor controlling the cutoff sharpness.
+
+    Returns
+    -------
+    float
+        Smooth cutoff value in ``[0, 1]``.
+
+    Notes
+    -----
+    The function is based on a hyperbolic-sine shaping factor.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Vectorize via NumPy for bulk evaluations.
+    """
     if x > 3.0:
         hb = 0
     if x <= 3.0:
@@ -1934,7 +2767,69 @@ def fitx0(
     rel,
     factor,
 ):
-    """fitx0 subroutine"""
+    """
+    Fit the log-derivative target for a pseudized orbital.
+
+    Parameters
+    ----------
+    i : int
+        Orbital index.
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    rcut : float
+        Cutoff radius for pseudization.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    e : float
+        Trial eigenvalue.
+    l : int
+        Angular momentum quantum number.
+    xj : float
+        Total angular momentum value.
+    n : int
+        Principal quantum number.
+    jrt : int
+        Index of the matching radius.
+    xideal : float
+        Target log-derivative value.
+    phi : list of float
+        Radial wavefunction (updated in-place).
+    zeff : float
+        Effective nuclear charge.
+    v : list of float
+        Effective potential array.
+    q0, xm1, xm2 : list of float
+        Auxiliary Numerov arrays.
+    nr : int
+        Number of radial grid points.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    rel : float
+        Relativistic flag value.
+    factor : float
+        Smoothing factor used by ``hb``.
+
+    Returns
+    -------
+    None
+        Updates ``v`` and ``phi`` in-place.
+
+    Notes
+    -----
+    This routine iteratively adjusts the local potential to match the target
+    log-derivative at the matching radius.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace the manual update with ``scipy.optimize`` root finding for
+      clarity and error control.
+    """
 
     vl = -1000000.0
     vh = 1000000.0
@@ -2000,7 +2895,67 @@ def pseudize(
     rcut=None,
     factor=None,
 ):
-    """pseudize subroutine"""
+    """
+    Construct a norm-conserving pseudized orbital.
+
+    Parameters
+    ----------
+    i : int
+        Orbital index.
+    orb : list of list of float
+        Orbital data by grid and orbital index.
+    ev : float
+        Orbital eigenvalue.
+    l : int
+        Angular momentum quantum number.
+    xj : float
+        Total angular momentum value.
+    n : int
+        Principal quantum number.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    zeff : float
+        Effective nuclear charge.
+    v : list of float
+        Effective potential array.
+    q0, xm1, xm2 : list of float
+        Auxiliary Numerov arrays.
+    nr : int
+        Number of radial grid points.
+    rmin, rmax : float
+        Minimum and maximum radial bounds.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays.
+    dl : float
+        Logarithmic grid spacing.
+    rel : float
+        Relativistic flag value.
+    phi : list of float
+        Radial wavefunction buffer (updated in-place).
+    rcut : float, optional
+        Cutoff radius; if ``None`` it is read from input.
+    factor : float, optional
+        Smoothing factor for the cutoff function.
+
+    Returns
+    -------
+    None
+        Updates ``phi`` and ``v`` in-place.
+
+    Notes
+    -----
+    The method constructs a smooth, norm-conserving pseudo-orbital and iterates
+    until the log-derivative matches the all-electron solution.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Factor this routine into smaller NumPy-friendly kernels to simplify
+      testing and maintenance.
+    """
     x0 = x00 = xm = xp = fp = fpp = psi = psip = psipp = None
     rf = vf = [None] * len(njrc) - 1
 
@@ -2207,7 +3162,40 @@ def pseudize(
 
 
 def fourier(nr, r, dr, r2, vi, output="stdout"):
-    """fourier subroutine"""
+    """
+    Compute a radial Fourier-like transform of the potential.
+
+    Parameters
+    ----------
+    nr : int
+        Number of radial grid points.
+    r, dr, r2 : list of float
+        Radial grid, spacing, and squared radius arrays.
+    vi : list of list of float
+        Potential table by grid and channel.
+    output : str, optional
+        Output destination; ``"stdout"`` prints to console.
+
+    Returns
+    -------
+    None
+        Writes the transformed data to ``output`` or stdout.
+
+    Notes
+    -----
+    This is a direct quadrature over the logarithmic grid rather than a fast
+    Fourier transform.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Consider NumPy vectorization for the quadrature loop.
+    - Evaluate FFT-based alternatives when a uniform grid representation is
+      appropriate.
+    """
 
     a = [None] * len(r)
     v1 = [None] * len(r)
@@ -2249,7 +3237,32 @@ def fourier(nr, r, dr, r2, vi, output="stdout"):
 
 
 def getillls(pin):
-    """getills subroutine"""
+    """
+    Populate the ``pin`` tensor with angular integration coefficients.
+
+    Parameters
+    ----------
+    pin : list
+        Preallocated tensor for angular coefficients (updated in-place).
+
+    Returns
+    -------
+    tuple
+        ``(fa, si)`` factorial and sign arrays used internally.
+
+    Notes
+    -----
+    This is a legacy implementation mirroring the original Fortran loops.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Consider using ``scipy.special`` or ``sympy`` for angular factors to
+      reduce complexity and improve clarity.
+    """
     # initialise variables
     si = fa = [None] * 33
 
@@ -2306,7 +3319,73 @@ def hfdisk(
     orb,
     input_stream="stdin",
 ):
-    """ """
+    """
+    Write radial charge density data to disk.
+
+    Parameters
+    ----------
+    iu, ir : int
+        Output control indices (legacy placeholders).
+    etot : float
+        Total energy accumulator.
+    nst : int
+        Number of shells to process.
+    rel : int
+        Relativistic flag.
+    nr : int
+        Number of radial grid points.
+    rmin, rmax : float
+        Minimum and maximum radial bounds.
+    r : list of float
+        Radial grid (updated in-place).
+    rho : list of float
+        Charge density array (updated in-place).
+    zorig : float
+        Atomic number.
+    xntot : float
+        Total electron count.
+    ixflag : int
+        Output control flag.
+    nel : int
+        Number of electrons.
+    no, nl : list of int
+        Principal and angular quantum numbers.
+    xnj : list of float
+        Total angular momentum values (j).
+    iss : list of int
+        Spin flags.
+    ev, ek : list of float
+        Eigenvalue and kinetic energy arrays.
+    occ : list of float
+        Orbital occupancies.
+    njrc : list of int
+        Core radius indices per angular momentum channel.
+    vi : list of list of float
+        Potential table by grid and channel.
+    phe, orb : list of list of float
+        Radial wavefunction and orbital buffers.
+    input_stream : str
+        Input source for the output filename.
+
+    Returns
+    -------
+    tuple
+        Updated state tuple including the computed ``rho`` and grid values.
+
+    Notes
+    -----
+    The output format preserves the legacy "RELA" header used by downstream
+    tools.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace manual file formatting with ``numpy.savetxt`` once NumPy is
+      available in the runtime environment.
+    """
     # rden = 3.0
     if input_stream == "stdin":
         while True:
@@ -2355,39 +3434,48 @@ def hfdisk(
 
 def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, uc2=0.0):
     """
-    Description
-    -----------
-    Exchange correlation routine, via Ceperley-Alder, as parametrized by
-    Perdew and Zunger, Phys. Rev. B 23, 5048.  we use their interpolation
-    between the unpolarized and polarized gas for the correlation part.
+    Compute local exchange-correlation energy and potentials.
 
     Parameters
     ----------
-    nst : float, int or bool
-        Will cause spin averaging if polarisation is equal to 1
-
+    nst : float or int
+        Spin flag; triggers spin averaging when equal to 1.
     rel : int
-        Flag to signify whether to account for relativistic effects.
+        Relativistic flag (currently informational).
+    rr : float
+        Radial coordinate.
+    rh1, rh2 : float
+        Spin-up and spin-down charge densities.
+    ex, ec : float, optional
+        Exchange and correlation energies (outputs).
+    ux1, ux2 : float, optional
+        Exchange potentials for each spin channel (outputs).
+    uc1, uc2 : float, optional
+        Correlation potentials for each spin channel (outputs).
 
-    rr :
+    Returns
+    -------
+    tuple
+        ``(nst, rel, rr, rh1, rh2, ex, ec, ux1, ux2, uc1, uc2)`` updated with
+        exchange-correlation values.
 
-    rh1 :
+    Notes
+    -----
+    Uses the Ceperley-Alder electron gas data parameterized by Perdew and
+    Zunger, with interpolation between unpolarized and polarized limits.
 
-    rh2 :
+    References
+    ----------
+    .. [1] J. P. Perdew and A. Zunger, "Self-interaction correction to density-
+       functional approximations for many-electron systems",
+       Phys. Rev. B 23, 5048 (1981), https://doi.org/10.1103/PhysRevB.23.5048
+    .. [2] Local density approximation overview,
+       https://en.wikipedia.org/wiki/Local_density_approximation
 
-    ex :
-
-    ec :
-
-    ux1 :
-
-    ux2 :
-
-    uc1 :
-
-    uc2 :
-
-
+    TODO
+    ----
+    - Consider replacing this implementation with LibXC bindings once Python
+      2.7 support is removed.
     """
 
     trd = 1.0 / 3.0
@@ -2509,7 +3597,22 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
 
 def test():
-    """for testing"""
+    """
+    Run a minimal manual test using a local input file.
+
+    Notes
+    -----
+    This helper is intended for ad-hoc local runs and is not used in the test
+    suite.
+
+    References
+    ----------
+    See `Hartree-Fock method <https://en.wikipedia.org/wiki/Hartree%E2%80%93Fock_method>`_.
+
+    TODO
+    ----
+    - Replace with a proper pytest-based regression harness.
+    """
     filename = os.path.join(os.path.expanduser("~"), "Desktop", "atorb_Re")
     hartfock(input_stream=filename)
 
