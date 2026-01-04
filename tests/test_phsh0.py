@@ -4,18 +4,20 @@ import numpy as np
 phsh0 = pytest.importorskip("phaseshifts.phsh0")
 AtomicStructureSolver = phsh0.AtomicStructureSolver
 
+
 def test_hydrogen_grid_and_orbital():
     calc = AtomicStructureSolver(Z=1, electron_config="1s1")
     r = calc.setup_grid()
     assert r[0] > 0 and r[-1] > r[0]
     calc.parse_config()
     orbitals = calc.initial_guess()
-    assert (1,0) in orbitals
-    R10 = orbitals[(1,0)]
+    assert (1, 0) in orbitals
+    R10 = orbitals[(1, 0)]
     # Check normalization
     dr = np.gradient(r)
     norm = np.sum(R10**2 * dr)
     assert np.isclose(norm, 1.0, atol=1e-2)
+
 
 def test_density_shape():
     calc = AtomicStructureSolver(Z=1, electron_config="1s1")
@@ -26,15 +28,12 @@ def test_density_shape():
     assert density.shape == calc.r.shape
     assert np.all(density >= 0)
 
+
 def test_cli(tmp_path):
     import subprocess
+
     output_file = tmp_path / "output.txt"
-    cmd = [
-        "python", "-m", "phaseshifts.phsh0",
-        "--Z", "1",
-        "--config", "1s1",
-        "--output", str(output_file)
-    ]
+    cmd = ["python", "-m", "phaseshifts.phsh0", "--Z", "1", "--config", "1s1", "--output", str(output_file)]
     result = subprocess.run(cmd, capture_output=True, text=True)
     assert result.returncode == 0
     assert output_file.exists()
@@ -62,13 +61,14 @@ def test_python_vs_fortran_density():
     # Find grid params and density
     rmin, rmax, nr, Z = [float(x) for x in lines[3].split()]
     nr = int(nr)
-    density_fortran = np.array([float(x) for x in lines[4:4+nr]])
+    density_fortran = np.array([float(x) for x in lines[4 : 4 + nr]])
     # Reconstruct grid
     h = np.log(rmax / rmin) / (nr - 1)
     r_grid = rmin * np.exp(np.arange(nr) * h)
     # Run Python solver with matching grid
-    calc = AtomicStructureSolver(Z=int(Z), electron_config="1s1",
-                                grid_params={"rmin": rmin, "rmax": rmax, "npoints": nr})
+    calc = AtomicStructureSolver(
+        Z=int(Z), electron_config="1s1", grid_params={"rmin": rmin, "rmax": rmax, "npoints": nr}
+    )
     calc.setup_grid()
     calc.parse_config()
     calc.initial_guess()

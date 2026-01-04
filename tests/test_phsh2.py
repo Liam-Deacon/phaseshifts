@@ -5,6 +5,7 @@ import pytest
 
 phsh2 = pytest.importorskip("phaseshifts.phsh2")
 
+
 class TestPhsh2(unittest.TestCase):
 
     def setUp(self):
@@ -53,7 +54,9 @@ class TestPhsh2(unittest.TestCase):
     def test_wil(self):
         # Create mock input files for wil program
         with open("mufftin.d", "w") as f:
-            f.write("&NL16 CS=0.0, Z=1.0, E1=4.0, E2=24.0, NE=30, NL=9, NR=101, IX=1, RT=1.0, NEUI=1, NEUO=2, POTYP=2 &END\n")
+            f.write(
+                "&NL16 CS=0.0, Z=1.0, E1=4.0, E2=24.0, NE=30, NL=9, NR=101, IX=1, RT=1.0, NEUI=1, NEUO=2, POTYP=2 &END\n"
+            )
             for _ in range(200):
                 f.write("0.1 0.2\n")
 
@@ -64,6 +67,7 @@ class TestPhsh2(unittest.TestCase):
         self.assertTrue(os.path.exists("zph.o"))
         self.assertTrue(os.path.exists("leedph.d"))
         self.assertTrue(os.path.exists("dataph.d"))
+
 
 if __name__ == "__main__":
     unittest.main()
