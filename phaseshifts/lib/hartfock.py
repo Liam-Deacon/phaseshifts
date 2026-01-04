@@ -1367,9 +1367,7 @@ def getpot(
         xn1 = xn / 2.0
         xn2 = xn / 2.0
         nst = 2
-        (nst, rel, r2[i], xn1, xn2, ex, ec, ux1, ux2, uc1, uc2) = exchcorr(
-            nst, rel, r2[i], xn1, xn2, ex, ec, ux1, ux2, uc1, uc2
-        )
+        (nst, rel, r2[i], xn1, xn2, ex, ec, ux1, ux2, uc1, uc2) = exchcorr(nst, rel, r2[i], xn1, xn2)
         exc = fx * ex + fc * ec
         uxc = fx * ux1 + fc * uc1
         etot = etot + dr[i] * xn * exc
@@ -1525,17 +1523,12 @@ def elsolve(
         istop = 0
         integ_result = integ(e, l, xkappa, n, istop, phi, integ_ctx)
         nn = integ_result[0]
-        ief = integ_result[2]
         if nn < n - l - 1:
-            ief = -1
-            if ief != 1:  # label 200
-                el = e
+            el = e
             if el > -0.001:
                 print("Mixing too strong for level : %i" % i)
                 return
 
-            if ief != -1:
-                eh = e
             if eh - el > etol:
                 continue  # goto 155
             if abs(abs(xj) - abs(float(l))) > 0.25:
@@ -3767,7 +3760,7 @@ def hfdisk(
     )
 
 
-def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, uc2=0.0):
+def exchcorr(nst, rel, rr, rh1, rh2):
     """
     Compute local exchange-correlation energy and potentials.
 
@@ -3781,13 +3774,6 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
         Radial coordinate.
     rh1, rh2 : float
         Spin-up and spin-down charge densities.
-    ex, ec : float, optional
-        Exchange and correlation energies (outputs).
-    ux1, ux2 : float, optional
-        Exchange potentials for each spin channel (outputs).
-    uc1, uc2 : float, optional
-        Correlation potentials for each spin channel (outputs).
-
     Returns
     -------
     tuple
