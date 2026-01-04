@@ -203,7 +203,12 @@ function getPhaseShiftValue(series, lIndex, eIndex) {
 }
 
 function getArrayItem(values, index) {
-  if (!Array.isArray(values) || !Number.isInteger(index) || index < 0 || index >= values.length) {
+  if (
+    !Array.isArray(values) ||
+    !Number.isInteger(index) ||
+    index < 0 ||
+    index >= values.length
+  ) {
     return null;
   }
   // eslint-disable-next-line security/detect-object-injection -- numeric array index
