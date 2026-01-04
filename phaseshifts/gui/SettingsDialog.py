@@ -330,7 +330,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 reply = QtWidgets.QMessageBox.warning(
                     self,
                     "Warning!",
-                    "'%s' directory does not exist! " "Do you wish to create it?" % os.pardir(path),
+                    "'%s' directory does not exist! " "Do you wish to create it?" % path,
                     QtWidgets.QMessageBox.Yes,
                     QtWidgets.QMessageBox.No,
                 )

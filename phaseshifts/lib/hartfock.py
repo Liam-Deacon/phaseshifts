@@ -1337,7 +1337,7 @@ def augment(e, l, xj, phi, v, nr, r, dl):
     return
 
 
-def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi):
+def setqmm(i, orb, l, ns, idoflag, v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi):  # noqa: E741
     """setqmm subroutine"""
     c = 137.038
     alpha = rel / c
@@ -1507,7 +1507,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
-def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):
+def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901
     """integrate out count nodes"""
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2

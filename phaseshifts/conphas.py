@@ -209,7 +209,9 @@ class Conphas:
 
         # get list of phase shifts in phasout
         phsh_list = []
-        [phsh_list.append(i) for (i, line) in enumerate(lines) if re.match("^[A-Za-z]", line.replace(" ", ""))]
+        for i, line in enumerate(lines):
+            if re.match("^[A-Za-z]", line.replace(" ", "")):
+                phsh_list.append(i)
 
         # try to guess filenames from header lines in file
         guessed_filenames = [
@@ -237,7 +239,8 @@ class Conphas:
         for i_phsh in range(1, len(phsh_list)):
             try:
                 with open(phsh_filenames[i_phsh - 1], "w") as phsh_file:
-                    [phsh_file.write(lines[i]) for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh])]
+                    for i in range(phsh_list[i_phsh - 1], phsh_list[i_phsh]):
+                        phsh_file.write(lines[i])
             except IOError:
                 raise IOError
 

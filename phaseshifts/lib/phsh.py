@@ -961,7 +961,10 @@ def phsh_rel(
     # go to 40
     for i in range(1, n + 1):  # 90 or 80
         lsm1 += 1
-        phasout.write("%9.4f%s\n" % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)])))
+        phasout.write(
+            "%9.4f%s\n"
+            % (energ[i], "".join(["%8.5f" % jf[i][l] for l in range(1, lsm1 + 1)]))
+        )  # noqa: E741
 
     for kk in range(1, nl + 1):  # label 145
         dataph.write('"l = %2i\n' % kk - 1)

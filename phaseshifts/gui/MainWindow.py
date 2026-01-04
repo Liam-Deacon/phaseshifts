@@ -337,7 +337,7 @@ class MainWindow(QtWidgets.QMainWindow):
             uc = Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]])
             mtz = MTZ_model(uc, atoms=[atom])  # initialise muffin-tin model
             mtz.load_from_file(filename)  # load file
-            exec("self.%s = mtz" % model)  # pylint: disable=exec-used
+            setattr(self, model, mtz)
             self.updateModelUi(model)
 
         except IOError:
@@ -359,11 +359,11 @@ class MainWindow(QtWidgets.QMainWindow):
             mtz = MTZ_model(Unitcell(1, 2, [[1, 0, 0], [0, 1, 0], [0, 0, 1]]), atoms=[Atom("H")])
             if model == "bulk":
                 tree = self.ui.treeWidgetBulk
-                mtz = eval("self.%s" % model, {"self": self}, {})  # pylint: disable=eval-used
             elif model == "slab":
                 tree = self.ui.treeWidgetSlab
             else:
                 return
+            mtz = getattr(self, model, mtz)
 
             root = tree.invisibleRootItem()
             trunk = self.getChildItemsDict(tree)

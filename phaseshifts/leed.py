@@ -180,7 +180,7 @@ class CLEEDInputValidator:
                 sys.stderr.flush()
         # unit cell
         try:
-            [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]
+            _basis = [line for line in lines if line.startswith("a") and int(line[1]) <= 3 and int(line[1]) > 0]  # noqa: F841
         except ValueError:
             raise ValueError("'%s' is not a valid basis vector" % line[:2])
 
@@ -195,12 +195,12 @@ class CLEEDInputValidator:
             radii_dict[tag] = value
 
         try:
-            ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]
+            _overlayer_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("po:")]  # noqa: F841
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 
         try:
-            ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]
+            _bulk_atoms = ["".join(line.split(":")[1].split()[:4]) for line in lines if line.startswith("pb:")]  # noqa: F841
         except ValueError:
             raise ValueError("'%s' is not a valid overlayer atom input" % line[:2])
 

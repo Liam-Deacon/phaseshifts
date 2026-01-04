@@ -4807,13 +4807,17 @@ def sqlite_script():
         sql.append("""INSERT INTO "period" VALUES (%i, '%s', NULL);""" % (key, label))
 
     for key, (label, descr) in GROUPS.items():
-        sql.append("""INSERT INTO "group" VALUES (%i, '%s', '%s');""" % (key, label, descr))
+        sql.append(
+            """INSERT INTO "group" VALUES (%i, '%s', '%s');""" % (key, label, descr)
+        )  # nosec - static data, not user input
 
     for data in BLOCKS.items():
         sql.append("""INSERT INTO "block" VALUES ('%s', '%s');""" % data)
 
     for series in sorted(SERIES):
-        sql.append("""INSERT INTO "series" VALUES (%i, '%s', '');""" % (series, SERIES[series]))
+        sql.append(
+            """INSERT INTO "series" VALUES (%i, '%s', '');""" % (series, SERIES[series])
+        )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         sql.append(
@@ -4857,15 +4861,21 @@ def sqlite_script():
             sql.append(
                 """INSERT INTO "isotope" VALUES (%i, %i, %.10f, %.8f);"""
                 % (ele.number, iso.massnumber, iso.mass, iso.abundance)
-            )
+            )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         for (shell, subshell), count in ele.eleconfig_dict.items():
-            sql.append("""INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);""" % (ele.number, shell, subshell, count))
+            sql.append(
+                """INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);"""
+                % (ele.number, shell, subshell, count)
+            )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         for i, ionenergy in enumerate(ele.ionenergy):
-            sql.append("""INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);""" % (ele.number, i + 1, ionenergy))
+            sql.append(
+                """INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);"""
+                % (ele.number, i + 1, ionenergy)
+            )  # nosec - static data, not user input
 
     return "\n".join(sql).replace("        ", "")
 

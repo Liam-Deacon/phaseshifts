@@ -578,7 +578,8 @@ A number of alternatives are available, notably the following:
 
 > [!NOTE]
 > A pre-alpha EEASiSSS backend is now included in phaseshifts as an optional extra.
-> See [EEASiSSS package docs](https://phaseshifts.readthedocs.io/en/latest/eeasisss_package.html) for usage details.
+> See [EEASiSSS package docs](https://phaseshifts.readthedocs.io/en/latest/eeasisss_package.html)
+> for usage details.
 > Ongoing work is tracked in [issue #92](https://github.com/Liam-Deacon/phaseshifts/issues/92).
 
 <!--lint enable no-unused-definitions-->
