@@ -20,7 +20,6 @@ class hartfock(object):
     ) -> None: ...
 
 def _pseudize_prompt_cutoff(rcut: Optional[float], factor: Optional[float]) -> Tuple[float, float]: ...
-
 def _pseudize_select_cutoff(
     rcut: float,
     phi: List[float],
@@ -29,7 +28,6 @@ def _pseudize_select_cutoff(
     n: int,
     l: int,
 ) -> float: ...
-
 def _pseudize_indices(
     rcut: float,
     rmin: float,
@@ -39,11 +37,8 @@ def _pseudize_indices(
     njrc: List[int],
     lp: int,
 ) -> Tuple[float, int, int, float]: ...
-
 def _pseudize_normalize_phi(phi: List[float], jrt: int) -> None: ...
-
 def _pseudize_integral_norm(phi: List[float], dr: List[float], jrt: int) -> float: ...
-
 def _pseudize_reference_values(
     ev: float,
     l: int,
@@ -54,7 +49,6 @@ def _pseudize_reference_values(
     integ_ctx: Any,
     dr: List[float],
 ) -> Tuple[float, float, float]: ...
-
 def _pseudize_apply_polynomial_potential(
     v: List[float],
     r: List[float],
@@ -63,7 +57,6 @@ def _pseudize_apply_polynomial_potential(
     rcut: float,
     jrc: int,
 ) -> None: ...
-
 def _pseudize_compute_xi(
     phi0: List[float],
     dr: List[float],
@@ -72,9 +65,7 @@ def _pseudize_compute_xi(
     factor: float,
     jrt: int,
 ) -> Tuple[float, float, float]: ...
-
 def _pseudize_compute_deltal(xi0: float, xi1: float, xi2: float, c00: float) -> float: ...
-
 def _pseudize_update_phi(
     phi: List[float],
     phi0: List[float],
@@ -85,7 +76,6 @@ def _pseudize_update_phi(
     deltal: float,
     jrt: int,
 ) -> None: ...
-
 def _pseudize_update_potential(
     v: List[float],
     vraw: List[float],
@@ -101,7 +91,6 @@ def _pseudize_update_potential(
     fitx0_args: Any,
     integ_args: Any,
 ) -> float: ...
-
 def _pseudize_iteration(
     phi: List[float],
     phi0: List[float],
@@ -126,7 +115,6 @@ def _pseudize_iteration(
     xi2: float,
     c00: float,
 ) -> Tuple[float, float]: ...
-
 def pseudize(
     i: int,
     orb: List[List[float]],
@@ -152,5 +140,4 @@ def pseudize(
     rcut: Optional[float] = ...,
     factor: Optional[float] = ...,
 ) -> None: ...
-
 def __getattr__(name: str) -> Any: ...

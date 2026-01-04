@@ -3071,9 +3071,7 @@ def _pseudize_apply_polynomial_potential(v, r, r2, dl, rcut, jrc):
     """
     v0 = v[jrc]
     dvdl = (8.0 * (v[jrc + 1] - v[jrc - 1]) - (v[jrc + 2] - v[jrc - 2])) / (12.0 * dl)
-    ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (
-        12.0 * dl * dl
-    )
+    ddvdll = (16.0 * (v[jrc + 1] + v[jrc - 1]) - 30.0 * v[jrc] - v[jrc + 2] - v[jrc - 2]) / (12.0 * dl * dl)
     dldr = 1.0 / r[jrc]
     ddldrr = -1.0 / r2[jrc]
     v1 = dvdl * dldr
