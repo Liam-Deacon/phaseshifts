@@ -403,7 +403,7 @@ class Conphas:
 
         # read phase scattering
         for i, input_file in enumerate(self.input_files):
-            (_, energy_step, n_phases, lmf, data) = self.load_data(input_file)
+            (_, _energy_step, n_phases, lmf, data) = self.load_data(input_file)
 
             if n_phases > 250:
                 n_phases = 250

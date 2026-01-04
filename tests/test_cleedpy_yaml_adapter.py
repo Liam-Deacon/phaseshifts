@@ -15,6 +15,9 @@ def test_cleedpy_yaml_roundtrip(tmp_path):
         UnitCell,
     )
 
+    if CleedpyYamlAdapter is None:
+        pytest.skip("CleedpyYamlAdapter optional dependency not available.")
+
     adapter = CleedpyYamlAdapter()
     unit_cell = UnitCell((1.0, 0.0, 0.0), (0.0, 1.0, 0.0), (0.0, 0.0, 1.0))
     superstructure = SuperstructureMatrix((1.0, 0.0), (0.0, 1.0))

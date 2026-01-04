@@ -11,7 +11,7 @@
 - **Build Fortran extension:** `make libphsh` or `python setup.py build_ext --inplace`
 - **Run all tests:** `pytest tests/ test/ --verbose`
 - **Run a single test:** `pytest tests/test_phshift2007.py::test_e2e`
-- **Lint:** `flake8 . --max-line-length=127`
+- **Lint:** `flake8 . --max-line-length=120`
 - **Build wheel:** `make wheel`
 - **Build all:** `make build`
 - **Clean artifacts:** `make clean`

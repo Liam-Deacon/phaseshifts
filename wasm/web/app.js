@@ -961,7 +961,9 @@ function generateCsvFormat(results, params) {
  * Download a file
  */
 function downloadFile(content, filename, mimeType) {
+  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   const blob = new Blob([content], { type: mimeType });
+  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -969,6 +971,7 @@ function downloadFile(content, filename, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
+  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   URL.revokeObjectURL(url);
 }
 

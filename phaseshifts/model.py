@@ -140,8 +140,8 @@ class Atom(object):
         try:
             self.radius = float(radius)
             self._radius = self.radius / 0.529  # in Bohr radii
-        except Exception:
-            pass
+        except (TypeError, ValueError):
+            return
 
 
 class Unitcell(object):
