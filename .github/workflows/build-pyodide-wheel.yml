@@ -56,7 +56,7 @@ jobs:
         uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         env:
           CIBW_PLATFORM: pyodide
-          # TODO: Add cp314-pyodide_wasm32 once Pyodide provides Python 3.14 wheels.
+          # NOTE: cp314-pyodide_wasm32 is tracked in issue #155 once Pyodide ships 3.14 wheels.
           CIBW_BUILD: cp312-pyodide_wasm32 cp313-pyodide_wasm32
           CIBW_TEST_COMMAND: python -c "import phaseshifts; print(phaseshifts.__version__)"
           PHASESHIFTS_DISABLE_SKBUILD: '1'
