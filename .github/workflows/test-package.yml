@@ -60,6 +60,7 @@ jobs:
           - '3.11'
           - '3.12'
           - '3.13'
+          - '3.14'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -69,6 +70,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          allow-prereleases: ${{ matrix.python-version == '3.14' }}
 
       # Setup Fortran compiler - works on all platforms
       - name: Setup Fortran compiler

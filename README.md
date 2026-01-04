@@ -2,7 +2,7 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Liam-Deacon/phaseshifts/HEAD?labpath=tutorial.ipynb)
 ![PyPI - Version](https://img.shields.io/pypi/v/phaseshifts?logo=pypi&logoColor=white)
-![Python](https://img.shields.io/badge/python-2.7%20%7C%203.5%20--%203.11-blue?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/python-2.7%20%7C%203.5%20--%203.14-blue?logo=python&logoColor=white)
 ![PyPI - Status](https://img.shields.io/pypi/status/phaseshifts?logo=pypi&logoColor=white)
 ![GitHub License](https://img.shields.io/github/license/Liam-Deacon/phaseshifts?logo=github)
 [![Read the Docs](https://img.shields.io/readthedocs/phaseshifts?logo=readthedocs&logoColor=white)](https://phaseshifts.readthedocs.io/en/latest/)
@@ -280,7 +280,7 @@ For Windows users, here's a step-by-step guide to install phaseshifts with all n
 
 #### Prerequisites
 
-1. **Install Python 3.9-3.13** from [python.org](https://www.python.org/downloads/windows/) or via [Windows Store](https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K)
+1. **Install Python 3.9-3.14** from [python.org](https://www.python.org/downloads/windows/) or via [Windows Store](https://apps.microsoft.com/store/detail/python-311/9NRWMJP3717K)
    - Make sure to check "Add Python to PATH" during installation
 
 2. **Install Microsoft Visual C++ Build Tools** (required for Python package compilation):
