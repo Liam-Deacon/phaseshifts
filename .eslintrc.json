@@ -1,0 +1,14 @@
+{
+  "env": {
+    "browser": true,
+    "es2021": true
+  },
+  "overrides": [
+    {
+      "files": ["wasm/web/*.js"],
+      "rules": {
+        "compat/compat": "off"
+      }
+    }
+  ]
+}

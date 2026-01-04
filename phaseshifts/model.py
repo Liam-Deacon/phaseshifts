@@ -548,8 +548,8 @@ class MTZ_model(Model):
         """Sets the alpha exchange term for muffin-tin calculation"""
         try:
             self.exchange = float(alpha)
-        except Exception:
-            pass
+        except (TypeError, ValueError):
+            return
 
     # set form of muffin-tin calculation: 0=cav, 1=wil, 2=rel
     def set_nform(self, nform):
