@@ -261,7 +261,11 @@ function setupEventListeners() {
   }
 
   // Calculate button
-  addListener(document.getElementById('calculate-btn'), 'click', handleCalculateClick);
+  addListener(
+    document.getElementById('calculate-btn'),
+    'click',
+    handleCalculateClick,
+  );
 
   // Clear button
   addListener(document.getElementById('clear-btn'), 'click', handleClearClick);
@@ -280,14 +284,34 @@ function setupEventListeners() {
   });
 
   // Download buttons
-  addListener(document.getElementById('download-cleed'), 'click', handleDownloadCleed);
-  addListener(document.getElementById('download-viperleed'), 'click', handleDownloadViperLeed);
-  addListener(document.getElementById('download-csv'), 'click', handleDownloadCsv);
+  addListener(
+    document.getElementById('download-cleed'),
+    'click',
+    handleDownloadCleed,
+  );
+  addListener(
+    document.getElementById('download-viperleed'),
+    'click',
+    handleDownloadViperLeed,
+  );
+  addListener(
+    document.getElementById('download-csv'),
+    'click',
+    handleDownloadCsv,
+  );
 
   // Chart controls
-  addListener(document.getElementById('show-all-l'), 'change', handleChartChange);
+  addListener(
+    document.getElementById('show-all-l'),
+    'change',
+    handleChartChange,
+  );
   addListener(document.getElementById('l-min'), 'change', handleChartChange);
-  addListener(document.getElementById('l-max-display'), 'change', handleChartChange);
+  addListener(
+    document.getElementById('l-max-display'),
+    'change',
+    handleChartChange,
+  );
 }
 
 /**
@@ -409,8 +433,9 @@ function loadPreset(presetName) {
   document.getElementById('method').value = preset.method;
 
   // Update method help text
-  document.getElementById('method-help').textContent =
-    getMethodDescription(preset.method);
+  document.getElementById('method-help').textContent = getMethodDescription(
+    preset.method,
+  );
 }
 
 /**
@@ -757,7 +782,8 @@ function updateChart() {
 
   const showAll = document.getElementById('show-all-l').checked;
   const lMin = parseInt(document.getElementById('l-min').value, 10) || 0;
-  const lMax = parseInt(document.getElementById('l-max-display').value, 10) || 0;
+  const lMax =
+    parseInt(document.getElementById('l-max-display').value, 10) || 0;
 
   chart.data.datasets.forEach((dataset, index) => {
     if (showAll) {

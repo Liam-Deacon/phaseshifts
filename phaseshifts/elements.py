@@ -4866,15 +4866,13 @@ def sqlite_script():
     for ele in ELEMENTS:
         for (shell, subshell), count in ele.eleconfig_dict.items():
             sql.append(
-                """INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);"""
-                % (ele.number, shell, subshell, count)
+                """INSERT INTO "eleconfig" VALUES (%i, %i, '%s', %i);""" % (ele.number, shell, subshell, count)
             )  # nosec - static data, not user input
 
     for ele in ELEMENTS:
         for i, ionenergy in enumerate(ele.ionenergy):
             sql.append(
-                """INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);"""
-                % (ele.number, i + 1, ionenergy)
+                """INSERT INTO "ionenergy" VALUES (%i, %i, %.4f);""" % (ele.number, i + 1, ionenergy)
             )  # nosec - static data, not user input
 
     return "\n".join(sql).replace("        ", "")
