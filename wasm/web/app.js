@@ -3,9 +3,6 @@
  * Browser-based LEED/XPD phase shift calculations
  */
 /* global Chart */
-/* eslint-disable compat/compat */
-/* eslint-disable require-jsdoc */
-/* eslint-disable jsdoc/require-jsdoc */
 
 // Global state
 let phaseShiftsModule = null;
@@ -173,7 +170,6 @@ function getPreset(presetName) {
   if (!Object.prototype.hasOwnProperty.call(presets, presetName)) {
     return null;
   }
-  // eslint-disable-next-line security/detect-object-injection -- presetName validated above
   return presets[presetName];
 }
 
@@ -181,7 +177,6 @@ function getMethodDescription(method) {
   if (!Object.prototype.hasOwnProperty.call(methodDescriptions, method)) {
     return '';
   }
-  // eslint-disable-next-line security/detect-object-injection -- method validated above
   return methodDescriptions[method];
 }
 
@@ -189,7 +184,6 @@ function getPhaseShiftSeries(series, index) {
   if (!Number.isInteger(index) || index < 0 || index >= series.length) {
     return null;
   }
-  // eslint-disable-next-line security/detect-object-injection -- numeric array index
   return series[index];
 }
 
@@ -198,7 +192,6 @@ function getPhaseShiftValue(series, lIndex, eIndex) {
   if (!target || eIndex < 0 || eIndex >= target.length) {
     return null;
   }
-  // eslint-disable-next-line security/detect-object-injection -- numeric array index
   return target[eIndex];
 }
 
@@ -211,7 +204,6 @@ function getArrayItem(values, index) {
   ) {
     return null;
   }
-  // eslint-disable-next-line security/detect-object-injection -- numeric array index
   return values[index];
 }
 
@@ -961,9 +953,7 @@ function generateCsvFormat(results, params) {
  * Download a file
  */
 function downloadFile(content, filename, mimeType) {
-  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   const blob = new Blob([content], { type: mimeType });
-  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -971,7 +961,6 @@ function downloadFile(content, filename, mimeType) {
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
-  // eslint-disable-next-line compat/compat -- browser-only API for file downloads.
   URL.revokeObjectURL(url);
 }
 

@@ -63,7 +63,7 @@ def test_python_vs_fortran_density():
     nr = int(nr)
     density_fortran = np.array([float(x) for x in lines[4 : 4 + nr]])
     # Reconstruct grid
-    h = np.log(rmax / rmin) / (nr - 1)
+    # h = np.log(rmax / rmin) / (nr - 1)
     # Run Python solver with matching grid
     calc = AtomicStructureSolver(
         Z=int(Z), electron_config="1s1", grid_params={"rmin": rmin, "rmax": rmax, "npoints": nr}

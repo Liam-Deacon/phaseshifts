@@ -600,8 +600,8 @@ class MTZ_model(Model):
         try:
             self.c = float(c)
             self._c = self.c / 0.529
-        except Exception:
-            pass
+        except (TypeError, ValueError):
+            return
 
     def _load_input_file(self, filename):
         """
