@@ -103,6 +103,11 @@ jobs:
     env:
       PIP_NO_BUILD_ISOLATION: '1'
       SKBUILD_DISABLE: '1'
+      CIBW_BEFORE_BUILD: >-
+        pip install "numpy<1.17; python_version < '3.0'" "numpy<2; python_version >= '3.0'"
+      CIBW_BEFORE_BUILD_LINUX: >-
+        (yum install -y python3-devel || echo "yum failed, continuing...") &&
+        pip install "numpy<1.17; python_version < '3.0'" "numpy<2; python_version >= '3.0'" "setuptools<45; python_version < '3.0'" "wheel<0.38; python_version < '3.0'"
     strategy:
       fail-fast: false
       matrix:
