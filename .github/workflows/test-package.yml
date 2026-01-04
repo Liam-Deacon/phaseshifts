@@ -95,6 +95,23 @@ jobs:
           pip install -r requirements.txt
           pip install "numpy"
 
+      - name: Verify periodictable pin on Python 3.14
+        if: matrix.python-version == '3.14'
+        run: |
+          python - <<'PY'
+          import periodictable
+
+          expected = "2.0.2"
+          actual = getattr(periodictable, "__version__", "unknown")
+          if actual != expected:
+              raise SystemExit(
+                  "periodictable pin mismatch for Python 3.14: "
+                  f"expected {expected}, got {actual}. "
+                  "Update pyproject.toml/requirements.txt once a compatible "
+                  "release is confirmed."
+              )
+          PY
+
       - name: Install build dependencies
         run: |
           # Install scikit-build-core for modern builds (CMake-based)

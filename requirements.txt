@@ -1,5 +1,6 @@
 numpy>=1.3
-periodictable>=1.6.1
+periodictable>=1.6.1; python_version < "3.14"
+periodictable==2.0.2; python_version >= "3.14"
 scipy>=0.7
 # TODO: Clean up requirement constraints when we drop support for python 3.6 or earlier
 # (and then again when we drop python 3.8 or earlier)
