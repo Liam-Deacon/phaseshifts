@@ -86,7 +86,7 @@ class Conphas:
 
     """
 
-    def __init__(self, input_files=[], output_file=[], formatting=None, lmax=10, v0_params=None, **kwargs):
+    def __init__(self, input_files=None, output_file=None, formatting=None, lmax=10, v0_params=None, **kwargs):
         """
         Parameters
         ----------
@@ -103,6 +103,10 @@ class Conphas:
             (default None)
 
         """
+        if input_files is None:
+            input_files = []
+        if output_file is None:
+            output_file = []
         self.input_files = [filename for filename in input_files if os.path.isfile(filename)]
         self.output_file = os.path.abspath(str(output_file))
         if int(lmax) >= 0 and int(lmax) <= 18:
@@ -198,8 +202,10 @@ class Conphas:
         return (initial_energy, energy_step, n_phases, lmf, data)
 
     @staticmethod
-    def split_phasout(filename, output_filenames=[]):
+    def split_phasout(filename, output_filenames=None):
         """split phasout input file into separate files"""
+        if output_filenames is None:
+            output_filenames = []
         try:
             with open(filename, "r") as phasout:
                 lines = phasout.readlines()
@@ -246,8 +252,10 @@ class Conphas:
 
         return phsh_filenames[: len(phsh_list) - 1]  # return written files
 
-    def set_input_files(self, input_files=[]):
+    def set_input_files(self, input_files=None):
         """set list of input filenames"""
+        if input_files is None:
+            input_files = []
         if input_files:
             input_files = [self.__fix_path(filename) for filename in input_files]
             temp_input_files = [filename for filename in input_files if ntpath.isfile(filename)]
@@ -395,7 +403,7 @@ class Conphas:
 
         # read phase scattering
         for i, input_file in enumerate(self.input_files):
-            (initial_energy, energy_step, n_phases, lmf, data) = self.load_data(input_file)
+            (_, energy_step, n_phases, lmf, data) = self.load_data(input_file)
 
             if n_phases > 250:
                 n_phases = 250

@@ -842,7 +842,7 @@ def phsh_rel(
 
     inpdat.write("input data\n")  # 13 format (1h1, /  / ,t61,'input data',)
     name = mtz.readline().split()  # 10
-    (es, de, ue, lsm, vc) = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
+    (es, de, ue, lsm, _vc) = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
 
     nl = 8  # nl is the number of plotted phase shifts
     inpdat.write("%12.4d%12.4d%12.4d    %s%s%3i\n" % (es, de, ue, opt, opt1, lsm))
@@ -857,7 +857,7 @@ def phsh_rel(
     # vs = 0.0
 
     if opts == sub:
-        # vs = vc
+        # vs = _vc
         pass
 
     if jri <= 0 or jri > 340:

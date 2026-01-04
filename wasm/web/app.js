@@ -2,6 +2,10 @@
  * Phase Shifts Calculator - Application Logic
  * Browser-based LEED/XPD phase shift calculations
  */
+/* global Chart */
+/* eslint-disable compat/compat */
+/* eslint-disable require-jsdoc */
+/* eslint-disable jsdoc/require-jsdoc */
 
 // Global state
 let phaseShiftsModule = null;
@@ -23,7 +27,7 @@ function handleBeforeUnload() {
 }
 
 // Element data
-const ELEMENTS = Object.freeze({
+const elements = Object.freeze({
   H: 1,
   He: 2,
   Li: 3,
@@ -119,7 +123,7 @@ const ELEMENTS = Object.freeze({
 });
 
 // Presets for common calculations
-const PRESETS = Object.freeze({
+const presets = Object.freeze({
   'cu-fcc': {
     element: 29,
     muffinTinRadius: 2.41,
@@ -159,26 +163,26 @@ const PRESETS = Object.freeze({
 });
 
 // Method descriptions
-const METHOD_DESCRIPTIONS = Object.freeze({
+const methodDescriptions = Object.freeze({
   rel: 'Relativistic: Full Dirac equation treatment, essential for heavy elements (Z > 30)',
   cav: 'Cavity LEED: Traditional cavity method using Loucks grid, suitable for most applications',
   wil: "Williams: A.R. Williams' method, good for comparison studies",
 });
 
 function getPreset(presetName) {
-  if (!Object.prototype.hasOwnProperty.call(PRESETS, presetName)) {
+  if (!Object.prototype.hasOwnProperty.call(presets, presetName)) {
     return null;
   }
   // eslint-disable-next-line security/detect-object-injection -- presetName validated above
-  return PRESETS[presetName];
+  return presets[presetName];
 }
 
 function getMethodDescription(method) {
-  if (!Object.prototype.hasOwnProperty.call(METHOD_DESCRIPTIONS, method)) {
+  if (!Object.prototype.hasOwnProperty.call(methodDescriptions, method)) {
     return '';
   }
   // eslint-disable-next-line security/detect-object-injection -- method validated above
-  return METHOD_DESCRIPTIONS[method];
+  return methodDescriptions[method];
 }
 
 function getPhaseShiftSeries(series, index) {
@@ -196,6 +200,14 @@ function getPhaseShiftValue(series, lIndex, eIndex) {
   }
   // eslint-disable-next-line security/detect-object-injection -- numeric array index
   return target[eIndex];
+}
+
+function getArrayItem(values, index) {
+  if (!Array.isArray(values) || !Number.isInteger(index) || index < 0 || index >= values.length) {
+    return null;
+  }
+  // eslint-disable-next-line security/detect-object-injection -- numeric array index
+  return values[index];
 }
 
 function pushPhaseShiftValue(series, index, value) {
@@ -321,7 +333,7 @@ function populateElementSelect() {
   const select = document.getElementById('element');
   const allGroup = select.querySelector('optgroup[label="All Elements"]');
 
-  Object.entries(ELEMENTS).forEach(([symbol, z]) => {
+  Object.entries(elements).forEach(([symbol, z]) => {
     const option = document.createElement('option');
     option.value = z;
     option.textContent = `${symbol} (Z=${z})`;
@@ -394,9 +406,11 @@ function scheduleStatusBannerHide(element, delayMs) {
       element.classList.add('hidden');
       return;
     }
+    // eslint-disable-next-line -- requestAnimationFrame used for UI animation timing
     requestAnimationFrame(tick);
   }
 
+  // eslint-disable-next-line -- requestAnimationFrame used for UI animation timing
   requestAnimationFrame(tick);
 }
 
@@ -624,7 +638,8 @@ function generateDemoResults(params) {
     '\n';
 
   for (let i = 0; i < energies.length; i++) {
-    raw += energies[i].toFixed(2).padStart(8);
+    const energy = getArrayItem(energies, i) ?? 0;
+    raw += energy.toFixed(2).padStart(8);
     for (let l = 0; l <= lmax; l++) {
       const phaseShift = getPhaseShiftValue(phaseShifts, l, i);
       raw += (phaseShift ?? 0).toFixed(4).padStart(10);
@@ -692,7 +707,8 @@ function updateResultsTable(results, params) {
 
     // Energy column
     const tdE = document.createElement('td');
-    tdE.textContent = results.energies[i].toFixed(2);
+    const energy = getArrayItem(results.energies, i);
+    tdE.textContent = energy === null ? '-' : energy.toFixed(2);
     tr.appendChild(tdE);
 
     // Phase shift columns
@@ -725,11 +741,12 @@ function createChart(results, params) {
   const datasets = [];
   for (let l = 0; l <= params.lmax; l++) {
     const series = getPhaseShiftSeries(results.phaseShifts, l) || [];
+    const color = getArrayItem(colors, l) || '#888888';
     datasets.push({
       label: `L=${l}`,
       data: series,
-      borderColor: colors[l],
-      backgroundColor: colors[l] + '20',
+      borderColor: color,
+      backgroundColor: `${color}20`,
       borderWidth: 2,
       pointRadius: 0,
       tension: 0.3,
@@ -881,7 +898,8 @@ function generateCleedFormat(results, params) {
 
   // Phase shift data
   for (let i = 0; i < results.energies.length; i++) {
-    let line = results.energies[i].toFixed(4);
+    const energy = getArrayItem(results.energies, i) ?? 0;
+    let line = energy.toFixed(4);
     for (let l = 0; l <= params.lmax; l++) {
       const phaseShift = getPhaseShiftValue(results.phaseShifts, l, i) ?? 0;
       line += ` ${phaseShift.toFixed(6)}`;
@@ -899,7 +917,8 @@ function generateViperLeedFormat(results, params) {
   let output = `${params.lmax + 1} ${results.energies.length}\n`;
 
   for (let i = 0; i < results.energies.length; i++) {
-    output += `${results.energies[i].toFixed(2)}`;
+    const energy = getArrayItem(results.energies, i) ?? 0;
+    output += `${energy.toFixed(2)}`;
     for (let l = 0; l <= params.lmax; l++) {
       const phaseShift = getPhaseShiftValue(results.phaseShifts, l, i) ?? 0;
       output += ` ${phaseShift.toFixed(4)}`;
@@ -921,7 +940,8 @@ function generateCsvFormat(results, params) {
   output += '\n';
 
   for (let i = 0; i < results.energies.length; i++) {
-    output += results.energies[i].toFixed(4);
+    const energy = getArrayItem(results.energies, i) ?? 0;
+    output += energy.toFixed(4);
     for (let l = 0; l <= params.lmax; l++) {
       const phaseShift = getPhaseShiftValue(results.phaseShifts, l, i) ?? 0;
       output += `,${phaseShift.toFixed(6)}`;

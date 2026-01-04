@@ -10,14 +10,12 @@ import sys
 import os
 
 try:
-    raw_input
-except NameError:  # pragma: no cover - python 3 fallback
-    raw_input = input  # type: ignore
+    import builtins
+except ImportError:  # pragma: no cover - python 2 fallback
+    import __builtin__ as builtins  # type: ignore
 
-try:
-    file
-except NameError:  # pragma: no cover - python 3 fallback
-    file = io.IOBase  # type: ignore
+raw_input = getattr(builtins, "raw_input", input)  # type: ignore
+file = getattr(builtins, "file", io.IOBase)  # type: ignore
 
 
 def get_input(prompt):
@@ -1487,7 +1485,7 @@ def initiali(
     rmax = 800.0 / sqrt(zorig)
 
     nr, rmin, rmax, r, dr, r2, dl = setgrid(nr, rmin, rmax, r, dr, r2, dl)
-    for idx in range(len(njrc)):
+    for idx, _ in enumerate(njrc):
         njrc[idx] = 0
 
     return (zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel)
@@ -1507,7 +1505,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
     return (nr, rmin, rmax, r, dr, r2, dl)
 
 
-def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901
+def integ(e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel):  # noqa: E741, C901, MC0001
     """integrate out count nodes"""
     dl2 = dl * dl / 12.0
     dl5 = 10.0 * dl2
