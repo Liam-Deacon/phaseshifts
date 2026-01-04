@@ -330,14 +330,8 @@ def phsh_wil(
                     ls = 0
                     deldif = delta[lp] - delold[lp]  # label 111
 
-                if abs(deldif) < 0.7:
-                    pass
-
                 ls += 1
                 delta[lp] = delta[lp] - (copysign(pi, deldif) * abs(pi))
-
-                if ls < 5:
-                    pass
 
                 zph.write(
                     "too large change in phase shift [l = {l}]"
@@ -828,11 +822,6 @@ def phsh_rel(
         "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f" % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
     )  # 4,76
     # 76 format (i4,f10.6,i4,2x,6f10.6)
-    # vs = 0.0
-
-    if opts == sub:
-        # vs = _vc
-        pass
 
     if jri <= 0 or jri > 340:
         inpdat.write("# end of input data\n")

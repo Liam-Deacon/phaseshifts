@@ -704,7 +704,7 @@ def atsolve(
         if i > nfc:
             idoflag = 1
             ctx = SetqmmContext(v, zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrc, vi)
-            setqmm(i, orb, nl[i], iss[i], idoflag, ctx)
+            setqmm(i, orb, nl[i], idoflag, ctx)
             zeff = ctx.zeff
 
         xkappa = -1.0
@@ -1166,7 +1166,7 @@ def elsolve(
     eh = 0.0
     etol = 0.0000000001
 
-    ief = x0 = float
+    ief = float
     nn = int
 
     while True:
@@ -1180,7 +1180,6 @@ def elsolve(
             nn,
             istop,
             ief,
-            x0,
             phi,
             zeff,
             v,
@@ -1201,7 +1200,6 @@ def elsolve(
             nn,
             istop,
             ief,
-            x0,
             phi,
             zeff,
             v,
@@ -1348,7 +1346,7 @@ def _setqmm_update_xm_from_v(nr, dl, r, r2, a2, v, xm1, xm2):
     xm2[1] = xm2[2]
 
 
-def setqmm(i, orb, l, ns, idoflag, ctx):  # noqa: E741
+def setqmm(i, orb, l, idoflag, ctx):  # noqa: E741
     """setqmm subroutine"""
     c = 137.038
     alpha = ctx.rel / c
@@ -1491,7 +1489,7 @@ def setgrid(nr, rmin, rmax, r, dr, r2, dl):
 
 
 def integ(
-    e, l, xkappa, n, nn, istop, ief, x0, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel
+    e, l, xkappa, n, nn, istop, ief, phi, z, v, q0, xm1, xm2, nr, r, dr, r2, dl, rel
 ):  # noqa: E741, C901, MC0001
     """integrate out count nodes"""
     dl2 = dl * dl / 12.0
@@ -1742,9 +1740,8 @@ def pseudo(
             for j in range(1, nr + 1):
                 orb[j][i] += vctab[j][nl[i]]
             idoflag = 1
-            ns = 1
             ctx = SetqmmContext(vi[1][lp2], zeff, zorig, rel, nr, r, r2, dl, q0, xm1, xm2, njrcdummy, vi)
-            setqmm(i, orb, nl[i], ns, idoflag, ctx)
+            setqmm(i, orb, nl[i], idoflag, ctx)
             zeff = ctx.zeff
             for j in range(1, nr + 1):
                 orb[j][i] = 0.0
@@ -1951,11 +1948,10 @@ def fitx0(
     dummy = nn = ief = xactual = None  # initialise
     while True:
         idoflag = 2  # label 115
-        ns = 1
         xkappa = -1.0
 
         ctx = SetqmmContext(v, zeff, dummy, rel, nr, r, r2, dl, q0, xm1, xm2, njrc)
-        setqmm(i, orb, l, ns, idoflag, ctx)
+        setqmm(i, orb, l, idoflag, ctx)
         zeff = ctx.zeff
 
         (
@@ -1987,7 +1983,6 @@ def fitx0(
             nn,
             jrt,
             ief,
-            xactual,
             phi,
             zeff,
             v,
@@ -2092,7 +2087,6 @@ def pseudize(
         nn,
         istop,
         ief,
-        xdummy,
         phi,
         zeff,
         v,
@@ -2141,7 +2135,6 @@ def pseudize(
         nn,
         jrt,
         ief,
-        x00,
         phi,
         zeff,
         v,
@@ -2174,7 +2167,6 @@ def pseudize(
         nn,
         jrt,
         ief,
-        xp,
         phi,
         zeff,
         v,
@@ -2197,7 +2189,6 @@ def pseudize(
         nn,
         jrt,
         ief,
-        xm,
         phi,
         zeff,
         v,
@@ -2339,7 +2330,6 @@ def pseudize(
                 nn,
                 jrt,
                 ief,
-                x0,
                 phi,
                 zeff,
                 v,
@@ -2373,7 +2363,6 @@ def pseudize(
             nn,
             jrt,
             ief,
-            xp,
             phi,
             zeff,
             v,
@@ -2396,7 +2385,6 @@ def pseudize(
             nn,
             jrt,
             ief,
-            xm,
             phi,
             zeff,
             v,
@@ -2610,13 +2598,6 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
 
     trd = 1.0 / 3.0
     ft = 4.0 / 3.0
-    ex_val = ex
-    ec_val = ec
-    ux1_val = ux1
-    ux2_val = ux2
-    uc1_val = uc1
-    uc2_val = uc2
-
     rh = rh1 + rh2
 
     # if one spin type, average polarization
@@ -2721,8 +2702,6 @@ def exchcorr(nst, rel, rr, rh1, rh2, ex=0.0, ec=0.0, ux1=0.0, ux2=0.0, uc1=0.0, 
     ex_val = (xn1 * fe1 * ex1 + xn2 * fe2 * ex2) / xn
     ux1_val = fu1 * ux1_val
     ux2_val = fu2 * ux2_val
-    uc1_val = uc1_val
-    uc2_val = uc2_val
 
     return (nst, rel, rr, rh1, rh2, ex_val, ec_val, ux1_val, ux2_val, uc1_val, uc2_val)
 
