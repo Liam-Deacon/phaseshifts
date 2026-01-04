@@ -2907,7 +2907,7 @@ def _pseudize_prompt_cutoff(rcut, factor):
     return rcut, factor
 
 
-def _pseudize_select_cutoff(rcut, phi, r, istop, n, l):
+def _pseudize_select_cutoff(rcut, phi, r, istop, n, l):  # noqa: E741
     """
     Select a cutoff radius based on node position when requested.
 
@@ -3014,7 +3014,7 @@ def _pseudize_integral_norm(phi, dr, jrt):
     return total
 
 
-def _pseudize_reference_values(ev, l, xkappa, n, jrt, phi, integ_ctx, dr):
+def _pseudize_reference_values(ev, l, xkappa, n, jrt, phi, integ_ctx, dr):  # noqa: E741
     """
     Compute reference log-derivative and norm for the all-electron orbital.
 
