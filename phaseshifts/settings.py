@@ -9,8 +9,9 @@ avoid conflicts with other packages.
 
 # cspell:ignore TESTRUN
 
-import os
 import json
+import os
+import sys
 
 
 def load_bool_env_var(var_name, default="0"):  # type: (str, str) -> bool
@@ -38,7 +39,7 @@ _READTHEDOCS = load_bool_env_var("READTHEDOCS")
 #: Whether to compile missing libraries on first import
 # Default: disabled on CI (where builds should have already produced binaries),
 # enabled elsewhere unless explicitly turned off.
-_compile_default = "0" if os.environ.get("CI") else "1"
+_compile_default = "0" if os.environ.get("CI") or sys.platform == "emscripten" else "1"
 COMPILE_MISSING = load_bool_env_var("PHASESHIFTS_COMPILE_MISSING", _compile_default)
 
 #: Whether to show debug messages
