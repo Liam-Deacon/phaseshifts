@@ -51,7 +51,7 @@ jobs:
           fi
 
       - name: Build pyodide wheels
-        uses: pypa/cibuildwheel@v3.3.0
+        uses: pypa/cibuildwheel@63fd63b352a9a8bdcc24791c9dbee952ee9a8abc
         env:
           CIBW_PLATFORM: pyodide
           # TODO: Add cp314-pyodide_wasm32 once Pyodide provides Python 3.14 wheels.
