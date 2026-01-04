@@ -151,7 +151,7 @@ jobs:
         env:
           CIBW_ARCHS_LINUX: x86_64 ${{ (github.event.inputs.build_i686 || github.event_name != 'release') && 'i686' || '' }}
           CIBW_BUILD: ${{ matrix.cibw_build }}
-          CIBW_SKIP: cp38-* cp39-* cp312-* cp313-* cp314-*
+          CIBW_SKIP: cp38-* cp39-* cp312-* cp313-* cp314-* # v1.12.0 does not support cp314
       - name: Normalize cibw tag
         id: normalize_tag
         shell: bash
@@ -175,6 +175,7 @@ jobs:
           - cp311-*
           - cp312-*
           - cp313-*
+          - cp314-*
           - cp314-*
     steps:
       - uses: actions/checkout@v4
