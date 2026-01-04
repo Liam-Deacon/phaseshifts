@@ -12,3 +12,9 @@ repos:
     rev: 25.12.0
     hooks:
     -   id: black
+-   repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+    -   id: yamllint
+        args: ['-c', '.yamllint']
+        files: "\\.(yml|yaml)$"
