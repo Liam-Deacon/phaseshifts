@@ -22,7 +22,9 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/Liam-Deacon/phaseshifts/codeql.yml?label=codeql&logo=github)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/Liam-Deacon/phaseshifts?label=openssf%20scorecard&logo=openssf&logoColor=white)](https://securityscorecards.dev/viewer/?uri=github.com/Liam-Deacon/phaseshifts)
+
 <!-- TODO: replace PROJECT_ID with the OpenSSF Best Practices project ID once registered. -->
+
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID/badge)](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID)
 
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
