@@ -93,17 +93,10 @@ Please make sure your contribution meets these requirements before submitting:
 Please reach out to the [Q&A boards][qa-boards] and post your question there in
 the correct category with a descriptive tag.
 
-[code-of-conduct]:
-  https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
-[ci-actions]:
-  https://github.com/Liam-Deacon/phaseshifts/actions
-[codeql-workflow]:
-  https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml
-[google-pyguide]:
-  https://google.github.io/styleguide/pyguide.html
-[jsdoc]:
-  https://jsdoc.app/
-[numpydoc-style]:
-  https://numpydoc.readthedocs.io/en/latest/format.html
-[qa-boards]:
-  https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a
+[code-of-conduct]: https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
+[ci-actions]: https://github.com/Liam-Deacon/phaseshifts/actions
+[codeql-workflow]: https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml
+[google-pyguide]: https://google.github.io/styleguide/pyguide.html
+[jsdoc]: https://jsdoc.app/
+[numpydoc-style]: https://numpydoc.readthedocs.io/en/latest/format.html
+[qa-boards]: https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a
