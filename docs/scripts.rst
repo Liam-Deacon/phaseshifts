@@ -103,6 +103,9 @@ will produce a list of command line options::
    When ``--input`` is provided, any ``--bulk``/``--slab`` arguments are ignored
    (a warning is emitted). Update scripts accordingly.
 
+.. note::
+   See :doc:`input_files` for a compact reference of input and output files.
+
 CLEED compatibility
 -------------------
 It is possible to use this script to generate phase shift files iteratively

@@ -16,7 +16,10 @@ Contents:
    introduction
    installing_phaseshifts
    running
+   input_files
    browser_calculator
+   contributing
+   code_of_conduct
    contact
    acknowledgements
    scripts

@@ -47,7 +47,7 @@ dev = [
     "wheel",
 ]
 test = ["pytest", "pytest-cov"]
-docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel"]
+docs = ["sphinx>=7,<8", "sphinx_rtd_theme", "numpydoc", "ipykernel", "myst-parser>=2,<3"]
 input = ["pyyaml>=6.0", "jsonschema>=4.0"]
 viperleed = ["viperleed>=0.14.1"]
 
