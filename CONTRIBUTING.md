@@ -14,7 +14,7 @@ Reading and following these guidelines will help us make the contribution proces
 
 ## Code of Conduct
 
-We take our open source community seriously and hold ourselves and other
+We take our open-source community seriously and hold ourselves and other
 contributors to high standards of communication. By participating and
 contributing to this project, you agree to uphold our
 [Code of Conduct][code-of-conduct].
@@ -61,8 +61,8 @@ Please make sure your contribution meets these requirements before submitting:
 - Follow the code style guidelines:
   - PEP8 with a max line length of 120 characters.
   - Use absolute imports and group stdlib, third-party, and local imports.
-  - Use type hints for public APIs where possible.
-  - Use NumPy or Google style docstrings for functions/classes.
+  - Add type hints for public APIs where possible.
+  - Write NumPy-style or Google-style docstrings for functions/classes.
   - For JavaScript in `wasm/src/**`, add JSDoc for exported/public functions.
   - For Fortran, preserve scientific comments; use `.f` for fixed-format
     and `.f90` for free-format.
