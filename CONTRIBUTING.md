@@ -80,5 +80,4 @@ Please reach out to the
 [Q&A boards](https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a)
 and post your question there in the correct category with a descriptive tag.
 
-[code-of-conduct]:
-  https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
+[code-of-conduct]: https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
