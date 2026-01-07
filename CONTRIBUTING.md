@@ -62,8 +62,12 @@ Please make sure your contribution meets these requirements before submitting:
   - PEP8 with a max line length of 120 characters.
   - Use absolute imports and group stdlib, third-party, and local imports.
   - Add type hints for public APIs where possible.
-  - Write NumPy-style or Google-style docstrings for functions/classes.
-  - For JavaScript in `wasm/src/**`, add JSDoc for exported/public functions.
+  - Write NumPy-style docstrings for functions/classes, following the
+    [numpydoc documentation style][numpydoc-style].
+  - The [Google Python style guide][google-pyguide] is recommended but not
+    enforced.
+  - For JavaScript in `wasm/src/**`, add [JSDoc][jsdoc] for exported/public
+    functions.
   - For Fortran, preserve scientific comments; use `.f` for fixed-format
     and `.f90` for free-format.
 - Run lint and tests as appropriate for your changes:
@@ -81,3 +85,6 @@ Please reach out to the
 and post your question there in the correct category with a descriptive tag.
 
 [code-of-conduct]: https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
+[google-pyguide]: https://google.github.io/styleguide/pyguide.html
+[jsdoc]: https://jsdoc.app/
+[numpydoc-style]: https://numpydoc.readthedocs.io/en/latest/format.html
