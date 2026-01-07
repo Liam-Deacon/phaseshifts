@@ -46,6 +46,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
+    "myst_parser",
     (
         # NOTE: Use mathjax for HTML rendering if latex is not available to generate images
         "sphinx.ext.mathjax"
@@ -63,7 +64,7 @@ numpydoc_show_class_members = False
 templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = ".rst"
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'

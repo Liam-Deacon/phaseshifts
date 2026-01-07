@@ -14,7 +14,7 @@ Reading and following these guidelines will help us make the contribution proces
 
 ## Code of Conduct
 
-We take our open source community seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE-OF-CONDUCT.md).
+We take our open source community seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md).
 
 ## Getting Started
 
@@ -36,7 +36,7 @@ PRs are always welcome and can be a quick way to get your fix or improvement sla
 - Only fix/add the functionality in question **OR** address wide-spread whitespace/style issues, not both.
 - Add unit or integration tests for fixed or changed functionality.
 - Address a single concern in the least number of changed lines as possible.
-- Include documentation in the repo by editing `docs/`` area.
+- Include documentation in the repo by editing the `docs/` area.
 - Be accompanied by a complete Pull Request template (loaded automatically when a PR is created).
 
 For changes that address core functionality or would require breaking changes (e.g. a major release), it's best to open an Issue to discuss your proposal first. This is not required but can save time creating and reviewing changes.
@@ -50,6 +50,23 @@ In general, it is recommended to follow the ["fork-and-pull" Git workflow](https
 5. Following any formatting and testing guidelines specific to this repo
 6. Push changes to your fork
 7. Open a PR in our repository and follow the PR template so that we can efficiently review the changes.
+
+## Contribution Requirements
+
+Please make sure your contribution meets these requirements before submitting:
+
+- Follow the code style guidelines:
+  - PEP8 with a max line length of 120 characters.
+  - Use absolute imports and group stdlib, third-party, and local imports.
+  - Use type hints for public APIs where possible.
+  - Use NumPy or Google style docstrings for functions/classes.
+  - For JavaScript in `wasm/src/**`, add JSDoc for exported/public functions.
+  - For Fortran, preserve scientific comments; use `.f` for fixed-format and `.f90` for free-format.
+- Run lint and tests as appropriate for your changes:
+  - `flake8 . --max-line-length=120`
+  - `pytest tests/ test/ --verbose`
+  - If Fortran changes or tests require it: `make libphsh` (or `python setup.py build_ext --inplace`)
+- Update documentation for user-visible changes (Sphinx sources live in `docs/`).
 
 ## Getting Help
 
