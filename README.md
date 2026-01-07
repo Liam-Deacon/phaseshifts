@@ -23,7 +23,10 @@
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/Liam-Deacon/phaseshifts/codeql.yml?label=codeql&logo=github)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/Liam-Deacon/phaseshifts?label=openssf%20scorecard&logo=openssf&logoColor=white)](https://securityscorecards.dev/viewer/?uri=github.com/Liam-Deacon/phaseshifts)
 
-<!-- TODO: replace PROJECT_ID with the OpenSSF Best Practices project ID once registered. -->
+<!--
+TODO: replace PROJECT_ID with the OpenSSF Best Practices project ID once
+registered.
+-->
 
 [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID/badge)](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID)
 

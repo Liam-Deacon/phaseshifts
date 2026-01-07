@@ -14,7 +14,10 @@ Reading and following these guidelines will help us make the contribution proces
 
 ## Code of Conduct
 
-We take our open source community seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md).
+We take our open source community seriously and hold ourselves and other
+contributors to high standards of communication. By participating and
+contributing to this project, you agree to uphold our
+[Code of Conduct][code-of-conduct].
 
 ## Getting Started
 
@@ -61,13 +64,21 @@ Please make sure your contribution meets these requirements before submitting:
   - Use type hints for public APIs where possible.
   - Use NumPy or Google style docstrings for functions/classes.
   - For JavaScript in `wasm/src/**`, add JSDoc for exported/public functions.
-  - For Fortran, preserve scientific comments; use `.f` for fixed-format and `.f90` for free-format.
+  - For Fortran, preserve scientific comments; use `.f` for fixed-format
+    and `.f90` for free-format.
 - Run lint and tests as appropriate for your changes:
   - `flake8 . --max-line-length=120`
   - `pytest tests/ test/ --verbose`
-  - If Fortran changes or tests require it: `make libphsh` (or `python setup.py build_ext --inplace`)
-- Update documentation for user-visible changes (Sphinx sources live in `docs/`).
+  - If Fortran changes or tests require it: `make libphsh` (or
+    `python setup.py build_ext --inplace`)
+- Update documentation for user-visible changes (Sphinx sources live in
+  `docs/`).
 
 ## Getting Help
 
-Please reach out to the [Q&A boards](https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a) and post your question there in the correct category with a descriptive tag.
+Please reach out to the
+[Q&A boards](https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a)
+and post your question there in the correct category with a descriptive tag.
+
+[code-of-conduct]:
+  https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
