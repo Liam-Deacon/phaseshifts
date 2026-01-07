@@ -13,6 +13,7 @@
 ![Code Climate technical debt](https://img.shields.io/codeclimate/tech-debt/Liam-Deacon/phaseshifts?logo=codeclimate)
 ![Code Climate maintainability](https://img.shields.io/codeclimate/maintainability/Liam-Deacon/phaseshifts?logo=codeclimate)
 ![Code Climate issues](https://img.shields.io/codeclimate/issues/Liam-Deacon/phaseshifts?logo=codeclimate)
+[![SonarCloud Quality Gate](https://img.shields.io/sonar/quality_gate?server=https%3A%2F%2Fsonarcloud.io&project=Liam-Deacon_phaseshifts)](https://sonarcloud.io/summary/new_code?id=Liam-Deacon_phaseshifts)
 ![Codecov](https://img.shields.io/codecov/c/github/Liam-Deacon/phaseshifts?logo=codecov&logoColor=white)
 [![Snyk Vulnerabilities](https://img.shields.io/snyk/vulnerabilities/github/Liam-Deacon/phaseshifts?logo=snyk&logoColor=white)](https://snyk.io/test/github/Liam-Deacon/phaseshifts)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Liam-Deacon/phaseshifts/total?logo=github)
@@ -20,6 +21,9 @@
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/Liam-Deacon/phaseshifts?logo=github)](https://github.com/Liam-Deacon/phaseshifts/issues?q=is%3Aissue+is%3Aclosed+)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FLiam-Deacon%2Fphaseshifts?ref=badge_shield)
 [![CodeQL](https://img.shields.io/github/actions/workflow/status/Liam-Deacon/phaseshifts/codeql.yml?label=codeql&logo=github)](https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/Liam-Deacon/phaseshifts?label=openssf%20scorecard&logo=openssf&logoColor=white)](https://securityscorecards.dev/viewer/?uri=github.com/Liam-Deacon/phaseshifts)
+<!-- TODO: replace PROJECT_ID with the OpenSSF Best Practices project ID once registered. -->
+[![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID/badge)](https://bestpractices.coreinfrastructure.org/projects/PROJECT_ID)
 
 <!-- ![Code Climate coverage](https://img.shields.io/codeclimate/coverage/Liam-Deacon/phaseshifts) -->
 <!-- ![Codacy coverage](https://img.shields.io/codacy/coverage/phaseshifts) -->
@@ -44,6 +48,12 @@ phase shift files in a manner that is easy for the computational hitch-hiker,
 but powerful for those that wish to extend the package for particular needs.
 The eventual goal is to integrate with LEED-IV/XPD computational packages to
 iteratively generate phase shifts during model optimisation.
+
+## Contributing
+
+Contributions are welcome. Please see the contribution requirements and
+workflow in [CONTRIBUTING.md](https://github.com/Liam-Deacon/phaseshifts/blob/master/CONTRIBUTING.md),
+and review the [Code of Conduct](https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md).
 
 ## Backends
 
