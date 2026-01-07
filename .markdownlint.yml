@@ -1,6 +1,6 @@
 ---
 # Keep defaults, but avoid noisy rules that would require a full-doc reflow.
 default: true
-MD013: false  # line length
-MD033: false  # inline HTML
-MD034: false  # bare URLs
+MD013: false # line length
+MD033: false # inline HTML
+MD034: false # bare URLs

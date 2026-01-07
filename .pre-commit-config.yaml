@@ -27,7 +27,7 @@ repos:
     rev: v0.47.0
     hooks:
       - id: markdownlint
-        args: ["--config", ".markdownlint.yml"]
+        args: ['--config', '.markdownlint.yml']
         files: "\\.md$"
 # TODO(issue): enable ruff once support for Python <= 3.10 is dropped; ruff is not Python 2.7 compatible.
 # -   repo: https://github.com/astral-sh/ruff-pre-commit
