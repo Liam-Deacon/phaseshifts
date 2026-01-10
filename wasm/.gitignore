@@ -1,0 +1,9 @@
+# Build artifacts
+build/*.f
+build/*.c
+build/*.o
+build/*.wasm
+build/*.js
+
+# Keep the build directory itself
+!build/.gitkeep

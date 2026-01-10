@@ -41,7 +41,7 @@ class TestCalculatorPaths:
     def test_index_html_script_paths(self):
         """Verify index.html references correct script paths for deployment."""
         index_path = os.path.join(WEB_DIR, "index.html")
-        with open(index_path, "r") as f:
+        with open(index_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Should reference dist/phaseshifts.js (relative to calculator/)
@@ -55,7 +55,7 @@ class TestCalculatorPaths:
     def test_app_js_import_paths(self):
         """Verify app.js uses correct import paths for deployment."""
         app_path = os.path.join(WEB_DIR, "app.js")
-        with open(app_path, "r") as f:
+        with open(app_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Should import from ./shared/elements.js (relative to calculator/)
