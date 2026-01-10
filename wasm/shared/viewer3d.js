@@ -106,8 +106,13 @@ export class CrystalViewer {
   }
 
   _onResize() {
+    if (!this.container) return;
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
+
+    if (!width || !height || !Number.isFinite(width) || !Number.isFinite(height)) {
+      return;
+    }
 
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
@@ -154,8 +159,7 @@ export class CrystalViewer {
     // Remove cloned unit cell lines
     for (const clone of this.unitCellClones) {
       this.scene.remove(clone);
-      clone.geometry.dispose();
-      clone.material.dispose();
+      // Do not dispose geometry/material here as they are shared with unitCellLines
     }
     this.unitCellClones = [];
 
@@ -438,8 +442,16 @@ export class CrystalViewer {
 
     this.clear();
 
+    if (this.controls) {
+      this.controls.dispose();
+      this.controls = null;
+    }
+
     if (this.axesHelper) {
       this.scene.remove(this.axesHelper);
+      this.axesHelper.geometry.dispose();
+      this.axesHelper.material.dispose();
+      this.axesHelper = null;
     }
 
     this.renderer.dispose();
@@ -448,7 +460,7 @@ export class CrystalViewer {
       this.renderer.domElement &&
       this.renderer.domElement.parentNode === this.container
     ) {
-      this.container.removeChild(this.renderer.domElement);
+      this.renderer.domElement.remove();
     }
   }
 }
