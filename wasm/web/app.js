@@ -6,21 +6,6 @@
 
 // Note: shared/elements.js path works for both local dev and deployed structure
 import { elements, getElementSymbol } from './shared/elements.js';
-
-/**
- * Escape HTML special characters to prevent XSS attacks
- * @param {string} str - The string to escape
- * @returns {string} - The escaped string
- */
-function escapeHtml(str) {
-  if (str == null) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 import {
   createFromPreset,
   CrystalStructure,
@@ -263,36 +248,48 @@ function updateStructureSummary(structure) {
     0,
   );
 
+  // Clear container
+  container.replaceChildren();
+
   if (totalAtoms === 0) {
-    container.innerHTML =
-      '<p class="empty-message">No structure defined. Go to "Crystal Structure" tab to build one.</p>';
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'empty-message';
+    emptyMsg.textContent =
+      'No structure defined. Go to "Crystal Structure" tab to build one.';
+    container.appendChild(emptyMsg);
     return;
   }
 
-  container.innerHTML = `
-    <div class="summary-grid">
-      <div class="summary-item">
-        <span class="summary-label">Structure:</span>
-        <span class="summary-value">${escapeHtml(structure.name)}</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Surface:</span>
-        <span class="summary-value">${escapeHtml(structure.millerIndices.toSimpleString())}</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Elements:</span>
-        <span class="summary-value">${escapeHtml(uniqueElements.join(', '))}</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Layers:</span>
-        <span class="summary-value">${escapeHtml(structure.layers.length)}</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Total Atoms:</span>
-        <span class="summary-value">${escapeHtml(totalAtoms)}</span>
-      </div>
-    </div>
-  `;
+  const grid = document.createElement('div');
+  grid.className = 'summary-grid';
+
+  // Helper to create summary items
+  const createSummaryItem = (label, value) => {
+    const item = document.createElement('div');
+    item.className = 'summary-item';
+
+    const labelSpan = document.createElement('span');
+    labelSpan.className = 'summary-label';
+    labelSpan.textContent = label;
+    item.appendChild(labelSpan);
+
+    const valueSpan = document.createElement('span');
+    valueSpan.className = 'summary-value';
+    valueSpan.textContent = value;
+    item.appendChild(valueSpan);
+
+    return item;
+  };
+
+  grid.appendChild(createSummaryItem('Structure:', structure.name));
+  grid.appendChild(
+    createSummaryItem('Surface:', structure.millerIndices.toSimpleString()),
+  );
+  grid.appendChild(createSummaryItem('Elements:', uniqueElements.join(', ')));
+  grid.appendChild(createSummaryItem('Layers:', structure.layers.length));
+  grid.appendChild(createSummaryItem('Total Atoms:', totalAtoms));
+
+  container.appendChild(grid);
 }
 
 /**
@@ -304,37 +301,75 @@ function updateElementParameters(structure) {
 
   const uniqueElements = structure.getUniqueElements();
 
+  // Clear container
+  container.replaceChildren();
+
   if (uniqueElements.length === 0) {
-    container.innerHTML =
-      '<p class="empty-message">Add atoms to the structure to configure element parameters.</p>';
+    const emptyMsg = document.createElement('p');
+    emptyMsg.className = 'empty-message';
+    emptyMsg.textContent =
+      'Add atoms to the structure to configure element parameters.';
+    container.appendChild(emptyMsg);
     return;
   }
 
-  container.innerHTML = uniqueElements
-    .map((symbol) => {
-      const z = elements[symbol] || 0;
-      // Default muffin-tin radius based on atomic number
-      const defaultMT = (1.5 + z * 0.02).toFixed(2);
-      const safeSymbol = escapeHtml(symbol);
-      const safeColor = escapeHtml(getElementColorForCSS(symbol));
+  for (const symbol of uniqueElements) {
+    const z = elements[symbol] || 0;
+    // Default muffin-tin radius based on atomic number
+    const defaultMT = (1.5 + z * 0.02).toFixed(2);
 
-      return `
-      <div class="element-param-row">
-        <span class="element-symbol" style="color: ${safeColor}">${safeSymbol}</span>
-        <div class="form-group">
-          <label>Muffin-Tin Radius (Bohr)</label>
-          <input type="number" class="mt-radius-input" data-element="${safeSymbol}"
-                 value="${escapeHtml(defaultMT)}" step="0.01" min="0.5" max="5.0">
-        </div>
-        <div class="form-group">
-          <label>Inner Potential V₀ (eV)</label>
-          <input type="number" class="v0-input" data-element="${safeSymbol}"
-                 value="10.0" step="0.5" min="0" max="30">
-        </div>
-      </div>
-    `;
-    })
-    .join('');
+    const row = document.createElement('div');
+    row.className = 'element-param-row';
+
+    // Element symbol span
+    const symbolSpan = document.createElement('span');
+    symbolSpan.className = 'element-symbol';
+    symbolSpan.style.color = getElementColorForCSS(symbol);
+    symbolSpan.textContent = symbol;
+    row.appendChild(symbolSpan);
+
+    // Muffin-tin radius input group
+    const mtGroup = document.createElement('div');
+    mtGroup.className = 'form-group';
+
+    const mtLabel = document.createElement('label');
+    mtLabel.textContent = 'Muffin-Tin Radius (Bohr)';
+    mtGroup.appendChild(mtLabel);
+
+    const mtInput = document.createElement('input');
+    mtInput.type = 'number';
+    mtInput.className = 'mt-radius-input';
+    mtInput.dataset.element = symbol;
+    mtInput.value = defaultMT;
+    mtInput.step = '0.01';
+    mtInput.min = '0.5';
+    mtInput.max = '5.0';
+    mtGroup.appendChild(mtInput);
+
+    row.appendChild(mtGroup);
+
+    // Inner potential input group
+    const v0Group = document.createElement('div');
+    v0Group.className = 'form-group';
+
+    const v0Label = document.createElement('label');
+    v0Label.textContent = 'Inner Potential V₀ (eV)';
+    v0Group.appendChild(v0Label);
+
+    const v0Input = document.createElement('input');
+    v0Input.type = 'number';
+    v0Input.className = 'v0-input';
+    v0Input.dataset.element = symbol;
+    v0Input.value = '10.0';
+    v0Input.step = '0.5';
+    v0Input.min = '0';
+    v0Input.max = '30';
+    v0Group.appendChild(v0Input);
+
+    row.appendChild(v0Group);
+
+    container.appendChild(row);
+  }
 }
 
 /**

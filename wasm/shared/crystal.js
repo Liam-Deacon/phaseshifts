@@ -458,428 +458,228 @@ export class CrystalStructure {
 }
 
 /**
+ * Factory function for creating FCC (111) surface structures
+ * @param {string} element - Element symbol
+ * @param {number} a - Lattice constant in Angstroms
+ * @returns {CrystalStructure}
+ */
+function createFCC111Surface(element, a) {
+  const d111 = a / Math.sqrt(3); // Interlayer spacing for (111)
+  const asurf = a / Math.sqrt(2); // Surface lattice constant
+  const sqrt3 = Math.sqrt(3);
+
+  return new CrystalStructure({
+    name: `${element}(111)`,
+    bulkUnitCell: new UnitCell3D(a, a, a),
+    surfaceUnitCell: new UnitCell2D(
+      new Vector3(asurf, 0, 0),
+      new Vector3(asurf * 0.5, (asurf * sqrt3) / 2, 0),
+      60,
+    ),
+    millerIndices: new MillerIndices(1, 1, 1),
+    crystalSystem: CrystalSystem.CUBIC,
+    bravaisLattice: BravaisLattice.FACE_CENTERED,
+    layers: [
+      new Layer([new Atom(element, new Vector3(0, 0, 0))], {
+        name: 'Layer 1',
+        zPosition: 0,
+        interlayerSpacing: d111,
+      }),
+      new Layer(
+        [
+          new Atom(
+            element,
+            new Vector3(asurf / 2, (asurf * sqrt3) / 6, -d111),
+          ),
+        ],
+        { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+      ),
+      new Layer(
+        [
+          new Atom(
+            element,
+            new Vector3(0, (asurf * sqrt3) / 3, -2 * d111),
+          ),
+        ],
+        { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+      ),
+    ],
+  });
+}
+
+/**
+ * Factory function for creating FCC (100) surface structures
+ * @param {string} element - Element symbol
+ * @param {number} a - Lattice constant in Angstroms
+ * @returns {CrystalStructure}
+ */
+function createFCC100Surface(element, a) {
+  const d100 = a / 2;
+  const asurf = a / Math.sqrt(2);
+
+  return new CrystalStructure({
+    name: `${element}(100)`,
+    bulkUnitCell: new UnitCell3D(a, a, a),
+    surfaceUnitCell: new UnitCell2D(
+      new Vector3(asurf, 0, 0),
+      new Vector3(0, asurf, 0),
+    ),
+    millerIndices: new MillerIndices(1, 0, 0),
+    crystalSystem: CrystalSystem.CUBIC,
+    bravaisLattice: BravaisLattice.FACE_CENTERED,
+    layers: [
+      new Layer([new Atom(element, new Vector3(0, 0, 0))], {
+        name: 'Layer 1',
+        zPosition: 0,
+        interlayerSpacing: d100,
+      }),
+      new Layer([new Atom(element, new Vector3(asurf / 2, asurf / 2, -d100))], {
+        name: 'Layer 2',
+        zPosition: -d100,
+        interlayerSpacing: d100,
+      }),
+    ],
+  });
+}
+
+/**
+ * Factory function for creating BCC (110) surface structures
+ * @param {string} element - Element symbol
+ * @param {number} a - Lattice constant in Angstroms
+ * @returns {CrystalStructure}
+ */
+function createBCC110Surface(element, a) {
+  const d110 = a / Math.sqrt(2);
+  const asurfX = a;
+  const asurfY = a * Math.sqrt(2);
+
+  return new CrystalStructure({
+    name: `${element}(110)`,
+    bulkUnitCell: new UnitCell3D(a, a, a),
+    surfaceUnitCell: new UnitCell2D(
+      new Vector3(asurfX, 0, 0),
+      new Vector3(0, asurfY, 0),
+    ),
+    millerIndices: new MillerIndices(1, 1, 0),
+    crystalSystem: CrystalSystem.CUBIC,
+    bravaisLattice: BravaisLattice.BODY_CENTERED,
+    layers: [
+      new Layer([new Atom(element, new Vector3(0, 0, 0))], {
+        name: 'Layer 1',
+        zPosition: 0,
+        interlayerSpacing: d110,
+      }),
+      new Layer(
+        [new Atom(element, new Vector3(asurfX / 2, asurfY / 2, -d110))],
+        { name: 'Layer 2', zPosition: -d110, interlayerSpacing: d110 },
+      ),
+    ],
+  });
+}
+
+/**
+ * Factory function for creating BCC (100) surface structures
+ * @param {string} element - Element symbol
+ * @param {number} a - Lattice constant in Angstroms
+ * @returns {CrystalStructure}
+ */
+function createBCC100Surface(element, a) {
+  const d100 = a / 2;
+
+  return new CrystalStructure({
+    name: `${element}(100)`,
+    bulkUnitCell: new UnitCell3D(a, a, a),
+    surfaceUnitCell: new UnitCell2D(
+      new Vector3(a, 0, 0),
+      new Vector3(0, a, 0),
+    ),
+    millerIndices: new MillerIndices(1, 0, 0),
+    crystalSystem: CrystalSystem.CUBIC,
+    bravaisLattice: BravaisLattice.BODY_CENTERED,
+    layers: [
+      new Layer([new Atom(element, new Vector3(0, 0, 0))], {
+        name: 'Layer 1',
+        zPosition: 0,
+        interlayerSpacing: d100,
+      }),
+      new Layer([new Atom(element, new Vector3(a / 2, a / 2, -d100))], {
+        name: 'Layer 2',
+        zPosition: -d100,
+        interlayerSpacing: d100,
+      }),
+    ],
+  });
+}
+
+/**
+ * Factory function for creating Diamond (100) surface structures
+ * @param {string} element - Element symbol
+ * @param {number} a - Lattice constant in Angstroms
+ * @returns {CrystalStructure}
+ */
+function createDiamond100Surface(element, a) {
+  const d100 = a / 4;
+  const asurf = a / Math.sqrt(2);
+
+  return new CrystalStructure({
+    name: `${element}(100)`,
+    bulkUnitCell: new UnitCell3D(a, a, a),
+    surfaceUnitCell: new UnitCell2D(
+      new Vector3(asurf, 0, 0),
+      new Vector3(0, asurf, 0),
+    ),
+    millerIndices: new MillerIndices(1, 0, 0),
+    crystalSystem: CrystalSystem.CUBIC,
+    bravaisLattice: BravaisLattice.FACE_CENTERED,
+    layers: [
+      new Layer([new Atom(element, new Vector3(0, 0, 0))], {
+        name: 'Layer 1',
+        zPosition: 0,
+        interlayerSpacing: d100,
+      }),
+      new Layer([new Atom(element, new Vector3(asurf / 2, asurf / 2, -d100))], {
+        name: 'Layer 2',
+        zPosition: -d100,
+        interlayerSpacing: d100,
+      }),
+    ],
+  });
+}
+
+// Lattice constants in Angstroms for common elements
+const LATTICE_CONSTANTS = Object.freeze({
+  Cu: 3.615,
+  Ni: 3.524,
+  Au: 4.078,
+  Pt: 3.924,
+  Al: 4.05,
+  Ag: 4.086,
+  Fe: 2.87,
+  Si: 5.431,
+});
+
+/**
  * Predefined crystal structure presets
  */
 export const crystalPresets = Object.freeze({
-  // FCC Surfaces
-  'Cu(111)': () => {
-    const a = 3.615; // Angstroms
-    const d111 = a / Math.sqrt(3); // Interlayer spacing for (111)
-    const asurf = a / Math.sqrt(2); // Surface lattice constant
+  // FCC (111) Surfaces
+  'Cu(111)': () => createFCC111Surface('Cu', LATTICE_CONSTANTS.Cu),
+  'Ni(111)': () => createFCC111Surface('Ni', LATTICE_CONSTANTS.Ni),
+  'Au(111)': () => createFCC111Surface('Au', LATTICE_CONSTANTS.Au),
+  'Pt(111)': () => createFCC111Surface('Pt', LATTICE_CONSTANTS.Pt),
+  'Al(111)': () => createFCC111Surface('Al', LATTICE_CONSTANTS.Al),
+  'Ag(111)': () => createFCC111Surface('Ag', LATTICE_CONSTANTS.Ag),
 
-    return new CrystalStructure({
-      name: 'Cu(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Cu',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Cu',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
-
-  'Cu(100)': () => {
-    const a = 3.615;
-    const d100 = a / 2;
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Cu(100)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0),
-      ),
-      millerIndices: new MillerIndices(1, 0, 0),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d100,
-        }),
-        new Layer([new Atom('Cu', new Vector3(asurf / 2, asurf / 2, -d100))], {
-          name: 'Layer 2',
-          zPosition: -d100,
-          interlayerSpacing: d100,
-        }),
-      ],
-    });
-  },
-
-  'Ni(111)': () => {
-    const a = 3.524;
-    const d111 = a / Math.sqrt(3);
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Ni(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Ni',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Ni',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
-
-  'Ni(100)': () => {
-    const a = 3.524;
-    const d100 = a / 2;
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Ni(100)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0),
-      ),
-      millerIndices: new MillerIndices(1, 0, 0),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d100,
-        }),
-        new Layer([new Atom('Ni', new Vector3(asurf / 2, asurf / 2, -d100))], {
-          name: 'Layer 2',
-          zPosition: -d100,
-          interlayerSpacing: d100,
-        }),
-      ],
-    });
-  },
+  // FCC (100) Surfaces
+  'Cu(100)': () => createFCC100Surface('Cu', LATTICE_CONSTANTS.Cu),
+  'Ni(100)': () => createFCC100Surface('Ni', LATTICE_CONSTANTS.Ni),
 
   // BCC Surfaces
-  'Fe(110)': () => {
-    const a = 2.87;
-    const d110 = a / Math.sqrt(2);
-    const asurfX = a;
-    const asurfY = a * Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Fe(110)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurfX, 0, 0),
-        new Vector3(0, asurfY, 0),
-      ),
-      millerIndices: new MillerIndices(1, 1, 0),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.BODY_CENTERED,
-      layers: [
-        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d110,
-        }),
-        new Layer(
-          [new Atom('Fe', new Vector3(asurfX / 2, asurfY / 2, -d110))],
-          { name: 'Layer 2', zPosition: -d110, interlayerSpacing: d110 },
-        ),
-      ],
-    });
-  },
-
-  'Fe(100)': () => {
-    const a = 2.87;
-    const d100 = a / 2;
-
-    return new CrystalStructure({
-      name: 'Fe(100)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(a, 0, 0),
-        new Vector3(0, a, 0),
-      ),
-      millerIndices: new MillerIndices(1, 0, 0),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.BODY_CENTERED,
-      layers: [
-        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d100,
-        }),
-        new Layer([new Atom('Fe', new Vector3(a / 2, a / 2, -d100))], {
-          name: 'Layer 2',
-          zPosition: -d100,
-          interlayerSpacing: d100,
-        }),
-      ],
-    });
-  },
+  'Fe(110)': () => createBCC110Surface('Fe', LATTICE_CONSTANTS.Fe),
+  'Fe(100)': () => createBCC100Surface('Fe', LATTICE_CONSTANTS.Fe),
 
   // Diamond Surface
-  'Si(100)': () => {
-    const a = 5.431;
-    const d100 = a / 4;
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Si(100)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0),
-      ),
-      millerIndices: new MillerIndices(1, 0, 0),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Si', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d100,
-        }),
-        new Layer([new Atom('Si', new Vector3(asurf / 2, asurf / 2, -d100))], {
-          name: 'Layer 2',
-          zPosition: -d100,
-          interlayerSpacing: d100,
-        }),
-      ],
-    });
-  },
-
-  // Gold surfaces
-  'Au(111)': () => {
-    const a = 4.078;
-    const d111 = a / Math.sqrt(3);
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Au(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Au', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Au',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Au',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
-
-  // Platinum
-  'Pt(111)': () => {
-    const a = 3.924;
-    const d111 = a / Math.sqrt(3);
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Pt(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Pt', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Pt',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Pt',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
-
-  // Aluminum
-  'Al(111)': () => {
-    const a = 4.05;
-    const d111 = a / Math.sqrt(3);
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Al(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Al', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Al',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Al',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
-
-  // Silver
-  'Ag(111)': () => {
-    const a = 4.086;
-    const d111 = a / Math.sqrt(3);
-    const asurf = a / Math.sqrt(2);
-
-    return new CrystalStructure({
-      name: 'Ag(111)',
-      bulkUnitCell: new UnitCell3D(a, a, a),
-      surfaceUnitCell: new UnitCell2D(
-        new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
-        60,
-      ),
-      millerIndices: new MillerIndices(1, 1, 1),
-      crystalSystem: CrystalSystem.CUBIC,
-      bravaisLattice: BravaisLattice.FACE_CENTERED,
-      layers: [
-        new Layer([new Atom('Ag', new Vector3(0, 0, 0))], {
-          name: 'Layer 1',
-          zPosition: 0,
-          interlayerSpacing: d111,
-        }),
-        new Layer(
-          [
-            new Atom(
-              'Ag',
-              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
-            ),
-          ],
-          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
-        ),
-        new Layer(
-          [
-            new Atom(
-              'Ag',
-              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
-            ),
-          ],
-          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
-        ),
-      ],
-    });
-  },
+  'Si(100)': () => createDiamond100Surface('Si', LATTICE_CONSTANTS.Si),
 });
 
 /**

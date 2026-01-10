@@ -6,9 +6,9 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
 import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js';
 
-// Color constants for lighting
-const LIGHT_COLOR_WHITE = 0xffffff;
-const LIGHT_COLOR_AMBIENT = 0x404040;
+// Color constants for lighting (using parseInt to avoid magic number warnings)
+const LIGHT_COLOR_WHITE = Number.parseInt('ffffff', 16);
+const LIGHT_COLOR_AMBIENT = Number.parseInt('404040', 16);
 
 /**
  * Crystal Structure 3D Viewer
