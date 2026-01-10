@@ -133,12 +133,23 @@ jobs:
           mkdir -p _site/calculator/dist
           mkdir -p _site/calculator/shared
 
-          # Copy WASM calculator web files
-          cp -r wasm/web/* _site/calculator/
-          cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
+           # Copy WASM calculator web files (excluding symlinks that may not be ready)
+           for file in wasm/web/*; do
+             if [ ! -L "$file" ]; then  # Skip symlinks
+               cp -r "$file" _site/calculator/
+             fi
+           done
 
-          # Copy shared elements.js to calculator/shared (fixes relative import path)
-          cp wasm/shared/elements.js _site/calculator/shared/ 2>/dev/null || true
+           # Copy API file if exists
+           cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
+
+           # Copy shared elements.js to calculator/shared (fixes relative import path)
+           cp wasm/shared/elements.js _site/calculator/shared/ 2>/dev/null || true
+
+           # Copy WASM dist files if available (for symlink resolution)
+           if [ -d "wasm/dist" ] && [ ! -L "wasm/dist" ]; then
+             cp -r wasm/dist/* _site/calculator/dist/ 2>/dev/null || true
+           fi
 
           # Copy built WASM if available, otherwise create demo mode placeholder
           if [ -f "wasm/dist/phaseshifts.js" ] && [ -f "wasm/dist/phaseshifts.wasm" ]; then
