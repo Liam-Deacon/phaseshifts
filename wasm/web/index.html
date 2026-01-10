@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Phase Shifts Calculator - phaseshifts</title>
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="shared/structure-builder.css" />
     <script
       src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
       integrity="sha384-9nhczxUqK87bcKHh20fSQcTGD4qq5GhayNYSYWqwBkINBhOfQLg/P5HG5lF1urn4"
@@ -13,7 +14,7 @@
   </head>
   <body>
     <header>
-      <h1>⚛️ Phase Shifts Calculator</h1>
+      <h1>Phase Shifts Calculator</h1>
       <p class="subtitle">
         Browser-based LEED/XPD phase shift calculations powered by WebAssembly
       </p>
@@ -23,220 +24,237 @@
       <div class="container">
         <!-- Status Banner -->
         <div id="status-banner" class="status-banner loading">
-          <span id="status-icon">⏳</span>
+          <span id="status-icon">...</span>
           <span id="status-text">Loading WebAssembly module...</span>
         </div>
 
-        <!-- Input Section -->
-        <section class="input-section">
-          <h2>📝 Input Parameters</h2>
+        <!-- Tab Navigation -->
+        <nav class="main-tabs">
+          <button class="main-tab active" data-tab="structure">
+            Crystal Structure
+          </button>
+          <button class="main-tab" data-tab="calculation">
+            Phase Shift Calculation
+          </button>
+          <button class="main-tab" data-tab="results">
+            Results
+          </button>
+        </nav>
 
-          <div class="form-grid">
-            <!-- Element Selection -->
-            <div class="form-group">
-              <label for="element">Element</label>
-              <select id="element">
-                <option value="">-- Select Element --</option>
-                <optgroup label="Common Elements">
-                  <option value="29" selected>Cu (Copper, Z=29)</option>
-                  <option value="28">Ni (Nickel, Z=28)</option>
-                  <option value="26">Fe (Iron, Z=26)</option>
-                  <option value="13">Al (Aluminum, Z=13)</option>
-                  <option value="14">Si (Silicon, Z=14)</option>
-                  <option value="47">Ag (Silver, Z=47)</option>
-                  <option value="79">Au (Gold, Z=79)</option>
-                  <option value="78">Pt (Platinum, Z=78)</option>
-                </optgroup>
-                <optgroup label="All Elements">
-                  <!-- Populated by JavaScript -->
-                </optgroup>
-              </select>
+        <!-- Structure Tab -->
+        <section class="tab-panel active" id="panel-structure">
+          <div class="structure-layout">
+            <!-- 3D Viewer -->
+            <div class="viewer-panel">
+              <div class="panel-header">
+                <h2>3D Structure Viewer</h2>
+                <div class="viewer-controls-inline">
+                  <button id="view-perspective" title="Perspective view">3D</button>
+                  <button id="view-top" title="Top view">Top</button>
+                  <button id="view-front" title="Front view">Front</button>
+                  <button id="view-side" title="Side view">Side</button>
+                  <button id="view-reset" title="Reset view">Reset</button>
+                </div>
+              </div>
+              <div id="crystal-viewer" class="viewer-container"></div>
+              <div class="viewer-info">
+                <span id="structure-name">No structure loaded</span>
+                <span id="structure-elements"></span>
+              </div>
             </div>
 
-            <!-- Algorithm Selection -->
-            <div class="form-group">
-              <label for="method">Algorithm</label>
-              <select id="method">
-                <option value="rel" selected>Relativistic (phsh_rel)</option>
-                <option value="cav">Cavity LEED (phsh_cav)</option>
-                <option value="wil">Williams (phsh_wil)</option>
-              </select>
-              <small class="help-text" id="method-help">
-                Relativistic: Full Dirac equation treatment
-              </small>
-            </div>
-
-            <!-- Muffin-Tin Radius -->
-            <div class="form-group">
-              <label for="muffin-tin-radius">Muffin-Tin Radius (Bohr)</label>
-              <input
-                type="number"
-                id="muffin-tin-radius"
-                value="2.5"
-                step="0.1"
-                min="0.5"
-                max="5.0"
-              />
-            </div>
-
-            <!-- Lmax -->
-            <div class="form-group">
-              <label for="lmax">L<sub>max</sub></label>
-              <input type="number" id="lmax" value="10" min="1" max="20" />
-              <small class="help-text"
-                >Maximum angular momentum quantum number</small
-              >
+            <!-- Structure Builder -->
+            <div class="builder-panel">
+              <div class="panel-header">
+                <h2>Structure Builder</h2>
+              </div>
+              <div id="structure-builder"></div>
             </div>
           </div>
+        </section>
 
-          <!-- Energy Range -->
-          <div class="form-subsection">
-            <h3>Energy Range</h3>
-            <div class="form-grid form-grid-3">
-              <div class="form-group">
-                <label for="energy-min">Min (eV)</label>
-                <input
-                  type="number"
-                  id="energy-min"
-                  value="20"
-                  step="5"
-                  min="1"
-                />
+        <!-- Calculation Tab -->
+        <section class="tab-panel" id="panel-calculation">
+          <div class="calculation-layout">
+            <!-- Structure Summary -->
+            <div class="structure-summary">
+              <h3>Selected Structure</h3>
+              <div id="structure-summary-content">
+                <p class="empty-message">No structure defined. Go to "Crystal Structure" tab to build one.</p>
               </div>
-              <div class="form-group">
-                <label for="energy-max">Max (eV)</label>
-                <input
-                  type="number"
-                  id="energy-max"
-                  value="400"
-                  step="10"
-                  min="10"
-                />
+            </div>
+
+            <!-- Calculation Parameters -->
+            <div class="calculation-params">
+              <h3>Calculation Parameters</h3>
+
+              <div class="form-grid">
+                <!-- Algorithm Selection -->
+                <div class="form-group">
+                  <label for="method">Algorithm</label>
+                  <select id="method">
+                    <option value="rel" selected>Relativistic (phsh_rel)</option>
+                    <option value="cav">Cavity LEED (phsh_cav)</option>
+                    <option value="wil">Williams (phsh_wil)</option>
+                  </select>
+                  <small class="help-text" id="method-help">
+                    Relativistic: Full Dirac equation treatment
+                  </small>
+                </div>
+
+                <!-- Lmax -->
+                <div class="form-group">
+                  <label for="lmax">L<sub>max</sub></label>
+                  <input type="number" id="lmax" value="10" min="1" max="20" />
+                  <small class="help-text">
+                    Maximum angular momentum quantum number
+                  </small>
+                </div>
               </div>
-              <div class="form-group">
-                <label for="energy-step">Step (eV)</label>
-                <input
-                  type="number"
-                  id="energy-step"
-                  value="5"
-                  step="1"
-                  min="1"
-                />
+
+              <!-- Energy Range -->
+              <div class="form-subsection">
+                <h4>Energy Range</h4>
+                <div class="form-grid form-grid-3">
+                  <div class="form-group">
+                    <label for="energy-min">Min (eV)</label>
+                    <input
+                      type="number"
+                      id="energy-min"
+                      value="20"
+                      step="5"
+                      min="1"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="energy-max">Max (eV)</label>
+                    <input
+                      type="number"
+                      id="energy-max"
+                      value="400"
+                      step="10"
+                      min="10"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="energy-step">Step (eV)</label>
+                    <input
+                      type="number"
+                      id="energy-step"
+                      value="5"
+                      step="1"
+                      min="1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Per-Element Settings -->
+              <div class="form-subsection" id="element-settings">
+                <h4>Element-Specific Parameters</h4>
+                <div id="element-params-list">
+                  <!-- Populated dynamically based on structure -->
+                </div>
+              </div>
+
+              <!-- Calculate Button -->
+              <div class="button-group">
+                <button id="calculate-btn" class="btn btn-primary" disabled>
+                  <span class="btn-icon">Calculate</span>
+                  Calculate Phase Shifts
+                </button>
               </div>
             </div>
           </div>
+        </section>
 
-          <!-- Preset Examples -->
-          <div class="form-subsection">
-            <h3>Load Preset</h3>
-            <div class="preset-buttons">
-              <button class="preset-btn" data-preset="cu-fcc">Cu(111)</button>
-              <button class="preset-btn" data-preset="ni-fcc">Ni(100)</button>
-              <button class="preset-btn" data-preset="fe-bcc">Fe(110)</button>
-              <button class="preset-btn" data-preset="si-diamond">
-                Si(100)
+        <!-- Results Tab -->
+        <section class="tab-panel" id="panel-results">
+          <div id="results-section" class="results-section" style="display: none">
+            <h2>Results</h2>
+
+            <!-- Results Tabs -->
+            <div class="tabs">
+              <button class="tab-btn active" data-tab="plot">Plot</button>
+              <button class="tab-btn" data-tab="table">Table</button>
+              <button class="tab-btn" data-tab="raw">Raw Output</button>
+            </div>
+
+            <!-- Plot Tab -->
+            <div class="tab-content active" id="tab-plot">
+              <div class="chart-container">
+                <canvas id="phase-shift-chart"></canvas>
+              </div>
+              <div class="chart-controls">
+                <label>
+                  <input type="checkbox" id="show-all-l" checked />
+                  Show all L values
+                </label>
+                <label>
+                  L range:
+                  <input
+                    type="number"
+                    id="l-min"
+                    value="0"
+                    min="0"
+                    max="20"
+                    style="width: 50px"
+                  />
+                  to
+                  <input
+                    type="number"
+                    id="l-max-display"
+                    value="10"
+                    min="0"
+                    max="20"
+                    style="width: 50px"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <!-- Table Tab -->
+            <div class="tab-content" id="tab-table">
+              <div class="table-container">
+                <table id="results-table">
+                  <thead>
+                    <tr id="table-header">
+                      <th>Energy (eV)</th>
+                    </tr>
+                  </thead>
+                  <tbody id="table-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Raw Output Tab -->
+            <div class="tab-content" id="tab-raw">
+              <pre id="raw-output"></pre>
+            </div>
+
+            <!-- Download Buttons -->
+            <div class="download-buttons">
+              <button id="download-cleed" class="btn btn-download">
+                Download CLEED Format
+              </button>
+              <button id="download-viperleed" class="btn btn-download">
+                Download ViPErLEED Format
+              </button>
+              <button id="download-csv" class="btn btn-download">
+                Download CSV
               </button>
             </div>
           </div>
 
-          <!-- Calculate Button -->
-          <div class="button-group">
-            <button id="calculate-btn" class="btn btn-primary" disabled>
-              <span class="btn-icon">🧮</span>
-              Calculate Phase Shifts
-            </button>
-            <button id="clear-btn" class="btn btn-secondary">
-              <span class="btn-icon">🗑️</span>
-              Clear
-            </button>
-          </div>
-        </section>
-
-        <!-- Results Section -->
-        <section
-          class="results-section"
-          id="results-section"
-          style="display: none"
-        >
-          <h2>📊 Results</h2>
-
-          <!-- Tabs -->
-          <div class="tabs">
-            <button class="tab-btn active" data-tab="plot">Plot</button>
-            <button class="tab-btn" data-tab="table">Table</button>
-            <button class="tab-btn" data-tab="raw">Raw Output</button>
-          </div>
-
-          <!-- Plot Tab -->
-          <div class="tab-content active" id="tab-plot">
-            <div class="chart-container">
-              <canvas id="phase-shift-chart"></canvas>
-            </div>
-            <div class="chart-controls">
-              <label>
-                <input type="checkbox" id="show-all-l" checked />
-                Show all L values
-              </label>
-              <label>
-                L range:
-                <input
-                  type="number"
-                  id="l-min"
-                  value="0"
-                  min="0"
-                  max="20"
-                  style="width: 50px"
-                />
-                to
-                <input
-                  type="number"
-                  id="l-max-display"
-                  value="10"
-                  min="0"
-                  max="20"
-                  style="width: 50px"
-                />
-              </label>
-            </div>
-          </div>
-
-          <!-- Table Tab -->
-          <div class="tab-content" id="tab-table">
-            <div class="table-container">
-              <table id="results-table">
-                <thead>
-                  <tr id="table-header">
-                    <th>Energy (eV)</th>
-                  </tr>
-                </thead>
-                <tbody id="table-body"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Raw Output Tab -->
-          <div class="tab-content" id="tab-raw">
-            <pre id="raw-output"></pre>
-          </div>
-
-          <!-- Download Buttons -->
-          <div class="download-buttons">
-            <button id="download-cleed" class="btn btn-download">
-              📥 Download CLEED Format
-            </button>
-            <button id="download-viperleed" class="btn btn-download">
-              📥 Download ViPErLEED Format
-            </button>
-            <button id="download-csv" class="btn btn-download">
-              📥 Download CSV
-            </button>
+          <div id="no-results" class="no-results">
+            <p>No results yet. Configure your structure and run a calculation.</p>
           </div>
         </section>
 
         <!-- Info Section -->
         <section class="info-section">
           <details>
-            <summary>ℹ️ About Phase Shifts</summary>
+            <summary>About Phase Shifts</summary>
             <div class="info-content">
               <p>
                 Phase shifts are fundamental quantities in Low-Energy Electron
@@ -259,6 +277,17 @@
                   <strong>Williams (phsh_wil)</strong>: A.R. Williams' method,
                   good for comparison studies
                 </li>
+              </ul>
+
+              <h4>Crystal Structure Builder</h4>
+              <p>
+                The structure builder allows you to define crystal surfaces by:
+              </p>
+              <ul>
+                <li>Selecting from preset structures (FCC, BCC, etc.)</li>
+                <li>Defining custom unit cells and Miller indices</li>
+                <li>Adding and positioning atoms in layers</li>
+                <li>Visualizing the structure in 3D</li>
               </ul>
 
               <h4>References</h4>
