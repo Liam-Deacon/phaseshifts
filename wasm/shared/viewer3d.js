@@ -3,8 +3,12 @@
  * Provides interactive visualization of crystal structures
  */
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js';
+
+// Color constants for lighting
+const LIGHT_COLOR_WHITE = 0xffffff;
+const LIGHT_COLOR_AMBIENT = 0x404040;
 
 /**
  * Crystal Structure 3D Viewer
@@ -41,6 +45,7 @@ export class CrystalViewer {
     this.atomMeshes = [];
     this.bondMeshes = [];
     this.unitCellLines = null;
+    this.unitCellClones = []; // Track cloned unit cell lines for disposal
     this.axesHelper = null;
     this.structure = null;
     this.animationId = null;
@@ -72,14 +77,14 @@ export class CrystalViewer {
     this.controls.dampingFactor = 0.05;
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    const ambientLight = new THREE.AmbientLight(LIGHT_COLOR_AMBIENT, 0.6);
     this.scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const directionalLight = new THREE.DirectionalLight(LIGHT_COLOR_WHITE, 0.8);
     directionalLight.position.set(10, 10, 10);
     this.scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+    const directionalLight2 = new THREE.DirectionalLight(LIGHT_COLOR_WHITE, 0.4);
     directionalLight2.position.set(-10, -10, 5);
     this.scene.add(directionalLight2);
 
@@ -142,6 +147,14 @@ export class CrystalViewer {
       mesh.material.dispose();
     }
     this.bondMeshes = [];
+
+    // Remove cloned unit cell lines
+    for (const clone of this.unitCellClones) {
+      this.scene.remove(clone);
+      clone.geometry.dispose();
+      clone.material.dispose();
+    }
+    this.unitCellClones = [];
 
     // Remove unit cell
     if (this.unitCellLines) {
@@ -287,7 +300,7 @@ export class CrystalViewer {
     this.unitCellLines = new THREE.Line(geometry, material);
     this.scene.add(this.unitCellLines);
 
-    // Add repeated unit cells
+    // Add repeated unit cells and track clones for disposal
     for (let ix = 0; ix < this.options.repeatX; ix++) {
       for (let iy = 0; iy < this.options.repeatY; iy++) {
         if (ix === 0 && iy === 0) continue;
@@ -301,6 +314,7 @@ export class CrystalViewer {
         const cellCopy = this.unitCellLines.clone();
         cellCopy.position.copy(offset);
         this.scene.add(cellCopy);
+        this.unitCellClones.push(cellCopy);
       }
     }
   }
@@ -426,7 +440,13 @@ export class CrystalViewer {
     }
 
     this.renderer.dispose();
-    this.container.removeChild(this.renderer.domElement);
+    // Defensive check before removing DOM element
+    if (
+      this.renderer.domElement &&
+      this.renderer.domElement.parentNode === this.container
+    ) {
+      this.container.removeChild(this.renderer.domElement);
+    }
   }
 }
 

@@ -166,8 +166,10 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('a:', this.structure.bulkUnitCell.aLength.toFixed(3), (e) => {
+        const value = parseFloat(e.target.value);
+        if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
-          parseFloat(e.target.value),
+          value,
           this.structure.bulkUnitCell.bLength,
           this.structure.bulkUnitCell.cLength,
         );
@@ -177,9 +179,11 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('b:', this.structure.bulkUnitCell.bLength.toFixed(3), (e) => {
+        const value = parseFloat(e.target.value);
+        if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
           this.structure.bulkUnitCell.aLength,
-          parseFloat(e.target.value),
+          value,
           this.structure.bulkUnitCell.cLength,
         );
         this._notifyChange();
@@ -188,10 +192,12 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('c:', this.structure.bulkUnitCell.cLength.toFixed(3), (e) => {
+        const value = parseFloat(e.target.value);
+        if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
           this.structure.bulkUnitCell.aLength,
           this.structure.bulkUnitCell.bLength,
-          parseFloat(e.target.value),
+          value,
         );
         this._notifyChange();
       }),
@@ -214,8 +220,10 @@ export class StructureBuilder {
     const mi = this.structure.millerIndices;
     millerInputs.appendChild(
       createInput('h:', mi.h, (e) => {
+        const value = parseInt(e.target.value, 10);
+        if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
-          parseInt(e.target.value),
+          value,
           this.structure.millerIndices.k,
           this.structure.millerIndices.l,
         );
@@ -225,9 +233,11 @@ export class StructureBuilder {
 
     millerInputs.appendChild(
       createInput('k:', mi.k, (e) => {
+        const value = parseInt(e.target.value, 10);
+        if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
           this.structure.millerIndices.h,
-          parseInt(e.target.value),
+          value,
           this.structure.millerIndices.l,
         );
         this._notifyChange();
@@ -236,10 +246,12 @@ export class StructureBuilder {
 
     millerInputs.appendChild(
       createInput('l:', mi.l, (e) => {
+        const value = parseInt(e.target.value, 10);
+        if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
           this.structure.millerIndices.h,
           this.structure.millerIndices.k,
-          parseInt(e.target.value),
+          value,
         );
         this._notifyChange();
       }),
@@ -336,7 +348,9 @@ export class StructureBuilder {
     zInput.className = 'layer-z-input';
     zInput.title = 'Z position (Å)';
     zInput.addEventListener('change', (e) => {
-      layer.zPosition = parseFloat(e.target.value);
+      const value = parseFloat(e.target.value);
+      if (Number.isNaN(value)) return;
+      layer.zPosition = value;
       this._notifyChange();
     });
     header.appendChild(zInput);

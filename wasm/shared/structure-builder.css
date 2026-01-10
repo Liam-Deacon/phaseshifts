@@ -32,7 +32,7 @@
 }
 
 .builder-section h3 {
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 0.75rem;
   font-size: 1rem;
   color: #fff;
   font-weight: 600;
@@ -155,7 +155,7 @@
 
 .layer-card.selected {
   border-color: #667eea;
-  background: #333366;
+  background: #336;
 }
 
 .layer-header {
@@ -283,11 +283,8 @@
 /* Modal overlay */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  inset: 0;
+  background: rgb(0 0 0 / 70%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,7 +301,7 @@
 }
 
 .modal-dialog h4 {
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem;
   color: #fff;
 }
 
@@ -338,7 +335,7 @@
 
 .viewer-controls button {
   padding: 0.4rem 0.6rem;
-  background: rgba(40, 40, 60, 0.9);
+  background: rgb(40 40 60 / 90%);
   border: 1px solid #555;
   color: #e0e0e0;
   border-radius: 4px;
@@ -347,11 +344,11 @@
 }
 
 .viewer-controls button:hover {
-  background: rgba(60, 60, 90, 0.9);
+  background: rgb(60 60 90 / 90%);
 }
 
 /* Responsive */
-@media (max-width: 600px) {
+@media (width <= 600px) {
   .structure-builder {
     padding: 0.75rem;
   }

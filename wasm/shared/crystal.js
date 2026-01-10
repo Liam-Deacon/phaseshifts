@@ -276,7 +276,9 @@ export class UnitCell3D {
       (this.cLength *
         (Math.cos(alphaRad) - Math.cos(betaRad) * Math.cos(gammaRad))) /
       Math.sin(gammaRad);
-    const cz = Math.sqrt(this.cLength * this.cLength - cx * cx - cy * cy);
+    // Guard against negative discriminant due to floating-point errors
+    const czSquared = this.cLength * this.cLength - cx * cx - cy * cy;
+    const cz = Math.sqrt(Math.max(0, czSquared));
     this.c = new Vector3(cx, cy, cz);
   }
 

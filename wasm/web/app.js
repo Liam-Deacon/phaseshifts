@@ -6,6 +6,21 @@
 
 // Note: shared/elements.js path works for both local dev and deployed structure
 import { elements, getElementSymbol } from './shared/elements.js';
+
+/**
+ * Escape HTML special characters to prevent XSS attacks
+ * @param {string} str - The string to escape
+ * @returns {string} - The escaped string
+ */
+function escapeHtml(str) {
+  if (str == null) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 import {
   createFromPreset,
   CrystalStructure,
@@ -258,23 +273,23 @@ function updateStructureSummary(structure) {
     <div class="summary-grid">
       <div class="summary-item">
         <span class="summary-label">Structure:</span>
-        <span class="summary-value">${structure.name}</span>
+        <span class="summary-value">${escapeHtml(structure.name)}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Surface:</span>
-        <span class="summary-value">${structure.millerIndices.toSimpleString()}</span>
+        <span class="summary-value">${escapeHtml(structure.millerIndices.toSimpleString())}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Elements:</span>
-        <span class="summary-value">${uniqueElements.join(', ')}</span>
+        <span class="summary-value">${escapeHtml(uniqueElements.join(', '))}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Layers:</span>
-        <span class="summary-value">${structure.layers.length}</span>
+        <span class="summary-value">${escapeHtml(structure.layers.length)}</span>
       </div>
       <div class="summary-item">
         <span class="summary-label">Total Atoms:</span>
-        <span class="summary-value">${totalAtoms}</span>
+        <span class="summary-value">${escapeHtml(totalAtoms)}</span>
       </div>
     </div>
   `;
@@ -300,18 +315,20 @@ function updateElementParameters(structure) {
       const z = elements[symbol] || 0;
       // Default muffin-tin radius based on atomic number
       const defaultMT = (1.5 + z * 0.02).toFixed(2);
+      const safeSymbol = escapeHtml(symbol);
+      const safeColor = escapeHtml(getElementColorForCSS(symbol));
 
       return `
       <div class="element-param-row">
-        <span class="element-symbol" style="color: ${getElementColorForCSS(symbol)}">${symbol}</span>
+        <span class="element-symbol" style="color: ${safeColor}">${safeSymbol}</span>
         <div class="form-group">
           <label>Muffin-Tin Radius (Bohr)</label>
-          <input type="number" class="mt-radius-input" data-element="${symbol}"
-                 value="${defaultMT}" step="0.01" min="0.5" max="5.0">
+          <input type="number" class="mt-radius-input" data-element="${safeSymbol}"
+                 value="${escapeHtml(defaultMT)}" step="0.01" min="0.5" max="5.0">
         </div>
         <div class="form-group">
           <label>Inner Potential V₀ (eV)</label>
-          <input type="number" class="v0-input" data-element="${symbol}"
+          <input type="number" class="v0-input" data-element="${safeSymbol}"
                  value="10.0" step="0.5" min="0" max="30">
         </div>
       </div>
@@ -929,10 +946,6 @@ function downloadResults(format) {
 
   const { params, results } = currentResults;
   let content, filename, mimeType;
-
-  // Get primary element for filename
-  const primaryElement = params.elements[0] || 'unknown';
-  const z = elements[primaryElement] || 0;
 
   switch (format) {
     case 'cleed':
