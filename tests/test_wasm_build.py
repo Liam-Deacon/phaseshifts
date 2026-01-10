@@ -90,8 +90,8 @@ class TestWebInterface:
         index_html = WEB_DIR / "index.html"
         content = index_html.read_text(encoding="utf-8")
 
-        # Check for key UI elements
-        assert 'id="element"' in content, "Missing element selector"
+        # Check for key UI elements (updated for new tabbed structure builder UI)
+        assert 'id="element-settings"' in content or 'id="element"' in content, "Missing element settings/selector"
         assert 'id="method"' in content, "Missing method selector"
         assert 'id="calculate-btn"' in content, "Missing calculate button"
         assert 'id="results-section"' in content, "Missing results section"
@@ -305,6 +305,6 @@ class TestFortranSource:
         content_lower = content.lower()
         for sub in required_subroutines:
             # Check for subroutine definition (may have different naming)
-            assert (
-                sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower
-            ), f"Missing subroutine: {sub}"
+            assert sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower, (
+                f"Missing subroutine: {sub}"
+            )
