@@ -305,6 +305,6 @@ class TestFortranSource:
         content_lower = content.lower()
         for sub in required_subroutines:
             # Check for subroutine definition (may have different naming)
-            assert sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower, (
-                f"Missing subroutine: {sub}"
-            )
+            assert (
+                sub.lower() in content_lower or sub.replace("_", "").lower() in content_lower
+            ), f"Missing subroutine: {sub}"
