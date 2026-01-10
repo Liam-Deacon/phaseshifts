@@ -265,7 +265,7 @@
   padding: 0.15rem 0.4rem;
   font-size: 0.75rem;
   background: #444;
-  color: #aaa;
+  color: #fff;
   border: 1px solid #555;
   border-radius: 3px;
 }
@@ -337,7 +337,7 @@
   padding: 0.4rem 0.6rem;
   background: rgb(40 40 60 / 90%);
   border: 1px solid #555;
-  color: #e0e0e0;
+  color: #fff;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.75rem;
@@ -345,6 +345,7 @@
 
 .viewer-controls button:hover {
   background: rgb(60 60 90 / 90%);
+  color: #fff;
 }
 
 /* Responsive */
