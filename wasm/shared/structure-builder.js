@@ -434,8 +434,7 @@ export class StructureBuilder {
   _addLayer() {
     const zPos =
       this.structure.layers.length > 0
-        ? this.structure.layers[this.structure.layers.length - 1].zPosition -
-          2
+        ? this.structure.layers[this.structure.layers.length - 1].zPosition - 2
         : 0;
 
     const layer = new Layer([], {

@@ -320,7 +320,8 @@ export class MillerIndices {
   }
 
   toString() {
-    const format = (n) => (n < 0 ? String.raw`\overline{${Math.abs(n)}}` : `${n}`);
+    const format = (n) =>
+      n < 0 ? String.raw`\overline{${Math.abs(n)}}` : `${n}`;
     return `(${format(this.h)}${format(this.k)}${format(this.l)})`;
   }
 

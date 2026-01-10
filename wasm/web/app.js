@@ -480,9 +480,7 @@ async function initializeWasmModule() {
     statusText.textContent = 'WebAssembly module ready!';
 
     // Enable calculate if structure has atoms
-    if (
-      crystalStructure?.layers.some((l) => l.atoms.length > 0)
-    ) {
+    if (crystalStructure?.layers.some((l) => l.atoms.length > 0)) {
       calculateBtn.disabled = false;
     }
 
@@ -520,9 +518,7 @@ function scheduleStatusBannerHide(element, delayMs) {
  */
 function showDemoMode() {
   const calculateBtn = document.getElementById('calculate-btn');
-  if (
-    crystalStructure?.layers.some((l) => l.atoms.length > 0)
-  ) {
+  if (crystalStructure?.layers.some((l) => l.atoms.length > 0)) {
     calculateBtn.disabled = false;
   }
   calculateBtn.textContent = 'Run Demo (No WASM)';

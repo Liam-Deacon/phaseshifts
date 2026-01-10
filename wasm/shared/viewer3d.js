@@ -110,7 +110,12 @@ export class CrystalViewer {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
 
-    if (!width || !height || !Number.isFinite(width) || !Number.isFinite(height)) {
+    if (
+      !width ||
+      !height ||
+      !Number.isFinite(width) ||
+      !Number.isFinite(height)
+    ) {
       return;
     }
 
