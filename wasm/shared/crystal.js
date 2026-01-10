@@ -486,21 +486,11 @@ function createFCC111Surface(element, a) {
         interlayerSpacing: d111,
       }),
       new Layer(
-        [
-          new Atom(
-            element,
-            new Vector3(asurf / 2, (asurf * sqrt3) / 6, -d111),
-          ),
-        ],
+        [new Atom(element, new Vector3(asurf / 2, (asurf * sqrt3) / 6, -d111))],
         { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
       ),
       new Layer(
-        [
-          new Atom(
-            element,
-            new Vector3(0, (asurf * sqrt3) / 3, -2 * d111),
-          ),
-        ],
+        [new Atom(element, new Vector3(0, (asurf * sqrt3) / 3, -2 * d111))],
         { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
       ),
     ],
@@ -589,10 +579,7 @@ function createBCC100Surface(element, a) {
   return new CrystalStructure({
     name: `${element}(100)`,
     bulkUnitCell: new UnitCell3D(a, a, a),
-    surfaceUnitCell: new UnitCell2D(
-      new Vector3(a, 0, 0),
-      new Vector3(0, a, 0),
-    ),
+    surfaceUnitCell: new UnitCell2D(new Vector3(a, 0, 0), new Vector3(0, a, 0)),
     millerIndices: new MillerIndices(1, 0, 0),
     crystalSystem: CrystalSystem.CUBIC,
     bravaisLattice: BravaisLattice.BODY_CENTERED,
