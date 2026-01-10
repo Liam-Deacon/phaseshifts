@@ -56,13 +56,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install numpy setuptools wheel
-          # Install myst-parser explicitly (required by docs/conf.py)
-          pip install myst-parser sphinx sphinx_rtd_theme numpydoc
-          # Install remaining doc requirements (fail if file missing)
+          # Install documentation requirements
           if [ -f requirements-doc.txt ]; then
             pip install -r requirements-doc.txt
           else
-            echo "::warning::requirements-doc.txt not found, using explicit installs only"
+            echo "::warning::requirements-doc.txt not found, installing minimal set"
+            pip install myst-parser sphinx sphinx_rtd_theme numpydoc
           fi
         env:
           PHASESHIFTS_COMPILE: 'false'
