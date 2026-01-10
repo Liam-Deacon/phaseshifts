@@ -20,6 +20,9 @@ import re
 import sys
 from typing import List, Set, Tuple, Optional
 
+# Constant for F90 comment prefix to avoid duplication
+F90_COMMENT_PREFIX = "C F90: "
+
 
 def scan_existing_labels(content: str) -> Set[int]:
     """Scan the source file for existing numeric labels to avoid collisions."""
@@ -180,20 +183,20 @@ def handle_allocatable(line: str, original_line: str) -> Optional[List[str]]:
 
     # rpower(nrmax,0:15) - used in abinitio and pseudo
     if "rpower" in line.lower():
-        return ["C F90: " + original_line.strip(), f"{indent}double precision rpower(4000,0:15)"]
+        return [F90_COMMENT_PREFIX + original_line.strip(), f"{indent}double precision rpower(4000,0:15)"]
 
     # Generic allocatable - just comment out
-    return ["C F90: " + original_line.strip()]
+    return [F90_COMMENT_PREFIX + original_line.strip()]
 
 
 def handle_allocate_deallocate(line: str) -> Optional[str]:
     """Handle allocate/deallocate statements. Returns comment or None."""
     if re.match(r"\s*allocate\s*\(", line, re.IGNORECASE):
-        return "C F90: " + line.strip()
+        return F90_COMMENT_PREFIX + line.strip()
     if re.match(r"\s*deallocate\s*\(", line, re.IGNORECASE):
-        return "C F90: " + line.strip()
+        return F90_COMMENT_PREFIX + line.strip()
     if "allocated(" in line.lower():
-        return "C F90: " + line.strip()
+        return F90_COMMENT_PREFIX + line.strip()
     return None
 
 
@@ -224,17 +227,21 @@ def process_do_while_cond(line: str, allocator: LabelAllocator, do_stack: List[L
     return f"{start_label:5d} if (.not.({condition})) goto {exit_label}"
 
 
+# Pre-compiled regex patterns to reduce complexity
+DO_LOOP_PATTERN = re.compile(r"(\s*)(\d+\s+)?do\s+(\w+)\s*=\s*([^,]+),([^,]+)(,.+)?$", re.IGNORECASE)
+
+
 def process_do_loop(line: str, allocator: LabelAllocator, do_stack: List[LoopInfo]) -> Optional[str]:
     """Process simple 'do i=start,end' statements."""
-    match = re.match(r"(\s*)(\d+\s+)?do\s+(\w+)\s*=\s*(.+?)\s*,\s*(.+?)(\s*,\s*.+)?$", line, re.IGNORECASE)
+    match = DO_LOOP_PATTERN.match(line)
     if not match or "while" in line.lower():
         return None
 
     indent = match.group(1)
     existing_label = match.group(2)
     var = match.group(3)
-    start = match.group(4)
-    end = match.group(5)
+    start = match.group(4).strip()
+    end = match.group(5).strip()
     step = match.group(6) if match.group(6) else ""
 
     loop_label = allocator.get_label()
@@ -257,10 +264,7 @@ def process_end_do(line: str, do_stack: List[LoopInfo]) -> Optional[List[str]]:
 
     if do_stack:
         loop_info = do_stack.pop()
-        if loop_info.loop_type == "while_true":
-            output.append(f"      goto {loop_info.start_label}")
-            output.append(f"{loop_info.exit_label:5d} continue")
-        elif loop_info.loop_type == "while_cond":
+        if loop_info.loop_type in ("while_true", "while_cond"):
             output.append(f"      goto {loop_info.start_label}")
             output.append(f"{loop_info.exit_label:5d} continue")
         elif loop_info.loop_type == "do_loop":
@@ -283,7 +287,7 @@ def process_exit(line: str, do_stack: List[LoopInfo]) -> Optional[str]:
     if do_stack:
         loop_info = do_stack[-1]
         return f"      goto {loop_info.exit_label}"
-    return "C F90: exit (no matching loop)"
+    return F90_COMMENT_PREFIX + "exit (no matching loop)"
 
 
 def process_inline_exit(line: str, do_stack: List[LoopInfo]) -> str:
@@ -325,6 +329,75 @@ def find_last_end_position(lines: List[str]) -> int:
     return len(lines)
 
 
+def process_line(
+    line: str, original_line: str, allocator: LabelAllocator, do_stack: List[LoopInfo]
+) -> Tuple[Optional[List[str]], bool]:
+    """
+    Process a single line of F90 code.
+
+    Returns:
+        Tuple of (output_lines, done) where:
+        - output_lines: List of converted lines, or None to continue with default handling
+        - done: If True, skip further processing of this line
+    """
+    # Convert comments
+    line, is_full_comment = convert_comments(line)
+    if is_full_comment:
+        return [line], True
+
+    # Convert character declarations
+    line = convert_character_decl(line)
+
+    # Remove intent and convert :: syntax
+    line = convert_intent_and_colons(line)
+
+    # Convert string functions
+    line = convert_string_functions(line)
+
+    # Handle allocatable
+    alloc_result = handle_allocatable(line, original_line)
+    if alloc_result is not None:
+        return alloc_result, True
+
+    # Handle allocate/deallocate
+    alloc_stmt = handle_allocate_deallocate(line)
+    if alloc_stmt is not None:
+        return [alloc_stmt], True
+
+    # Process do while(.true.)
+    result = process_do_while_true(line, allocator, do_stack)
+    if result is not None:
+        return [result], True
+
+    # Process do while(condition)
+    result = process_do_while_cond(line, allocator, do_stack)
+    if result is not None:
+        return [result], True
+
+    # Process simple do loop
+    result = process_do_loop(line, allocator, do_stack)
+    if result is not None:
+        return [result], True
+
+    # Process end do
+    end_do_result = process_end_do(line, do_stack)
+    if end_do_result is not None:
+        return end_do_result, True
+
+    # Process standalone exit
+    exit_result = process_exit(line, do_stack)
+    if exit_result is not None:
+        return [exit_result], True
+
+    # Process inline exit
+    line = process_inline_exit(line, do_stack)
+
+    # Convert end statements
+    line = convert_end_statements(line)
+
+    return [line], True
+
+
 def convert_f90_to_f77(content: str) -> str:
     """Convert F90 code to F77 compatible code."""
     lines = content.split("\n")
@@ -341,77 +414,14 @@ def convert_f90_to_f77(content: str) -> str:
     do_stack: List[LoopInfo] = []
 
     for line in lines:
-        original_line = line
-
         # Skip empty lines
         if not line.strip():
             output_lines.append(line)
             continue
 
-        # Convert comments
-        line, is_full_comment = convert_comments(line)
-        if is_full_comment:
-            output_lines.append(line)
-            continue
-
-        # Convert character declarations
-        line = convert_character_decl(line)
-
-        # Remove intent and convert :: syntax
-        line = convert_intent_and_colons(line)
-
-        # Convert string functions
-        line = convert_string_functions(line)
-
-        # Handle allocatable
-        alloc_result = handle_allocatable(line, original_line)
-        if alloc_result is not None:
-            output_lines.extend(alloc_result)
-            continue
-
-        # Handle allocate/deallocate
-        alloc_stmt = handle_allocate_deallocate(line)
-        if alloc_stmt is not None:
-            output_lines.append(alloc_stmt)
-            continue
-
-        # Process do while(.true.)
-        result = process_do_while_true(line, allocator, do_stack)
+        result, _ = process_line(line, line, allocator, do_stack)
         if result is not None:
-            output_lines.append(result)
-            continue
-
-        # Process do while(condition)
-        result = process_do_while_cond(line, allocator, do_stack)
-        if result is not None:
-            output_lines.append(result)
-            continue
-
-        # Process simple do loop
-        result = process_do_loop(line, allocator, do_stack)
-        if result is not None:
-            output_lines.append(result)
-            continue
-
-        # Process end do
-        end_do_result = process_end_do(line, do_stack)
-        if end_do_result is not None:
-            output_lines.extend(end_do_result)
-            continue
-
-        # Process standalone exit
-        exit_result = process_exit(line, do_stack)
-        if exit_result is not None:
-            output_lines.append(exit_result)
-            continue
-
-        # Process inline exit
-        line = process_inline_exit(line, do_stack)
-
-        # Convert end statements
-        line = convert_end_statements(line)
-
-        output_lines.append(line)
+            output_lines.extend(result)
 
     # Add lentrim helper if needed and not already present
     result = "\n".join(output_lines)
@@ -434,15 +444,43 @@ def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
 
-    with open(input_file, "r", encoding="utf-8") as f:
-        content = f.read()
+    # Read input file with error handling
+    try:
+        with open(input_file, "r", encoding="utf-8") as f:
+            content = f.read()
+    except FileNotFoundError as e:
+        print(f"Error: Input file not found: {input_file}")
+        print(f"  {e}")
+        sys.exit(1)
+    except PermissionError as e:
+        print(f"Error: Permission denied reading file: {input_file}")
+        print(f"  {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: Failed to read input file: {input_file}")
+        print(f"  {e}")
+        sys.exit(1)
 
     converted = convert_f90_to_f77(content)
 
     if output_file:
-        with open(output_file, "w", encoding="utf-8") as f:
-            f.write(converted)
-        print(f"Converted {input_file} -> {output_file}")
+        # Write output file with error handling
+        try:
+            with open(output_file, "w", encoding="utf-8") as f:
+                f.write(converted)
+            print(f"Converted {input_file} -> {output_file}")
+        except FileNotFoundError as e:
+            print(f"Error: Output directory not found for: {output_file}")
+            print(f"  {e}")
+            sys.exit(1)
+        except PermissionError as e:
+            print(f"Error: Permission denied writing file: {output_file}")
+            print(f"  {e}")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Error: Failed to write output file: {output_file}")
+            print(f"  {e}")
+            sys.exit(1)
     else:
         print(converted)
 
