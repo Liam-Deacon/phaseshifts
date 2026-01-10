@@ -139,13 +139,13 @@ jobs:
                cp -r "$file" _site/calculator/
              fi
            done
-           
+
            # Copy API file if exists
            cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
 
            # Copy shared elements.js to calculator/shared (fixes relative import path)
            cp wasm/shared/elements.js _site/calculator/shared/ 2>/dev/null || true
-           
+
            # Copy WASM dist files if available (for symlink resolution)
            if [ -d "wasm/dist" ] && [ ! -L "wasm/dist" ]; then
              cp -r wasm/dist/* _site/calculator/dist/ 2>/dev/null || true
