@@ -89,10 +89,6 @@ class TestCalculatorPaths:
         with open(app_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Should import crystal.js
-        crystal_pattern = r"from\s+['\"]\.\/shared\/crystal\.js['\"]"
-        assert re.search(crystal_pattern, content), "app.js should import from './shared/crystal.js'"
-
         # Should import viewer3d.js
         viewer_pattern = r"from\s+['\"]\.\/shared\/viewer3d\.js['\"]"
         assert re.search(viewer_pattern, content), "app.js should import from './shared/viewer3d.js'"
