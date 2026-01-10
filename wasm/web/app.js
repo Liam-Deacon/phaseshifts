@@ -4,7 +4,8 @@
  */
 /* global Chart */
 
-import { elements } from '../shared/elements.js';
+// Note: shared/elements.js path works for both local dev and deployed structure
+import { elements } from './shared/elements.js';
 
 // Global state
 let phaseShiftsModule = null;
