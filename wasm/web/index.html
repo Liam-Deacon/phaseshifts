@@ -36,9 +36,7 @@
           <button class="main-tab" data-tab="calculation">
             Phase Shift Calculation
           </button>
-          <button class="main-tab" data-tab="results">
-            Results
-          </button>
+          <button class="main-tab" data-tab="results">Results</button>
         </nav>
 
         <!-- Structure Tab -->
@@ -49,7 +47,9 @@
               <div class="panel-header">
                 <h2>3D Structure Viewer</h2>
                 <div class="viewer-controls-inline">
-                  <button id="view-perspective" title="Perspective view">3D</button>
+                  <button id="view-perspective" title="Perspective view">
+                    3D
+                  </button>
                   <button id="view-top" title="Top view">Top</button>
                   <button id="view-front" title="Front view">Front</button>
                   <button id="view-side" title="Side view">Side</button>
@@ -80,7 +80,10 @@
             <div class="structure-summary">
               <h3>Selected Structure</h3>
               <div id="structure-summary-content">
-                <p class="empty-message">No structure defined. Go to "Crystal Structure" tab to build one.</p>
+                <p class="empty-message">
+                  No structure defined. Go to "Crystal Structure" tab to build
+                  one.
+                </p>
               </div>
             </div>
 
@@ -93,7 +96,9 @@
                 <div class="form-group">
                   <label for="method">Algorithm</label>
                   <select id="method">
-                    <option value="rel" selected>Relativistic (phsh_rel)</option>
+                    <option value="rel" selected>
+                      Relativistic (phsh_rel)
+                    </option>
                     <option value="cav">Cavity LEED (phsh_cav)</option>
                     <option value="wil">Williams (phsh_wil)</option>
                   </select>
@@ -170,7 +175,11 @@
 
         <!-- Results Tab -->
         <section class="tab-panel" id="panel-results">
-          <div id="results-section" class="results-section" style="display: none">
+          <div
+            id="results-section"
+            class="results-section"
+            style="display: none"
+          >
             <h2>Results</h2>
 
             <!-- Results Tabs -->
@@ -247,7 +256,9 @@
           </div>
 
           <div id="no-results" class="no-results">
-            <p>No results yet. Configure your structure and run a calculation.</p>
+            <p>
+              No results yet. Configure your structure and run a calculation.
+            </p>
           </div>
         </section>
 

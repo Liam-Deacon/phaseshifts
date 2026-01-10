@@ -39,7 +39,7 @@ export class Vector3 {
     return new Vector3(
       this.y * v.z - this.z * v.y,
       this.z * v.x - this.x * v.z,
-      this.x * v.y - this.y * v.x
+      this.x * v.y - this.y * v.x,
     );
   }
 
@@ -69,7 +69,8 @@ export class Atom {
   constructor(symbol, position, options = {}) {
     this.symbol = symbol;
     this.atomicNumber = elements[symbol] || 0;
-    this.position = position instanceof Vector3 ? position : new Vector3(...position);
+    this.position =
+      position instanceof Vector3 ? position : new Vector3(...position);
     this.label = options.label || symbol;
     this.occupancy = options.occupancy ?? 1.0;
     this.isVacancy = options.isVacancy ?? false;
@@ -133,7 +134,7 @@ export class Atom {
  */
 export class Layer {
   constructor(atoms = [], options = {}) {
-    this.atoms = atoms.map(a => a instanceof Atom ? a : Atom.fromJSON(a));
+    this.atoms = atoms.map((a) => (a instanceof Atom ? a : Atom.fromJSON(a)));
     this.name = options.name || 'Layer';
     this.zPosition = options.zPosition ?? 0;
     this.interlayerSpacing = options.interlayerSpacing ?? null;
@@ -150,31 +151,31 @@ export class Layer {
 
   clone() {
     return new Layer(
-      this.atoms.map(a => a.clone()),
+      this.atoms.map((a) => a.clone()),
       {
         name: this.name,
         zPosition: this.zPosition,
         interlayerSpacing: this.interlayerSpacing,
         isComposite: this.isComposite,
-      }
+      },
     );
   }
 
   translate(vector) {
     return new Layer(
-      this.atoms.map(a => a.translate(vector)),
+      this.atoms.map((a) => a.translate(vector)),
       {
         name: this.name,
         zPosition: this.zPosition + (vector.z || 0),
         interlayerSpacing: this.interlayerSpacing,
         isComposite: this.isComposite,
-      }
+      },
     );
   }
 
   toJSON() {
     return {
-      atoms: this.atoms.map(a => a.toJSON()),
+      atoms: this.atoms.map((a) => a.toJSON()),
       name: this.name,
       zPosition: this.zPosition,
       interlayerSpacing: this.interlayerSpacing,
@@ -184,13 +185,13 @@ export class Layer {
 
   static fromJSON(json) {
     return new Layer(
-      json.atoms.map(a => Atom.fromJSON(a)),
+      json.atoms.map((a) => Atom.fromJSON(a)),
       {
         name: json.name,
         zPosition: json.zPosition,
         interlayerSpacing: json.interlayerSpacing,
         isComposite: json.isComposite,
-      }
+      },
     );
   }
 }
@@ -215,7 +216,7 @@ export class UnitCell2D {
       this.b = new Vector3(
         bLength * Math.cos(gammaRad),
         bLength * Math.sin(gammaRad),
-        0
+        0,
       );
     }
   }
@@ -236,7 +237,7 @@ export class UnitCell2D {
     const cell = new UnitCell2D(
       Vector3.fromArray(json.a),
       Vector3.fromArray(json.b),
-      json.gamma
+      json.gamma,
     );
     return cell;
   }
@@ -251,7 +252,7 @@ export class UnitCell3D {
     this.bLength = typeof b === 'number' ? b : b.length();
     this.cLength = typeof c === 'number' ? c : c.length();
     this.alpha = alpha; // angle between b and c
-    this.beta = beta;   // angle between a and c
+    this.beta = beta; // angle between a and c
     this.gamma = gamma; // angle between a and b
     this._calculateVectors();
   }
@@ -267,11 +268,14 @@ export class UnitCell3D {
     this.b = new Vector3(
       this.bLength * Math.cos(gammaRad),
       this.bLength * Math.sin(gammaRad),
-      0
+      0,
     );
 
     const cx = this.cLength * Math.cos(betaRad);
-    const cy = this.cLength * (Math.cos(alphaRad) - Math.cos(betaRad) * Math.cos(gammaRad)) / Math.sin(gammaRad);
+    const cy =
+      (this.cLength *
+        (Math.cos(alphaRad) - Math.cos(betaRad) * Math.cos(gammaRad))) /
+      Math.sin(gammaRad);
     const cz = Math.sqrt(this.cLength * this.cLength - cx * cx - cy * cy);
     this.c = new Vector3(cx, cy, cz);
   }
@@ -293,8 +297,12 @@ export class UnitCell3D {
 
   static fromJSON(json) {
     return new UnitCell3D(
-      json.a, json.b, json.c,
-      json.alpha, json.beta, json.gamma
+      json.a,
+      json.b,
+      json.c,
+      json.alpha,
+      json.beta,
+      json.gamma,
     );
   }
 }
@@ -310,12 +318,12 @@ export class MillerIndices {
   }
 
   toString() {
-    const format = (n) => n < 0 ? `\\overline{${Math.abs(n)}}` : `${n}`;
+    const format = (n) => (n < 0 ? `\\overline{${Math.abs(n)}}` : `${n}`);
     return `(${format(this.h)}${format(this.k)}${format(this.l)})`;
   }
 
   toSimpleString() {
-    const format = (n) => n < 0 ? `-${Math.abs(n)}` : `${n}`;
+    const format = (n) => (n < 0 ? `-${Math.abs(n)}` : `${n}`);
     return `(${format(this.h)}${format(this.k)}${format(this.l)})`;
   }
 
@@ -385,10 +393,12 @@ export class CrystalStructure {
    */
   getAllAtoms(repeatX = 1, repeatY = 1) {
     const atoms = [];
-    const cell = this.surfaceUnitCell || new UnitCell2D(
-      new Vector3(this.bulkUnitCell.aLength, 0, 0),
-      new Vector3(0, this.bulkUnitCell.bLength, 0)
-    );
+    const cell =
+      this.surfaceUnitCell ||
+      new UnitCell2D(
+        new Vector3(this.bulkUnitCell.aLength, 0, 0),
+        new Vector3(0, this.bulkUnitCell.bLength, 0),
+      );
 
     for (let ix = 0; ix < repeatX; ix++) {
       for (let iy = 0; iy < repeatY; iy++) {
@@ -422,10 +432,10 @@ export class CrystalStructure {
       bulkUnitCell: this.bulkUnitCell.toJSON(),
       surfaceUnitCell: this.surfaceUnitCell?.toJSON() || null,
       millerIndices: this.millerIndices.toArray(),
-      layers: this.layers.map(l => l.toJSON()),
+      layers: this.layers.map((l) => l.toJSON()),
       crystalSystem: this.crystalSystem,
       bravaisLattice: this.bravaisLattice,
-      bulkAtoms: this.bulkAtoms.map(a => a.toJSON()),
+      bulkAtoms: this.bulkAtoms.map((a) => a.toJSON()),
     };
   }
 
@@ -433,12 +443,14 @@ export class CrystalStructure {
     return new CrystalStructure({
       name: json.name,
       bulkUnitCell: UnitCell3D.fromJSON(json.bulkUnitCell),
-      surfaceUnitCell: json.surfaceUnitCell ? UnitCell2D.fromJSON(json.surfaceUnitCell) : null,
+      surfaceUnitCell: json.surfaceUnitCell
+        ? UnitCell2D.fromJSON(json.surfaceUnitCell)
+        : null,
       millerIndices: MillerIndices.fromArray(json.millerIndices),
-      layers: json.layers.map(l => Layer.fromJSON(l)),
+      layers: json.layers.map((l) => Layer.fromJSON(l)),
       crystalSystem: json.crystalSystem,
       bravaisLattice: json.bravaisLattice,
-      bulkAtoms: json.bulkAtoms?.map(a => Atom.fromJSON(a)) || [],
+      bulkAtoms: json.bulkAtoms?.map((a) => Atom.fromJSON(a)) || [],
     });
   }
 }
@@ -452,22 +464,42 @@ export const crystalPresets = Object.freeze({
     const a = 3.615; // Angstroms
     const d111 = a / Math.sqrt(3); // Interlayer spacing for (111)
     const asurf = a / Math.sqrt(2); // Surface lattice constant
-    
+
     return new CrystalStructure({
       name: 'Cu(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Cu', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Cu', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Cu',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Cu',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },
@@ -476,20 +508,28 @@ export const crystalPresets = Object.freeze({
     const a = 3.615;
     const d100 = a / 2;
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Cu(100)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0)
+        new Vector3(0, asurf, 0),
       ),
       millerIndices: new MillerIndices(1, 0, 0),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d100 }),
-        new Layer([new Atom('Cu', new Vector3(asurf / 2, asurf / 2, -d100))], { name: 'Layer 2', zPosition: -d100, interlayerSpacing: d100 }),
+        new Layer([new Atom('Cu', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d100,
+        }),
+        new Layer([new Atom('Cu', new Vector3(asurf / 2, asurf / 2, -d100))], {
+          name: 'Layer 2',
+          zPosition: -d100,
+          interlayerSpacing: d100,
+        }),
       ],
     });
   },
@@ -498,22 +538,42 @@ export const crystalPresets = Object.freeze({
     const a = 3.524;
     const d111 = a / Math.sqrt(3);
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Ni(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Ni', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Ni', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Ni',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Ni',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },
@@ -522,20 +582,28 @@ export const crystalPresets = Object.freeze({
     const a = 3.524;
     const d100 = a / 2;
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Ni(100)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0)
+        new Vector3(0, asurf, 0),
       ),
       millerIndices: new MillerIndices(1, 0, 0),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d100 }),
-        new Layer([new Atom('Ni', new Vector3(asurf / 2, asurf / 2, -d100))], { name: 'Layer 2', zPosition: -d100, interlayerSpacing: d100 }),
+        new Layer([new Atom('Ni', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d100,
+        }),
+        new Layer([new Atom('Ni', new Vector3(asurf / 2, asurf / 2, -d100))], {
+          name: 'Layer 2',
+          zPosition: -d100,
+          interlayerSpacing: d100,
+        }),
       ],
     });
   },
@@ -546,20 +614,27 @@ export const crystalPresets = Object.freeze({
     const d110 = a / Math.sqrt(2);
     const asurfX = a;
     const asurfY = a * Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Fe(110)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurfX, 0, 0),
-        new Vector3(0, asurfY, 0)
+        new Vector3(0, asurfY, 0),
       ),
       millerIndices: new MillerIndices(1, 1, 0),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.BODY_CENTERED,
       layers: [
-        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d110 }),
-        new Layer([new Atom('Fe', new Vector3(asurfX / 2, asurfY / 2, -d110))], { name: 'Layer 2', zPosition: -d110, interlayerSpacing: d110 }),
+        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d110,
+        }),
+        new Layer(
+          [new Atom('Fe', new Vector3(asurfX / 2, asurfY / 2, -d110))],
+          { name: 'Layer 2', zPosition: -d110, interlayerSpacing: d110 },
+        ),
       ],
     });
   },
@@ -567,20 +642,28 @@ export const crystalPresets = Object.freeze({
   'Fe(100)': () => {
     const a = 2.87;
     const d100 = a / 2;
-    
+
     return new CrystalStructure({
       name: 'Fe(100)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(a, 0, 0),
-        new Vector3(0, a, 0)
+        new Vector3(0, a, 0),
       ),
       millerIndices: new MillerIndices(1, 0, 0),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.BODY_CENTERED,
       layers: [
-        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d100 }),
-        new Layer([new Atom('Fe', new Vector3(a / 2, a / 2, -d100))], { name: 'Layer 2', zPosition: -d100, interlayerSpacing: d100 }),
+        new Layer([new Atom('Fe', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d100,
+        }),
+        new Layer([new Atom('Fe', new Vector3(a / 2, a / 2, -d100))], {
+          name: 'Layer 2',
+          zPosition: -d100,
+          interlayerSpacing: d100,
+        }),
       ],
     });
   },
@@ -590,20 +673,28 @@ export const crystalPresets = Object.freeze({
     const a = 5.431;
     const d100 = a / 4;
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Si(100)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(0, asurf, 0)
+        new Vector3(0, asurf, 0),
       ),
       millerIndices: new MillerIndices(1, 0, 0),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Si', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d100 }),
-        new Layer([new Atom('Si', new Vector3(asurf / 2, asurf / 2, -d100))], { name: 'Layer 2', zPosition: -d100, interlayerSpacing: d100 }),
+        new Layer([new Atom('Si', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d100,
+        }),
+        new Layer([new Atom('Si', new Vector3(asurf / 2, asurf / 2, -d100))], {
+          name: 'Layer 2',
+          zPosition: -d100,
+          interlayerSpacing: d100,
+        }),
       ],
     });
   },
@@ -613,22 +704,42 @@ export const crystalPresets = Object.freeze({
     const a = 4.078;
     const d111 = a / Math.sqrt(3);
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Au(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Au', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Au', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Au', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Au', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Au',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Au',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },
@@ -638,22 +749,42 @@ export const crystalPresets = Object.freeze({
     const a = 3.924;
     const d111 = a / Math.sqrt(3);
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Pt(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Pt', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Pt', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Pt', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Pt', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Pt',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Pt',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },
@@ -663,22 +794,42 @@ export const crystalPresets = Object.freeze({
     const a = 4.05;
     const d111 = a / Math.sqrt(3);
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Al(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Al', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Al', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Al', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Al', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Al',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Al',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },
@@ -688,22 +839,42 @@ export const crystalPresets = Object.freeze({
     const a = 4.086;
     const d111 = a / Math.sqrt(3);
     const asurf = a / Math.sqrt(2);
-    
+
     return new CrystalStructure({
       name: 'Ag(111)',
       bulkUnitCell: new UnitCell3D(a, a, a),
       surfaceUnitCell: new UnitCell2D(
         new Vector3(asurf, 0, 0),
-        new Vector3(asurf * 0.5, asurf * Math.sqrt(3) / 2, 0),
-        60
+        new Vector3(asurf * 0.5, (asurf * Math.sqrt(3)) / 2, 0),
+        60,
       ),
       millerIndices: new MillerIndices(1, 1, 1),
       crystalSystem: CrystalSystem.CUBIC,
       bravaisLattice: BravaisLattice.FACE_CENTERED,
       layers: [
-        new Layer([new Atom('Ag', new Vector3(0, 0, 0))], { name: 'Layer 1', zPosition: 0, interlayerSpacing: d111 }),
-        new Layer([new Atom('Ag', new Vector3(asurf / 2, asurf * Math.sqrt(3) / 6, -d111))], { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 }),
-        new Layer([new Atom('Ag', new Vector3(0, asurf * Math.sqrt(3) / 3, -2 * d111))], { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 }),
+        new Layer([new Atom('Ag', new Vector3(0, 0, 0))], {
+          name: 'Layer 1',
+          zPosition: 0,
+          interlayerSpacing: d111,
+        }),
+        new Layer(
+          [
+            new Atom(
+              'Ag',
+              new Vector3(asurf / 2, (asurf * Math.sqrt(3)) / 6, -d111),
+            ),
+          ],
+          { name: 'Layer 2', zPosition: -d111, interlayerSpacing: d111 },
+        ),
+        new Layer(
+          [
+            new Atom(
+              'Ag',
+              new Vector3(0, (asurf * Math.sqrt(3)) / 3, -2 * d111),
+            ),
+          ],
+          { name: 'Layer 3', zPosition: -2 * d111, interlayerSpacing: d111 },
+        ),
       ],
     });
   },

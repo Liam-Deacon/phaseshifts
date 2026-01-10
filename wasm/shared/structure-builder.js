@@ -3,17 +3,17 @@
  * Provides interactive UI for building and editing crystal structures
  */
 
-import { 
-  CrystalStructure, 
-  Layer, 
-  Atom, 
+import {
+  CrystalStructure,
+  Layer,
+  Atom,
   Vector3,
   UnitCell2D,
   UnitCell3D,
   MillerIndices,
   crystalPresets,
   getPresetNames,
-  createFromPreset 
+  createFromPreset,
 } from './crystal.js';
 import { elements, getElementSymbol } from './elements.js';
 
@@ -22,9 +22,10 @@ import { elements, getElementSymbol } from './elements.js';
  */
 export class StructureBuilder {
   constructor(container, options = {}) {
-    this.container = typeof container === 'string'
-      ? document.getElementById(container)
-      : container;
+    this.container =
+      typeof container === 'string'
+        ? document.getElementById(container)
+        : container;
 
     if (!this.container) {
       throw new Error('Container element not found');
@@ -85,7 +86,8 @@ export class StructureBuilder {
 
   _render() {
     this.container.innerHTML = '';
-    this.container.className = 'structure-builder' + (this.options.compact ? ' compact' : '');
+    this.container.className =
+      'structure-builder' + (this.options.compact ? ' compact' : '');
 
     // Build main sections
     if (this.options.showPresets) {
@@ -136,7 +138,7 @@ export class StructureBuilder {
     // Bulk unit cell
     const bulkGroup = document.createElement('div');
     bulkGroup.className = 'form-group';
-    
+
     const bulkLabel = document.createElement('label');
     bulkLabel.textContent = 'Bulk Lattice Constant (Å)';
     bulkGroup.appendChild(bulkLabel);
@@ -147,7 +149,7 @@ export class StructureBuilder {
     const createInput = (label, value, onChange) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'input-wrapper';
-      
+
       const lbl = document.createElement('span');
       lbl.textContent = label;
       wrapper.appendChild(lbl);
@@ -162,32 +164,38 @@ export class StructureBuilder {
       return wrapper;
     };
 
-    bulkInputs.appendChild(createInput('a:', this.structure.bulkUnitCell.aLength.toFixed(3), (e) => {
-      this.structure.bulkUnitCell = new UnitCell3D(
-        parseFloat(e.target.value),
-        this.structure.bulkUnitCell.bLength,
-        this.structure.bulkUnitCell.cLength
-      );
-      this._notifyChange();
-    }));
+    bulkInputs.appendChild(
+      createInput('a:', this.structure.bulkUnitCell.aLength.toFixed(3), (e) => {
+        this.structure.bulkUnitCell = new UnitCell3D(
+          parseFloat(e.target.value),
+          this.structure.bulkUnitCell.bLength,
+          this.structure.bulkUnitCell.cLength,
+        );
+        this._notifyChange();
+      }),
+    );
 
-    bulkInputs.appendChild(createInput('b:', this.structure.bulkUnitCell.bLength.toFixed(3), (e) => {
-      this.structure.bulkUnitCell = new UnitCell3D(
-        this.structure.bulkUnitCell.aLength,
-        parseFloat(e.target.value),
-        this.structure.bulkUnitCell.cLength
-      );
-      this._notifyChange();
-    }));
+    bulkInputs.appendChild(
+      createInput('b:', this.structure.bulkUnitCell.bLength.toFixed(3), (e) => {
+        this.structure.bulkUnitCell = new UnitCell3D(
+          this.structure.bulkUnitCell.aLength,
+          parseFloat(e.target.value),
+          this.structure.bulkUnitCell.cLength,
+        );
+        this._notifyChange();
+      }),
+    );
 
-    bulkInputs.appendChild(createInput('c:', this.structure.bulkUnitCell.cLength.toFixed(3), (e) => {
-      this.structure.bulkUnitCell = new UnitCell3D(
-        this.structure.bulkUnitCell.aLength,
-        this.structure.bulkUnitCell.bLength,
-        parseFloat(e.target.value)
-      );
-      this._notifyChange();
-    }));
+    bulkInputs.appendChild(
+      createInput('c:', this.structure.bulkUnitCell.cLength.toFixed(3), (e) => {
+        this.structure.bulkUnitCell = new UnitCell3D(
+          this.structure.bulkUnitCell.aLength,
+          this.structure.bulkUnitCell.bLength,
+          parseFloat(e.target.value),
+        );
+        this._notifyChange();
+      }),
+    );
 
     bulkGroup.appendChild(bulkInputs);
     section.appendChild(bulkGroup);
@@ -204,32 +212,38 @@ export class StructureBuilder {
     millerInputs.className = 'input-row';
 
     const mi = this.structure.millerIndices;
-    millerInputs.appendChild(createInput('h:', mi.h, (e) => {
-      this.structure.millerIndices = new MillerIndices(
-        parseInt(e.target.value),
-        this.structure.millerIndices.k,
-        this.structure.millerIndices.l
-      );
-      this._notifyChange();
-    }));
+    millerInputs.appendChild(
+      createInput('h:', mi.h, (e) => {
+        this.structure.millerIndices = new MillerIndices(
+          parseInt(e.target.value),
+          this.structure.millerIndices.k,
+          this.structure.millerIndices.l,
+        );
+        this._notifyChange();
+      }),
+    );
 
-    millerInputs.appendChild(createInput('k:', mi.k, (e) => {
-      this.structure.millerIndices = new MillerIndices(
-        this.structure.millerIndices.h,
-        parseInt(e.target.value),
-        this.structure.millerIndices.l
-      );
-      this._notifyChange();
-    }));
+    millerInputs.appendChild(
+      createInput('k:', mi.k, (e) => {
+        this.structure.millerIndices = new MillerIndices(
+          this.structure.millerIndices.h,
+          parseInt(e.target.value),
+          this.structure.millerIndices.l,
+        );
+        this._notifyChange();
+      }),
+    );
 
-    millerInputs.appendChild(createInput('l:', mi.l, (e) => {
-      this.structure.millerIndices = new MillerIndices(
-        this.structure.millerIndices.h,
-        this.structure.millerIndices.k,
-        parseInt(e.target.value)
-      );
-      this._notifyChange();
-    }));
+    millerInputs.appendChild(
+      createInput('l:', mi.l, (e) => {
+        this.structure.millerIndices = new MillerIndices(
+          this.structure.millerIndices.h,
+          this.structure.millerIndices.k,
+          parseInt(e.target.value),
+        );
+        this._notifyChange();
+      }),
+    );
 
     millerGroup.appendChild(millerInputs);
     section.appendChild(millerGroup);
@@ -282,7 +296,8 @@ export class StructureBuilder {
     if (this.structure.layers.length === 0) {
       const emptyMsg = document.createElement('p');
       emptyMsg.className = 'empty-message';
-      emptyMsg.textContent = 'No layers defined. Click "Add Layer" to start building.';
+      emptyMsg.textContent =
+        'No layers defined. Click "Add Layer" to start building.';
       layersList.appendChild(emptyMsg);
     } else {
       this.structure.layers.forEach((layer, index) => {
@@ -296,7 +311,8 @@ export class StructureBuilder {
 
   _createLayerCard(layer, index) {
     const card = document.createElement('div');
-    card.className = 'layer-card' + (index === this._selectedLayerIndex ? ' selected' : '');
+    card.className =
+      'layer-card' + (index === this._selectedLayerIndex ? ' selected' : '');
     card.dataset.layerIndex = index;
 
     // Layer header
@@ -396,17 +412,19 @@ export class StructureBuilder {
     const r = parseInt(hex.substr(0, 2), 16);
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
-    
+
     // Calculate luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    
+
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   }
 
   _addLayer() {
-    const zPos = this.structure.layers.length > 0
-      ? this.structure.layers[this.structure.layers.length - 1].zPosition - 2.0
-      : 0;
+    const zPos =
+      this.structure.layers.length > 0
+        ? this.structure.layers[this.structure.layers.length - 1].zPosition -
+          2.0
+        : 0;
 
     const layer = new Layer([], {
       name: `Layer ${this.structure.layers.length + 1}`,

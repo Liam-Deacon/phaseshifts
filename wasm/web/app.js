@@ -6,7 +6,11 @@
 
 // Note: shared/elements.js path works for both local dev and deployed structure
 import { elements, getElementSymbol } from './shared/elements.js';
-import { createFromPreset, CrystalStructure, getPresetNames } from './shared/crystal.js';
+import {
+  createFromPreset,
+  CrystalStructure,
+  getPresetNames,
+} from './shared/crystal.js';
 import { createStructureBuilder } from './shared/structure-builder.js';
 import { createViewer } from './shared/viewer3d.js';
 
@@ -110,19 +114,19 @@ if (globalScope && typeof globalScope.addEventListener === 'function') {
  */
 function setupMainTabs() {
   const tabs = document.querySelectorAll('.main-tab');
-  
-  tabs.forEach(tab => {
+
+  tabs.forEach((tab) => {
     addListener(tab, 'click', () => {
       // Update active tab
-      tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
-      
+
       // Update active panel
       const panelId = `panel-${tab.dataset.tab}`;
-      document.querySelectorAll('.tab-panel').forEach(panel => {
+      document.querySelectorAll('.tab-panel').forEach((panel) => {
         panel.classList.toggle('active', panel.id === panelId);
       });
-      
+
       // Resize viewer when switching to structure tab
       if (tab.dataset.tab === 'structure' && crystalViewer) {
         crystalViewer._onResize();
@@ -170,7 +174,8 @@ function initializeViewer() {
     });
   } catch (error) {
     console.error('Failed to initialize 3D viewer:', error);
-    container.innerHTML = '<p style="color: #888; padding: 2rem; text-align: center;">3D viewer requires WebGL support</p>';
+    container.innerHTML =
+      '<p style="color: #888; padding: 2rem; text-align: center;">3D viewer requires WebGL support</p>';
   }
 
   // View control buttons
@@ -205,16 +210,15 @@ function handleStructureChange(structure) {
   // Update structure info display
   const nameEl = document.getElementById('structure-name');
   const elementsEl = document.getElementById('structure-elements');
-  
+
   if (nameEl) {
     nameEl.textContent = structure.name;
   }
-  
+
   if (elementsEl) {
     const uniqueElements = structure.getUniqueElements();
-    elementsEl.textContent = uniqueElements.length > 0 
-      ? `Elements: ${uniqueElements.join(', ')}`
-      : '';
+    elementsEl.textContent =
+      uniqueElements.length > 0 ? `Elements: ${uniqueElements.join(', ')}` : '';
   }
 
   // Update structure summary in calculation tab
@@ -225,7 +229,7 @@ function handleStructureChange(structure) {
 
   // Enable calculate button if structure has atoms
   const calculateBtn = document.getElementById('calculate-btn');
-  const hasAtoms = structure.layers.some(l => l.atoms.length > 0);
+  const hasAtoms = structure.layers.some((l) => l.atoms.length > 0);
   if (calculateBtn && phaseShiftsModule) {
     calculateBtn.disabled = !hasAtoms;
   }
@@ -239,10 +243,14 @@ function updateStructureSummary(structure) {
   if (!container) return;
 
   const uniqueElements = structure.getUniqueElements();
-  const totalAtoms = structure.layers.reduce((sum, l) => sum + l.atoms.length, 0);
+  const totalAtoms = structure.layers.reduce(
+    (sum, l) => sum + l.atoms.length,
+    0,
+  );
 
   if (totalAtoms === 0) {
-    container.innerHTML = '<p class="empty-message">No structure defined. Go to "Crystal Structure" tab to build one.</p>';
+    container.innerHTML =
+      '<p class="empty-message">No structure defined. Go to "Crystal Structure" tab to build one.</p>';
     return;
   }
 
@@ -280,33 +288,36 @@ function updateElementParameters(structure) {
   if (!container) return;
 
   const uniqueElements = structure.getUniqueElements();
-  
+
   if (uniqueElements.length === 0) {
-    container.innerHTML = '<p class="empty-message">Add atoms to the structure to configure element parameters.</p>';
+    container.innerHTML =
+      '<p class="empty-message">Add atoms to the structure to configure element parameters.</p>';
     return;
   }
 
-  container.innerHTML = uniqueElements.map(symbol => {
-    const z = elements[symbol] || 0;
-    // Default muffin-tin radius based on atomic number
-    const defaultMT = (1.5 + z * 0.02).toFixed(2);
-    
-    return `
+  container.innerHTML = uniqueElements
+    .map((symbol) => {
+      const z = elements[symbol] || 0;
+      // Default muffin-tin radius based on atomic number
+      const defaultMT = (1.5 + z * 0.02).toFixed(2);
+
+      return `
       <div class="element-param-row">
         <span class="element-symbol" style="color: ${getElementColorForCSS(symbol)}">${symbol}</span>
         <div class="form-group">
           <label>Muffin-Tin Radius (Bohr)</label>
-          <input type="number" class="mt-radius-input" data-element="${symbol}" 
+          <input type="number" class="mt-radius-input" data-element="${symbol}"
                  value="${defaultMT}" step="0.01" min="0.5" max="5.0">
         </div>
         <div class="form-group">
           <label>Inner Potential V₀ (eV)</label>
-          <input type="number" class="v0-input" data-element="${symbol}" 
+          <input type="number" class="v0-input" data-element="${symbol}"
                  value="10.0" step="0.5" min="0" max="30">
         </div>
       </div>
     `;
-  }).join('');
+    })
+    .join('');
 }
 
 /**
@@ -314,10 +325,20 @@ function updateElementParameters(structure) {
  */
 function getElementColorForCSS(symbol) {
   const colors = {
-    Cu: '#C88033', Ni: '#50D050', Fe: '#E06633', Al: '#BFA6A6',
-    Si: '#F0C8A0', Ag: '#C0C0C0', Au: '#FFD123', Pt: '#D0D0E0',
-    Co: '#F090A0', Zn: '#7D80B0', C: '#909090', O: '#FF0D0D',
-    N: '#3050F8', H: '#FFFFFF',
+    Cu: '#C88033',
+    Ni: '#50D050',
+    Fe: '#E06633',
+    Al: '#BFA6A6',
+    Si: '#F0C8A0',
+    Ag: '#C0C0C0',
+    Au: '#FFD123',
+    Pt: '#D0D0E0',
+    Co: '#F090A0',
+    Zn: '#7D80B0',
+    C: '#909090',
+    O: '#FF0D0D',
+    N: '#3050F8',
+    H: '#FFFFFF',
   };
   return colors[symbol] || '#888888';
 }
@@ -327,10 +348,8 @@ function getElementColorForCSS(symbol) {
  */
 function setupEventListeners() {
   // Calculate button
-  addListener(
-    document.getElementById('calculate-btn'),
-    'click',
-    () => runCalculation(),
+  addListener(document.getElementById('calculate-btn'), 'click', () =>
+    runCalculation(),
   );
 
   // Method selection - update help text
@@ -348,33 +367,23 @@ function setupEventListeners() {
   });
 
   // Download buttons
-  addListener(
-    document.getElementById('download-cleed'),
-    'click',
-    () => downloadResults('cleed'),
+  addListener(document.getElementById('download-cleed'), 'click', () =>
+    downloadResults('cleed'),
   );
-  addListener(
-    document.getElementById('download-viperleed'),
-    'click',
-    () => downloadResults('viperleed'),
+  addListener(document.getElementById('download-viperleed'), 'click', () =>
+    downloadResults('viperleed'),
   );
-  addListener(
-    document.getElementById('download-csv'),
-    'click',
-    () => downloadResults('csv'),
+  addListener(document.getElementById('download-csv'), 'click', () =>
+    downloadResults('csv'),
   );
 
   // Chart controls
-  addListener(
-    document.getElementById('show-all-l'),
-    'change',
-    () => updateChart(),
+  addListener(document.getElementById('show-all-l'), 'change', () =>
+    updateChart(),
   );
   addListener(document.getElementById('l-min'), 'change', () => updateChart());
-  addListener(
-    document.getElementById('l-max-display'),
-    'change',
-    () => updateChart(),
+  addListener(document.getElementById('l-max-display'), 'change', () =>
+    updateChart(),
   );
 }
 
@@ -421,9 +430,12 @@ async function initializeWasmModule() {
     statusBanner.className = 'status-banner ready';
     statusIcon.textContent = 'OK';
     statusText.textContent = 'WebAssembly module ready!';
-    
+
     // Enable calculate if structure has atoms
-    if (crystalStructure && crystalStructure.layers.some(l => l.atoms.length > 0)) {
+    if (
+      crystalStructure &&
+      crystalStructure.layers.some((l) => l.atoms.length > 0)
+    ) {
       calculateBtn.disabled = false;
     }
 
@@ -461,7 +473,10 @@ function scheduleStatusBannerHide(element, delayMs) {
  */
 function showDemoMode() {
   const calculateBtn = document.getElementById('calculate-btn');
-  if (crystalStructure && crystalStructure.layers.some(l => l.atoms.length > 0)) {
+  if (
+    crystalStructure &&
+    crystalStructure.layers.some((l) => l.atoms.length > 0)
+  ) {
     calculateBtn.disabled = false;
   }
   calculateBtn.textContent = 'Run Demo (No WASM)';
@@ -482,7 +497,10 @@ async function runCalculation() {
   const calculateBtn = document.getElementById('calculate-btn');
   const originalText = calculateBtn.textContent || '';
 
-  if (!crystalStructure || crystalStructure.layers.every(l => l.atoms.length === 0)) {
+  if (
+    !crystalStructure ||
+    crystalStructure.layers.every((l) => l.atoms.length === 0)
+  ) {
     alert('Please define a crystal structure with atoms first.');
     return;
   }
@@ -499,7 +517,9 @@ async function runCalculation() {
       lmax: Number.parseInt(document.getElementById('lmax').value, 10),
       energyMin: Number.parseFloat(document.getElementById('energy-min').value),
       energyMax: Number.parseFloat(document.getElementById('energy-max').value),
-      energyStep: Number.parseFloat(document.getElementById('energy-step').value),
+      energyStep: Number.parseFloat(
+        document.getElementById('energy-step').value,
+      ),
       method: document.getElementById('method').value,
       elementParams: getElementParams(),
     };
@@ -533,14 +553,14 @@ async function runCalculation() {
  */
 function getElementParams() {
   const params = {};
-  
-  document.querySelectorAll('.mt-radius-input').forEach(input => {
+
+  document.querySelectorAll('.mt-radius-input').forEach((input) => {
     const element = input.dataset.element;
     if (!params[element]) params[element] = {};
     params[element].muffinTinRadius = parseFloat(input.value);
   });
 
-  document.querySelectorAll('.v0-input').forEach(input => {
+  document.querySelectorAll('.v0-input').forEach((input) => {
     const element = input.dataset.element;
     if (!params[element]) params[element] = {};
     params[element].innerPotential = parseFloat(input.value);
@@ -594,20 +614,22 @@ async function calculatePhaseShifts(params) {
  */
 function generateInputFile(params) {
   const lines = [];
-  
+
   // Header info
   lines.push(`# Phase shift calculation for ${params.structure.name}`);
   lines.push(`# Method: ${params.method}`);
-  
+
   // For each unique element
   for (const element of params.elements) {
     const z = elements[element];
     const elementParams = params.elementParams[element] || {};
     const mt = elementParams.muffinTinRadius || 2.5;
-    
-    lines.push(`${z} ${mt} ${params.energyMin} ${params.energyMax} ${params.energyStep} ${params.lmax}`);
+
+    lines.push(
+      `${z} ${mt} ${params.energyMin} ${params.energyMax} ${params.energyStep} ${params.lmax}`,
+    );
   }
-  
+
   return lines.join('\n');
 }
 
@@ -718,7 +740,7 @@ function generateDemoResults(params) {
 function displayResults(results, params) {
   const resultsSection = document.getElementById('results-section');
   const noResults = document.getElementById('no-results');
-  
+
   resultsSection.style.display = 'block';
   if (noResults) noResults.style.display = 'none';
 

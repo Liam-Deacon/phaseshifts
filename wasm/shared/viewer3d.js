@@ -11,10 +11,11 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/exampl
  */
 export class CrystalViewer {
   constructor(container, options = {}) {
-    this.container = typeof container === 'string' 
-      ? document.getElementById(container) 
-      : container;
-    
+    this.container =
+      typeof container === 'string'
+        ? document.getElementById(container)
+        : container;
+
     if (!this.container) {
       throw new Error('Container element not found');
     }
@@ -99,7 +100,7 @@ export class CrystalViewer {
   _onResize() {
     const width = this.container.clientWidth;
     const height = this.container.clientHeight;
-    
+
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
@@ -156,7 +157,7 @@ export class CrystalViewer {
 
     const atoms = this.structure.getAllAtoms(
       this.options.repeatX,
-      this.options.repeatY
+      this.options.repeatY,
     );
 
     // Create atoms
@@ -218,26 +219,28 @@ export class CrystalViewer {
   _createBond(atom1, atom2) {
     // Calculate bond direction and length
     const start = new THREE.Vector3(
-      atom1.position.x, 
-      atom1.position.z, 
-      atom1.position.y
+      atom1.position.x,
+      atom1.position.z,
+      atom1.position.y,
     );
     const end = new THREE.Vector3(
-      atom2.position.x, 
-      atom2.position.z, 
-      atom2.position.y
+      atom2.position.x,
+      atom2.position.z,
+      atom2.position.y,
     );
 
     const direction = new THREE.Vector3().subVectors(end, start);
     const length = direction.length();
-    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const midpoint = new THREE.Vector3()
+      .addVectors(start, end)
+      .multiplyScalar(0.5);
 
     // Create cylinder for bond
     const geometry = new THREE.CylinderGeometry(
       this.options.bondRadius,
       this.options.bondRadius,
       length,
-      8
+      8,
     );
 
     const material = new THREE.MeshPhongMaterial({
@@ -288,11 +291,11 @@ export class CrystalViewer {
     for (let ix = 0; ix < this.options.repeatX; ix++) {
       for (let iy = 0; iy < this.options.repeatY; iy++) {
         if (ix === 0 && iy === 0) continue;
-        
+
         const offset = new THREE.Vector3(
           a.x * ix + b.x * iy,
           0,
-          a.y * ix + b.y * iy
+          a.y * ix + b.y * iy,
         );
 
         const cellCopy = this.unitCellLines.clone();
@@ -319,7 +322,7 @@ export class CrystalViewer {
     this.camera.position.set(
       center.x + maxDim * 1.5,
       center.y + maxDim * 1.5,
-      center.z + maxDim * 1.5
+      center.z + maxDim * 1.5,
     );
     this.controls.target.copy(center);
     this.controls.update();
@@ -331,7 +334,7 @@ export class CrystalViewer {
    */
   setOptions(options) {
     Object.assign(this.options, options);
-    
+
     if (this.structure) {
       this.clear();
       this._buildStructure();
@@ -387,7 +390,7 @@ export class CrystalViewer {
         this.camera.position.set(
           center.x + maxDim * 0.7,
           center.y + maxDim * 0.7,
-          center.z + maxDim * 0.7
+          center.z + maxDim * 0.7,
         );
     }
 

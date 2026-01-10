@@ -4,7 +4,9 @@
 
 /* Main container */
 .structure-builder {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+    sans-serif;
   font-size: 14px;
   color: #e0e0e0;
   background: #1a1a2e;
@@ -82,8 +84,8 @@
   color: #aaa;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
+.form-group input[type='text'],
+.form-group input[type='number'],
 .form-group select {
   width: 100%;
   padding: 0.5rem;
