@@ -18,265 +18,286 @@ Author: Generated for phaseshifts WASM build
 
 import re
 import sys
+from typing import List, Set, Tuple, Optional
 
 
-def convert_f90_to_f77(content):
-    """Convert F90 code to F77 compatible code."""
-    lines = content.split("\n")
-    output_lines = []
-
-    # Counter for generating unique labels
-    label_counter = [9000]
-    do_stack = []  # Stack to track do loops for end do conversion
-
-    def get_label():
-        label_counter[0] += 1
-        return label_counter[0]
-
-    for i, line in enumerate(lines):
-        original_line = line
-
-        # Skip empty lines
-        if not line.strip():
-            output_lines.append(line)
-            continue
-
-        # Convert ! comments to C comments (for lines starting with !)
-        # But preserve inline comments by converting them
-        if line.strip().startswith("!"):
-            # Full line comment - convert to C style
-            indent = len(line) - len(line.lstrip())
-            comment_text = line.strip()[1:]  # Remove the !
-            output_lines.append("C" + comment_text)
-            continue
-
-        # Handle inline ! comments - convert to C style or remove
-        if "!" in line and not line.strip().startswith("!"):
-            # Check if ! is inside a string
-            in_string = False
-            quote_char = None
-            comment_pos = -1
-            for j, c in enumerate(line):
-                if c in ('"', "'") and not in_string:
-                    in_string = True
-                    quote_char = c
-                elif c == quote_char and in_string:
-                    in_string = False
-                    quote_char = None
-                elif c == "!" and not in_string:
-                    comment_pos = j
-                    break
-            if comment_pos > 0:
-                # Remove inline comment for F77 compatibility
-                line = line[:comment_pos].rstrip()
-
-        # Convert character(len=N) to character*N
-        # Handle: character(len=255), intent(in) :: varname
-        pattern = r"character\s*\(\s*len\s*=\s*(\d+|\*)\s*\)\s*,?\s*(intent\s*\([^)]*\)\s*)?::\s*"
-        match = re.search(pattern, line, re.IGNORECASE)
+def scan_existing_labels(content: str) -> Set[int]:
+    """Scan the source file for existing numeric labels to avoid collisions."""
+    labels = set()
+    for line in content.split("\n"):
+        # Match labels at start of line (columns 1-5 in fixed-form Fortran)
+        match = re.match(r"^\s*(\d+)\s+", line)
         if match:
-            length = match.group(1)
-            # For len=*, use (*) in F77
-            if length == "*":
-                length = "(*)"
-            # Get variable names after ::
-            rest = line[match.end() :]
-            vars_part = rest.strip()
-            # Reconstruct as F77 style
-            indent = line[: len(line) - len(line.lstrip())]
-            line = f"{indent}character*{length} {vars_part}"
+            labels.add(int(match.group(1)))
+        # Also check for goto/go to targets
+        for goto_match in re.finditer(r"\b(?:goto|go\s+to)\s+(\d+)", line, re.IGNORECASE):
+            labels.add(int(goto_match.group(1)))
+        # Check for do loop labels: do 100 i=1,n
+        do_match = re.match(r"\s*do\s+(\d+)\s+\w+\s*=", line, re.IGNORECASE)
+        if do_match:
+            labels.add(int(do_match.group(1)))
+    return labels
 
-        # Convert character(len=N) varname (without ::)
-        pattern = r"character\s*\(\s*len\s*=\s*(\d+|\*)\s*\)\s+(\w+)"
-        match = re.search(pattern, line, re.IGNORECASE)
-        if match:
-            length = match.group(1)
-            # For len=*, use (*) in F77
-            if length == "*":
-                length = "(*)"
-            varname = match.group(2)
-            rest = line[match.end() :]
-            prefix = line[: match.start()]
-            line = f"{prefix}character*{length} {varname}{rest}"
 
-        # Remove standalone intent declarations
-        line = re.sub(r",\s*intent\s*\(\s*\w+\s*\)", "", line, flags=re.IGNORECASE)
-        line = re.sub(r"intent\s*\(\s*\w+\s*\)\s*::", "::", line, flags=re.IGNORECASE)
+def find_safe_label_start(existing_labels: Set[int], block_size: int = 1000) -> int:
+    """Find a safe starting point for new labels that won't collide with existing ones."""
+    if not existing_labels:
+        return 9000
 
-        # Convert ":: varlist" to just "varlist" for declarations
-        # But be careful - only do this after type declarations
-        if "::" in line:
-            # Check if this is a declaration line
-            decl_types = ["integer", "real", "double precision", "character", "logical"]
-            is_decl = any(line.strip().lower().startswith(t) for t in decl_types)
-            if is_decl:
-                line = re.sub(r"\s*::\s*", " ", line)
+    max_label = max(existing_labels)
+    # Start at next thousand boundary above max existing label
+    start = ((max_label // block_size) + 1) * block_size
+    return max(start, 9000)
 
-        # Convert trim(var) to var (F77 doesn't have trim, strings are space-padded)
-        line = re.sub(r"\btrim\s*\(\s*(\w+)\s*\)", r"\1", line, flags=re.IGNORECASE)
 
-        # Convert len_trim(var) to a custom function call or index function
-        # For simplicity, we'll use INDEX approach or just use LEN
-        # Actually, let's define a helper function and use it
-        # For now, replace with a simpler check - len_trim returns length without trailing spaces
-        # We'll replace len_trim(x) with LENTRIM(x) and define the function
-        line = re.sub(r"\blen_trim\s*\(\s*(\w+)\s*\)", r"lentrim(\1)", line, flags=re.IGNORECASE)
+def check_lentrim_exists(content: str) -> bool:
+    """Check if a lentrim function definition already exists."""
+    # Look for function definition
+    pattern = r"^\s*(integer\s+)?function\s+lentrim\s*\("
+    return bool(re.search(pattern, content, re.IGNORECASE | re.MULTILINE))
 
-        # Convert allocatable declarations - replace with static arrays
-        # Example: double precision, allocatable :: rpower(:,:)
-        # We need to make these static with appropriate sizes
-        if "allocatable" in line.lower():
-            # Common patterns we know about from libphsh.f
-            indent = line[: len(line) - len(line.lstrip())]
 
-            # rpower(nrmax,0:15) - used in abinitio and pseudo
-            if "rpower" in line.lower():
-                output_lines.append("C F90: " + original_line.strip())
-                output_lines.append(f"{indent}double precision rpower(4000,0:15)")
-                continue
+class LabelAllocator:
+    """Manages label allocation to avoid collisions."""
 
-            # Generic allocatable - just comment out
-            output_lines.append("C F90: " + original_line.strip())
-            continue
+    def __init__(self, existing_labels: Set[int]):
+        self.existing_labels = existing_labels
+        self.start = find_safe_label_start(existing_labels)
+        self.counter = self.start
+        self.allocated = set()
 
-        # Convert allocate statements - comment them out
-        if re.match(r"\s*allocate\s*\(", line, re.IGNORECASE):
-            output_lines.append("C F90: " + line.strip())
-            continue
+    def get_label(self) -> int:
+        """Allocate a new unique label."""
+        self.counter += 1
+        while self.counter in self.existing_labels or self.counter in self.allocated:
+            self.counter += 1
+        self.allocated.add(self.counter)
+        return self.counter
 
-        # Convert deallocate statements - comment them out
-        if re.match(r"\s*deallocate\s*\(", line, re.IGNORECASE):
-            output_lines.append("C F90: " + line.strip())
-            continue
 
-        # Convert "if (allocated(...))" - comment out
-        if "allocated(" in line.lower():
-            output_lines.append("C F90: " + line.strip())
-            continue
+class LoopInfo:
+    """Stores information about a loop for proper conversion."""
 
-        # Convert "do while(.true.)" to labeled infinite loop
-        match = re.match(r"(\s*)do\s+while\s*\(\s*\.true\.\s*\)", line, re.IGNORECASE)
-        if match:
-            indent = match.group(1)
-            label = get_label()
-            do_stack.append(("while_true", label, indent))
-            output_lines.append(f"{label:5d} continue")
-            continue
+    def __init__(self, loop_type: str, start_label: int, exit_label: int, indent: str = "", condition: str = ""):
+        self.loop_type = loop_type  # "while_true", "while_cond", "do_loop"
+        self.start_label = start_label
+        self.exit_label = exit_label
+        self.indent = indent
+        self.condition = condition
 
-        # Convert "do while(condition)" to labeled loop with if-goto
-        match = re.match(r"(\s*)do\s+while\s*\(\s*(.+)\s*\)", line, re.IGNORECASE)
-        if match:
-            indent = match.group(1)
-            condition = match.group(2)
-            start_label = get_label()
-            end_label = get_label()
-            do_stack.append(("while_cond", start_label, end_label, indent, condition))
-            output_lines.append(f"{start_label:5d} if (.not.({condition})) goto {end_label}")
-            continue
 
-        # Convert simple "do i=start,end" - track for end do
-        # Also handles labeled do like "8 do IX=1,NGRID"
-        match = re.match(r"(\s*)(\d+\s+)?do\s+(\w+)\s*=\s*(.+?)\s*,\s*(.+?)(\s*,\s*.+)?$", line, re.IGNORECASE)
-        if match and "while" not in line.lower():
-            indent = match.group(1)
-            existing_label = match.group(2)
-            var = match.group(3)
-            start = match.group(4)
-            end = match.group(5)
-            step = match.group(6) if match.group(6) else ""
-            label = get_label()
-            do_stack.append(("do_loop", label, indent))
-            if existing_label:
-                # Preserve original label at start, use our label for continue
-                output_lines.append(f"{existing_label.strip():>5s} do {label} {var}={start},{end}{step}")
-            else:
-                output_lines.append(f"{indent}do {label} {var}={start},{end}{step}")
-            continue
+def convert_comments(line: str) -> Tuple[str, bool]:
+    """Convert F90 comments to F77 style. Returns (converted_line, is_full_comment)."""
+    # Full line comment
+    if line.strip().startswith("!"):
+        comment_text = line.strip()[1:]
+        return "C" + comment_text, True
 
-        # Convert "end do" to "continue" with label
-        # Also handle labeled end do like "2990   end do"
-        match = re.match(r"(\s*)(\d+\s+)?end\s*do(\s*!.*)?$", line, re.IGNORECASE)
-        if match:
-            existing_label = match.group(2)
-            if do_stack:
-                loop_info = do_stack.pop()
-                if loop_info[0] == "while_true":
-                    # Jump back to start, add exit label after
-                    output_lines.append(f"      goto {loop_info[1]}")
-                    # Add exit label for any exit statements in this loop
-                    exit_label = loop_info[1] + 5000  # offset for exit labels
-                    output_lines.append(f"{exit_label:5d} continue")
-                elif loop_info[0] == "while_cond":
-                    # Jump back to condition check, then add end label
-                    output_lines.append(f"      goto {loop_info[1]}")
-                    output_lines.append(f"{loop_info[2]:5d} continue")
-                elif loop_info[0] == "do_loop":
-                    # Add continue with label, then exit label
-                    output_lines.append(f"{loop_info[1]:5d} continue")
-                    # Add exit label after the loop for exit statements
-                    exit_label = loop_info[1] + 5000
-                    output_lines.append(f"{exit_label:5d} continue")
-            elif existing_label:
-                # Has a label but no matching do in stack - keep the label
-                output_lines.append(f"{existing_label.strip():>5s} continue")
-            else:
-                # No matching do - just output continue
-                output_lines.append("      continue")
-            continue
+    # Inline comment - remove it
+    if "!" in line:
+        in_string = False
+        quote_char = None
+        for j, c in enumerate(line):
+            if c in ('"', "'") and not in_string:
+                in_string = True
+                quote_char = c
+            elif c == quote_char and in_string:
+                in_string = False
+                quote_char = None
+            elif c == "!" and not in_string:
+                return line[:j].rstrip(), False
 
-        # Convert "exit" to goto the end of the current loop
-        # Handle both standalone "exit" and inline "if (cond) exit"
-        # Standalone exit
-        match = re.match(r"(\s*)exit(\s*!.*)?$", line, re.IGNORECASE)
-        if match:
-            if do_stack:
-                # Get the exit label for current loop
-                loop_info = do_stack[-1]  # peek, don't pop
-                if loop_info[0] == "while_true":
-                    exit_label = loop_info[1] + 5000
-                    output_lines.append(f"      goto {exit_label}")
-                elif loop_info[0] == "while_cond":
-                    exit_label = loop_info[2]  # end label
-                    output_lines.append(f"      goto {exit_label}")
-                elif loop_info[0] == "do_loop":
-                    # For do loops, we need to add an exit label after the continue
-                    # Use the loop label + 5000 as convention
-                    exit_label = loop_info[1] + 5000
-                    output_lines.append(f"      goto {exit_label}")
-            else:
-                output_lines.append("C F90: exit (no matching loop)")
-            continue
+    return line, False
 
-        # Inline exit: "if (condition) exit" -> "if (condition) goto label"
-        match = re.search(r"\bexit\b(\s*!.*)?$", line, re.IGNORECASE)
-        if match and do_stack:
-            loop_info = do_stack[-1]  # peek
-            if loop_info[0] == "while_true":
-                exit_label = loop_info[1] + 5000
-            elif loop_info[0] == "while_cond":
-                exit_label = loop_info[2]
-            elif loop_info[0] == "do_loop":
-                exit_label = loop_info[1] + 5000
-            else:
-                exit_label = 99999  # fallback
-            # Replace exit with goto
-            line = re.sub(r"\bexit\b(\s*!.*)?$", f"goto {exit_label}", line, flags=re.IGNORECASE)
 
-        # Convert "end subroutine name" to just "end"
-        line = re.sub(r"\bend\s+subroutine\s+\w*", "end", line, flags=re.IGNORECASE)
-        line = re.sub(r"\bend\s+function\s+\w*", "end", line, flags=re.IGNORECASE)
-        line = re.sub(r"\bend\s+program\s+\w*", "end", line, flags=re.IGNORECASE)
+def convert_character_decl(line: str) -> str:
+    """Convert character(len=N) declarations to F77 style."""
+    # Handle: character(len=255), intent(in) :: varname
+    pattern = r"character\s*\(\s*len\s*=\s*(\d+|\*)\s*\)\s*,?\s*(intent\s*\([^)]*\)\s*)?::\s*"
+    match = re.search(pattern, line, re.IGNORECASE)
+    if match:
+        length = match.group(1)
+        if length == "*":
+            length = "(*)"
+        rest = line[match.end() :].strip()
+        indent = line[: len(line) - len(line.lstrip())]
+        return f"{indent}character*{length} {rest}"
 
-        # Convert "exit" to goto (need context, skip for now - rare usage)
-        # Convert "cycle" to goto (need context, skip for now)
+    # Handle: character(len=N) varname (without ::)
+    pattern = r"character\s*\(\s*len\s*=\s*(\d+|\*)\s*\)\s+(\w+)"
+    match = re.search(pattern, line, re.IGNORECASE)
+    if match:
+        length = match.group(1)
+        if length == "*":
+            length = "(*)"
+        varname = match.group(2)
+        rest = line[match.end() :]
+        prefix = line[: match.start()]
+        return f"{prefix}character*{length} {varname}{rest}"
 
-        # Convert double precision function to older style if needed
-        # (Usually OK as-is for f2c)
+    return line
 
-        output_lines.append(line)
 
-    # Add helper function for lentrim at the end
-    helper_functions = """
+def convert_intent_and_colons(line: str) -> str:
+    """Remove intent declarations and convert :: syntax."""
+    # Remove intent declarations
+    line = re.sub(r",\s*intent\s*\(\s*\w+\s*\)", "", line, flags=re.IGNORECASE)
+    line = re.sub(r"intent\s*\(\s*\w+\s*\)\s*::", "::", line, flags=re.IGNORECASE)
+
+    # Convert ":: varlist" to just "varlist" for declarations
+    if "::" in line:
+        decl_types = ["integer", "real", "double precision", "character", "logical"]
+        is_decl = any(line.strip().lower().startswith(t) for t in decl_types)
+        if is_decl:
+            line = re.sub(r"\s*::\s*", " ", line)
+
+    return line
+
+
+def convert_string_functions(line: str) -> str:
+    """Convert trim() and len_trim() to F77 equivalents."""
+    # trim(var) -> var
+    line = re.sub(r"\btrim\s*\(\s*(\w+)\s*\)", r"\1", line, flags=re.IGNORECASE)
+    # len_trim(var) -> lentrim(var)
+    line = re.sub(r"\blen_trim\s*\(\s*(\w+)\s*\)", r"lentrim(\1)", line, flags=re.IGNORECASE)
+    return line
+
+
+def convert_end_statements(line: str) -> str:
+    """Convert F90 end statements to F77 style."""
+    line = re.sub(r"\bend\s+subroutine\s+\w*", "end", line, flags=re.IGNORECASE)
+    line = re.sub(r"\bend\s+function\s+\w*", "end", line, flags=re.IGNORECASE)
+    line = re.sub(r"\bend\s+program\s+\w*", "end", line, flags=re.IGNORECASE)
+    return line
+
+
+def handle_allocatable(line: str, original_line: str) -> Optional[List[str]]:
+    """Handle allocatable declarations. Returns list of output lines or None."""
+    if "allocatable" not in line.lower():
+        return None
+
+    indent = line[: len(line) - len(line.lstrip())]
+
+    # rpower(nrmax,0:15) - used in abinitio and pseudo
+    if "rpower" in line.lower():
+        return ["C F90: " + original_line.strip(), f"{indent}double precision rpower(4000,0:15)"]
+
+    # Generic allocatable - just comment out
+    return ["C F90: " + original_line.strip()]
+
+
+def handle_allocate_deallocate(line: str) -> Optional[str]:
+    """Handle allocate/deallocate statements. Returns comment or None."""
+    if re.match(r"\s*allocate\s*\(", line, re.IGNORECASE):
+        return "C F90: " + line.strip()
+    if re.match(r"\s*deallocate\s*\(", line, re.IGNORECASE):
+        return "C F90: " + line.strip()
+    if "allocated(" in line.lower():
+        return "C F90: " + line.strip()
+    return None
+
+
+def process_do_while_true(line: str, allocator: LabelAllocator, do_stack: List[LoopInfo]) -> Optional[str]:
+    """Process 'do while(.true.)' statements."""
+    match = re.match(r"(\s*)do\s+while\s*\(\s*\.true\.\s*\)", line, re.IGNORECASE)
+    if not match:
+        return None
+
+    indent = match.group(1)
+    start_label = allocator.get_label()
+    exit_label = allocator.get_label()
+    do_stack.append(LoopInfo("while_true", start_label, exit_label, indent))
+    return f"{start_label:5d} continue"
+
+
+def process_do_while_cond(line: str, allocator: LabelAllocator, do_stack: List[LoopInfo]) -> Optional[str]:
+    """Process 'do while(condition)' statements."""
+    match = re.match(r"(\s*)do\s+while\s*\(\s*(.+)\s*\)", line, re.IGNORECASE)
+    if not match:
+        return None
+
+    indent = match.group(1)
+    condition = match.group(2)
+    start_label = allocator.get_label()
+    exit_label = allocator.get_label()
+    do_stack.append(LoopInfo("while_cond", start_label, exit_label, indent, condition))
+    return f"{start_label:5d} if (.not.({condition})) goto {exit_label}"
+
+
+def process_do_loop(line: str, allocator: LabelAllocator, do_stack: List[LoopInfo]) -> Optional[str]:
+    """Process simple 'do i=start,end' statements."""
+    match = re.match(r"(\s*)(\d+\s+)?do\s+(\w+)\s*=\s*(.+?)\s*,\s*(.+?)(\s*,\s*.+)?$", line, re.IGNORECASE)
+    if not match or "while" in line.lower():
+        return None
+
+    indent = match.group(1)
+    existing_label = match.group(2)
+    var = match.group(3)
+    start = match.group(4)
+    end = match.group(5)
+    step = match.group(6) if match.group(6) else ""
+
+    loop_label = allocator.get_label()
+    exit_label = allocator.get_label()
+    do_stack.append(LoopInfo("do_loop", loop_label, exit_label, indent))
+
+    if existing_label:
+        return f"{existing_label.strip():>5s} do {loop_label} {var}={start},{end}{step}"
+    return f"{indent}do {loop_label} {var}={start},{end}{step}"
+
+
+def process_end_do(line: str, do_stack: List[LoopInfo]) -> Optional[List[str]]:
+    """Process 'end do' statements."""
+    match = re.match(r"(\s*)(\d+\s+)?end\s*do(\s*!.*)?$", line, re.IGNORECASE)
+    if not match:
+        return None
+
+    existing_label = match.group(2)
+    output = []
+
+    if do_stack:
+        loop_info = do_stack.pop()
+        if loop_info.loop_type == "while_true":
+            output.append(f"      goto {loop_info.start_label}")
+            output.append(f"{loop_info.exit_label:5d} continue")
+        elif loop_info.loop_type == "while_cond":
+            output.append(f"      goto {loop_info.start_label}")
+            output.append(f"{loop_info.exit_label:5d} continue")
+        elif loop_info.loop_type == "do_loop":
+            output.append(f"{loop_info.start_label:5d} continue")
+            output.append(f"{loop_info.exit_label:5d} continue")
+    elif existing_label:
+        output.append(f"{existing_label.strip():>5s} continue")
+    else:
+        output.append("      continue")
+
+    return output
+
+
+def process_exit(line: str, do_stack: List[LoopInfo]) -> Optional[str]:
+    """Process standalone 'exit' statements."""
+    match = re.match(r"(\s*)exit(\s*!.*)?$", line, re.IGNORECASE)
+    if not match:
+        return None
+
+    if do_stack:
+        loop_info = do_stack[-1]
+        return f"      goto {loop_info.exit_label}"
+    return "C F90: exit (no matching loop)"
+
+
+def process_inline_exit(line: str, do_stack: List[LoopInfo]) -> str:
+    """Process inline 'if (cond) exit' statements."""
+    match = re.search(r"\bexit\b(\s*!.*)?$", line, re.IGNORECASE)
+    if match and do_stack:
+        loop_info = do_stack[-1]
+        line = re.sub(r"\bexit\b(\s*!.*)?$", f"goto {loop_info.exit_label}", line, flags=re.IGNORECASE)
+    return line
+
+
+def get_lentrim_helper() -> str:
+    """Return the lentrim helper function code."""
+    return """
 C-----------------------------------------------------------------------
 C     LENTRIM - F77 replacement for F90 LEN_TRIM intrinsic
 C     Returns the length of string excluding trailing blanks
@@ -295,11 +316,111 @@ C     Returns the length of string excluding trailing blanks
       end
 """
 
-    result = "\n".join(output_lines)
 
-    # Only add helper if lentrim is used
-    if "lentrim(" in result.lower():
-        result = result + helper_functions
+def find_last_end_position(lines: List[str]) -> int:
+    """Find the position of the last 'end' statement (for inserting helper before it)."""
+    for i in range(len(lines) - 1, -1, -1):
+        if re.match(r"^\s*end\s*$", lines[i], re.IGNORECASE):
+            return i
+    return len(lines)
+
+
+def convert_f90_to_f77(content: str) -> str:
+    """Convert F90 code to F77 compatible code."""
+    lines = content.split("\n")
+    output_lines: List[str] = []
+
+    # Scan for existing labels to avoid collisions
+    existing_labels = scan_existing_labels(content)
+    allocator = LabelAllocator(existing_labels)
+
+    # Check if lentrim already exists
+    lentrim_exists = check_lentrim_exists(content)
+
+    # Stack to track do loops for end do conversion
+    do_stack: List[LoopInfo] = []
+
+    for line in lines:
+        original_line = line
+
+        # Skip empty lines
+        if not line.strip():
+            output_lines.append(line)
+            continue
+
+        # Convert comments
+        line, is_full_comment = convert_comments(line)
+        if is_full_comment:
+            output_lines.append(line)
+            continue
+
+        # Convert character declarations
+        line = convert_character_decl(line)
+
+        # Remove intent and convert :: syntax
+        line = convert_intent_and_colons(line)
+
+        # Convert string functions
+        line = convert_string_functions(line)
+
+        # Handle allocatable
+        alloc_result = handle_allocatable(line, original_line)
+        if alloc_result is not None:
+            output_lines.extend(alloc_result)
+            continue
+
+        # Handle allocate/deallocate
+        alloc_stmt = handle_allocate_deallocate(line)
+        if alloc_stmt is not None:
+            output_lines.append(alloc_stmt)
+            continue
+
+        # Process do while(.true.)
+        result = process_do_while_true(line, allocator, do_stack)
+        if result is not None:
+            output_lines.append(result)
+            continue
+
+        # Process do while(condition)
+        result = process_do_while_cond(line, allocator, do_stack)
+        if result is not None:
+            output_lines.append(result)
+            continue
+
+        # Process simple do loop
+        result = process_do_loop(line, allocator, do_stack)
+        if result is not None:
+            output_lines.append(result)
+            continue
+
+        # Process end do
+        end_do_result = process_end_do(line, do_stack)
+        if end_do_result is not None:
+            output_lines.extend(end_do_result)
+            continue
+
+        # Process standalone exit
+        exit_result = process_exit(line, do_stack)
+        if exit_result is not None:
+            output_lines.append(exit_result)
+            continue
+
+        # Process inline exit
+        line = process_inline_exit(line, do_stack)
+
+        # Convert end statements
+        line = convert_end_statements(line)
+
+        output_lines.append(line)
+
+    # Add lentrim helper if needed and not already present
+    result = "\n".join(output_lines)
+    if "lentrim(" in result.lower() and not lentrim_exists:
+        # Find the last 'end' and insert before it
+        last_end_pos = find_last_end_position(output_lines)
+        helper = get_lentrim_helper()
+        output_lines.insert(last_end_pos, helper)
+        result = "\n".join(output_lines)
 
     return result
 
@@ -313,13 +434,13 @@ def main():
     input_file = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else None
 
-    with open(input_file, "r") as f:
+    with open(input_file, "r", encoding="utf-8") as f:
         content = f.read()
 
     converted = convert_f90_to_f77(content)
 
     if output_file:
-        with open(output_file, "w") as f:
+        with open(output_file, "w", encoding="utf-8") as f:
             f.write(converted)
         print(f"Converted {input_file} -> {output_file}")
     else:

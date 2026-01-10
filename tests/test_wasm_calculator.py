@@ -41,13 +41,13 @@ class TestCalculatorPaths:
     def test_index_html_script_paths(self):
         """Verify index.html references correct script paths for deployment."""
         index_path = os.path.join(WEB_DIR, "index.html")
-        with open(index_path, "r") as f:
+        with open(index_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Should reference dist/phaseshifts.js (relative to calculator/)
-        assert (
-            'src="dist/phaseshifts.js"' in content or "src='dist/phaseshifts.js'" in content
-        ), "index.html should reference dist/phaseshifts.js (not ../dist/)"
+        assert 'src="dist/phaseshifts.js"' in content or "src='dist/phaseshifts.js'" in content, (
+            "index.html should reference dist/phaseshifts.js (not ../dist/)"
+        )
 
         # Should reference app.js (same directory)
         assert 'src="app.js"' in content or "src='app.js'" in content, "index.html should reference app.js"
@@ -55,7 +55,7 @@ class TestCalculatorPaths:
     def test_app_js_import_paths(self):
         """Verify app.js uses correct import paths for deployment."""
         app_path = os.path.join(WEB_DIR, "app.js")
-        with open(app_path, "r") as f:
+        with open(app_path, "r", encoding="utf-8") as f:
             content = f.read()
 
         # Should import from ./shared/elements.js (relative to calculator/)
@@ -96,9 +96,9 @@ class TestWasmBuildDirectory:
         # In the worktree, dist might not exist yet, but the symlink in web/ should work
         web_dist = os.path.join(WEB_DIR, "dist")
         # Either the actual dist dir exists, or the symlink in web/ exists
-        assert os.path.isdir(DIST_DIR) or os.path.islink(
-            web_dist
-        ), "wasm/dist directory should exist or wasm/web/dist symlink should be present"
+        assert os.path.isdir(DIST_DIR) or os.path.islink(web_dist), (
+            "wasm/dist directory should exist or wasm/web/dist symlink should be present"
+        )
 
     @pytest.mark.skip(reason="WASM build is optional and may not be present locally")
     def test_wasm_binary_exists(self):
