@@ -314,8 +314,8 @@ build_with_f2c() {
     echo "  ✓ f2c found: $(which f2c)"
     echo ""
 
-    # Step 1: Convert Fortran to C using f2c
-    echo "Step 1: Converting Fortran to C..."
+    # Step 1: Convert Fortran 90 to FORTRAN 77 for f2c compatibility
+    echo "Step 1: Converting Fortran 90 to FORTRAN 77..."
     cd "$BUILD_DIR"
 
     if [[ ! -f "$FORTRAN_SRC" ]]; then
@@ -323,8 +323,18 @@ build_with_f2c() {
         exit 1
     fi
 
-    # Copy and convert Fortran source
-    cp "$FORTRAN_SRC" ./libphsh.f
+    # Use Python script to convert F90 to F77
+    if [[ -f "$SCRIPT_DIR/f90_to_f77.py" ]]; then
+        python3 "$SCRIPT_DIR/f90_to_f77.py" "$FORTRAN_SRC" ./libphsh.f
+        echo "  ✓ Converted F90 to F77 compatible syntax"
+    else
+        # Fallback: direct copy (may fail with f2c)
+        echo "  Warning: f90_to_f77.py not found, copying source directly"
+        cp "$FORTRAN_SRC" ./libphsh.f
+    fi
+
+    # Step 2: Convert Fortran to C using f2c
+    echo "Step 2: Converting Fortran to C with f2c..."
 
     # f2c conversion with automatic type sizing
     f2c -a -A -C++ libphsh.f 2>&1 | head -20 || true
@@ -335,12 +345,12 @@ build_with_f2c() {
     fi
     echo "  ✓ Generated libphsh.c"
 
-    # Step 2: Create wrapper functions for JavaScript interop
-    echo "Step 2: Creating JavaScript interop wrapper..."
+    # Step 3: Create wrapper functions for JavaScript interop
+    echo "Step 3: Creating JavaScript interop wrapper..."
     create_wrapper_c
 
-    # Step 3: Compile with Emscripten
-    echo "Step 3: Compiling with Emscripten..."
+    # Step 4: Compile with Emscripten
+    echo "Step 4: Compiling with Emscripten..."
 
     # Set compiler flags based on debug mode
     if [[ $DEBUG -eq 1 ]]; then
