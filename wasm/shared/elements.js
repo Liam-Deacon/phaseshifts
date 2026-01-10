@@ -192,7 +192,7 @@ const atomicRadii = {
   Ra: 2.21,
   Ac: 2.15,
   Th: 2.06,
-  Pa: 2.0,
+  Pa: 2,
   U: 1.96,
 };
 

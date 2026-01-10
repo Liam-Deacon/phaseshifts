@@ -44,7 +44,7 @@ export class Vector3 {
   }
 
   length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    return Math.hypot(this.x, this.y, this.z);
   }
 
   normalize() {
@@ -72,9 +72,9 @@ export class Atom {
     this.position =
       position instanceof Vector3 ? position : new Vector3(...position);
     this.label = options.label || symbol;
-    this.occupancy = options.occupancy ?? 1.0;
+    this.occupancy = options.occupancy ?? 1;
     this.isVacancy = options.isVacancy ?? false;
-    this.thermalFactor = options.thermalFactor ?? 0.0;
+    this.thermalFactor = options.thermalFactor ?? 0;
     this.muffinTinRadius = options.muffinTinRadius ?? null;
   }
 
@@ -320,7 +320,7 @@ export class MillerIndices {
   }
 
   toString() {
-    const format = (n) => (n < 0 ? `\\overline{${Math.abs(n)}}` : `${n}`);
+    const format = (n) => (n < 0 ? String.raw`\overline{${Math.abs(n)}}` : `${n}`);
     return `(${format(this.h)}${format(this.k)}${format(this.l)})`;
   }
 
