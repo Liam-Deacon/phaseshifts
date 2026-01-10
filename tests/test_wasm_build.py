@@ -185,7 +185,7 @@ class TestSharedModules:
         """web/app.js should import the shared elements map."""
         app_js = WEB_DIR / "app.js"
         content = app_js.read_text(encoding="utf-8")
-        assert "../shared/elements.js" in content, "web/app.js should import ../shared/elements.js"
+        assert "./shared/elements.js" in content, "web/app.js should import ./shared/elements.js"
 
     def test_src_reexports_shared_elements(self):
         """src/elements.js should re-export the shared elements map."""
