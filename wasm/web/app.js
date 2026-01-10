@@ -5,12 +5,7 @@
 /* global Chart */
 
 // Note: shared/elements.js path works for both local dev and deployed structure
-import { elements, getElementSymbol } from './shared/elements.js';
-import {
-  createFromPreset,
-  CrystalStructure,
-  getPresetNames,
-} from './shared/crystal.js';
+import { elements } from './shared/elements.js';
 import { createStructureBuilder } from './shared/structure-builder.js';
 import { createViewer } from './shared/viewer3d.js';
 
@@ -200,6 +195,7 @@ function initializeViewer() {
  * Handle structure changes from the builder
  */
 function handleStructureChange(structure) {
+  if (!structure) return;
   crystalStructure = structure;
 
   // Update 3D viewer
@@ -230,7 +226,7 @@ function handleStructureChange(structure) {
   // Enable calculate button if structure has atoms
   const calculateBtn = document.getElementById('calculate-btn');
   const hasAtoms = structure.layers.some((l) => l.atoms.length > 0);
-  if (calculateBtn && phaseShiftsModule) {
+  if (calculateBtn) {
     calculateBtn.disabled = !hasAtoms;
   }
 }
@@ -485,8 +481,7 @@ async function initializeWasmModule() {
 
     // Enable calculate if structure has atoms
     if (
-      crystalStructure &&
-      crystalStructure.layers.some((l) => l.atoms.length > 0)
+      crystalStructure?.layers.some((l) => l.atoms.length > 0)
     ) {
       calculateBtn.disabled = false;
     }
@@ -526,8 +521,7 @@ function scheduleStatusBannerHide(element, delayMs) {
 function showDemoMode() {
   const calculateBtn = document.getElementById('calculate-btn');
   if (
-    crystalStructure &&
-    crystalStructure.layers.some((l) => l.atoms.length > 0)
+    crystalStructure?.layers.some((l) => l.atoms.length > 0)
   ) {
     calculateBtn.disabled = false;
   }
@@ -609,13 +603,13 @@ function getElementParams() {
   document.querySelectorAll('.mt-radius-input').forEach((input) => {
     const element = input.dataset.element;
     if (!params[element]) params[element] = {};
-    params[element].muffinTinRadius = parseFloat(input.value);
+    params[element].muffinTinRadius = Number.parseFloat(input.value);
   });
 
   document.querySelectorAll('.v0-input').forEach((input) => {
     const element = input.dataset.element;
     if (!params[element]) params[element] = {};
-    params[element].innerPotential = parseFloat(input.value);
+    params[element].innerPotential = Number.parseFloat(input.value);
   });
 
   return params;
@@ -665,17 +659,21 @@ async function calculatePhaseShifts(params) {
  * Generate input file content
  */
 function generateInputFile(params) {
-  const lines = [];
-
-  // Header info
-  lines.push(`# Phase shift calculation for ${params.structure.name}`);
-  lines.push(`# Method: ${params.method}`);
+  const lines = [
+    `# Phase shift calculation for ${params.structure.name}`,
+    `# Method: ${params.method}`,
+  ];
 
   // For each unique element
   for (const element of params.elements) {
     const z = elements[element];
+    if (z === undefined) {
+      throw new Error(
+        `Unknown element symbol: ${element} in structure ${params.structure.name}`,
+      );
+    }
     const elementParams = params.elementParams[element] || {};
-    const mt = elementParams.muffinTinRadius || 2.5;
+    const mt = Number(elementParams.muffinTinRadius) || 2.5;
 
     lines.push(
       `${z} ${mt} ${params.energyMin} ${params.energyMax} ${params.energyStep} ${params.lmax}`,
@@ -985,19 +983,19 @@ function downloadResults(format) {
   switch (format) {
     case 'cleed':
       content = generateCleedFormat(results, params);
-      filename = `phaseshifts_${params.structure.name.replace(/[^a-z0-9]/gi, '_')}.phs`;
+      filename = `phaseshifts_${params.structure.name.replaceAll(/[^a-z0-9]/gi, '_')}.phs`;
       mimeType = 'text/plain';
       break;
 
     case 'viperleed':
       content = generateViperLeedFormat(results, params);
-      filename = `PHASESHIFTS_${params.structure.name.replace(/[^a-z0-9]/gi, '_')}`;
+      filename = `PHASESHIFTS_${params.structure.name.replaceAll(/[^a-z0-9]/gi, '_')}`;
       mimeType = 'text/plain';
       break;
 
     case 'csv':
       content = generateCsvFormat(results, params);
-      filename = `phaseshifts_${params.structure.name.replace(/[^a-z0-9]/gi, '_')}.csv`;
+      filename = `phaseshifts_${params.structure.name.replaceAll(/[^a-z0-9]/gi, '_')}.csv`;
       mimeType = 'text/csv';
       break;
 
