@@ -8,14 +8,12 @@ import {
   Layer,
   Atom,
   Vector3,
-  UnitCell2D,
   UnitCell3D,
   MillerIndices,
-  crystalPresets,
   getPresetNames,
   createFromPreset,
 } from './crystal.js';
-import { elements, getElementSymbol } from './elements.js';
+import { elements } from './elements.js';
 
 /**
  * Structure Builder UI Component
@@ -166,7 +164,7 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('a:', this.structure.bulkUnitCell.aLength.toFixed(3), (e) => {
-        const value = parseFloat(e.target.value);
+        const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
           value,
@@ -179,7 +177,7 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('b:', this.structure.bulkUnitCell.bLength.toFixed(3), (e) => {
-        const value = parseFloat(e.target.value);
+        const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
           this.structure.bulkUnitCell.aLength,
@@ -192,7 +190,7 @@ export class StructureBuilder {
 
     bulkInputs.appendChild(
       createInput('c:', this.structure.bulkUnitCell.cLength.toFixed(3), (e) => {
-        const value = parseFloat(e.target.value);
+        const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
         this.structure.bulkUnitCell = new UnitCell3D(
           this.structure.bulkUnitCell.aLength,
@@ -220,7 +218,7 @@ export class StructureBuilder {
     const mi = this.structure.millerIndices;
     millerInputs.appendChild(
       createInput('h:', mi.h, (e) => {
-        const value = parseInt(e.target.value, 10);
+        const value = Number.parseInt(e.target.value, 10);
         if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
           value,
@@ -233,7 +231,7 @@ export class StructureBuilder {
 
     millerInputs.appendChild(
       createInput('k:', mi.k, (e) => {
-        const value = parseInt(e.target.value, 10);
+        const value = Number.parseInt(e.target.value, 10);
         if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
           this.structure.millerIndices.h,
@@ -246,7 +244,7 @@ export class StructureBuilder {
 
     millerInputs.appendChild(
       createInput('l:', mi.l, (e) => {
-        const value = parseInt(e.target.value, 10);
+        const value = Number.parseInt(e.target.value, 10);
         if (Number.isNaN(value)) return;
         this.structure.millerIndices = new MillerIndices(
           this.structure.millerIndices.h,
@@ -348,7 +346,7 @@ export class StructureBuilder {
     zInput.className = 'layer-z-input';
     zInput.title = 'Z position (Å)';
     zInput.addEventListener('change', (e) => {
-      const value = parseFloat(e.target.value);
+      const value = Number.parseFloat(e.target.value);
       if (Number.isNaN(value)) return;
       layer.zPosition = value;
       this._notifyChange();
@@ -423,9 +421,9 @@ export class StructureBuilder {
   _getContrastColor(hexColor) {
     // Convert hex to RGB
     const hex = hexColor.replace('#', '');
-    const r = parseInt(hex.substr(0, 2), 16);
-    const g = parseInt(hex.substr(2, 2), 16);
-    const b = parseInt(hex.substr(4, 2), 16);
+    const r = Number.parseInt(hex.substr(0, 2), 16);
+    const g = Number.parseInt(hex.substr(2, 2), 16);
+    const b = Number.parseInt(hex.substr(4, 2), 16);
 
     // Calculate luminance
     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
@@ -437,7 +435,7 @@ export class StructureBuilder {
     const zPos =
       this.structure.layers.length > 0
         ? this.structure.layers[this.structure.layers.length - 1].zPosition -
-          2.0
+          2
         : 0;
 
     const layer = new Layer([], {
@@ -532,8 +530,8 @@ export class StructureBuilder {
     addBtn.textContent = 'Add';
     addBtn.addEventListener('click', () => {
       const symbol = elementSelect.value;
-      const x = parseFloat(xInput.value) || 0;
-      const y = parseFloat(yInput.value) || 0;
+      const x = Number.parseFloat(xInput.value) || 0;
+      const y = Number.parseFloat(yInput.value) || 0;
       const layer = this.structure.layers[layerIndex];
       const z = layer.zPosition;
 
@@ -595,7 +593,7 @@ export class StructureBuilder {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${this.structure.name.replace(/[^a-z0-9]/gi, '_')}.json`;
+    a.download = `${this.structure.name.replaceAll(/[^a-z0-9]/gi, '_')}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
