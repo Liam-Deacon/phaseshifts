@@ -84,7 +84,10 @@ export class CrystalViewer {
     directionalLight.position.set(10, 10, 10);
     this.scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(LIGHT_COLOR_WHITE, 0.4);
+    const directionalLight2 = new THREE.DirectionalLight(
+      LIGHT_COLOR_WHITE,
+      0.4,
+    );
     directionalLight2.position.set(-10, -10, 5);
     this.scene.add(directionalLight2);
 
