@@ -78,13 +78,25 @@ Please make sure your contribution meets these requirements before submitting:
 - Update documentation for user-visible changes (Sphinx sources live in
   `docs/`).
 
+## Quality and CI
+
+- Continuous integration runs on pull requests and pushes via
+  [GitHub Actions][ci-actions].
+- Static analysis includes [CodeQL][codeql-workflow] and other checks configured
+  in CI; address findings before release.
+- Linting uses flake8, black, and markdownlint; fix linter warnings before
+  merging.
+- When adding new functionality or fixing bugs, add or update automated tests.
+
 ## Getting Help
 
-Please reach out to the
-[Q&A boards](https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a)
-and post your question there in the correct category with a descriptive tag.
+Please reach out to the [Q&A boards][qa-boards] and post your question there in
+the correct category with a descriptive tag.
 
 [code-of-conduct]: https://github.com/Liam-Deacon/phaseshifts/blob/master/CODE_OF_CONDUCT.md
+[ci-actions]: https://github.com/Liam-Deacon/phaseshifts/actions
+[codeql-workflow]: https://github.com/Liam-Deacon/phaseshifts/actions/workflows/codeql.yml
 [google-pyguide]: https://google.github.io/styleguide/pyguide.html
 [jsdoc]: https://jsdoc.app/
 [numpydoc-style]: https://numpydoc.readthedocs.io/en/latest/format.html
+[qa-boards]: https://github.com/Liam-Deacon/phaseshifts/discussions/categories/q-a
