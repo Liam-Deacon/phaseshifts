@@ -99,7 +99,7 @@
 .form-group input:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #4f46e5;
+  border-color: #667eea;
 }
 
 .input-row {
@@ -154,7 +154,7 @@
 }
 
 .layer-card.selected {
-  border-color: #4f46e5;
+  border-color: #667eea;
   background: #336;
 }
 
@@ -230,12 +230,12 @@
 }
 
 .btn-primary {
-  background: #4f46e5;
-  color: white;
+  background: #667eea;
+  color: whitesmoke;
 }
 
 .btn-primary:hover {
-  background: #4338ca;
+  background: #5a6fd6;
 }
 
 .btn-secondary {
@@ -248,12 +248,12 @@
 }
 
 .btn-danger {
-  background: #dc2626;
-  color: white;
+  background: #e74c3c;
+  color: whitesmoke;
 }
 
 .btn-danger:hover {
-  background: #b91c1c;
+  background: #c0392b;
 }
 
 .btn-small {
