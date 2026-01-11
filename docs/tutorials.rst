@@ -8,9 +8,9 @@ Welcome to the phaseshifts tutorials! These interactive Jupyter notebooks will g
 calculating electron scattering phase shifts for Low-Energy Electron Diffraction (LEED) analysis.
 
 .. note::
-   
+
    All tutorials are available as interactive Jupyter notebooks. You can:
-   
+
    - Run them locally after installing phaseshifts
    - Launch them on Binder for cloud-based execution (click the Binder badge)
    - Read them as static documentation below
@@ -112,9 +112,9 @@ To run the tutorials on your local machine:
 
    Some tutorials require the compiled Fortran library (``libphsh``). If you encounter
    import errors, ensure you have built the library:
-   
+
    .. code-block:: bash
-   
+
       make libphsh
       # or
       python setup.py build_ext --inplace

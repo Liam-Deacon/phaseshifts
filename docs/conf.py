@@ -49,7 +49,9 @@ extensions = [
     "myst_parser",
     (
         # NOTE: Use mathjax for HTML rendering if latex is not available to generate images
-        "sphinx.ext.mathjax" if os.system("latex --version 1>/dev/null 2>/dev/null") else "sphinx.ext.imgmath"
+        "sphinx.ext.mathjax"
+        if os.system("latex --version 1>/dev/null 2>/dev/null")
+        else "sphinx.ext.imgmath"
     ),
     "numpydoc",
     "sphinx_rtd_theme",

@@ -7,7 +7,7 @@ build:
   os: ubuntu-22.04
   apt_packages:
     - gfortran
-    - pandoc  # Required for nbsphinx notebook conversion
+    - pandoc # Required for nbsphinx notebook conversion
   tools:
     python: '3.12'
 
