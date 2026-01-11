@@ -49,13 +49,42 @@ extensions = [
     "myst_parser",
     (
         # NOTE: Use mathjax for HTML rendering if latex is not available to generate images
-        "sphinx.ext.mathjax"
-        if os.system("latex --version 1>/dev/null 2>/dev/null")
-        else "sphinx.ext.imgmath"
+        "sphinx.ext.mathjax" if os.system("latex --version 1>/dev/null 2>/dev/null") else "sphinx.ext.imgmath"
     ),
     "numpydoc",
     "sphinx_rtd_theme",
+    "nbsphinx",  # Jupyter notebook support for tutorials
 ]
+
+# -- nbsphinx configuration --------------------------------------------------
+# https://nbsphinx.readthedocs.io/en/latest/usage.html
+
+# Don't execute notebooks during build (they should be pre-executed)
+nbsphinx_execute = "never"
+
+# Allow errors in notebooks to not break the build
+nbsphinx_allow_errors = True
+
+# Timeout for notebook execution (in seconds)
+nbsphinx_timeout = 600
+
+# Binder configuration for interactive notebooks
+# Users can launch notebooks on mybinder.org
+nbsphinx_prolog = r"""
+{% set docname = env.doc2path(env.docname, base=None) %}
+
+.. raw:: html
+
+    <div class="admonition note">
+    <p class="admonition-title">Interactive Tutorial</p>
+    <p>
+    This tutorial is available as a Jupyter notebook.
+    <a href="https://mybinder.org/v2/gh/Liam-Deacon/phaseshifts/HEAD?labpath=docs/{{ docname }}" target="_blank">
+        <img alt="Launch Binder" src="https://mybinder.org/badge_logo.svg" style="vertical-align: middle;">
+    </a>
+    </p>
+    </div>
+"""
 
 # check this
 numpydoc_show_class_members = False

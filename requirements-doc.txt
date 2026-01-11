@@ -1,5 +1,7 @@
 myst-parser>=3.0.0  # Compatible with sphinx>=7.0
+nbsphinx>=0.9.0  # Jupyter notebook support for tutorials
 numpydoc>=1.8.0
+pandoc  # Required by nbsphinx for notebook conversion
 requests>=2.32.4 # not directly required, pinned by Snyk to avoid a vulnerability
 # This file is used for readthedocs build
 # NOTE: This should be (manually) synched with setup.py/pyproject.toml requirements
@@ -7,3 +9,9 @@ sphinx>=7.0
 sphinx_rtd_theme>=3.0.0
 urllib3>=2.6.0 # not directly required, pinned by Snyk to avoid a vulnerability
 zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
+# Jupyter notebook dependencies for tutorials
+ipykernel>=6.0.0
+jupyter>=1.0.0
+matplotlib>=3.5.0  # For phase shift curve plotting
+ase>=3.22.0  # Atomic Simulation Environment for crystal structures
+nglview>=3.0.0  # Optional: 3D crystal structure visualization
