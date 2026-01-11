@@ -1,0 +1,5 @@
+# Binder apt.txt - System packages for phaseshifts tutorials
+# See: https://mybinder.readthedocs.io/en/latest/using/config_files.html#apt-txt-install-packages-with-apt-get
+
+# Fortran compiler for libphsh
+gfortran

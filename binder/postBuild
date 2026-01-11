@@ -1,0 +1,13 @@
+#!/bin/bash
+# Binder postBuild script - runs after package installation
+# See: https://mybinder.readthedocs.io/en/latest/using/config_files.html#postbuild-run-code-after-installing-the-environment
+
+# Build the Fortran library for phase shift calculations
+echo "Building libphsh Fortran library..."
+cd /home/jovyan
+make libphsh || python setup.py build_ext --inplace || echo "Note: Fortran build failed, tutorials will run in demo mode"
+
+# Ensure jupyter extensions are enabled
+jupyter nbextension enable --py widgetsnbextension --sys-prefix || true
+
+echo "Binder environment setup complete!"
