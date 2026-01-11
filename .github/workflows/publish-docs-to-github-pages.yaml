@@ -62,10 +62,71 @@ jobs:
           make html && touch _build/html/.nojekyll
         working-directory: docs
 
+      - name: Prepare combined site
+        run: |
+          mkdir -p _site
+
+          # Copy Sphinx docs to root
+          if [ -d "docs/_build/html" ]; then
+            cp -r docs/_build/html/* _site/
+          else
+            echo "::error::Sphinx build failed - no HTML output"
+            exit 1
+          fi
+
+          # Disable Jekyll processing
+          touch _site/.nojekyll
+
+          # Create calculator directory structure
+          mkdir -p _site/calculator/dist
+          mkdir -p _site/calculator/shared
+
+          # Copy WASM calculator web files (excluding symlinks that may not be ready)
+          for file in wasm/web/*; do
+            if [ ! -L "$file" ]; then  # Skip symlinks
+              cp -r "$file" _site/calculator/
+            fi
+          done
+
+          # Copy API file if exists
+          cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
+
+          # Copy shared modules/styles to calculator/shared (fixes relative import paths)
+          cp wasm/shared/*.js _site/calculator/shared/ 2>/dev/null || true
+          cp wasm/shared/*.css _site/calculator/shared/ 2>/dev/null || true
+
+          # Copy WASM dist files if available (for symlink resolution)
+          if [ -d "wasm/dist" ] && [ ! -L "wasm/dist" ]; then
+            cp -r wasm/dist/* _site/calculator/dist/ 2>/dev/null || true
+          fi
+
+          # Copy built WASM if available, otherwise create demo mode placeholder
+          if [ -f "wasm/dist/phaseshifts.js" ] && [ -f "wasm/dist/phaseshifts.wasm" ]; then
+            cp -r wasm/dist/* _site/calculator/dist/
+            echo "full" > _site/calculator/dist/mode.txt
+          else
+            # Create demo mode placeholder
+            cat > _site/calculator/dist/phaseshifts.js << 'EOF'
+          // Demo mode - WASM module not built
+          // The app.js will generate synthetic phase shifts for demonstration
+          console.log('[phaseshifts] Running in demo mode - WASM module not available');
+          window.WASM_DEMO_MODE = true;
+          EOF
+            echo "demo" > _site/calculator/dist/mode.txt
+          fi
+
+          # Create version info
+          cat > _site/calculator/version.txt << EOF
+          phaseshifts WASM Calculator
+          Built: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          Commit: ${{ github.sha }}
+          Mode: $(cat _site/calculator/dist/mode.txt)
+          EOF
+
       - name: Upload HTML site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./docs/_build/html
+          path: _site
 
   deploy:
     needs: build
