@@ -34,6 +34,26 @@ class TestCalculatorWebFiles:
         elements_path = os.path.join(SHARED_DIR, "elements.js")
         assert os.path.isfile(elements_path), "wasm/shared/elements.js not found"
 
+    def test_crystal_js_exists(self):
+        """Verify shared/crystal.js exists."""
+        crystal_path = os.path.join(SHARED_DIR, "crystal.js")
+        assert os.path.isfile(crystal_path), "wasm/shared/crystal.js not found"
+
+    def test_viewer3d_js_exists(self):
+        """Verify shared/viewer3d.js exists."""
+        viewer_path = os.path.join(SHARED_DIR, "viewer3d.js")
+        assert os.path.isfile(viewer_path), "wasm/shared/viewer3d.js not found"
+
+    def test_structure_builder_js_exists(self):
+        """Verify shared/structure-builder.js exists."""
+        builder_path = os.path.join(SHARED_DIR, "structure-builder.js")
+        assert os.path.isfile(builder_path), "wasm/shared/structure-builder.js not found"
+
+    def test_structure_builder_css_exists(self):
+        """Verify shared/structure-builder.css exists."""
+        css_path = os.path.join(SHARED_DIR, "structure-builder.css")
+        assert os.path.isfile(css_path), "wasm/shared/structure-builder.css not found"
+
 
 class TestCalculatorPaths:
     """Tests for correct path references in calculator files."""
@@ -62,6 +82,20 @@ class TestCalculatorPaths:
         # Match various import patterns
         import_pattern = r"from\s+['\"]\.\/shared\/elements\.js['\"]"
         assert re.search(import_pattern, content), "app.js should import from './shared/elements.js' (not '../shared/')"
+
+    def test_app_js_crystal_imports(self):
+        """Verify app.js imports crystal structure modules correctly."""
+        app_path = os.path.join(WEB_DIR, "app.js")
+        with open(app_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Should import viewer3d.js
+        viewer_pattern = r"from\s+['\"]\.\/shared\/viewer3d\.js['\"]"
+        assert re.search(viewer_pattern, content), "app.js should import from './shared/viewer3d.js'"
+
+        # Should import structure-builder.js
+        builder_pattern = r"from\s+['\"]\.\/shared\/structure-builder\.js['\"]"
+        assert re.search(builder_pattern, content), "app.js should import from './shared/structure-builder.js'"
 
 
 class TestCalculatorSymlinks:
