@@ -1,0 +1,16 @@
+# Binder environment configuration for phaseshifts tutorials
+# See: https://mybinder.readthedocs.io/en/latest/using/config_files.html
+
+# Core phaseshifts package
+-e .
+# Crystal structure visualization
+ase>=3.22.0
+ipykernel>=6.0.0
+jupyter>=1.0.0
+matplotlib>=3.5.0
+
+# Tutorial dependencies
+numpy>=1.22.0
+
+# Optional: 3D visualization (may not work in all Binder environments)
+# nglview>=3.0.0

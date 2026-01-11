@@ -16,6 +16,7 @@ Contents:
    introduction
    installing_phaseshifts
    running
+   tutorials
    input_files
    browser_calculator
    contributing
