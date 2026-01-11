@@ -67,8 +67,13 @@ export class Vector3 {
  */
 export class Atom {
   constructor(symbol, position, options = {}) {
+    const atomicNumber = elements[symbol];
+    if (atomicNumber === undefined) {
+      throw new TypeError(`Invalid element symbol: ${symbol}`);
+    }
+
     this.symbol = symbol;
-    this.atomicNumber = elements[symbol] || 0;
+    this.atomicNumber = atomicNumber;
     this.position =
       position instanceof Vector3 ? position : new Vector3(...position);
     this.label = options.label || symbol;

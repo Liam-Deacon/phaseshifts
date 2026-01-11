@@ -166,10 +166,14 @@ export class StructureBuilder {
       createInput('a:', this.structure.bulkUnitCell.aLength.toFixed(3), (e) => {
         const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
+        const bulkUnitCell = this.structure.bulkUnitCell;
         this.structure.bulkUnitCell = new UnitCell3D(
           value,
-          this.structure.bulkUnitCell.bLength,
-          this.structure.bulkUnitCell.cLength,
+          bulkUnitCell.bLength,
+          bulkUnitCell.cLength,
+          bulkUnitCell.alpha,
+          bulkUnitCell.beta,
+          bulkUnitCell.gamma,
         );
         this._notifyChange();
       }),
@@ -179,10 +183,14 @@ export class StructureBuilder {
       createInput('b:', this.structure.bulkUnitCell.bLength.toFixed(3), (e) => {
         const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
+        const bulkUnitCell = this.structure.bulkUnitCell;
         this.structure.bulkUnitCell = new UnitCell3D(
-          this.structure.bulkUnitCell.aLength,
+          bulkUnitCell.aLength,
           value,
-          this.structure.bulkUnitCell.cLength,
+          bulkUnitCell.cLength,
+          bulkUnitCell.alpha,
+          bulkUnitCell.beta,
+          bulkUnitCell.gamma,
         );
         this._notifyChange();
       }),
@@ -192,10 +200,14 @@ export class StructureBuilder {
       createInput('c:', this.structure.bulkUnitCell.cLength.toFixed(3), (e) => {
         const value = Number.parseFloat(e.target.value);
         if (Number.isNaN(value)) return;
+        const bulkUnitCell = this.structure.bulkUnitCell;
         this.structure.bulkUnitCell = new UnitCell3D(
-          this.structure.bulkUnitCell.aLength,
-          this.structure.bulkUnitCell.bLength,
+          bulkUnitCell.aLength,
+          bulkUnitCell.bLength,
           value,
+          bulkUnitCell.alpha,
+          bulkUnitCell.beta,
+          bulkUnitCell.gamma,
         );
         this._notifyChange();
       }),

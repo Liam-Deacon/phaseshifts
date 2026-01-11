@@ -143,8 +143,10 @@ jobs:
            # Copy API file if exists
            cp wasm/src/phaseshifts.js _site/calculator/ 2>/dev/null || true
 
-           # Copy shared elements.js to calculator/shared (fixes relative import path)
-           cp wasm/shared/elements.js _site/calculator/shared/ 2>/dev/null || true
+           # Copy all shared module files to calculator/shared (fixes relative import paths)
+           # This is needed because symlinks don't work on GitHub Pages
+           cp wasm/shared/*.js _site/calculator/shared/ 2>/dev/null || true
+           cp wasm/shared/*.css _site/calculator/shared/ 2>/dev/null || true
 
            # Copy WASM dist files if available (for symlink resolution)
            if [ -d "wasm/dist" ] && [ ! -L "wasm/dist" ]; then

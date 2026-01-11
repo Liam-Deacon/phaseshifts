@@ -397,9 +397,15 @@ export class CrystalViewer {
     for (const mesh of this.atomMeshes) {
       box.expandByObject(mesh);
     }
-    const center = box.getCenter(new THREE.Vector3());
-    const size = box.getSize(new THREE.Vector3());
-    const maxDim = Math.max(size.x, size.y, size.z) * 2;
+    let center = new THREE.Vector3();
+    let size = new THREE.Vector3(1, 1, 1);
+    if (this.atomMeshes.length > 0 && !box.isEmpty()) {
+      center = box.getCenter(new THREE.Vector3());
+      size = box.getSize(new THREE.Vector3());
+    }
+    const largestDim = Math.max(size.x, size.y, size.z);
+    const maxDim =
+      Number.isFinite(largestDim) && largestDim > 0 ? largestDim * 2 : 1;
 
     switch (direction) {
       case 'top':
@@ -454,8 +460,18 @@ export class CrystalViewer {
 
     if (this.axesHelper) {
       this.scene.remove(this.axesHelper);
-      this.axesHelper.geometry.dispose();
-      this.axesHelper.material.dispose();
+      if (this.axesHelper.geometry) {
+        this.axesHelper.geometry.dispose();
+      }
+      if (Array.isArray(this.axesHelper.material)) {
+        for (const material of this.axesHelper.material) {
+          if (material) {
+            material.dispose();
+          }
+        }
+      } else if (this.axesHelper.material) {
+        this.axesHelper.material.dispose();
+      }
       this.axesHelper = null;
     }
 

@@ -7,9 +7,9 @@
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
   --secondary-color: #6b7280;
-  --success-color: #10b981;
-  --error-color: #ef4444;
-  --warning-color: #f59e0b;
+  --success-color: #15803d;
+  --error-color: #dc2626;
+  --warning-color: #b45309;
   --background: #f8fafc;
   --surface: #fff;
   --text-primary: #1e293b;
@@ -262,7 +262,7 @@ section h3 {
 }
 
 .btn-download:hover {
-  background: #059669;
+  background: #047857;
 }
 
 /* Tabs */
