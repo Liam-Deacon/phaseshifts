@@ -20,6 +20,9 @@ Contents:
    browser_calculator
    contributing
    code_of_conduct
+   reporting
+   security
+   release
    contact
    acknowledgements
    scripts
