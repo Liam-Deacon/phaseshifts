@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+# Build phaseshifts from source (includes Fortran libphsh)
+cd ${HOME}
+pip install --no-build-isolation git+https://github.com/Liam-Deacon/phaseshifts.git@master
+
+# Install Jupyter extensions for interactive widgets
+jupyter nbextension enable --py widgetsnbextension --sys-prefix || true
+jupyter nbextension enable --py nglview --sys-prefix || true
+
+echo "postBuild complete - phaseshifts and CLEED tools ready."
