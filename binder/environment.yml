@@ -1,0 +1,20 @@
+---
+name: phaseshifts-tutorials
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy>=1.22
+  - scipy
+  - matplotlib
+  - pandas
+  - compilers
+  - make
+  - pip
+  - pip:
+      - phaseshifts
+      - cleedpy>=0.1.5
+      - ase
+      - nglview
+      - ipywidgets>=7.6
