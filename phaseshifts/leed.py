@@ -442,7 +442,7 @@ class Converter:
             line = " ".join(vector_line.replace(":", "").split()[:4])
 
             try:
-                (vector_str, x, y, z) = (t(s) for (t, s) in zip((str, float, float, float), line.split()))
+                vector_str, x, y, z = (t(s) for (t, s) in zip((str, float, float, float), line.split()))
             except ValueError:
                 raise ValueError("'%s' is not a valid basis vector" % vector_line.replace("\n", ""))
 
@@ -598,7 +598,7 @@ class Converter:
         for bulk_atom in bulk_atoms:
             # split line data
             try:
-                (id_str, x, y, z) = (t(s) for t, s in zip((str, float, float, float), bulk_atom.split()))
+                id_str, x, y, z = (t(s) for t, s in zip((str, float, float, float), bulk_atom.split()))
                 # extract further information from id string
                 id_str = os.path.basename(os.path.expanduser(os.path.expandvars(id_str)))  # ensure path not included
                 element = id_str.split("_")[0]  # assume element name / symbol
