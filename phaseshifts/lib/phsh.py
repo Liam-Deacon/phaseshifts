@@ -43,7 +43,7 @@ def phsh_cav(mufftin_file, phasout_file, dataph_file):
     nr = mtz.readline()  # 103
     for kkk in range(1, nr + 1):  # 2
         name = mtz.readline()  # 100
-        (z, rmt, mtz) = mtz.readline()  # 101
+        z, rmt, mtz = mtz.readline()  # 101
         ntab = mtz.readline()  # 103
         mtz /= 2.0
         for ix in range(1, ntab + 1):  # 19
@@ -790,13 +790,13 @@ def phsh_rel(
 
     inpdat.write("input data\n")  # 13 format (1h1, /  / ,t61,'input data',)
     name = mtz.readline().split()  # 10
-    (es, de, ue, lsm, _vc) = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
+    es, de, ue, lsm, _vc = [t(s) for t, s in zip((float, float, float, int, float), mtz.readline().split())]
 
     nl = 8  # nl is the number of plotted phase shifts
     inpdat.write("%12.4d%12.4d%12.4d    %s%s%3i\n" % (es, de, ue, opt, opt1, lsm))
 
     # 75 format (a28, a2, 4x, a30, f10.7, 1x, a3)
-    (nz, adata[1], jri, alc, blc, clc, exca, excb, exco) = slices(mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10)
+    nz, adata[1], jri, alc, blc, clc, exca, excb, exco = slices(mtz.readline(), 4, 10, 4, 21, 10, 10, 10, 10, 10, 10)
     # 16 format (i4,f10.6,i4,t21,6f10.6)
     inpdat.write(
         "%4i%10.6f%4i  %10.6f%10.6f%10.6f%10.6f%10.6f%10.6f" % (nz, adata[1], jri, alc, blc, clc, exca, excb, exco)
