@@ -16,7 +16,6 @@ import sys
 
 from ._distutils_compat import ensure_distutils
 
-
 LIBPHSH_MODULE = "phaseshifts.lib.libphsh"
 
 _F2PY_SOURCE = "libphsh.f"
