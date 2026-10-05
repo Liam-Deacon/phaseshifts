@@ -671,7 +671,7 @@ class BVHWrapper(Wrapper):
                         ]
 
                         # assign new values
-                        (ei, ef, de) = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
+                        ei, ef, de = [t(s) for t, s in zip((float, float, float), kwargs["range"])]
 
                         # edit energy range
                         lines[1] = str("%12.4f%12.4f%12.4f    %3i    %12.4f\n" % (ei, de, ef, lsm, vc)).replace(

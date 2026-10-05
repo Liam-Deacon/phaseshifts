@@ -90,9 +90,7 @@ def main(argv=None):
         and comments.
 
     usage:-
-    """ % (
-        program_shortdesc
-    )
+    """ % (program_shortdesc)
 
     return_code = 0
     try:

@@ -1,6 +1,5 @@
 import pytest
 
-
 yaml = pytest.importorskip("yaml")
 
 

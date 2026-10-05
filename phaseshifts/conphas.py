@@ -193,7 +193,7 @@ class Conphas:
         """
         with open(filename, "r") as f:
             f.readline()  # skip first line
-            (initial_energy, energy_step, n_phases, lmf) = [
+            initial_energy, energy_step, n_phases, lmf = [
                 t(s) for (t, s) in zip((float, float, int, int), f.readline().replace("-", " -").split())
             ]
             # get parameters
@@ -407,7 +407,7 @@ class Conphas:
 
         # read phase scattering
         for i, input_file in enumerate(self.input_files):
-            (_, _energy_step, n_phases, lmf, data) = self.load_data(input_file)
+            _, _energy_step, n_phases, lmf, data = self.load_data(input_file)
 
             if n_phases > 250:
                 n_phases = 250
