@@ -293,7 +293,7 @@ class hartfock(object):
                 )
 
             elif ichar == "i":
-                (zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel) = initiali(
+                zorig, nr, rmin, rmax, r, dr, r2, dl, njrc, xntot, nel = initiali(
                     zorig,
                     nr,
                     rmin,
@@ -384,11 +384,11 @@ class hartfock(object):
 
             elif ichar == "c":
                 if os.path.isfile(input_stream):
-                    (corpol, rs, rp, sd) = f.next().split("!")[0].split()[:3]
+                    corpol, rs, rp, sd = f.next().split("!")[0].split()[:3]
                 else:
                     while True:
                         try:
-                            (corpol, rs, rp, sd) = get_input("enter ALPHA, RS, RP, RD: ").split()[:3]
+                            corpol, rs, rp, sd = get_input("enter ALPHA, RS, RP, RD: ").split()[:3]
                             break
                         except Exception:
                             print("Invalid input - please retry...")
@@ -403,12 +403,12 @@ class hartfock(object):
 
             elif ichar == "f":
                 if os.path.isfile(input_stream):
-                    (iunit, corpol) = [t(s) for t, s, in zip((int, float), f.next().split("!")[0].split()[:1])]
-                    (ilev, inum, eold) = [t(s) for t, s in zip((int, int, float), f.next().split("!")[0].split()[:2])]
+                    iunit, corpol = [t(s) for t, s, in zip((int, float), f.next().split("!")[0].split()[:1])]
+                    ilev, inum, eold = [t(s) for t, s in zip((int, int, float), f.next().split("!")[0].split()[:2])]
                 else:
                     while True:
                         try:
-                            (iunit, corpol) = [
+                            iunit, corpol = [
                                 t(s)
                                 for t, s in zip(
                                     (int, float),
@@ -421,7 +421,7 @@ class hartfock(object):
 
                     while True:
                         try:
-                            (ilev, inum, eold) = [
+                            ilev, inum, eold = [
                                 t(s)
                                 for t, s in zip(
                                     (int, int, float),
@@ -436,7 +436,7 @@ class hartfock(object):
                 if inum == 1:
                     eav = f.next().split("!")[0]
                 else:
-                    (e1, e2) = f.next().split("!")[0].split()[:1]
+                    e1, e2 = f.next().split("!")[0].split()[:1]
                     eav = (e1 * xl + e2 * (xl + 1.0)) / (xl + xl + 1.0)
 
                 if eav < 0.0:
@@ -676,7 +676,7 @@ def abinitio(
 
     # read in nfc, nel.  - refer to the documentation for their meanings.
     if input == "stdin":
-        (nfc, nel, ratio, etol, xnum) = [
+        nfc, nel, ratio, etol, xnum = [
             t(s)
             for t, s in zip(
                 (int, int, float, float, float),
@@ -685,7 +685,7 @@ def abinitio(
         ]
     elif isinstance(input_stream, file):
         f = input_stream
-        (nfc, nel, ratio, etol, xnum) = [
+        nfc, nel, ratio, etol, xnum = [
             t(s) for t, s in zip((int, int, float, float, float), f.next().split("!")[0].split()[:5])
         ]
 
@@ -695,7 +695,7 @@ def abinitio(
         i = 0
         if input == "stdin":
             for i in range(nfc, nel):
-                (no[i], nl[i], nm[i], xnj[i], iss[i], occ[i]) = [
+                no[i], nl[i], nm[i], xnj[i], iss[i], occ[i] = [
                     t(s)
                     for t, s in zip(
                         (int, int, int, float, float, float),
@@ -710,7 +710,7 @@ def abinitio(
 
         else:
             for i in range(nfc, nel):
-                (no[i], nl[i], nm[i], xnj[i], iss[i], occ[i]) = [
+                no[i], nl[i], nm[i], xnj[i], iss[i], occ[i] = [
                     t(s)
                     for t, s in zip(
                         (int, int, int, float, float, float),
@@ -1367,7 +1367,7 @@ def getpot(
         xn1 = xn / 2.0
         xn2 = xn / 2.0
         nst = 2
-        (nst, rel, r2[i], xn1, xn2, ex, ec, ux1, ux2, uc1, uc2) = exchcorr(nst, rel, r2[i], xn1, xn2)
+        nst, rel, r2[i], xn1, xn2, ex, ec, ux1, ux2, uc1, uc2 = exchcorr(nst, rel, r2[i], xn1, xn2)
         exc = fx * ex + fc * ec
         uxc = fx * ux1 + fc * uc1
         etot = etot + dr[i] * xn * exc
@@ -2043,10 +2043,10 @@ def initiali(
     """
 
     if input_stream == "stdin":
-        (zorig, nr) = [t(s) for t, s in zip((float, int), get_input("Enter Z, NR: ").split())]
+        zorig, nr = [t(s) for t, s in zip((float, int), get_input("Enter Z, NR: ").split())]
 
     elif isinstance(input_stream, file):
-        (zorig, nr) = [t(s) for t, s in zip((float, int), input_stream.next().split("!")[0].split())]
+        zorig, nr = [t(s) for t, s in zip((float, int), input_stream.next().split("!")[0].split())]
 
     else:
         raise IOError("input stream is not a file handle or 'stdin'")
@@ -2737,12 +2737,12 @@ def pseudo(
 
     # read input
     if input_stream == "stdin":
-        (np, corpol, rnorm) = [
+        np, corpol, rnorm = [
             t(s) for t, s in zip((int, float, float), get_input("Please enter NP CORPOL RNORM: ").split())
         ]
 
     elif isinstance(input_stream, file):
-        (np, corpol, rnorm) = [t(s) for t, s in zip((int, float, float), input_stream.readline().split("!")[0].split())]
+        np, corpol, rnorm = [t(s) for t, s in zip((int, float, float), input_stream.readline().split("!")[0].split())]
     else:
         raise IOError("input_stream is not valid!")
 
@@ -3455,7 +3455,7 @@ def _pseudize_update_potential(
     float
         Updated log-derivative value ``x0``.
     """
-    (f, fp, fpp, psi, psip, psipp) = (None, None, None, None, None, None)
+    f, fp, fpp, psi, psip, psipp = (None, None, None, None, None, None)
     for ii in range(1, jrt - 1 + 1):
         if phi[ii] == 0.0 or yl[ii] == 0.0:
             break
@@ -3463,10 +3463,10 @@ def _pseudize_update_potential(
         for j in range(jj - 1, jj + 1 + 1):
             rf[2 + j - jj] = r[j]
             vf[2 + j - jj] = hb(r[j] / rcut, factor)
-        (f, fp, fpp, rf, vf) = parabreg(f, fp, fpp, rf, vf)
+        f, fp, fpp, rf, vf = parabreg(f, fp, fpp, rf, vf)
         for j in range(jj - 1, jj + 1):
             vf[2 + j - jj] = phi0[j]
-        (psi, psip, psipp, rf, vf) = parabreg(psi, psip, psipp, rf, vf)
+        psi, psip, psipp, rf, vf = parabreg(psi, psip, psipp, rf, vf)
         v[ii] = vraw[ii] + (1.0 - phi0[ii] / phi[ii]) * (2.0 * psip / psi * fp / f + fpp / f) / 2.0
     fitx0(*fitx0_args)
     return integ(*integ_args)[3]
