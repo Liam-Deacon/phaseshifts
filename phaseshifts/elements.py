@@ -4727,8 +4727,7 @@ def sqlite_script():
     >>> con.close()
 
     """
-    sql = [
-        """
+    sql = ["""
         CREATE TABLE "period" (
             "number" TINYINT NOT NULL PRIMARY KEY,
             "label" CHAR NOT NULL UNIQUE,
@@ -4798,8 +4797,7 @@ def sqlite_script():
             "energy" REAL NOT NULL,
             PRIMARY KEY ("element", "number")
         );
-    """
-    ]
+    """]
 
     for key, label in PERIODS.items():
         sql.append("""INSERT INTO "period" VALUES (%i, '%s', NULL);""" % (key, label))

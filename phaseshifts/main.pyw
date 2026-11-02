@@ -30,11 +30,12 @@
 #                                                                            #
 ##############################################################################
 
-'''
+"""
 Wrapper module for launching main window of GUI
-'''
+"""
+
 from gui import MainWindow
 import sys
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     MainWindow.main(sys.argv)
