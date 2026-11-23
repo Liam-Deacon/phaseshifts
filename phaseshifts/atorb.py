@@ -742,7 +742,7 @@ class Atorb(object):
 
         subshell = "".join([s for s in shell if s.isalpha()])
         try:
-            (n, nelectrons) = [t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())]
+            n, nelectrons = [t(s) for t, s in zip((int, int), shell.replace(subshell, " ").split())]
         except ValueError:  # assume 1 electron in shell
             n = int(shell.replace(subshell, " ").split()[0])
             nelectrons = 1
@@ -945,7 +945,7 @@ class Atorb(object):
         electrons = []
         nlevels = 0
         for shell in config.split():
-            (n, l, J, occ) = Atorb.get_quantum_info(shell)
+            n, l, J, occ = Atorb.get_quantum_info(shell)
             for i, j in enumerate(J):
                 electrons.append((n, l, l, -j, 1, occ[i]))
                 nlevels += 1

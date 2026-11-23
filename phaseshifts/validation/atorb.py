@@ -440,7 +440,7 @@ def _parse_orbitals(lines, start_cursor, nlevels):
 
                 raise ValueError
 
-            (n, l, m, j, s, occ) = entry[:6]
+            n, l, m, j, s, occ = entry[:6]
 
             orbitals.append(
                 {
