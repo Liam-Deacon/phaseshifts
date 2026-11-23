@@ -10,6 +10,7 @@ Checks:
 Usage:
     python post_cibuildwheel_check.py [--wheelhouse /path/to/wheelhouse]
 """
+
 import argparse
 import os
 import sys

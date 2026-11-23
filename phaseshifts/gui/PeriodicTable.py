@@ -105,9 +105,6 @@ class PeriodicTableDialog(QtWidgets.QFrame):
         self.selectedElement = elements.ELEMENTS[ELEMENTS_DICT.keys().index(self.sender().text()) + 1]
         self.ui.labelMass.setText("""<html><sup>%.1f</sup></html>""" % float(self.selectedElement.mass))
         self.ui.labelZ.setText("""<html><sup>%s</sup></html>""" % self.selectedElement.protons)
-        self.ui.labelElement.setText(
-            """<html><head/><body><p><span style="
+        self.ui.labelElement.setText("""<html><head/><body><p><span style="
                                         font-size:12pt;">%s</span></p></body>
-                                        </html>"""
-            % self.selectedElement.symbol
-        )
+                                        </html>""" % self.selectedElement.symbol)
